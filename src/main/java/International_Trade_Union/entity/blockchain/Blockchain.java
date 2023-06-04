@@ -12,7 +12,6 @@ import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-
 import lombok.Data;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class Blockchain implements Cloneable{
         this(new ArrayList<>(), BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL, INTERVAL_TARGET, ADDRESS_FOUNDER);
 
     }
-    public Blockchain(List<Block> blockchainList, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL, long INTERVAL_TARGET,String ADDRESS_FOUNDER) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public Blockchain(List<Block> blockchainList, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL, long INTERVAL_TARGET, String ADDRESS_FOUNDER) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         this.blockchainList = blockchainList;
         this.BLOCK_GENERATION_INTERVAL = BLOCK_GENERATION_INTERVAL;
         this.DIFFICULTY_ADJUSTMENT_INTERVAL = DIFFICULTY_ADJUSTMENT_INTERVAL;
@@ -84,6 +83,21 @@ public class Blockchain implements Cloneable{
         byte[] signGold = UtilsSecurity.sign(privateKey, gold.toSign());
         gold.setSign(signGold);
         transactions.add(gold);
+
+        for (int i = 0; i < Seting.firstTestingPeople.size(); i++) {
+            DtoTransaction team = new DtoTransaction(Seting.BASIS_ADDRESS,
+                    Seting.firstTestingPeople.get(i),
+                    Seting.digDollarRewTeam,
+                    Seting.digStockRewTeam,
+                new Laws(),
+            0.0,
+            VoteEnum.YES
+            );
+            byte[] signMoney = UtilsSecurity.sign(privateKey, team.toSign());
+            team.setSign(signMoney);
+            transactions.add(team);
+        }
+
 
         String genesisHash = genesisPrevHash();
         Block block = new Block(transactions,  genesisHash, ADDRESS_FOUNDER, ADDRESS_FOUNDER,  Seting.HASH_COMPLEXITY_GENESIS, blockchainList.size());
