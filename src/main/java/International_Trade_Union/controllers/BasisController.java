@@ -422,7 +422,7 @@ public class BasisController {
      *      * Blockchain and you need to save all files (balance, vote, government, etc.) again.*/
     public static void addBlock(List<Block> orignalBlocks, Blockchain blockchain) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //раз в три для очищяет файл sended
-        AllTransactions.clearAllSendedTransaction(blockchain.sizeBlockhain());
+        AllTransactions.clearAllSendedTransaction(false);
         Map<String, Account> balances = new HashMap<>();
         Blockchain temporaryForValidation =  BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         temporaryForValidation.setBlockchainList(orignalBlocks);

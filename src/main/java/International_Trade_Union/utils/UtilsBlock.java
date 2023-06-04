@@ -337,6 +337,8 @@ public class UtilsBlock {
 
         int size = transactions.size();
         int withoutDuplicates = transactions.stream().distinct().collect(Collectors.toList()).size();
+        System.out.println("UtilsBlock: validation original size: " + size + " validation: " +(size == withoutDuplicates) );
+        System.out.println("UtilsBlock: validation withoutDublicates size: " + withoutDuplicates + " validation: " +(size == withoutDuplicates) );
         if(size != withoutDuplicates){
             System.out.println("blockchain wrong because in block have duplicates transaction, transaction to be only unique sign");
             validated = false;
