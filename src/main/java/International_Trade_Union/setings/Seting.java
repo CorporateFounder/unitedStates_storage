@@ -207,7 +207,7 @@ public interface Seting {
     //адреса хранилищ блокчейнов
 //    Set<String> ORIGINAL_ADDRESSES_BLOCKCHAIN_STORAGE = Set.of("http://localhost:8084");
 
-    int SIZE_FILE_LIMIT = 5;
+    int SIZE_FILE_LIMIT = 10;
 
     List<String> firstTestingPeople = List.of(
             "25TzGfMpAygvuFvXujL4seof4LHpzC92crCTydGC9RmZP",

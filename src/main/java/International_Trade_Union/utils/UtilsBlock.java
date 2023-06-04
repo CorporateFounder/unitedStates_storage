@@ -1,19 +1,25 @@
 package International_Trade_Union.utils;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import International_Trade_Union.config.BLockchainFactory;
 import International_Trade_Union.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.setings.Seting;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-
-import java.io.*;
-import java.security.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class UtilsBlock {
@@ -181,6 +187,9 @@ public class UtilsBlock {
     //https://tproger.ru/translations/blockchain-explained/
 
     //new https://guicommits.com/building-blockchain-with-python/
+
+    /**определяет сложность, раз пол дня корректирует сложность. В сутках 576 блоков.
+     * каждый блок добывается примерно 2.3 минуты*/
     public static int difficulty(List<Block> blocks, long BLOCK_GENERATION_INTERVAL, int  DIFFICULTY_ADJUSTMENT_INTERVAL ){
 
         //секунды как часто создается блоки
@@ -198,6 +207,7 @@ public class UtilsBlock {
     }
 
 
+    /**получить сложность*/
     private static int getAdjustedDifficulty(Block latestBlock, List<Block> blocks, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL){
         Block prevAdjustmentBlock = blocks.get(blocks.size() - DIFFICULTY_ADJUSTMENT_INTERVAL);
 
@@ -315,20 +325,38 @@ public class UtilsBlock {
     }
 
     public static void deleteFiles(){
-        System.out.println("UtilsBlock: deleteFiles: ");
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
 
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BALANCE_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
     }
 
+    public static List<DtoTransaction> validDto(List<Block> blocks, List<DtoTransaction> transactions){
+        boolean validated = true;
+        List<DtoTransaction> transactionArrayList = new ArrayList<>();
+        for (int i = 0; i < blocks.size(); i++) {
+            for (DtoTransaction dtoTransaction : blocks.get(i).getDtoTransactions()) {
+                transactionArrayList.add(dtoTransaction);
+            }
+
+        }
+
+        int size = transactionArrayList.size();
+        int withoutDuplicates = transactionArrayList.stream().distinct().collect(Collectors.toList()).size();
+        if(size != withoutDuplicates){
+            System.out.println("blockchain wrong because in block have duplicates transaction");
+            validated = false;
+            return null;
+        }
+        transactions.removeAll(transactionArrayList);
+        return transactions;
+
+    }
     public static boolean validation(List<Block> blocks, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL ) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-       //validation only unique transaction
         boolean validated = true;
         List<DtoTransaction> transactions = new ArrayList<>();
-        for (int i = 24100; i < blocks.size(); i++) {
+        for (int i = 0; i < blocks.size(); i++) {
             for (DtoTransaction dtoTransaction : blocks.get(i).getDtoTransactions()) {
                 transactions.add(dtoTransaction);
             }
@@ -337,10 +365,8 @@ public class UtilsBlock {
 
         int size = transactions.size();
         int withoutDuplicates = transactions.stream().distinct().collect(Collectors.toList()).size();
-        System.out.println("UtilsBlock: validation original size: " + size + " validation: " +(size == withoutDuplicates) );
-        System.out.println("UtilsBlock: validation withoutDublicates size: " + withoutDuplicates + " validation: " +(size == withoutDuplicates) );
         if(size != withoutDuplicates){
-            System.out.println("blockchain wrong because in block have duplicates transaction, transaction to be only unique sign");
+            System.out.println("blockchain wrong because in block have duplicates transaction");
             validated = false;
             return validated;
         }
