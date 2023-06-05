@@ -142,8 +142,8 @@ public interface Seting {
 
 
     //    адресс основателя: здесь будет мой адрес. Сейчас заглушка
-    String ADDRESS_FOUNDER_TEST = "gW3vuJJCamQnFHKFrYZDHwRvJxZmUxokcPHtkWCC6UEb";
-    String ADDRESS_FOUNDER = "gW3vuJJCamQnFHKFrYZDHwRvJxZmUxokcPHtkWCC6UEb";
+    String ADDRESS_FOUNDER_TEST = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
+    String ADDRESS_FOUNDER = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
 
     String CORPORATE_CHARTER_DRAFT = "";
 
@@ -154,8 +154,8 @@ public interface Seting {
     String ORIGINAL_CHARTER_CURRENT_ALL_CODE = "ORIGINAL_CHARTER_CURRENT_ALL_CODE";
 
     //начальная сумма основателя
-    Double FOUNDERS_REMUNERATION_DIGITAL_DOLLAR = 60000000.0;
-    double FOUNDERS_REMNUNERATION_DIGITAL_STOCK = 60000000.0;
+    Double FOUNDERS_REMUNERATION_DIGITAL_DOLLAR = 65000000.0;
+    double FOUNDERS_REMNUNERATION_DIGITAL_STOCK = 65000000.0;
 
 
     // сколько секунд в сутках
