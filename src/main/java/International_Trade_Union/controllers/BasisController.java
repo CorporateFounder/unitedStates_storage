@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 @RestController
 public class BasisController {
     private static Blockchain blockchain;
+    private static boolean isNotSaving = true;
 
     private static Set<String> excludedAddresses = new HashSet<>();
 
@@ -106,6 +107,11 @@ public class BasisController {
     static {
         try {
             blockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
+
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
@@ -131,10 +137,13 @@ public class BasisController {
 
     @GetMapping("/chain")
     @ResponseBody
-    public synchronized EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
+    public EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+//        blockchain = Mining.getBlockchain(
+//                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+//                BlockchainFactoryEnum.ORIGINAL);
+        while (isNotSaving == false){
+            System.out.println("a new block is being written");
+        }
 
         if(!blockchain.validatedBlockchain()){
             System.out.println("wrong block chain, delete blocks");
@@ -147,12 +156,14 @@ public class BasisController {
 
     @GetMapping("/size")
     @ResponseBody
-    public synchronized   Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public  Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
-
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
+        while (isNotSaving == false){
+            System.out.println("a new block is being written");
+        }
+//        blockchain = Mining.getBlockchain(
+//                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+//                BlockchainFactoryEnum.ORIGINAL);
         if(!blockchain.validatedBlockchain()){
             System.out.println("wrong block chain, delete blocks: sizeBlockchain: size");
             UtilsBlock.deleteFiles();
@@ -421,8 +432,9 @@ public class BasisController {
      * блокчейн и нужно все файлы(balance, vote, government и т. д.) заного пересохранить.
      * adds blocks to the block chain by resaving files, designed when we have it ready
      *      * Blockchain and you need to save all files (balance, vote, government, etc.) again.*/
-    public static void addBlock(List<Block> orignalBlocks, Blockchain blockchain) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+    public static void addBlock(List<Block> orignalBlocks, Blockchain temporary) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //раз в три для очищяет файл sended
+        isNotSaving = false;
         AllTransactions.clearAllSendedTransaction(false);
         Map<String, Account> balances = new HashMap<>();
         Blockchain temporaryForValidation =  BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
@@ -440,7 +452,11 @@ public class BasisController {
             for (Block block : orignalBlocks) {
                 UtilsBlock.saveBLock(block, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
-            UtilsFileSaveRead.save(Integer.toString(blockchain.sizeBlockhain()), Seting.INDEX_FILE);
+        temporary = Mining.getBlockchain(
+                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                BlockchainFactoryEnum.ORIGINAL);
+            isNotSaving = true;
+            UtilsFileSaveRead.save(Integer.toString(temporary.sizeBlockhain()), Seting.INDEX_FILE);
         System.out.println("BasisController: addBlock: finish");
     }
 
