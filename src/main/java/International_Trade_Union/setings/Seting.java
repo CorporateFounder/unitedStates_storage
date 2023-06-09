@@ -182,6 +182,7 @@ public interface Seting {
     String ORIGINAL_INDEX_FILE = "C:\\resources\\index\\index.txt";
 //    String ORIGINAL_BLOCKCHAIN_FILE = ".\\src\\main\\resources\\blockchain\\";
     String ORIGINAL_BLOCKCHAIN_FILE = "C:\\resources\\blockchain\\";
+    String ORIGINAL_COPY_TO_SEND_FILE_BLOCKCHAIN = "C:\\resources\\blockchainCopy\\";
 //    String ORIGINAL_BALANCE_FILE = ".\\src\\main\\resources\\balance\\";
     String ORIGINAL_BALANCE_FILE = "C:\\resources\\balance\\";
     String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = "C:\\resources\\federalGovernment\\federalGovernment.txt";
