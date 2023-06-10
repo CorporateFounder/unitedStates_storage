@@ -33,27 +33,34 @@ public interface Seting {
     int BOARDS_BLOCK = (int) (Seting.COUNT_BLOCK_IN_DAY * YEAR);
 
 
-
     //минимальное значение количество положительных голосов, для того чтобы избрать
     // Совет Директоров и Совет Корпоративных Верховных Судей,
-    int ORIGINAL_LIMIT_MIN_VOTE = (int) (200 * Seting.COUNT_BLOCK_IN_DAY * 1 / 8);
+    int ORIGINAL_LIMIT_MIN_VOTE = 1; //(int) (200 * Seting.COUNT_BLOCK_IN_DAY * 1 / 8);
+
+
+    //прямая демократия, сколько голосов нужно, чтобы правило вступило в силу,
+    //без необходимости правительства
+    double ALL_STOCK_VOTE = 1.0;
 
 
 
     //Минимальное значение чтобы Совет Корпоративных Верховных Судей могла избрать Верховного Судью
-    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = 3;
+    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = 2;
 
     //Минимальное значение остатка голосов чтобы Совет директоров утверждал бюджет,
     //стратегический план, в создании новых должностей и назначении новых должностей,
     //и т.д. Также участвовал в утверждении законов, вместе с другими участниками.
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS = 15;//15;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS = 10;
 
     //Минимальное количество остатка голосов чтобы Совет Акционеров
     //утверждал вместе с остальными участниками в утверждении законов.
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_SHAREHOLDERS = 100; //100;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_SHAREHOLDERS = 10; //100;
 
     //голос Генерального Исполнительного Директора
     int ORIGINAL_LIMIT_MIN_VOTE_GENERAL_EXECUTIVE_DIRECTOR = 1;
+
+    //фракционный голос минимум 10.0
+    double ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS = 10.0;
 
     //голос Верховного Судьи
     int ORIGINAL_LIMIT_MIN_VOTE_HIGHT_JUDGE = 1;
@@ -79,7 +86,7 @@ public interface Seting {
     double STOCK_VOTE_GOVERNMENT = 1;
 
     //    процент который получает основатель от добычи
-    Double FOUNDERS_REWARD = 3.0;
+    Double FOUNDERS_REWARD = 2.0;
 
     //address for send rewards
     String BASIS_ADDRESS = "faErFrDnBhfSfNnj1hYjxydKNH28cRw1PBwDQEXH3QsJ";
@@ -119,7 +126,9 @@ public interface Seting {
     String AMENDMENT_TO_THE_CHARTER = "AMENDMENT_TO_THE_CHARTER";
 
     //директора созданные Советом директоров
-    String ADD_DIRECTOR = "ADD_DIRECTOR";
+    String ADD_DIRECTOR = "ADD_DIRECTOR_";
+
+
 
     //бюджет должен формировать только палата представителей
     String BUDGET = "BUDGET";
@@ -141,9 +150,14 @@ public interface Seting {
     int ORIGINAL_LIMIT_MINT_VOTE_BOARD_OF_SHAREHOLDERS_AMENDMENT = BOARD_OF_SHAREHOLDERS * 20 / 100;
 
 
+
+
     //    адресс основателя: здесь будет мой адрес. Сейчас заглушка
     String ADDRESS_FOUNDER_TEST = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
     String ADDRESS_FOUNDER = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
+    //начальная сумма основателя
+    Double FOUNDERS_REMUNERATION_DIGITAL_DOLLAR = 65000000.0;
+    double FOUNDERS_REMNUNERATION_DIGITAL_STOCK = 65000000.0;
 
     String CORPORATE_CHARTER_DRAFT = "";
 
@@ -153,9 +167,7 @@ public interface Seting {
     //КЛЮЧЕВОЕ НАЗВАНИЕ ДЛЯ КОДА КОТОРЫЙ СОПРОВОЖДАЕТСЯ С УСТАВОМ
     String ORIGINAL_CHARTER_CURRENT_ALL_CODE = "ORIGINAL_CHARTER_CURRENT_ALL_CODE";
 
-    //начальная сумма основателя
-    Double FOUNDERS_REMUNERATION_DIGITAL_DOLLAR = 65000000.0;
-    double FOUNDERS_REMNUNERATION_DIGITAL_STOCK = 65000000.0;
+
 
 
     // сколько секунд в сутках

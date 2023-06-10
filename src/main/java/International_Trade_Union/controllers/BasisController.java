@@ -456,11 +456,11 @@ public class BasisController {
             for (Block block : orignalBlocks) {
                 UtilsBlock.saveBLock(block, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
-        temporary = Mining.getBlockchain(
+        blockchain = Mining.getBlockchain(
                 Seting.ORIGINAL_BLOCKCHAIN_FILE,
                 BlockchainFactoryEnum.ORIGINAL);
             isNotSaving = true;
-            UtilsFileSaveRead.save(Integer.toString(temporary.sizeBlockhain()), Seting.INDEX_FILE);
+            UtilsFileSaveRead.save(Integer.toString(blockchain.sizeBlockhain()), Seting.INDEX_FILE);
         System.out.println("BasisController: addBlock: finish");
     }
 
