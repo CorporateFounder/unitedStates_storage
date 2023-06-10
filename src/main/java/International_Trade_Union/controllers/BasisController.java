@@ -435,7 +435,11 @@ public class BasisController {
     public static void addBlock(List<Block> orignalBlocks, Blockchain temporary) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //раз в три для очищяет файл sended
         isNotSaving = false;
-        AllTransactions.clearAllSendedTransaction(false);
+        if(orignalBlocks.size() % (576) == 0){
+            System.out.println("clear storage transaction because is old");
+            AllTransactions.clearAllSendedTransaction(true);
+        }
+
         Map<String, Account> balances = new HashMap<>();
         Blockchain temporaryForValidation =  BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         temporaryForValidation.setBlockchainList(orignalBlocks);

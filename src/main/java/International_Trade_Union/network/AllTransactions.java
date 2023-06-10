@@ -68,7 +68,7 @@ public class AllTransactions {
     }
 
     public static synchronized void clearAllSendedTransaction(boolean deleted) {
-        if(false){
+        if(deleted){
             sendedTransaction = new ArrayList<>();
             Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
             System.out.println("clear delete sended transaction");
