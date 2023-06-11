@@ -167,9 +167,6 @@ public interface Seting {
     //КЛЮЧЕВОЕ НАЗВАНИЕ ДЛЯ КОДА КОТОРЫЙ СОПРОВОЖДАЕТСЯ С УСТАВОМ
     String ORIGINAL_CHARTER_CURRENT_ALL_CODE = "ORIGINAL_CHARTER_CURRENT_ALL_CODE";
 
-
-
-
     // сколько секунд в сутках
     int DAY_SECOND = 86400;
 
