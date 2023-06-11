@@ -96,15 +96,6 @@ public final class Block implements Cloneable {
             this.index = index;
 
         }
-        private String hashesAllTrans() throws IOException {
-            String hash = "";
-            for (DtoTransaction dtoTransaction : dtoTransactions) {
-                hash += dtoTransaction.hashForBlock();
-            }
-
-            return hash;
-
-        }
 
         public String hashForTransaction() throws IOException {
             return UtilsUse.sha256hash(jsonString());
@@ -156,12 +147,14 @@ public final class Block implements Cloneable {
         String hash = "";
         while (true){
             this.randomNumberProof++;
+            System.out.println("finding the right number to generate the right hash: " + randomNumberProof);
             BlockForHash block = new BlockForHash(this.dtoTransactions,
                     this.previousHash, this.minerAddress, this.founderAddress,
                     this.randomNumberProof, this.minerRewards, this.hashCompexity, this.timestamp, this.index);
             hash = block.hashForTransaction();
             if(UtilsUse.hashComplexity(hash.substring(0, hashCoplexity), hashCoplexity))
             {
+                System.out.println("block found: hash: " + hash);
                 break;
             }
 

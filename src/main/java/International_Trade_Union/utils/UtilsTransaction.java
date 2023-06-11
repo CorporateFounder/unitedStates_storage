@@ -65,9 +65,14 @@ public class UtilsTransaction {
             } else {
                 List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                 for (String s : list) {
+                    try {
+                        DtoTransaction dtoTransaction = UtilsJson.jsonToDtoTransaction(s);
+                        dtoTransactions.add(dtoTransaction);
+                    }catch (IOException e){
+                        e.printStackTrace();
+                        continue;
+                    }
 
-                    DtoTransaction dtoTransaction = UtilsJson.jsonToDtoTransaction(s);
-                    dtoTransactions.add(dtoTransaction);
                 }
 
             }
@@ -79,4 +84,8 @@ public class UtilsTransaction {
         return dtoTransactions;
     }
 
+
+    public static void sendTransaction(DtoTransaction dtoTransaction){
+
+    }
 }

@@ -82,9 +82,7 @@ public class UtilsFileSaveRead {
         File folder = new File(path);
         for (File file : folder.listFiles()) {
             if(!file.isDirectory()){
-                System.out.println("UtilsFileSaveRead: delete: " + file);
                 file.delete();
-
             }
         }
     }
