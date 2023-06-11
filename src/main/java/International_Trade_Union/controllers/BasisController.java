@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class BasisController {
     private static Blockchain blockchain;
 
-
+    private static boolean isSaved = true;
     private static Set<String> excludedAddresses = new HashSet<>();
 
     public static HttpServletRequest getCurrentRequest() {
@@ -137,10 +137,14 @@ public class BasisController {
 
     @GetMapping("/chain")
     @ResponseBody
-    public synchronized EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-//        blockchain = Mining.getBlockchain(
-//                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-//                BlockchainFactoryEnum.ORIGINAL);
+    public  EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+      while (isSaved == false){
+          System.out.println("the blockchain is being rewritten on the global server.");
+      }
+
+        blockchain = Mining.getBlockchain(
+                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                BlockchainFactoryEnum.ORIGINAL);
 
 
         if(!blockchain.validatedBlockchain()){
@@ -154,8 +158,14 @@ public class BasisController {
 
     @GetMapping("/size")
     @ResponseBody
-    public synchronized   Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public   Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        while (isSaved == false){
+            System.out.println("the blockchain is being rewritten on the global server.");
+        }
 
+        blockchain = Mining.getBlockchain(
+                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                BlockchainFactoryEnum.ORIGINAL);
 
 //        blockchain = Mining.getBlockchain(
 //                Seting.ORIGINAL_BLOCKCHAIN_FILE,
@@ -430,7 +440,7 @@ public class BasisController {
      *      * Blockchain and you need to save all files (balance, vote, government, etc.) again.*/
     public static void addBlock(List<Block> orignalBlocks, Blockchain temporary) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //раз в три для очищяет файл sended
-
+        isSaved = false;
         AllTransactions.clearAllSendedTransaction(false);
         Map<String, Account> balances = new HashMap<>();
         Blockchain temporaryForValidation =  BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
@@ -453,6 +463,8 @@ public class BasisController {
                 BlockchainFactoryEnum.ORIGINAL);
 
             UtilsFileSaveRead.save(Integer.toString(temporary.sizeBlockhain()), Seting.INDEX_FILE);
+
+            isSaved = true;
         System.out.println("BasisController: addBlock: finish");
     }
 
