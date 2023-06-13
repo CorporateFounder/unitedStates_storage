@@ -111,6 +111,9 @@ public class BasisController {
     static {
         try {
             blockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -140,15 +143,18 @@ public class BasisController {
     @ResponseBody
     public  EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
        if(isSave == false)
-           System.out.println("cannot save, because updating data");
-        while (isSave == false){
 
+        while (isSave == false){
+            System.out.println("cannot save, because updating data");
         }
         if(isSave == true)
             System.out.println("start /chain");
-        blockchain = Mining.getBlockchain(
+        if(blockchain == null || blockcheinSize == 0){
+            System.out.println("update blockchain");
+            blockchain = Mining.getBlockchain(
                 Seting.ORIGINAL_BLOCKCHAIN_FILE,
                 BlockchainFactoryEnum.ORIGINAL);
+        }
         System.out.println("finish /chain");
         return new EntityChain(blockchain.sizeBlockhain(), blockchain.getBlockchainList());
     }
@@ -162,7 +168,7 @@ public class BasisController {
             System.out.println("now saving new blockchain");
         }
         if(blockcheinSize == 0){
-            System.out.println("blockchainSize " + blockcheinSize);
+            System.out.println("blockchain is 0 blockchainSize " + blockcheinSize);
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
@@ -201,9 +207,13 @@ public class BasisController {
     public synchronized void resolve_conflicts() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException {
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         Blockchain bigBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
+        if(blockchain == null || blockcheinSize == 0){
+            System.out.println("resolve: blockchain is null");
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+        }
+
         int blocks_current_size = blockchain.sizeBlockhain();
         long hashCountZeroTemporary = 0;
         long hashCountZeroBigBlockchain = 0;
@@ -357,9 +367,12 @@ public class BasisController {
 //
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
+        if(blockchain == null || blockcheinSize == 0){
+            System.out.println("resolve: blockchain is null");
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+        }
 
         List<Block> tempBlocks = blockchain.getBlockchainList();
         blocks.addAll(tempBlocks);
@@ -426,9 +439,12 @@ public class BasisController {
         temporaryBlockchain.setBlockchainList(blocks);
         System.out.println("size temporary blocks: " + blocks.size());
 
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
+        if(blockchain == null || blockcheinSize == 0){
+            System.out.println("resolve: blockchain is null");
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+        }
 
 
         long hashCountZeroTemporary = 0;
