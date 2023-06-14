@@ -365,7 +365,7 @@ public class BasisController {
 
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody List<Block> blocks) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-//
+        resolve_conflicts();
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 
         if(blockchain == null || blockcheinSize == 0){
@@ -424,7 +424,7 @@ public class BasisController {
 
 
         }
-        resolve_conflicts();
+
         return  new ResponseEntity<>("OK", HttpStatus.OK);
     }
     /**добавляет блоки в блок чейн пересохраняя файлы, предназначен когда у нас есть готовый
@@ -434,7 +434,7 @@ public class BasisController {
 
     @PostMapping("/nodes/resolve_all_blocks")
     public synchronized ResponseEntity<String>resolve_blocks_conflict(@RequestBody List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
-//
+        resolve_conflicts();
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
         temporaryBlockchain.setBlockchainList(blocks);
@@ -481,7 +481,7 @@ public class BasisController {
 
 
         }
-        resolve_conflicts();
+
         return  new ResponseEntity<>("OK", HttpStatus.OK);
 
     }
