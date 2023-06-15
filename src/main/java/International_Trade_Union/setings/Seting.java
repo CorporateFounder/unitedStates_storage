@@ -212,8 +212,10 @@ public interface Seting {
     String INDEX_FILE = "C:\\index\\index.txt";
 
     //адреса discovery
-    Set<String> ORIGINAL_ADDRESSES = Set.of("http://154.40.38.130:80");
-//    Set<String> ORIGINAL_ADDRESSES = Set.of("http://194.87.236.238:80");
+//    Set<String> ORIGINAL_ADDRESSES = Set.of("http://154.40.38.130:80");
+    Set<String> ORIGINAL_ADDRESSES = Set.of("http://194.87.236.238:80");
+//    Set<String> ORIGINAL_ADDRESSES = Set.of("http://10.0.36.2:80");
+
 
     //адреса хранилищ блокчейнов
 //    Set<String> ORIGINAL_ADDRESSES_BLOCKCHAIN_STORAGE = Set.of("http://localhost:8084");

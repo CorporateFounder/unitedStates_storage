@@ -363,6 +363,82 @@ public class BasisController {
         return true;
     }
 
+    @PostMapping("/nodes/resolve_portion_block")
+    public synchronized ResponseEntity<String> portionblock(@RequestBody List<Block> blocks) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        Blockchain temporary = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
+        if(blockchain == null || blockcheinSize == 0){
+            System.out.println("resolve: blockchain is null");
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+        }
+        int index = 0;
+        boolean stopedFind = false;
+        blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+        long hashCountZeroTemporary = 0;
+
+        long hashCountZeroAll = 0;
+
+        List<Block> blockList = new ArrayList<>();
+        blockList.addAll(blocks.subList(blockcheinSize, blocks.size()));
+        for (int i = blockcheinSize - 1; i >= blocks.get(0).getIndex(); i--) {
+          String hashOriginal = blockchain.getBlock(i).getHashBlock();
+          String hashFrom = blocks.get(i).getHashBlock();
+          if(hashOriginal.equals(hashFrom)){
+              index = i;
+              System.out.println("portion good");
+              stopedFind = true;
+              blockList.add(blockList.get(i));
+              break;
+          }
+          blockList.add(blocks.get(i));
+        }
+
+
+        blockList.addAll(blockList.subList(0, index));
+        blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex))
+                .collect(Collectors.toList());
+
+        //count hash start with zero all
+        for (Block block : blockchain.getBlockchainList()) {
+            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
+        }
+
+        if (temporary.validatedBlockchain()) {
+            for (Block block : temporary.getBlockchainList()) {
+                hashCountZeroTemporary += UtilsUse.hashCount(block.getHashBlock());
+            }
+
+        }else {
+            System.out.println("portion blocks not worked");
+            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+        }
+
+        temporary.setBlockchainList(blockList);
+
+            System.out.println("its true");
+            if(stopedFind){
+                if (temporary.sizeBlockhain() > blockchain.sizeBlockhain() && hashCountZeroTemporary > hashCountZeroAll) {
+
+                    blockchain = temporary;
+                    UtilsBlock.deleteFiles();
+                    System.out.println("starting portions block: ");
+                    if(temporary.validatedBlockchain()){
+                        System.out.println("reslove from to block: ");
+                        UtilsBlock.deleteFiles();
+                        addBlock(temporary.getBlockchainList());
+                    }
+                    System.out.println("BasisController: resolve: bigblockchain size: " + temporary.sizeBlockhain());
+
+                return  new ResponseEntity<>("OK", HttpStatus.OK);
+                }
+            }else {
+                System.out.println("portion not work");
+                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+            }
+        System.out.println("portion not ok");
+            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+    }
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody List<Block> blocks) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         resolve_conflicts();
@@ -488,7 +564,8 @@ public class BasisController {
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public synchronized void register_node(@RequestBody AddressUrl urlAddrress) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public synchronized void register_node(@RequestBody AddressUrl urlAddrress) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException
+    {
 
 
         for (String s : BasisController.getNodes()) {
