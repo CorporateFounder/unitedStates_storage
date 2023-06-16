@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 @RestController
 public class BasisController {
     private static int blockcheinSize = 0;
+    private static boolean blockchainValid = false;
     private static Blockchain blockchain;
     private static Set<String> excludedAddresses = new HashSet<>();
     private static boolean isSave = true;
@@ -111,10 +112,13 @@ public class BasisController {
 
     static {
         try {
+            UtilsCreatedDirectory.createPackages();
             blockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -155,9 +159,11 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                 Seting.ORIGINAL_BLOCKCHAIN_FILE,
                 BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
         }
         System.out.println("finish /chain");
-        return new EntityChain(blockchain.sizeBlockhain(), blockchain.getBlockchainList());
+        return new EntityChain(blockcheinSize, blockchain.getBlockchainList());
     }
 
     /**возвращяет размер локального блокчейна*/
@@ -174,11 +180,12 @@ public class BasisController {
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
             blockcheinSize =blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
 
         }
 
-        if(blockchain.validatedBlockchain() == false){
-            System.out.println("/size blockchain not valid: " + blockchain.validatedBlockchain());
+        if(blockchainValid == false){
+            System.out.println("/size blockchain not valid: " + blockchainValid);
             UtilsBlock.deleteFiles();
             return 1;
         }
@@ -190,18 +197,28 @@ public class BasisController {
     @PostMapping("/sub-blocks")
     @ResponseBody
     public  List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
+        if(blockchain == null || blockcheinSize == 0){
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
+        }
+
         return blockchain.getBlockchainList().subList(entity.getStart(), entity.getFinish());
     }
     /**Возвращяет блок по индексу*/
     @PostMapping("/block")
     @ResponseBody
     public Block getBlock(@RequestBody Integer index) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
+        if(blockchain == null || blockcheinSize == 0){
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
+        }
+
         return blockchain.getBlock(index);
     }
     @GetMapping("/nodes/resolve")
@@ -213,9 +230,11 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
         }
 
-        int blocks_current_size = blockchain.sizeBlockhain();
+        int blocks_current_size = blockcheinSize;
         long hashCountZeroTemporary = 0;
         long hashCountZeroBigBlockchain = 0;
         EntityChain entityChain = null;
@@ -323,7 +342,6 @@ public class BasisController {
     public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start addBLock");;
         isSave = false;
-        Map<String, Account> balances = new HashMap<>();
         Blockchain temporaryForValidation = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         temporaryForValidation.setBlockchainList(orignalBlocks);
         UtilsBlock.deleteFiles();
@@ -343,19 +361,25 @@ public class BasisController {
         System.out.println("finish add block");
         System.out.println("BasisController: addBlock: finish");
         blockcheinSize = blockchain.sizeBlockhain();
+        blockchainValid = blockchain.validatedBlockchain();
         isSave =true;
     }
     @GetMapping("/addBlock")
     public boolean getBLock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start /addblock");
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
-        System.out.println("size /addblock blockchain size before: " + blockchain.sizeBlockhain());
+        if(blockchain == null || blockcheinSize == 0){
+            blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
+        }
+
+        System.out.println("size /addblock blockchain size before: " + blockcheinSize);
 
         UtilsBlock.deleteFiles();
         System.out.println("files deleted");
-        System.out.println("size /addblock blockchain size after: " + blockchain.sizeBlockhain());
+        System.out.println("size /addblock blockchain size after: " + blockcheinSize);
         System.out.println("start addBlock save");
         addBlock(blockchain.getBlockchainList());
 
@@ -371,6 +395,8 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
         }
         int index = 0;
         boolean stopedFind = false;
@@ -449,6 +475,8 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
+            blockcheinSize = blockchain.sizeBlockhain();
+            blockchainValid = blockchain.validatedBlockchain();
         }
 
         List<Block> tempBlocks = blockchain.getBlockchainList();
@@ -521,6 +549,8 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
+            blockchainValid = blockchain.validatedBlockchain();
+            blockcheinSize = blockchain.sizeBlockhain();
         }
 
 

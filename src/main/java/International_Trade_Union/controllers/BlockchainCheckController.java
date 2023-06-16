@@ -28,6 +28,7 @@ public class BlockchainCheckController {
             Blockchain blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
+
             System.out.println("BlockchainCheckController: checkValidation: size: " + blockchain.sizeBlockhain());
             return blockchain.validatedBlockchain();}
         catch (IOException e){

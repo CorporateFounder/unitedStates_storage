@@ -188,28 +188,28 @@ public interface Seting {
 
 
 
-    String ORIGINAL_INDEX_FILE = "C:\\resources\\index\\index.txt";
+    String ORIGINAL_INDEX_FILE = "\\resources\\index\\index.txt";
 //    String ORIGINAL_BLOCKCHAIN_FILE = ".\\src\\main\\resources\\blockchain\\";
-    String ORIGINAL_BLOCKCHAIN_FILE = "C:\\resources\\blockchain\\";
-    String ORIGINAL_COPY_TO_SEND_FILE_BLOCKCHAIN = "C:\\resources\\blockchainCopy\\";
+    String ORIGINAL_BLOCKCHAIN_FILE = "\\resources\\blockchain\\";
+    String ORIGINAL_COPY_TO_SEND_FILE_BLOCKCHAIN = "\\resources\\blockchainCopy\\";
 //    String ORIGINAL_BALANCE_FILE = ".\\src\\main\\resources\\balance\\";
-    String ORIGINAL_BALANCE_FILE = "C:\\resources\\balance\\";
-    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = "C:\\resources\\federalGovernment\\federalGovernment.txt";
+    String ORIGINAL_BALANCE_FILE = "\\resources\\balance\\";
+    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = "\\resources\\federalGovernment\\federalGovernment.txt";
 //    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = ".\\src\\main\\resources\\federalLaws\\";
-    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = "C:\\resources\\federalLaws\\";
+    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = "\\resources\\federalLaws\\";
 //    String ORIGINAL_ACCOUNT = ".\\src\\main\\resources\\minerAccount\\minerAccount.txt";
-    String ORIGINAL_ACCOUNT = "C:\\resources\\minerAccount\\minerAccount.txt";
-    String ORIGINAL_CORPORATE_VOTE_FILE = "C:\\resources\\vote\\";
+    String ORIGINAL_ACCOUNT = "\\resources\\minerAccount\\minerAccount.txt";
+    String ORIGINAL_CORPORATE_VOTE_FILE = "\\resources\\vote\\";
 
 //    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = ".\\src\\main\\resources\\allLawsWithBalance\\";
-    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = "C:\\resources\\allLawsWithBalance\\";
+    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = "\\resources\\allLawsWithBalance\\";
 //    String ORGINAL_ALL_TRANSACTION_FILE = ".\\src\\main\\resources\\transactions\\";
-    String ORGINAL_ALL_TRANSACTION_FILE = "C:\\resources\\transactions\\";
+    String ORGINAL_ALL_TRANSACTION_FILE = "\\resources\\transactions\\";
 //    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = ".\\src\\main\\resources\\sendedTransaction\\";
-    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = "C:\\resources\\sendedTransaction\\";
+    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = "\\resources\\sendedTransaction\\";
 //    String ORIGINAL_POOL_URL_ADDRESS_FILE = ".\\src\\main\\resources\\poolAddress\\";
-    String ORIGINAL_POOL_URL_ADDRESS_FILE = "C:\\resources\\poolAddress\\";
-    String INDEX_FILE = "C:\\index\\index.txt";
+    String ORIGINAL_POOL_URL_ADDRESS_FILE = "\\resources\\poolAddress\\";
+    String INDEX_FILE = "\\index\\index.txt";
 
     //адреса discovery
 //    Set<String> ORIGINAL_ADDRESSES = Set.of("http://154.40.38.130:80");
