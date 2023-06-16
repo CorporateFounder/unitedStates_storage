@@ -338,13 +338,13 @@ public class BasisController {
 
             blockchain = bigBlockchain;
             UtilsBlock.deleteFiles();
-            addBlock(bigBlockchain.getBlockchainList());
+            addBlock(bigBlockchain.getBlockchainList(), false);
             System.out.println("BasisController: resolve: bigblockchain size: " + bigBlockchain.sizeBlockhain());
 
         }
         System.out.println("finish resolve_conflicts");
     }
-    public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+    public static void addBlock(List<Block> orignalBlocks, boolean isSave) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start addBLock");;
         isSave = false;
         Blockchain temporaryForValidation = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
@@ -354,7 +354,7 @@ public class BasisController {
                 " valid: " + temporaryForValidation.validatedBlockchain());
         System.out.println("start  save in addBlock");
         for (Block block : orignalBlocks) {
-            UtilsBlock.saveBLock(block, Seting.ORIGINAL_BLOCKCHAIN_FILE, true);
+            UtilsBlock.saveBLock(block, Seting.ORIGINAL_BLOCKCHAIN_FILE, isSave);
         }
         System.out.println("finish save in addBlock");
         System.out.println("saving block: " + orignalBlocks.size());
@@ -391,7 +391,7 @@ public class BasisController {
         System.out.println("size /addblock blockchain size after: " + blockcheinSize);
         System.out.println("start addBlock save");
         UtilsBlock.deleteFiles();
-        addBlock(blockchain.getBlockchainList());
+        addBlock(blockchain.getBlockchainList(), false);
 
         System.out.println("finish addblock finish");
         return true;
@@ -544,7 +544,7 @@ public class BasisController {
                 System.out.println("reslove from to block: ");
 
 //                UtilsBlock.deleteFiles();
-                addBlock(blocks);
+                addBlock(blocks, true);
                 return  new ResponseEntity<>("OK", HttpStatus.OK);
             }
             System.out.println("BasisController: resolve: bigblockchain size: " + temporaryBlockchain.sizeBlockhain());
@@ -612,7 +612,7 @@ public class BasisController {
             if(temporaryBlockchain.validatedBlockchain()){
                 System.out.println("delete resolve all blocks");
                 UtilsBlock.deleteFiles();
-                addBlock(temporaryBlockchain.getBlockchainList());
+                addBlock(temporaryBlockchain.getBlockchainList(), false);
             }
 
             System.out.println("BasisController: resolve: bigblockchain size: " + temporaryBlockchain.sizeBlockhain());
