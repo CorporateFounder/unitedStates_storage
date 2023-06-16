@@ -62,7 +62,7 @@ public class UtilsBlock {
 //        UtilsFileSaveRead.save(json + "\n", nextFile);
         UtilsFileSaveRead.saves(jsons, nextFile, true);
     }
-    public static void saveBLock(Block block, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+    public static void saveBLock(Block block, String filename, boolean save) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
 
         //папка чтобы проверить есть ли
@@ -98,7 +98,7 @@ public class UtilsBlock {
         nextFile = filename + count + ".txt";
 
         String json = UtilsJson.objToStringJson(block);
-        UtilsFileSaveRead.save(json + "\n", nextFile);
+        UtilsFileSaveRead.save(json + "\n", nextFile, save);
 
     }
 
