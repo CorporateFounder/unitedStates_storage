@@ -538,7 +538,7 @@ public class BasisController {
         if (fromList.getSize() > blockcheinSize && fromList.getHashCount() > originalFromFile.getHashCount()) {
 
             blockchain = temporaryBlockchain;
-            UtilsBlock.deleteFiles();
+//            UtilsBlock.deleteFiles();
             System.out.println("starting resolve from to block: ");
             if(fromList.isValidation()){
                 System.out.println("reslove from to block: ");
