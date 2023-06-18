@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 @RestController
 public class BasisController {
+    private static DataShortBlockchainInformation shortDataBlockchain = null;
     private static int blockcheinSize = 0;
     private static boolean blockchainValid = false;
     private static Blockchain blockchain;
@@ -118,8 +119,9 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize = blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -161,8 +163,9 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                 Seting.ORIGINAL_BLOCKCHAIN_FILE,
                 BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize = blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
         }
         System.out.println("finish /chain");
         return new EntityChain(blockcheinSize, blockchain.getBlockchainList());
@@ -181,8 +184,9 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize =blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
 
         }
 
@@ -204,8 +208,9 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize = blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
         }
         System.out.println("finish subBlocks");
 //        return blockchain.getBlockchainList().subList(entity.getStart(), entity.getFinish());
@@ -220,42 +225,52 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize = blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
         }
         System.out.println("finish getBlock");
         return Blockchain.indexFromFile(index, Seting.ORIGINAL_BLOCKCHAIN_FILE);
     }
     @GetMapping("/nodes/resolve")
-    public synchronized void resolve_conflicts() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException {
-        System.out.println("start resolve_conflicts");
+    public synchronized ResponseEntity resolve_conflicts()
+            throws NoSuchAlgorithmException,
+            InvalidKeySpecException,
+            IOException,
+            SignatureException,
+            NoSuchProviderException,
+            InvalidKeyException,
+            JSONException {
+        System.out.println("start resolve");
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         Blockchain bigBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         if(blockchainValid == false || blockcheinSize == 0){
-            System.out.println("resolve: blockchain is null");
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize = blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
         }
+
 
         int blocks_current_size = blockcheinSize;
         long hashCountZeroTemporary = 0;
         long hashCountZeroBigBlockchain = 0;
         EntityChain entityChain = null;
-
+        System.out.println("resolve_conflicts: blocks_current_size: " + blocks_current_size);
         long hashCountZeroAll = 0;
         //count hash start with zero all
-        for (Block block : blockchain.getBlockchainList()) {
-            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
-        }
+//        for (Block block : blockchain.getBlockchainList()) {
+//            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
+//        }
+        hashCountZeroAll =  shortDataBlockchain.getHashCount();
 
         Set<String> nodesAll = getNodes();
-//        nodesAll.addAll(Seting.ORIGINAL_ADDRESSES_BLOCKCHAIN_STORAGE);
-        System.out.println("BasisController: resolve: size: " + getNodes().size());
+
+        System.out.println("BasisController: resolve_conflicts: size nodes: " + getNodes().size());
         for (String s : nodesAll) {
-            System.out.println("BasisController: resove: address: " + s);
+            System.out.println("while resolve_conflicts: node address: " + s);
             String temporaryjson = null;
 
             if (BasisController.getExcludedAddresses().contains(s)) {
@@ -266,9 +281,12 @@ public class BasisController {
                 if(s.contains("localhost") || s.contains("127.0.0.1"))
                     continue;
                 String address = s + "/chain";
+
+                System.out.println("resolve_conflicts: start /size");
                 System.out.println("BasisController:resolve conflicts: address: " + s + "/size");
                 String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
                 Integer size = Integer.valueOf(sizeStr);
+                System.out.println("resolve_conflicts: finish /size: " + size);
                 if (size > blocks_current_size) {
                     System.out.println("size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
                     //Test start algorithm
@@ -287,10 +305,14 @@ public class BasisController {
                     if (!temporaryBlockchain.validatedBlockchain()) {
                         System.out.println("first algorithm not worked");
                         emptyList = new ArrayList<>();
-                        emptyList.addAll(subBlocks);
-                        for (int i = blockcheinSize - 1; i > 0; i--) {
+//                        emptyList.addAll(subBlocks);
+                        for (int i = size - 1; i > 0; i--) {
                             Block block = UtilsJson.jsonToBLock(UtilUrl.getObject(UtilsJson.objToStringJson(i), s + "/block"));
-                            if (!blockchain.getBlock(i).getHashBlock().equals(block.getHashBlock())) {
+                            if(i > blockcheinSize - 1){
+                                emptyList.add(block);
+                            }
+                            else if (!blockchain.getBlock(i).getHashBlock().equals(block.getHashBlock())) {
+                                System.out.println("get block from index: " + i);
                                 emptyList.add(block);
                             } else {
                                 emptyList.add(block);
@@ -300,6 +322,18 @@ public class BasisController {
                                 break;
                             }
                         }
+//                        for (int i = blockchain.sizeBlockhain() - 1; i > 0; i--) {
+//                            Block block = UtilsJson.jsonToBLock(UtilUrl.getObject(UtilsJson.objToStringJson(i), s + "/block"));
+//                            if (!blockchain.getBlock(i).getHashBlock().equals(block.getHashBlock())) {
+//                                emptyList.add(block);
+//                            } else {
+//                                emptyList.add(block);
+//                                emptyList.addAll(blockchain.getBlockchainList().subList(0, i));
+//                                emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+//                                temporaryBlockchain.setBlockchainList(emptyList);
+//                                break;
+//                            }
+//                        }
                     }
                     if (!temporaryBlockchain.validatedBlockchain()) {
                         System.out.println("second algorith not worked");
@@ -313,8 +347,9 @@ public class BasisController {
                     continue;
                 }
             } catch (IOException e) {
+
 //                e.printStackTrace();
-                System.out.println("BasisController: resolve_conflicts: Error: " + s);
+                System.out.println("BasisController: resolve_conflicts: connect refused Error: " + s);
                 continue;
             }
 
@@ -343,7 +378,7 @@ public class BasisController {
             System.out.println("BasisController: resolve: bigblockchain size: " + bigBlockchain.sizeBlockhain());
 
         }
-        System.out.println("finish resolve_conflicts");
+        return new ResponseEntity(HttpStatus.OK);
     }
     public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start addBLock");;
@@ -363,8 +398,9 @@ public class BasisController {
         blockchain = Mining.getBlockchain(
                 Seting.ORIGINAL_BLOCKCHAIN_FILE,
                 BlockchainFactoryEnum.ORIGINAL);
-        blockcheinSize = blockchain.sizeBlockhain();
-        blockchainValid = blockchain.validatedBlockchain();
+        shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        blockcheinSize = (int) shortDataBlockchain.getSize();
+        blockchainValid = shortDataBlockchain.isValidation();
         System.out.println("blockchain size: after: " + blockcheinSize);
 
         System.out.println("finish add block");
@@ -381,8 +417,9 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize = blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
         }
 
         System.out.println("size /addblock blockchain size before: " + blockcheinSize);
@@ -496,8 +533,9 @@ public class BasisController {
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
                     BlockchainFactoryEnum.ORIGINAL);
-            blockcheinSize = blockchain.sizeBlockhain();
-            blockchainValid = blockchain.validatedBlockchain();
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
 
         }
 
