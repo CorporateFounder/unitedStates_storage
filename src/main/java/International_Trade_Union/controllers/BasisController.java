@@ -208,7 +208,8 @@ public class BasisController {
             blockchainValid = blockchain.validatedBlockchain();
         }
         System.out.println("finish subBlocks");
-        return blockchain.getBlockchainList().subList(entity.getStart(), entity.getFinish());
+//        return blockchain.getBlockchainList().subList(entity.getStart(), entity.getFinish());
+        return Blockchain.subFromFile(entity.getStart(), entity.getFinish(), Seting.ORIGINAL_BLOCKCHAIN_FILE);
     }
     /**Возвращяет блок по индексу*/
     @PostMapping("/block")
@@ -223,7 +224,7 @@ public class BasisController {
             blockchainValid = blockchain.validatedBlockchain();
         }
         System.out.println("finish getBlock");
-        return blockchain.getBlock(index);
+        return Blockchain.indexFromFile(index, Seting.ORIGINAL_BLOCKCHAIN_FILE);
     }
     @GetMapping("/nodes/resolve")
     public synchronized void resolve_conflicts() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException {
