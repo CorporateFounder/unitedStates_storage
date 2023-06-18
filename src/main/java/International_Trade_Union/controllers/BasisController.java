@@ -28,9 +28,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import java.lang.module.FindException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
@@ -145,6 +147,8 @@ public class BasisController {
     //TODO if you interrupted mine, restart the server before next call and call /addBlock before mine
     //TODO иначе будет расождение в файле балансов
     //TODO otherwise there will be a discrepancy in the balance file
+
+
 
     /**Возвращает EntityChain который хранит в себе размер блокчейна и список блоков*/
     @GetMapping("/chain")
@@ -283,7 +287,7 @@ public class BasisController {
                 if (size > blocks_current_size) {
                     System.out.println("size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
                     //Test start algorithm
-                    SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(blocks_current_size, size);
+                    SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(blocks_current_size-1, size-1);
                     String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
 
                     List<Block> emptyList = new ArrayList<>();
