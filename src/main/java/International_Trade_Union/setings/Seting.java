@@ -209,13 +209,15 @@ public interface Seting {
     String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = "\\resources\\sendedTransaction\\";
 //    String ORIGINAL_POOL_URL_ADDRESS_FILE = ".\\src\\main\\resources\\poolAddress\\";
     String ORIGINAL_POOL_URL_ADDRESS_FILE = "\\resources\\poolAddress\\";
+    String ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE = "\\resources\\pooAddressBlocked\\";
     String INDEX_FILE = "\\index\\index.txt";
-
+    String TEMPORARY_BLOCKCHAIN_FILE = "\\resources\\tempblockchain\\";
     //адреса discovery
     Set<String> ORIGINAL_ADDRESSES = Set.of("http://154.40.38.130:80");
 //    Set<String> ORIGINAL_ADDRESSES = Set.of("http://194.87.236.238:80");
 //    Set<String> ORIGINAL_ADDRESSES = Set.of("http://10.0.36.2:80");
-
+    Set<String> ORIGINAL_BLOCKED_ADDRESS = Set.of("http://154.40.38.130:80",
+        "http://10.0.36.2:80");
 
     //адреса хранилищ блокчейнов
 //    Set<String> ORIGINAL_ADDRESSES_BLOCKCHAIN_STORAGE = Set.of("http://localhost:8084");
