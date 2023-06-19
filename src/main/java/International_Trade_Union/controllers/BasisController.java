@@ -422,6 +422,7 @@ public class BasisController {
 
         System.out.println("size /addblock blockchain size before: " + blockcheinSize);
 
+
         UtilsBlock.deleteFiles();
         System.out.println("files deleted");
         System.out.println("size /addblock blockchain size after: " + blockcheinSize);
