@@ -493,11 +493,11 @@ public class BasisController {
                 if (temporary.sizeBlockhain() > blockchain.sizeBlockhain() && hashCountZeroTemporary > hashCountZeroAll) {
 
                     blockchain = temporary;
-                    UtilsBlock.deleteFiles();
+//                    UtilsBlock.deleteFiles();
                     System.out.println("starting portions block: ");
                     if(temporary.validatedBlockchain()){
                         System.out.println("reslove from to block: ");
-                        UtilsBlock.deleteFiles();
+//                        UtilsBlock.deleteFiles();
                         addBlock(temporary.getBlockchainList());
                     }
                     System.out.println("BasisController: resolve: bigblockchain size: " + temporary.sizeBlockhain());
@@ -555,7 +555,6 @@ public class BasisController {
             UtilsBlock.deleteFiles();
             if(temporaryBlockchain.validatedBlockchain()){
                 System.out.println("delete resolve all blocks");
-                UtilsBlock.deleteFiles();
                 addBlock(temporaryBlockchain.getBlockchainList());
             }
 
@@ -610,10 +609,10 @@ public class BasisController {
         if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain() && hashCountZeroTemporary > hashCountZeroAll) {
 
             blockchain = temporaryBlockchain;
-            UtilsBlock.deleteFiles();
+//            UtilsBlock.deleteFiles();
             if(temporaryBlockchain.validatedBlockchain()){
                 System.out.println("reslove from to block: ");
-                UtilsBlock.deleteFiles();
+//                UtilsBlock.deleteFiles();
                 addBlock(temporaryBlockchain.getBlockchainList());
             }
             System.out.println("BasisController: resolve: bigblockchain size: " + temporaryBlockchain.sizeBlockhain());

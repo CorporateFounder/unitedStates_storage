@@ -8,13 +8,18 @@ import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.setings.Seting;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.http.converter.json.GsonBuilderUtils;
 
-
-import java.io.*;
-import java.security.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class UtilsBlock {
@@ -104,7 +109,7 @@ public class UtilsBlock {
 
 
 
-    public static List<Block> read(String nameFile) throws FileNotFoundException, JsonProcessingException, JsonProcessingException {
+    public static List<Block> read(String nameFile) throws FileNotFoundException, JsonProcessingException {
         return  UtilsJson.jsonToListBLock(UtilsFileSaveRead.read(nameFile));
     }
 
