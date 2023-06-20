@@ -471,10 +471,11 @@ public class BasisController {
         blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex))
                 .collect(Collectors.toList());
 
-        //count hash start with zero all
-        for (Block block : blockchain.getBlockchainList()) {
-            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
-        }
+//        //count hash start with zero all
+//        for (Block block : blockchain.getBlockchainList()) {
+//            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
+//        }
+        hashCountZeroAll = shortDataBlockchain.getHashCount();
 
         if (temporary.validatedBlockchain()) {
             for (Block block : temporary.getBlockchainList()) {
@@ -490,7 +491,7 @@ public class BasisController {
 
             System.out.println("its true");
             if(stopedFind){
-                if (temporary.sizeBlockhain() > blockchain.sizeBlockhain() && hashCountZeroTemporary > hashCountZeroAll) {
+                if (temporary.sizeBlockhain() > blockcheinSize && hashCountZeroTemporary > hashCountZeroAll) {
 
                     blockchain = temporary;
 //                    UtilsBlock.deleteFiles();
@@ -535,10 +536,11 @@ public class BasisController {
         long hashCountZeroAll = 0;
 
 
-        //count hash start with zero all
-        for (Block block : blockchain.getBlockchainList()) {
-            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
-        }
+//        //count hash start with zero all
+//        for (Block block : blockchain.getBlockchainList()) {
+//            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
+//        }
+        hashCountZeroAll = shortDataBlockchain.getHashCount();
 
         if (temporaryBlockchain.validatedBlockchain()) {
             for (Block block : temporaryBlockchain.getBlockchainList()) {
@@ -617,10 +619,10 @@ public class BasisController {
             }
             System.out.println("BasisController: resolve: bigblockchain size: " + temporaryBlockchain.sizeBlockhain());
 
-
+            return  new ResponseEntity<>("OK", HttpStatus.OK);
         }
         resolve_conflicts();
-        return  new ResponseEntity<>("OK", HttpStatus.OK);
+        return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
