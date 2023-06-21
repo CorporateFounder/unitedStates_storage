@@ -92,13 +92,11 @@ public class Blockchain implements Cloneable{
     }
     public static DataShortBlockchainInformation checkEqualsFromFile(String fileName, List<Block> blocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         boolean valid = true;
-        blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex))
-                .collect(Collectors.toList());
         File folder = new File(fileName);
         Block prevBlock = null;
         int size = 0;
         long hashCount = 0;
-        boolean isStart = false;
+
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
@@ -106,22 +104,14 @@ public class Blockchain implements Cloneable{
                 List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                 for (String s : list) {
                     size += 1;
+
                     Block block = UtilsJson.jsonToBLock(s);
                     if(prevBlock == null){
                         prevBlock = block;
                         continue;
                     }
-
-                    //момент откуда начинается проверка
-
-                    if(block.getIndex() == blocks.get(0).getIndex() || isStart){
-                        isStart = true;
-                        System.out.println("...............................................");
-                        System.out.println("block: " + block.getIndex());
-                        System.out.println("blocks: " + blocks.get((int) block.getIndex()).getIndex());
-                        block = blocks.get((int) block.getIndex());
-                        System.out.println("...............................................");
-
+                    if (block.getIndex() != blocks.get(0).getIndex()){
+                        hashCount += UtilsUse.hashCount(block.getHashBlock());
                         valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
                                 prevBlock,
                                 block,
@@ -129,13 +119,38 @@ public class Blockchain implements Cloneable{
                                 Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
                                 new ArrayList<>());
                     }else {
-                        valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
-                                prevBlock,
-                                block,
-                                Seting.BLOCK_GENERATION_INTERVAL,
-                                Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                                new ArrayList<>());
+                        for (Block temp: blocks) {
+
+
+                            if(prevBlock == null){
+                                prevBlock = temp;
+                                size += 1;
+                                continue;
+                            }
+                            hashCount += UtilsUse.hashCount(temp.getHashBlock());
+                            valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
+                                    prevBlock,
+                                    temp,
+                                    Seting.BLOCK_GENERATION_INTERVAL,
+                                    Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
+                                    new ArrayList<>());
+
+                            if(valid == false){
+                                System.out.println("ERROR: UtilsBlock: validation: prevBLock.Hash():" + prevBlock.getHashBlock());
+                                System.out.println("ERROR: UtilsBlock: validation: index:" + temp.getIndex());
+                                System.out.println("ERROR: UtilsBlock: validation: block.Hash():" + temp.getHashBlock());
+                                System.out.println("ERROR: UtilsBlock: validation: BLOCK_GENERATION_INTERVAL:" + Seting.BLOCK_GENERATION_INTERVAL);
+                                System.out.println("ERROR: UtilsBlock: validation: DIFFICULTY_ADJUSTMENT_INTERVAL:" + Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                                return new DataShortBlockchainInformation(size, valid, hashCount);
+                            }
+                            size += 1;
+
+                            prevBlock = temp;
+
+                        }
+                        break;
                     }
+
 
                     if(valid == false){
                         System.out.println("ERROR: UtilsBlock: validation: prevBLock.Hash():" + prevBlock.getHashBlock());
@@ -145,45 +160,15 @@ public class Blockchain implements Cloneable{
                         System.out.println("ERROR: UtilsBlock: validation: DIFFICULTY_ADJUSTMENT_INTERVAL:" + Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
                         return new DataShortBlockchainInformation(size, valid, hashCount);
                     }
-                    hashCount += UtilsUse.hashCount(block.getHashBlock());
 
                     prevBlock = block;
 
-
                 }
 
             }
         }
-        //если блокчейн внеший выше текущего
-        if(size-1 < blocks.get(blocks.size()-1).getIndex()){
-            System.out.println("Blockchain: checkEqualsFromFile: start");
-            for (int i = size; i < blocks.get(blocks.size()-1).getIndex(); i++) {
-                size += 1;
-                if(prevBlock == null){
-                   prevBlock = blocks.get(i);
-                   continue;
-                }
-                System.out.println("Blockchain: checkEqualsFromFile: size: " + size);
-                valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
-                        prevBlock,
-                        blocks.get(i),
-                        Seting.BLOCK_GENERATION_INTERVAL,
-                        Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                        new ArrayList<>());
 
-                if(valid == false){
-                    System.out.println("ERROR: UtilsBlock: validation: prevBLock.Hash():" + prevBlock.getHashBlock());
-                    System.out.println("ERROR: UtilsBlock: validation: index:" + blocks.get(i).getIndex());
-                    System.out.println("ERROR: UtilsBlock: validation: block.Hash():" + blocks.get(i).getHashBlock());
-                    System.out.println("ERROR: UtilsBlock: validation: BLOCK_GENERATION_INTERVAL:" + Seting.BLOCK_GENERATION_INTERVAL);
-                    System.out.println("ERROR: UtilsBlock: validation: DIFFICULTY_ADJUSTMENT_INTERVAL:" + Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-                    return new DataShortBlockchainInformation(size, valid, hashCount);
-                }
-                hashCount  += UtilsUse.hashCount(blocks.get(i).getHashBlock());
-                prevBlock = blocks.get(i);
-            }
 
-        }
 
         return new DataShortBlockchainInformation(size, valid, hashCount);
     }

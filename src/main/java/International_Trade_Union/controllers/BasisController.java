@@ -388,6 +388,7 @@ public class BasisController {
         System.out.println("temporaryForValidation: size: " + temporaryForValidation.sizeBlockhain() +
                 " valid: " + temporaryForValidation.validatedBlockchain());
         System.out.println("start  save in addBlock");
+
         for (Block block : orignalBlocks) {
             UtilsBlock.saveBLock(block, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         }
@@ -435,6 +436,13 @@ public class BasisController {
 
     @PostMapping("/nodes/resolve_portion_block")
     public synchronized ResponseEntity<String> portionblock(@RequestBody List<Block> blocks) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        System.out.println("____________________________________________________________");
+        System.out.println("resolve_portion_block");
+        DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        DataShortBlockchainInformation temp = Blockchain.checkEqualsFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
+        System.out.println("original: " + original);
+        System.out.println("temp: " + temp);
+        System.out.println("____________________________________________________________");
         Blockchain temporary = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         if(blockchain == null || blockcheinSize == 0){
             System.out.println("resolve: blockchain is null");
@@ -514,7 +522,13 @@ public class BasisController {
     }
     @PostMapping("/nodes/resolve_all_blocks")
     public synchronized ResponseEntity<String>resolve_blocks_conflict(@RequestBody List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
-//
+        System.out.println("____________________________________________________________");
+        System.out.println("resolve_portion_block");
+        DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        DataShortBlockchainInformation temp = Blockchain.checkEqualsFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
+        System.out.println("original: " + original);
+        System.out.println("temp: " + temp);
+        System.out.println("____________________________________________________________");
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
         temporaryBlockchain.setBlockchainList(blocks);
@@ -571,7 +585,7 @@ public class BasisController {
 
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody List<Block> blocks) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-//
+
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 
         blockchain = Mining.getBlockchain(
@@ -607,7 +621,17 @@ public class BasisController {
         }else {
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         }
-
+        System.out.println("____________________________________________________________");
+        System.out.println("resolve_from_to_block");
+        DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        DataShortBlockchainInformation temp = Blockchain.checkEqualsFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
+        System.out.println("original: " + original);
+        System.out.println("temp: " + temp);
+        System.out.println("blockchain: " + blockchain.sizeBlockhain() + " valid: " + blockchain.validatedBlockchain());
+        System.out.println("blockchain: hash: " + hashCountZeroAll);
+        System.out.println("temporaryBlockchain: " + temporaryBlockchain.sizeBlockhain() + " valid: " + temporaryBlockchain.validatedBlockchain());
+        System.out.println("blockchain: hash: " + hashCountZeroTemporary);
+        System.out.println("____________________________________________________________");
         if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain() && hashCountZeroTemporary > hashCountZeroAll) {
 
             blockchain = temporaryBlockchain;
