@@ -176,13 +176,13 @@ public class BasisController {
     @ResponseBody
     public  EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start /chain");
-       if(isSave == false)
-
-        while (isSave == false){
-//            System.out.println("cannot save, because updating data");
-        }
-        if(isSave == true)
-            System.out.println("start /chain");
+//       if(isSave == false)
+//
+//        while (isSave == false){
+////            System.out.println("cannot save, because updating data");
+//        }
+//        if(isSave == true)
+//            System.out.println("start /chain");
         if(blockchainValid == false || blockcheinSize == 0){
             System.out.println("update blockchain");
             blockchain = Mining.getBlockchain(
@@ -201,9 +201,9 @@ public class BasisController {
     @ResponseBody
     public  Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, InterruptedException {
         System.out.println("start /size");
-        while (isSave ==false){
-//            System.out.println("now saving new blockchain");
-        }
+//        while (isSave ==false){
+////            System.out.println("now saving new blockchain");
+//        }
         if(blockcheinSize == 0){
             System.out.println("blockchain is 0 blockchainSize " + blockcheinSize);
             blockchain = Mining.getBlockchain(
