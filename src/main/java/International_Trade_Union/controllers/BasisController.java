@@ -525,6 +525,7 @@ public class BasisController {
     }
     @PostMapping("/nodes/resolve_all_blocks")
     public synchronized ResponseEntity<String>resolve_blocks_conflict(@RequestBody List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
+        System.out.println("start resolve_all_blocks");
         System.out.println("____________________________________________________________");
         System.out.println("resolve_portion_block");
         DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -565,10 +566,11 @@ public class BasisController {
             }
 
         }else {
-            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+            return new ResponseEntity<>("FALSE", HttpStatus.valueOf(-1));
         }
 
-        if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain() && hashCountZeroTemporary > hashCountZeroAll) {
+        if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain()
+                && hashCountZeroTemporary > hashCountZeroAll) {
 
             blockchain = temporaryBlockchain;
 
@@ -583,13 +585,14 @@ public class BasisController {
 
         }
         resolve_conflicts();
+        System.out.println("finish resolve_all_blocks");
         return  new ResponseEntity<>("OK", HttpStatus.OK);
 
     }
 
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody List<Block> blocks) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-
+        System.out.println("start resolve_from_to_block");
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 
         blockchain = Mining.getBlockchain(
@@ -623,7 +626,7 @@ public class BasisController {
             }
 
         }else {
-            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+            return new ResponseEntity<>("FALSE", HttpStatus.valueOf(-1));
         }
         System.out.println("____________________________________________________________");
         System.out.println("resolve_from_to_block");
@@ -636,7 +639,8 @@ public class BasisController {
         System.out.println("temporaryBlockchain: " + temporaryBlockchain.sizeBlockhain() + " valid: " + temporaryBlockchain.validatedBlockchain());
         System.out.println("blockchain: hash: " + hashCountZeroTemporary);
         System.out.println("____________________________________________________________");
-        if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain() && hashCountZeroTemporary > hashCountZeroAll) {
+        if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain()
+                && hashCountZeroTemporary > hashCountZeroAll) {
 
             blockchain = temporaryBlockchain;
 //            UtilsBlock.deleteFiles();
@@ -649,8 +653,10 @@ public class BasisController {
 
             return  new ResponseEntity<>("OK", HttpStatus.OK);
         }
+
         resolve_conflicts();
-        return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
+        System.out.println("finish resolve_from_to_block");
+        return new ResponseEntity<>("FALSE", HttpStatus.valueOf(-1));
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)

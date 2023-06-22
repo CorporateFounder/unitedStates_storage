@@ -186,7 +186,7 @@ public class Blockchain implements Cloneable{
 
             }
         }
-        if(prevBlock.getIndex() < blocks.get(0).getIndex()){
+        if(size < blocks.get(0).getIndex() + 1){
             for (Block block : blocks) {
                 size += 1;
 
