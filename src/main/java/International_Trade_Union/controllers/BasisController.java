@@ -527,7 +527,7 @@ public class BasisController {
     public synchronized ResponseEntity<String>resolve_blocks_conflict(@RequestBody List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
         System.out.println("start resolve_all_blocks");
         System.out.println("____________________________________________________________");
-        System.out.println("resolve_portion_block");
+        System.out.println("resolve_all_blocks");
         DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
         DataShortBlockchainInformation temp = Blockchain.checkEqualsPortionFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
         System.out.println("original: " + original);
@@ -593,6 +593,10 @@ public class BasisController {
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody List<Block> blocks) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         System.out.println("start resolve_from_to_block");
+        System.out.println("____________________________________________________________");
+        System.out.println("resolve_from_to_block");
+        DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 
         blockchain = Mining.getBlockchain(
@@ -628,10 +632,7 @@ public class BasisController {
         }else {
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         }
-        System.out.println("____________________________________________________________");
-        System.out.println("resolve_from_to_block");
-        DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
+
         System.out.println("original: " + original);
         System.out.println("temp: " + temp);
         System.out.println("blockchain: " + blockchain.sizeBlockhain() + " valid: " + blockchain.validatedBlockchain());
