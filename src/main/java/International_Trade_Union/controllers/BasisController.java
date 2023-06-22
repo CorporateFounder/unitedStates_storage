@@ -566,7 +566,7 @@ public class BasisController {
             }
 
         }else {
-            return new ResponseEntity<>("FALSE", HttpStatus.valueOf(-1));
+            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         }
 
         if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain()
@@ -626,7 +626,7 @@ public class BasisController {
             }
 
         }else {
-            return new ResponseEntity<>("FALSE", HttpStatus.valueOf(-1));
+            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         }
         System.out.println("____________________________________________________________");
         System.out.println("resolve_from_to_block");
