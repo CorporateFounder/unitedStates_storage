@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @JsonAutoDetect
 @Data
 public class Blockchain implements Cloneable{
+
     private List<Block> blockchainList;
     //как часто должно создаваться блок в миллисекундах 1000 миллисекунд = 1 секунд
     private long BLOCK_GENERATION_INTERVAL;
@@ -187,8 +188,8 @@ public class Blockchain implements Cloneable{
             }
         }
         System.out.println("Blockchain: checkEqualsFromToBlockFile: size: " + size
-        + " blocks.getIndex + 1: " + blocks.get(0).getIndex() + 1);
-        if(size < blocks.get(0).getIndex() + 1){
+        + " blocks.getIndex + 1: " + (blocks.get(0).getIndex() + 1));
+        if(size < (blocks.get(0).getIndex() + 1)){
             for (Block block : blocks) {
                 size += 1;
 
@@ -485,7 +486,13 @@ public class Blockchain implements Cloneable{
         return result;
     }
 
-
+    public static List<Block> clone(int start, int finish, List<Block> blocks) throws CloneNotSupportedException {
+        List<Block> list = new ArrayList<>();
+        for (int i =start; i < finish; i++) {
+            list.add(blocks.get(i).clone());
+        }
+        return list;
+    }
     @Override
     public List<Block> clone() throws CloneNotSupportedException {
         List<Block> result = new ArrayList<>();
