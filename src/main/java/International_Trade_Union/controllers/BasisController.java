@@ -615,71 +615,48 @@ public class BasisController {
         isSaveFile = false;
         try {
             List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
+            System.out.println("resolve_from_to_block");
+            shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
-            Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
+            System.out.println("addList size: " + addlist.size());
+            if(blockcheinSize == 0 || blockchainValid == false){
+                blockchain = Mining.getBlockchain(
+                        Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                        BlockchainFactoryEnum.ORIGINAL);
+                shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                blockcheinSize = (int) shortDataBlockchain.getSize();
+                blockchainValid = shortDataBlockchain.isValidation();
 
-            blockchain = Mining.getBlockchain(
-                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                    BlockchainFactoryEnum.ORIGINAL);
+            }
 
-            if (!blockchain.validatedBlockchain()) {
+            if (!shortDataBlockchain.isValidation()) {
                 System.out.println("wrong block chain, delete blocks: from to block:");
                 UtilsBlock.deleteFiles();
                 blockchain.setBlockchainList(new ArrayList<>());
                 return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
             }
-            List<Block> tempBlocks = blockchain.getBlockchainList();
-            blocks.addAll(tempBlocks);
-            blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-            temporaryBlockchain.setBlockchainList(blocks);
-
-            long hashCountZeroTemporary = 0;
-
-            long hashCountZeroAll = 0;
 
 
-            //count hash start with zero all
-            for (Block block : blockchain.getBlockchainList()) {
-                hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
-            }
-
-            if (temporaryBlockchain.validatedBlockchain()) {
-                for (Block block : temporaryBlockchain.getBlockchainList()) {
-                    hashCountZeroTemporary += UtilsUse.hashCount(block.getHashBlock());
-                }
+            if (temp.isValidation()) {
+                System.out.println("from to block is valid");
 
             } else {
                 return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
             }
 
-            if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain()
-                    && hashCountZeroTemporary > hashCountZeroAll) {
+            if (temp.getSize() > shortDataBlockchain.getSize()
+                    && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 
-                blockchain = temporaryBlockchain;
-//            UtilsBlock.deleteFiles();
-                if (temporaryBlockchain.validatedBlockchain()) {
-//                UtilsBlock.deleteFiles();
-//                addBlock(temporaryBlockchain.getBlockchainList());
-                    System.out.println("____________________________________________________________");
-                    System.out.println("resolve_from_to_block");
-                    DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-                    System.out.println("original: " + original);
-                    System.out.println("temp: " + temp);
-                    System.out.println("blockchain: " + blockchain.sizeBlockhain() + " valid: " + blockchain.validatedBlockchain());
-                    System.out.println("blockchain: hash: " + hashCountZeroAll);
-                    System.out.println("temporaryBlockchain: " + temporaryBlockchain.sizeBlockhain() + " valid: " + temporaryBlockchain.validatedBlockchain());
-                    System.out.println("blockchain: hash: " + hashCountZeroTemporary);
-                    System.out.println("____________________________________________________________");
-                    System.out.println("addList size: " + addlist.size());
+                if (temp.isValidation()) {
+
                     System.out.println("*************************************");
-                    System.out.println("index blockchain: "+blockchain.getBlockchainList().get(blockcheinSize-1).getIndex());
-                    System.out.println("index addList: "+addlist.get(0).getIndex());
+                    System.out.println("original: " + shortDataBlockchain);
+                    System.out.println("temp: " + temp);
                     addBlock(addlist);
                     System.out.println("*************************************");
 
                 }
-                System.out.println("BasisController: resolve: bigblockchain size: " + temporaryBlockchain.sizeBlockhain());
 
                 return new ResponseEntity<>("OK", HttpStatus.OK);
             }
@@ -689,7 +666,7 @@ public class BasisController {
             isSaveFile = true;
         }
         System.out.println("finish resolve_from_to_block");
-        return new ResponseEntity<>("FALSE", HttpStatus.valueOf(-1));
+        return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
