@@ -615,10 +615,7 @@ public class BasisController {
         isSaveFile = false;
         try {
             List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
-            System.out.println("____________________________________________________________");
-            System.out.println("resolve_from_to_block");
-            DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
+
             Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 
             blockchain = Mining.getBlockchain(
@@ -655,13 +652,6 @@ public class BasisController {
                 return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
             }
 
-            System.out.println("original: " + original);
-            System.out.println("temp: " + temp);
-            System.out.println("blockchain: " + blockchain.sizeBlockhain() + " valid: " + blockchain.validatedBlockchain());
-            System.out.println("blockchain: hash: " + hashCountZeroAll);
-            System.out.println("temporaryBlockchain: " + temporaryBlockchain.sizeBlockhain() + " valid: " + temporaryBlockchain.validatedBlockchain());
-            System.out.println("blockchain: hash: " + hashCountZeroTemporary);
-            System.out.println("____________________________________________________________");
             if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain()
                     && hashCountZeroTemporary > hashCountZeroAll) {
 
@@ -670,6 +660,17 @@ public class BasisController {
                 if (temporaryBlockchain.validatedBlockchain()) {
 //                UtilsBlock.deleteFiles();
 //                addBlock(temporaryBlockchain.getBlockchainList());
+                    System.out.println("____________________________________________________________");
+                    System.out.println("resolve_from_to_block");
+                    DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                    DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+                    System.out.println("original: " + original);
+                    System.out.println("temp: " + temp);
+                    System.out.println("blockchain: " + blockchain.sizeBlockhain() + " valid: " + blockchain.validatedBlockchain());
+                    System.out.println("blockchain: hash: " + hashCountZeroAll);
+                    System.out.println("temporaryBlockchain: " + temporaryBlockchain.sizeBlockhain() + " valid: " + temporaryBlockchain.validatedBlockchain());
+                    System.out.println("blockchain: hash: " + hashCountZeroTemporary);
+                    System.out.println("____________________________________________________________");
                     System.out.println("addList size: " + addlist.size());
                     System.out.println("*************************************");
                     System.out.println("index blockchain: "+blockchain.getBlockchainList().get(blockcheinSize-1).getIndex());
