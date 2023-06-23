@@ -511,7 +511,6 @@ public class BasisController {
                 if (temporary.sizeBlockhain() > blockcheinSize && hashCountZeroTemporary > hashCountZeroAll) {
 
                     blockchain = temporary;
-//                    UtilsBlock.deleteFiles();
                     System.out.println("starting portions block: ");
                     if (temporary.validatedBlockchain()) {
                         System.out.println("reslove from to block: ");
