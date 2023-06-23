@@ -445,7 +445,7 @@ public class BasisController {
         }
         isSaveFile = false;
         try {
-
+            blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             Blockchain temporary = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
             if (blockchain == null || blockcheinSize == 0) {
                 System.out.println("resolve: blockchain is null");
@@ -481,8 +481,9 @@ public class BasisController {
                     if (temp.isValidation()) {
                         System.out.println("reslove from to block: ");
 
-                        Blockchain.checkEqualsPortionFromFileSave(Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                      DataShortBlockchainInformation tem=   Blockchain.checkEqualsPortionFromFileSave(Seting.ORIGINAL_BLOCKCHAIN_FILE,
                                 Seting.TEMPORARY_BLOCKCHAIN_FILE, blocks);
+                        System.out.println("tem: " + tem);
                         blockchain = Mining.getBlockchain(
                                 Seting.ORIGINAL_BLOCKCHAIN_FILE,
                                 BlockchainFactoryEnum.ORIGINAL);
