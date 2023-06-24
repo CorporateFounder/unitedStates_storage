@@ -440,6 +440,7 @@ public class BasisController {
 
     @PostMapping("/nodes/resolve_portion_block")
     public synchronized ResponseEntity<String> portionblock(@RequestBody List<Block> blocks) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        System.out.println("start resolve_portion_block");
         while (!isSaveFile){
             System.out.println("saving file: resolve_portion_block");
         }
@@ -461,6 +462,11 @@ public class BasisController {
             DataShortBlockchainInformation temp = Blockchain.checkEqualsPortionFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
             boolean stopedFind = false;
 
+            System.out.println("____________________________________________________________");
+            System.out.println("resolve_portion_block");
+            System.out.println("original: " + shortDataBlockchain);
+            System.out.println("temp: " + temp);
+            System.out.println("____________________________________________________________");
             if (temp.isValidation()) {
                 System.out.println("portion is valid");
 
@@ -472,11 +478,7 @@ public class BasisController {
             System.out.println("its true");
             if (stopedFind) {
                 if (temp.getSize() > blockcheinSize && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
-                    System.out.println("____________________________________________________________");
-                    System.out.println("resolve_portion_block");
-                    System.out.println("original: " + shortDataBlockchain);
-                    System.out.println("temp: " + temp);
-                    System.out.println("____________________________________________________________");
+
                     System.out.println("starting portions block: ");
                     if (temp.isValidation()) {
                         System.out.println("reslove from to block: ");
@@ -501,6 +503,7 @@ public class BasisController {
             }
             System.out.println("portion not ok");
         }finally {
+            System.out.println("finish resolve_portion_block");
             isSaveFile = true;
         }
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);

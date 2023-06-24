@@ -213,7 +213,7 @@ public interface Seting {
     String INDEX_FILE = "\\index\\index.txt";
     String TEMPORARY_BLOCKCHAIN_FILE = "\\resources\\tempblockchain\\";
     //адреса discovery
-    Set<String> ORIGINAL_ADDRESSES = Set.of("http://154.40.38.130:80");
+    Set<String> ORIGINAL_ADDRESSES = Set.of("http://localhost:8083");
 //    Set<String> ORIGINAL_ADDRESSES = Set.of("http://194.87.236.238:80");
 //    Set<String> ORIGINAL_ADDRESSES = Set.of("http://10.0.36.2:80");
     Set<String> ORIGINAL_BLOCKED_ADDRESS = Set.of("http://154.40.38.130:80",
