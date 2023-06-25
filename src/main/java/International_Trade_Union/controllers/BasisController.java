@@ -447,7 +447,7 @@ public class BasisController {
         isSaveFile = false;
         try {
             blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-            Blockchain temporary = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
+
             if (blockchain == null || blockcheinSize == 0) {
                 System.out.println("resolve: blockchain is null");
                 blockchain = Mining.getBlockchain(
@@ -463,9 +463,9 @@ public class BasisController {
 
 
             System.out.println("____________________________________________________________");
-            System.out.println("resolve_portion_block");
-            System.out.println("original: " + shortDataBlockchain);
-            System.out.println("temp: " + temp);
+
+            System.out.println("resolve_portion_block: original: " + shortDataBlockchain);
+            System.out.println("resolve_portion_block: temp: " + temp);
             System.out.println("____________________________________________________________");
             if (temp.isValidation()) {
                 System.out.println("portion is valid");
@@ -480,12 +480,13 @@ public class BasisController {
                 if (temp.getSize() > blockcheinSize && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 
                     System.out.println("starting portions block: ");
-                    if (temp.isValidation()) {
+
                         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
 
                         System.out.println("reslove saving portion block: ");
                         System.out.println("portion: blockchain size: before: " + blockcheinSize);
-                      DataShortBlockchainInformation tem=   Blockchain.checkEqualsPortionFromFileSave(Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                      DataShortBlockchainInformation tem=   Blockchain.checkEqualsPortionFromFileSave(
+                              Seting.ORIGINAL_BLOCKCHAIN_FILE,
                                 Seting.TEMPORARY_BLOCKCHAIN_FILE, blocks);
                         System.out.println("tem: " + tem);
                         blockchain = Mining.getBlockchain(
@@ -497,18 +498,19 @@ public class BasisController {
                         blockchainValid = shortDataBlockchain.isValidation();
                         System.out.println("portion: blockchain size: after: " + blockcheinSize);
                         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
-                    }
-                    System.out.println("BasisController: resolve: bigblockchain size: " + temporary.sizeBlockhain());
+
+
 
                     return new ResponseEntity<>("OK", HttpStatus.OK);
+                }else {
+                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
                 }
 
-            System.out.println("portion not ok");
+
         }finally {
             System.out.println("finish resolve_portion_block");
             isSaveFile = true;
         }
-            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
     }
 //    @PostMapping("/nodes/resolve_all_blocks")
 //    public synchronized ResponseEntity<String>resolve_blocks_conflict(@RequestBody List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
@@ -592,11 +594,15 @@ public class BasisController {
         }
         isSaveFile = false;
         try {
+
             List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
             System.out.println("resolve_from_to_block");
             shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
             DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            System.out.println("original: " + shortDataBlockchain);
+            System.out.println("temp: " + temp);
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("addList size: " + addlist.size());
             if(blockcheinSize == 0 || blockchainValid == false){
                 blockchain = Mining.getBlockchain(
@@ -626,7 +632,7 @@ public class BasisController {
             if (temp.getSize() > shortDataBlockchain.getSize()
                     && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 
-                if (temp.isValidation()) {
+
 
                     System.out.println("*************************************");
                     System.out.println("original: " + shortDataBlockchain);
@@ -634,17 +640,21 @@ public class BasisController {
                     addBlock(addlist);
                     System.out.println("*************************************");
 
-                }
+
 
                 return new ResponseEntity<>("OK", HttpStatus.OK);
             }
+            else {
+                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+            }
 
-            resolve_conflicts();
+
         }finally {
+            resolve_conflicts();
             isSaveFile = true;
+            System.out.println("finish resolve_from_to_block");
         }
-        System.out.println("finish resolve_from_to_block");
-        return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
