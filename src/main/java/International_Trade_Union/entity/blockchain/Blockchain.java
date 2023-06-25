@@ -106,10 +106,22 @@ public class Blockchain implements Cloneable{
             } else {
                 List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                 for (String s : list) {
-                    size += 1;
+
 
 
                     Block block = UtilsJson.jsonToBLock(s);
+                    if(block.getIndex() == 0){
+                        for (DtoTransaction transaction : block.getDtoTransactions()) {
+                            if(transaction.getSender().equals(Seting.BASIS_ADDRESS)
+                             && transaction.getCustomer().equals(Seting.ADDRESS_FOUNDER)){
+                                if(transaction.getDigitalDollar() != Seting.FOUNDERS_REMUNERATION_DIGITAL_DOLLAR){
+                                    valid =  false;
+                                    return new DataShortBlockchainInformation(size, valid, hashCount);
+                                }
+                            }
+                        }
+
+                    }
                     if(prevBlock == null){
                         prevBlock = block;
                         continue;
@@ -184,6 +196,18 @@ public class Blockchain implements Cloneable{
                     size += 1;
 
                     Block block = UtilsJson.jsonToBLock(s);
+                    if(block.getIndex() == 0){
+                        for (DtoTransaction transaction : block.getDtoTransactions()) {
+                            if(transaction.getSender().equals(Seting.BASIS_ADDRESS)
+                                    && transaction.getCustomer().equals(Seting.ADDRESS_FOUNDER)){
+                                if(transaction.getDigitalDollar() != Seting.FOUNDERS_REMUNERATION_DIGITAL_DOLLAR){
+                                    valid =  false;
+                                    return new DataShortBlockchainInformation(size, valid, hashCount);
+                                }
+                            }
+                        }
+
+                    }
                     if(prevBlock == null){
                         prevBlock = block;
                         continue;
@@ -257,7 +281,7 @@ public class Blockchain implements Cloneable{
         long hashCount = 0;
         try {
 
-            Mining.deleteFiles(Seting.TEMPORARY_BLOCKCHAIN_FILE);
+            Mining.deleteFiles(fileSave);
             main:
             for (final File fileEntry : folder.listFiles()) {
                 if (fileEntry.isDirectory()) {
@@ -265,12 +289,25 @@ public class Blockchain implements Cloneable{
                 } else {
                     List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                     for (String s : list) {
-                        size += 1;
 
 
                         Block block = UtilsJson.jsonToBLock(s);
+                        if(block.getIndex() == 0){
+                            for (DtoTransaction transaction : block.getDtoTransactions()) {
+                                if(transaction.getSender().equals(Seting.BASIS_ADDRESS)
+                                        && transaction.getCustomer().equals(Seting.ADDRESS_FOUNDER)){
+                                    if(transaction.getDigitalDollar() != Seting.FOUNDERS_REMUNERATION_DIGITAL_DOLLAR){
+                                        valid =  false;
+                                        return new DataShortBlockchainInformation(size, valid, hashCount);
+                                    }
+                                }
+                            }
+
+                        }
+                        UtilsBlock.saveBLock(block, fileSave);
                         if (prevBlock == null) {
                             prevBlock = block;
+
                             continue;
                         }
                         if (block.getIndex() != blocks.get(0).getIndex()) {
@@ -287,6 +324,7 @@ public class Blockchain implements Cloneable{
                                 size += 1;
                                 hashCount += UtilsUse.hashCount(block.getHashBlock());
                                 block = block1;
+                                UtilsBlock.saveBLock(block, fileSave);
                                 valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
                                         prevBlock,
                                         block,
@@ -302,7 +340,7 @@ public class Blockchain implements Cloneable{
                                     return new DataShortBlockchainInformation(size, valid, hashCount);
                                 }
                                 prevBlock = block;
-                                UtilsBlock.saveBLock(block, fileSave);
+
 
                             }
                             break main;
@@ -319,7 +357,7 @@ public class Blockchain implements Cloneable{
                         }
 
                         prevBlock = block;
-                        UtilsBlock.saveBLock(block, fileSave);
+
                     }
 
                 }
@@ -409,22 +447,34 @@ public class Blockchain implements Cloneable{
     public static Block indexFromFile(int index, String filename) throws JsonProcessingException {
         File folder = new File(filename);
         Block block = null;
-        int size = 0;
+        int size = 1;
+
 
         for (final File fileEntry : folder.listFiles()) {
+            size++;
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
             } else {
+
                 List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                 for (String s : list) {
 
-                    if(size == index){
+                    if(index == size){
                         block = UtilsJson.jsonToBLock(s);
-                        if(index == block.getIndex())
+                        System.out.println("block index: " + block.getIndex() + " size: "
+                        + size);
+
+                        if(block.getIndex() == size) {
+                            System.out.println("************************************");
+                            System.out.println("indexFromFile:  " + block.getIndex() + " index: "
+                                    + index + " size: " + size);
+                            System.out.println("************************************");
+
                             return block;
+                        }
                     }
 
-                    size += 1;
+                    size++;
                 }
 
             }

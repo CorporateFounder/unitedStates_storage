@@ -267,9 +267,7 @@ public class BasisController {
         System.out.println("resolve_conflicts: blocks_current_size: " + blocks_current_size);
         long hashCountZeroAll = 0;
         //count hash start with zero all
-//        for (Block block : blockchain.getBlockchainList()) {
-//            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
-//        }
+
         hashCountZeroAll =  shortDataBlockchain.getHashCount();
 
         Set<String> nodesAll = getNodes();
@@ -292,8 +290,10 @@ public class BasisController {
                 System.out.println("BasisController:resolve conflicts: address: " + s + "/size");
                 String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
                 Integer size = Integer.valueOf(sizeStr);
+
                 System.out.println("resolve_conflicts: finish /size: " + size);
                 if (size > blocks_current_size) {
+
                     System.out.println("size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
                     //Test start algorithm
                     SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(blocks_current_size-1, size);
@@ -301,23 +301,34 @@ public class BasisController {
 
                     List<Block> emptyList = new ArrayList<>();
 
-
+                    System.out.println("download sub block");
                     List<Block> subBlocks = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                     emptyList.addAll(subBlocks);
                     emptyList.addAll(blockchain.getBlockchainList());
 
                     emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                     temporaryBlockchain.setBlockchainList(emptyList);
+
                     if (!temporaryBlockchain.validatedBlockchain()) {
-                        System.out.println("first algorithm not worked");
+                        System.out.println("download blocks");
                         emptyList = new ArrayList<>();
                         emptyList.addAll(subBlocks);
-                        for (int i = blockchain.sizeBlockhain() - 1; i > 0; i--) {
+                        for (int i = size - 1; i > 0; i--) {
+
                             Block block = UtilsJson.jsonToBLock(UtilUrl.getObject(UtilsJson.objToStringJson(i), s + "/block"));
-                            if (!blockchain.getBlock(i).getHashBlock().equals(block.getHashBlock())) {
+
+                            if(i > blockcheinSize - 1){
                                 emptyList.add(block);
+                            }
+                            else if (
+                                    !blockchain.getBlock(i).getHashBlock().equals(block.getHashBlock())) {
+                                emptyList.add(block);
+                                System.out.println("dowdnload block index: " + i);
+                                System.out.println("block original index: " + blockchain.getBlock(i).getIndex());
+                                System.out.println("block from index: " + block.getIndex());
                             } else {
                                 emptyList.add(block);
+                                System.out.println("sub: " + 0 + " : " + i);
                                 emptyList.addAll(blockchain.getBlockchainList().subList(0, i));
                                 emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                                 temporaryBlockchain.setBlockchainList(emptyList);
@@ -326,7 +337,7 @@ public class BasisController {
                         }
                     }
                     if (!temporaryBlockchain.validatedBlockchain()) {
-                        System.out.println("second algorith not worked");
+                        System.out.println("download all blockchain");
                         temporaryjson = UtilUrl.readJsonFromUrl(address);
                         entityChain = UtilsJson.jsonToEntityChain(temporaryjson);
                         temporaryBlockchain.setBlockchainList(
