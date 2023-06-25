@@ -319,8 +319,13 @@ public class Blockchain implements Cloneable{
 
             }
         }
+        File folder1 = new File(fileSave);
+        for (final File fileEntry : folder1.listFiles()){
+            if(!fileEntry.isDirectory()){
+                UtilsFileSaveRead.moveFile(fileEntry.getAbsolutePath(), Seting.ORIGINAL_BLOCKCHAIN_FILE + fileEntry.getName());
+            }
+        }
 
-        UtilsFileSaveRead.moveFile(fileSave, fileName);
 
         return new DataShortBlockchainInformation(size, valid, hashCount);
 //
