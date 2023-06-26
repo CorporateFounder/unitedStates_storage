@@ -18,10 +18,8 @@ import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 @JsonAutoDetect
@@ -447,11 +445,11 @@ public class Blockchain implements Cloneable{
     public static Block indexFromFile(int index, String filename) throws JsonProcessingException {
         File folder = new File(filename);
         Block block = null;
-        int size = 1;
+        int size = 0;
 
 
         for (final File fileEntry : folder.listFiles()) {
-            size++;
+
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
             } else {

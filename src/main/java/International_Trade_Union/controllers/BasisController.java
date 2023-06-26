@@ -1,6 +1,7 @@
 package International_Trade_Union.controllers;
 
 import International_Trade_Union.entity.AddressUrl;
+import International_Trade_Union.entity.SendBlocksEndInfo;
 import International_Trade_Union.entity.SubBlockchainEntity;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import org.json.JSONException;
@@ -450,11 +451,16 @@ public class BasisController {
     }
 
     @PostMapping("/nodes/resolve_portion_block")
-    public synchronized ResponseEntity<String> portionblock(@RequestBody List<Block> blocks) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public synchronized ResponseEntity<String> portionblock(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start resolve_portion_block");
         while (!isSaveFile){
             System.out.println("saving file: resolve_portion_block");
         }
+        if(sendBlocksEndInfo.getVersion() != Seting.VERSION){
+            System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
+            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+        }
+        List<Block> blocks = sendBlocksEndInfo.getList();
         isSaveFile = false;
         try {
             blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
@@ -598,11 +604,16 @@ public class BasisController {
 //    }
 
     @PostMapping("/nodes/resolve_from_to_block")
-    public synchronized ResponseEntity<String> resolve_conflict(@RequestBody List<Block> blocks) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         System.out.println("start resolve_from_to_block");
         while (!isSaveFile){
             System.out.println("saving file: resolve_from_to_block");
         }
+        if(sendBlocksEndInfo.getVersion() != Seting.VERSION){
+            System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
+            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+        }
+        List<Block> blocks = sendBlocksEndInfo.getList();
         isSaveFile = false;
         try {
 
