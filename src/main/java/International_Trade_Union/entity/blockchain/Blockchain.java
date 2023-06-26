@@ -379,6 +379,7 @@ public class Blockchain implements Cloneable{
         File folder = new File(filename);
         Block prevBlock = null;
         int size = 0;
+        int index = 0;
         long hashCount = 0;
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
@@ -388,14 +389,15 @@ public class Blockchain implements Cloneable{
                 for (String s : list) {
 
                     size += 1;
+                    index += 1;
                     Block block = UtilsJson.jsonToBLock(s);
                     boolean haveTwoIndexOne = false;
                     if(block.getIndex() == 1 && haveTwoIndexOne == false){
-                        size = 1;
+                        index = 1;
                         haveTwoIndexOne = true;
                         block.getHashBlock().equals(Seting.ORIGINAL_HASH);
                     }
-                    if(size != block.getIndex()){
+                    if(index != block.getIndex()){
                         System.out.println("wrong blockchain missing block: " + size + " index: " + block.getIndex());
                         valid = false;
                         return  new DataShortBlockchainInformation(size, valid, hashCount);
@@ -420,7 +422,6 @@ public class Blockchain implements Cloneable{
                         System.out.println("ERROR: UtilsBlock: validation: block.Hash():" + block.getHashBlock());
                         System.out.println("ERROR: UtilsBlock: validation: BLOCK_GENERATION_INTERVAL:" + Seting.BLOCK_GENERATION_INTERVAL);
                         System.out.println("ERROR: UtilsBlock: validation: DIFFICULTY_ADJUSTMENT_INTERVAL:" + Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-                       size++;
                         return new DataShortBlockchainInformation(size, valid, hashCount);
                     }
 
@@ -431,7 +432,7 @@ public class Blockchain implements Cloneable{
             }
         }
 
-        size++;
+
         return new DataShortBlockchainInformation(size, valid, hashCount);
     }
 
@@ -460,7 +461,7 @@ public class Blockchain implements Cloneable{
     public static Block indexFromFile(int index, String filename) throws JsonProcessingException {
         File folder = new File(filename);
         Block block = null;
-        int size = 1;
+        int size = 0;
 
 
         for (final File fileEntry : folder.listFiles()) {

@@ -287,7 +287,7 @@ public class BasisController {
         System.out.println("BasisController: resolve_conflicts: size nodes: " + getNodes().size());
         for (String s : nodesAll) {
             System.out.println("while resolve_conflicts: node address: " + s);
-            String temporaryjson = null;
+
 
             if (BasisController.getExcludedAddresses().contains(s)) {
                 System.out.println("its your address or excluded address: " + s);
