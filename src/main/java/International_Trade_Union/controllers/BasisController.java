@@ -287,7 +287,7 @@ public class BasisController {
         System.out.println("BasisController: resolve_conflicts: size nodes: " + getNodes().size());
         for (String s : nodesAll) {
             System.out.println("while resolve_conflicts: node address: " + s);
-
+            String temporaryjson = null;
 
             if (BasisController.getExcludedAddresses().contains(s)) {
                 System.out.println("its your address or excluded address: " + s);
@@ -316,8 +316,8 @@ public class BasisController {
                     System.out.println("download sub block: " + subBlockchainJson);
                     List<Block> subBlocks = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                     emptyList.addAll(subBlocks);
-//                    if(blocks_current_size != 0)
-//                        emptyList.addAll(blockchain.getBlockchainList());
+                    if(blocks_current_size > 1)
+                        emptyList.addAll(blockchain.getBlockchainList());
 
                     emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                     temporaryBlockchain.setBlockchainList(emptyList);
@@ -338,9 +338,11 @@ public class BasisController {
                             else if (
                                     !blockchain.getBlock(i).getHashBlock().equals(block.getHashBlock())) {
                                 emptyList.add(block);
+                                System.out.println("********************************");
                                 System.out.println("dowdnload block index: " + i);
                                 System.out.println("block original index: " + blockchain.getBlock(i).getIndex());
                                 System.out.println("block from index: " + block.getIndex());
+                                System.out.println("---------------------------------");
                             } else {
                                 emptyList.add(block);
                                 System.out.println("sub: " + 0 + " : " + i);
