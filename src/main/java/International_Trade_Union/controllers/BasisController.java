@@ -6,6 +6,8 @@ import International_Trade_Union.entity.SubBlockchainEntity;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import org.json.JSONException;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import International_Trade_Union.entity.blockchain.Blockchain;
@@ -23,7 +25,10 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.security.*;
@@ -231,6 +236,12 @@ public class BasisController {
         return Blockchain.subFromFile(entity.getStart(), entity.getFinish(), Seting.ORIGINAL_BLOCKCHAIN_FILE);
     }
     /**Возвращяет блок по индексу*/
+
+    @GetMapping("/version")
+    @ResponseBody
+    public double version(){
+        return Seting.VERSION;
+    }
     @PostMapping("/block")
     @ResponseBody
     public Block getBlock(@RequestBody Integer index) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -297,15 +308,16 @@ public class BasisController {
 
                     System.out.println("size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
                     //Test start algorithm
-                    SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(blocks_current_size-1, size);
+                    SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(blocks_current_size, size);
                     String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
 
                     List<Block> emptyList = new ArrayList<>();
 
-                    System.out.println("download sub block");
+                    System.out.println("download sub block: " + subBlockchainJson);
                     List<Block> subBlocks = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                     emptyList.addAll(subBlocks);
-                    emptyList.addAll(blockchain.getBlockchainList());
+//                    if(blocks_current_size != 0)
+//                        emptyList.addAll(blockchain.getBlockchainList());
 
                     emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                     temporaryBlockchain.setBlockchainList(emptyList);
@@ -313,12 +325,14 @@ public class BasisController {
                     if (!temporaryBlockchain.validatedBlockchain()) {
                         System.out.println("download blocks");
                         emptyList = new ArrayList<>();
-                        emptyList.addAll(subBlocks);
+
                         for (int i = size - 1; i > 0; i--) {
 
                             Block block = UtilsJson.jsonToBLock(UtilUrl.getObject(UtilsJson.objToStringJson(i), s + "/block"));
 
-                            if(i > blockcheinSize - 1){
+                            if(i > blockcheinSize){
+                                System.out.println("download blocks: " + block.getIndex()+
+                                        " your block : " + (blockcheinSize ));
                                 emptyList.add(block);
                             }
                             else if (
@@ -330,20 +344,23 @@ public class BasisController {
                             } else {
                                 emptyList.add(block);
                                 System.out.println("sub: " + 0 + " : " + i);
-                                emptyList.addAll(blockchain.getBlockchainList().subList(0, i));
+                                if(i != 0){
+                                    emptyList.addAll(blockchain.getBlockchainList().subList(0, i));
+                                }
+
                                 emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                                 temporaryBlockchain.setBlockchainList(emptyList);
                                 break;
                             }
                         }
                     }
-                    if (!temporaryBlockchain.validatedBlockchain()) {
-                        System.out.println("download all blockchain");
-                        temporaryjson = UtilUrl.readJsonFromUrl(address);
-                        entityChain = UtilsJson.jsonToEntityChain(temporaryjson);
-                        temporaryBlockchain.setBlockchainList(
-                                entityChain.getBlocks().stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList()));
-                    }
+//                    if (!temporaryBlockchain.validatedBlockchain()) {
+//                        System.out.println("download all blockchain");
+//                        temporaryjson = UtilUrl.readJsonFromUrl(address);
+//                        entityChain = UtilsJson.jsonToEntityChain(temporaryjson);
+//                        temporaryBlockchain.setBlockchainList(
+//                                entityChain.getBlocks().stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList()));
+//                    }
                 } else {
                     System.out.println("BasisController: resove: size less: " + size + " address: " + address);
                     continue;
@@ -678,6 +695,17 @@ public class BasisController {
         }
 
     }
+//    @RequestMapping(path = "/download", method = RequestMethod.GET)
+//    @RequestPart
+//    public File download(String file) throws IOException {
+//
+//        // ...
+//
+//        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+//       return resource;
+//
+//    }
+
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public synchronized void register_node(@RequestBody AddressUrl urlAddrress) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException

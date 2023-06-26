@@ -243,6 +243,7 @@ public interface Seting {
     double DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_STOCK_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
 
     double VERSION = 2;
+    String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";
 //    String DELETED_POOL_TRANSACTION_TIME = "PT48H";
 
 }

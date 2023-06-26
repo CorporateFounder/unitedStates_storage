@@ -379,20 +379,33 @@ public class Blockchain implements Cloneable{
         File folder = new File(filename);
         Block prevBlock = null;
         int size = 0;
-         long hashCount = 0;
+        long hashCount = 0;
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
             } else {
                 List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                 for (String s : list) {
-                    size += 1;
 
+                    size += 1;
                     Block block = UtilsJson.jsonToBLock(s);
+                    boolean haveTwoIndexOne = false;
+                    if(block.getIndex() == 1 && haveTwoIndexOne == false){
+                        size = 1;
+                        haveTwoIndexOne = true;
+                        block.getHashBlock().equals(Seting.ORIGINAL_HASH);
+                    }
+                    if(size != block.getIndex()){
+                        System.out.println("wrong blockchain missing block: " + size + " index: " + block.getIndex());
+                        valid = false;
+                        return  new DataShortBlockchainInformation(size, valid, hashCount);
+                    }
+
                     if(prevBlock == null){
                         prevBlock = block;
                         continue;
                     }
+
                     hashCount += UtilsUse.hashCount(block.getHashBlock());
                     valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
                             prevBlock,
@@ -420,6 +433,7 @@ public class Blockchain implements Cloneable{
 
         return new DataShortBlockchainInformation(size, valid, hashCount);
     }
+
     public static boolean deletedLastStrFromFile(int index, String filename) throws IOException {
         boolean valid = false;
         File folder = new File(filename);
@@ -445,7 +459,7 @@ public class Blockchain implements Cloneable{
     public static Block indexFromFile(int index, String filename) throws JsonProcessingException {
         File folder = new File(filename);
         Block block = null;
-        int size = 0;
+        int size = 1;
 
 
         for (final File fileEntry : folder.listFiles()) {
