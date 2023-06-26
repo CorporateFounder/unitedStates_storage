@@ -73,6 +73,7 @@ International_Trade_Union\CorporateCharterEngDraft\PreambleEngDraft.class
 International_Trade_Union\utils\UtilsJson$1.class
 International_Trade_Union\network\AllTransactions.class
 International_Trade_Union\UnitedStatesApplication.class
+International_Trade_Union\entity\SendBlocksEndInfo.class
 International_Trade_Union\model\Account.class
 International_Trade_Union\utils\UtilsTransaction.class
 International_Trade_Union\utils\UtilsFileSaveRead.class
