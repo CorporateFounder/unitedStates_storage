@@ -632,7 +632,7 @@ public class BasisController {
         }
         if(sendBlocksEndInfo.getVersion() != Seting.VERSION){
             System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
-            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+            return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
         }
         List<Block> blocks = sendBlocksEndInfo.getList();
         isSaveFile = false;
