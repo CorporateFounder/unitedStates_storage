@@ -645,6 +645,7 @@ public class BasisController {
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("original: " + shortDataBlockchain);
             System.out.println("temp: " + temp);
+            System.out.println("address mininer: " + blocks.get(blocks.size()-1).getMinerAddress());
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("addList size: " + addlist.size());
             if(blockcheinSize == 0 || blockchainValid == false){
