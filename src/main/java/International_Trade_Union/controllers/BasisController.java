@@ -471,158 +471,158 @@ public class BasisController {
         return true;
     }
 
-    @PostMapping("/nodes/resolve_portion_block")
-    public synchronized ResponseEntity<String> portionblock(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        System.out.println("start resolve_portion_block");
-        while (!isSaveFile){
-            System.out.println("saving file: resolve_portion_block");
-        }
-        if(sendBlocksEndInfo.getVersion() != Seting.VERSION){
-            System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
-            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
-        }
-        List<Block> blocks = sendBlocksEndInfo.getList();
-        isSaveFile = false;
-        try {
-            blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-
-            if (blockchain == null || blockcheinSize == 0) {
-                System.out.println("resolve: blockchain is null");
-                blockchain = Mining.getBlockchain(
-                        Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                        BlockchainFactoryEnum.ORIGINAL);
-                shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                blockcheinSize = (int) shortDataBlockchain.getSize();
-                blockchainValid = shortDataBlockchain.isValidation();
-
-            }
-            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            DataShortBlockchainInformation temp = Blockchain.checkEqualsPortionFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
-
-
-            System.out.println("____________________________________________________________");
-
-            System.out.println("resolve_portion_block: original: " + shortDataBlockchain);
-            System.out.println("resolve_portion_block: temp: " + temp);
-            System.out.println("____________________________________________________________");
-            if (temp.isValidation()) {
-                System.out.println("portion is valid");
-
-            } else {
-                System.out.println("portion blocks not worked");
-                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
-            }
-
-            System.out.println("its true: " + temp.isValidation());
-
-                if (temp.getSize() > blockcheinSize && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
-
-                    System.out.println("starting portions block: ");
-
-                        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-                        System.out.println("reslove saving portion block: ");
-                        System.out.println("portion: blockchain size: before: " + blockcheinSize);
-                      DataShortBlockchainInformation tem=   Blockchain.checkEqualsPortionFromFileSave(
-                              Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                                Seting.TEMPORARY_BLOCKCHAIN_FILE, blocks);
-                        System.out.println("tem: " + tem);
-                        blockchain = Mining.getBlockchain(
-                                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                                BlockchainFactoryEnum.ORIGINAL);
-
-                        shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                        blockcheinSize = (int) shortDataBlockchain.getSize();
-                        blockchainValid = shortDataBlockchain.isValidation();
-                        System.out.println("portion: blockchain size: after: " + blockcheinSize);
-                        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-
-
-                    return new ResponseEntity<>("OK", HttpStatus.OK);
-                }else {
-                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
-                }
-
-
-        }finally {
-            System.out.println("finish resolve_portion_block");
-            isSaveFile = true;
-        }
-    }
-//    @PostMapping("/nodes/resolve_all_blocks")
-//    public synchronized ResponseEntity<String>resolve_blocks_conflict(@RequestBody List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
+//    @PostMapping("/nodes/resolve_portion_block")
+//    public synchronized ResponseEntity<String> portionblock(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+//        System.out.println("start resolve_portion_block");
 //        while (!isSaveFile){
 //            System.out.println("saving file: resolve_portion_block");
 //        }
+//        if(sendBlocksEndInfo.getVersion() != Seting.VERSION){
+//            System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
+//            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+//        }
+//        List<Block> blocks = sendBlocksEndInfo.getList();
+//        isSaveFile = false;
 //        try {
-//            System.out.println("start resolve_all_blocks");
-//            System.out.println("____________________________________________________________");
-//            System.out.println("resolve_all_blocks");
-//            DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//            DataShortBlockchainInformation temp = Blockchain.checkEqualsPortionFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
-//            System.out.println("original: " + original);
-//            System.out.println("temp: " + temp);
-//            System.out.println("____________________________________________________________");
-//            Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 //            blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-//            temporaryBlockchain.setBlockchainList(blocks);
-//            System.out.println("size temporary blocks: " + blocks.size());
 //
-//            blockchain = Mining.getBlockchain(
-//                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
-//                    BlockchainFactoryEnum.ORIGINAL);
+//            if (blockchain == null || blockcheinSize == 0) {
+//                System.out.println("resolve: blockchain is null");
+//                blockchain = Mining.getBlockchain(
+//                        Seting.ORIGINAL_BLOCKCHAIN_FILE,
+//                        BlockchainFactoryEnum.ORIGINAL);
+//                shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//                blockcheinSize = (int) shortDataBlockchain.getSize();
+//                blockchainValid = shortDataBlockchain.isValidation();
 //
-//            if (!blockchain.validatedBlockchain()) {
-//                System.out.println("wrong block chain, delete blocks: resolve all blocks");
-//                UtilsBlock.deleteFiles();
-//                blockchain.setBlockchainList(new ArrayList<>());
-//                return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
 //            }
-//
-//            long hashCountZeroTemporary = 0;
-//
-//            long hashCountZeroAll = 0;
+//            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            DataShortBlockchainInformation temp = Blockchain.checkEqualsPortionFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
 //
 //
-////        //count hash start with zero all
-////        for (Block block : blockchain.getBlockchainList()) {
-////            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
-////        }
-//            hashCountZeroAll = shortDataBlockchain.getHashCount();
+//            System.out.println("____________________________________________________________");
 //
-//            if (temporaryBlockchain.validatedBlockchain()) {
-//                for (Block block : temporaryBlockchain.getBlockchainList()) {
-//                    hashCountZeroTemporary += UtilsUse.hashCount(block.getHashBlock());
-//                }
+//            System.out.println("resolve_portion_block: original: " + shortDataBlockchain);
+//            System.out.println("resolve_portion_block: temp: " + temp);
+//            System.out.println("____________________________________________________________");
+//            if (temp.isValidation()) {
+//                System.out.println("portion is valid");
 //
 //            } else {
+//                System.out.println("portion blocks not worked");
 //                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
 //            }
 //
-//            if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain()
-//                    && hashCountZeroTemporary > hashCountZeroAll) {
+//            System.out.println("its true: " + temp.isValidation());
 //
-//                blockchain = temporaryBlockchain;
+//                if (temp.getSize() > blockcheinSize && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 //
-//                if (temporaryBlockchain.validatedBlockchain()) {
-//                    System.out.println("delete resolve all blocks");
-//                    UtilsBlock.deleteFiles();
-//                    addBlock(temporaryBlockchain.getBlockchainList());
+//                    System.out.println("starting portions block: ");
+//
+//                        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
+//
+//                        System.out.println("reslove saving portion block: ");
+//                        System.out.println("portion: blockchain size: before: " + blockcheinSize);
+////                      DataShortBlockchainInformation tem=   Blockchain.checkEqualsPortionFromFileSave(
+////                              Seting.ORIGINAL_BLOCKCHAIN_FILE,
+////                                Seting.TEMPORARY_BLOCKCHAIN_FILE, blocks);
+////                        System.out.println("tem: " + tem);
+//                        blockchain = Mining.getBlockchain(
+//                                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+//                                BlockchainFactoryEnum.ORIGINAL);
+//
+//                        shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//                        blockcheinSize = (int) shortDataBlockchain.getSize();
+//                        blockchainValid = shortDataBlockchain.isValidation();
+//                        System.out.println("portion: blockchain size: after: " + blockcheinSize);
+//                        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
+//
+//
+//
+//                    return new ResponseEntity<>("OK", HttpStatus.OK);
+//                }else {
+//                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
 //                }
 //
-//                System.out.println("BasisController: resolve: bigblockchain size: " + temporaryBlockchain.sizeBlockhain());
 //
-//
-//            }
-//            resolve_conflicts();
-//            System.out.println("finish resolve_all_blocks");
 //        }finally {
+//            System.out.println("finish resolve_portion_block");
 //            isSaveFile = true;
 //        }
-//        return  new ResponseEntity<>("OK", HttpStatus.OK);
-//
 //    }
+////    @PostMapping("/nodes/resolve_all_blocks")
+////    public synchronized ResponseEntity<String>resolve_blocks_conflict(@RequestBody List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
+////        while (!isSaveFile){
+////            System.out.println("saving file: resolve_portion_block");
+////        }
+////        try {
+////            System.out.println("start resolve_all_blocks");
+////            System.out.println("____________________________________________________________");
+////            System.out.println("resolve_all_blocks");
+////            DataShortBlockchainInformation original = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+////            DataShortBlockchainInformation temp = Blockchain.checkEqualsPortionFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, blocks);
+////            System.out.println("original: " + original);
+////            System.out.println("temp: " + temp);
+////            System.out.println("____________________________________________________________");
+////            Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
+////            blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+////            temporaryBlockchain.setBlockchainList(blocks);
+////            System.out.println("size temporary blocks: " + blocks.size());
+////
+////            blockchain = Mining.getBlockchain(
+////                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+////                    BlockchainFactoryEnum.ORIGINAL);
+////
+////            if (!blockchain.validatedBlockchain()) {
+////                System.out.println("wrong block chain, delete blocks: resolve all blocks");
+////                UtilsBlock.deleteFiles();
+////                blockchain.setBlockchainList(new ArrayList<>());
+////                return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
+////            }
+////
+////            long hashCountZeroTemporary = 0;
+////
+////            long hashCountZeroAll = 0;
+////
+////
+//////        //count hash start with zero all
+//////        for (Block block : blockchain.getBlockchainList()) {
+//////            hashCountZeroAll += UtilsUse.hashCount(block.getHashBlock());
+//////        }
+////            hashCountZeroAll = shortDataBlockchain.getHashCount();
+////
+////            if (temporaryBlockchain.validatedBlockchain()) {
+////                for (Block block : temporaryBlockchain.getBlockchainList()) {
+////                    hashCountZeroTemporary += UtilsUse.hashCount(block.getHashBlock());
+////                }
+////
+////            } else {
+////                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+////            }
+////
+////            if (temporaryBlockchain.sizeBlockhain() > blockchain.sizeBlockhain()
+////                    && hashCountZeroTemporary > hashCountZeroAll) {
+////
+////                blockchain = temporaryBlockchain;
+////
+////                if (temporaryBlockchain.validatedBlockchain()) {
+////                    System.out.println("delete resolve all blocks");
+////                    UtilsBlock.deleteFiles();
+////                    addBlock(temporaryBlockchain.getBlockchainList());
+////                }
+////
+////                System.out.println("BasisController: resolve: bigblockchain size: " + temporaryBlockchain.sizeBlockhain());
+////
+////
+////            }
+////            resolve_conflicts();
+////            System.out.println("finish resolve_all_blocks");
+////        }finally {
+////            isSaveFile = true;
+////        }
+////        return  new ResponseEntity<>("OK", HttpStatus.OK);
+////
+////    }
 
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
@@ -669,6 +669,9 @@ public class BasisController {
                 System.out.println("from to block is valid");
 
             } else {
+                if(temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() > shortDataBlockchain.getHashCount()){
+                    return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
+                }
                 return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
             }
 
@@ -678,9 +681,11 @@ public class BasisController {
 
 
                     System.out.println("*************************************");
-                    System.out.println("original: " + shortDataBlockchain);
-                    System.out.println("temp: " + temp);
+                    System.out.println("before original: " + shortDataBlockchain);
+                    System.out.println("before temp: " + temp);
                     addBlock(addlist);
+                     System.out.println("after original: " + shortDataBlockchain);
+                         System.out.println("after temp: " + temp);
                     System.out.println("*************************************");
 
 

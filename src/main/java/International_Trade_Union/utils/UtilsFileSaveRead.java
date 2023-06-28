@@ -1,6 +1,7 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.model.Mining;
+import International_Trade_Union.setings.Seting;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -44,28 +45,33 @@ public class UtilsFileSaveRead {
             throw new RuntimeException(e);
         }
     }
-    public static boolean deleted(int index, String fileName, String temp) throws IOException {
-        File inputFile = new File("myFile.txt");
-        File tempFile = new File("myTempFile.txt");
+    public static boolean deleted( String fileName, String temp) throws IOException {
+        File inputFile = new File(fileName);
+
+        File tempFile = new File(Seting.TEMPORARY_BLOCKCHAIN_FILE +"myTempFile.txt");
+        boolean deleted = false;
 
         BufferedReader reader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-
-        int number = 0;
+        int index = 0;
+        String lineToRemove = temp;
         String currentLine;
 
         while((currentLine = reader.readLine()) != null) {
-            number++;
+
             // trim newline when comparing with lineToRemove
             String trimmedLine = currentLine.trim();
-            if(index == number) continue;
+            if(trimmedLine.equals(lineToRemove)){
+                deleted = true;
+                continue;
+            }
             writer.write(currentLine + System.getProperty("line.separator"));
         }
         writer.close();
         reader.close();
         deleteFile(fileName);
         boolean successful = tempFile.renameTo(inputFile);
-        return successful;
+        return deleted;
     }
     public static void save(String object, String fileName) throws IOException {
        save(object, fileName, true);
