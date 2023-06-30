@@ -422,11 +422,6 @@ public class BasisController {
     public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start addBLock");;
         isSave = false;
-        Blockchain temporaryForValidation = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
-        temporaryForValidation.setBlockchainList(orignalBlocks);
-//        UtilsBlock.deleteFiles();
-        System.out.println("temporaryForValidation: size: " + temporaryForValidation.sizeBlockhain() +
-                " valid: " + temporaryForValidation.validatedBlockchain());
         System.out.println("start  save in addBlock");
 
         for (Block block : orignalBlocks) {
@@ -647,12 +642,12 @@ public class BasisController {
                 prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
             shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);//Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-//            DataShortBlockchainInformation testVersion = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);
+            DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+            DataShortBlockchainInformation testVersion = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("original: " + shortDataBlockchain);
             System.out.println("temp: " + temp);
-//            System.out.println("test version: " + testVersion);
+            System.out.println("test version: " + testVersion);
 
             System.out.println("address mininer: " + blocks.get(blocks.size()-1).getMinerAddress());
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
