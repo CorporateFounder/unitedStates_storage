@@ -140,6 +140,7 @@ public class BasisController {
             shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
+            prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -709,6 +710,7 @@ public class BasisController {
 
 
         }finally {
+            prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             resolve_conflicts();
             isSaveFile = true;
             System.out.println("finish resolve_from_to_block");
