@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 @RestController
 public class BasisController {
     private static boolean isSaveFile = true;
+    private static Block prevBlock = null;
     private static DataShortBlockchainInformation shortDataBlockchain = null;
     private static int blockcheinSize = 0;
     private static boolean blockchainValid = false;
@@ -206,6 +207,7 @@ public class BasisController {
             shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
+            prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
         }
 
@@ -640,11 +642,17 @@ public class BasisController {
 
             List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
             System.out.println("resolve_from_to_block");
+            if(prevBlock == null){
+                prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            }
             shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+            DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);//Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+//            DataShortBlockchainInformation testVersion = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("original: " + shortDataBlockchain);
             System.out.println("temp: " + temp);
+//            System.out.println("test version: " + testVersion);
+
             System.out.println("address mininer: " + blocks.get(blocks.size()-1).getMinerAddress());
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("addList size: " + addlist.size());
@@ -655,6 +663,7 @@ public class BasisController {
                 shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 blockcheinSize = (int) shortDataBlockchain.getSize();
                 blockchainValid = shortDataBlockchain.isValidation();
+                prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
             }
 
@@ -687,6 +696,7 @@ public class BasisController {
                     addBlock(addlist);
                      System.out.println("after original: " + shortDataBlockchain);
                          System.out.println("after temp: " + temp);
+                         prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                     System.out.println("*************************************");
 
 
