@@ -63,7 +63,7 @@ public class UtilsFileSaveRead {
             String trimmedLine = currentLine.trim();
             if(trimmedLine.equals(lineToRemove)){
                 deleted = true;
-                continue;
+                return deleted;
             }
             writer.write(currentLine + System.getProperty("line.separator"));
         }
