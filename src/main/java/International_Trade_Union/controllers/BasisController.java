@@ -641,8 +641,13 @@ public class BasisController {
             if(prevBlock == null){
                 prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
-            shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            DataShortBlockchainInformation temp = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+            if(shortDataBlockchain.getSize() == 0
+                    || !shortDataBlockchain.isValidation()
+                    || shortDataBlockchain.getHashCount() == 0){
+                shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            }
+
+            DataShortBlockchainInformation temp =Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
             DataShortBlockchainInformation testVersion = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("original: " + shortDataBlockchain);
