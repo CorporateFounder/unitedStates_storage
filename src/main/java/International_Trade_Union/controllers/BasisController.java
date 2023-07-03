@@ -168,30 +168,30 @@ public class BasisController {
 
 
     /**Возвращает EntityChain который хранит в себе размер блокчейна и список блоков*/
-    @GetMapping("/chain")
-    @ResponseBody
-    public  EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        System.out.println("start /chain");
-//       if(isSave == false)
-//
-//        while (isSave == false){
-////            System.out.println("cannot save, because updating data");
+//    @GetMapping("/chain")
+//    @ResponseBody
+//    public  EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+//        System.out.println("start /chain");
+////       if(isSave == false)
+////
+////        while (isSave == false){
+//////            System.out.println("cannot save, because updating data");
+////        }
+////        if(isSave == true)
+////            System.out.println("start /chain");
+//        if(blockchainValid == false || blockcheinSize == 0){
+//            System.out.println("update blockchain");
+//            blockchain = Mining.getBlockchain(
+//                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+//                BlockchainFactoryEnum.ORIGINAL);
+//            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            blockcheinSize = (int) shortDataBlockchain.getSize();
+//            blockchainValid = shortDataBlockchain.isValidation();
 //        }
-//        if(isSave == true)
-//            System.out.println("start /chain");
-        if(blockchainValid == false || blockcheinSize == 0){
-            System.out.println("update blockchain");
-            blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
-            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            blockcheinSize = (int) shortDataBlockchain.getSize();
-            blockchainValid = shortDataBlockchain.isValidation();
-        }
-        System.out.println("finish /chain");
-        List<Block> blockList = Blockchain.subFromFile(0, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        return new EntityChain(blockcheinSize, blockList);
-    }
+//        System.out.println("finish /chain");
+//        List<Block> blockList = Blockchain.subFromFile(0, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//        return new EntityChain(blockcheinSize, blockList);
+//    }
 
     /**возвращяет размер локального блокчейна*/
     @GetMapping("/size")
@@ -429,16 +429,16 @@ public class BasisController {
         System.out.println("finish save in addBlock");
         System.out.println("saving block: " + orignalBlocks.size());
 
-        blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
-        if(!shortDataBlockchain.isValidation()
-        || shortDataBlockchain.getSize() == 0
-        || shortDataBlockchain.getHashCount() == 0){
-            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            blockcheinSize = (int) shortDataBlockchain.getSize();
-            blockchainValid = shortDataBlockchain.isValidation();
-        }
+//        blockchain = Mining.getBlockchain(
+//                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+//                BlockchainFactoryEnum.ORIGINAL);
+//        if(!shortDataBlockchain.isValidation()
+//        || shortDataBlockchain.getSize() == 0
+//        || shortDataBlockchain.getHashCount() == 0){
+//            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            blockcheinSize = (int) shortDataBlockchain.getSize();
+//            blockchainValid = shortDataBlockchain.isValidation();
+//        }
 
 
         System.out.println("finish add block");
@@ -499,11 +499,11 @@ public class BasisController {
             }
 
             DataShortBlockchainInformation temp =Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-            DataShortBlockchainInformation testVersion = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+//            DataShortBlockchainInformation testVersion = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("original: " + shortDataBlockchain);
             System.out.println("temp: " + temp);
-            System.out.println("test version: " + testVersion);
+//            System.out.println("test version: " + testVersion);
 
             System.out.println("address mininer: " + blocks.get(blocks.size()-1).getMinerAddress());
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
