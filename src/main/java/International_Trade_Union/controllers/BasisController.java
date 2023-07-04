@@ -429,16 +429,6 @@ public class BasisController {
         System.out.println("finish save in addBlock");
         System.out.println("saving block: " + orignalBlocks.size());
 
-//        blockchain = Mining.getBlockchain(
-//                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-//                BlockchainFactoryEnum.ORIGINAL);
-//        if(!shortDataBlockchain.isValidation()
-//        || shortDataBlockchain.getSize() == 0
-//        || shortDataBlockchain.getHashCount() == 0){
-//            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//            blockcheinSize = (int) shortDataBlockchain.getSize();
-//            blockchainValid = shortDataBlockchain.isValidation();
-//        }
 
 
         System.out.println("finish add block");
