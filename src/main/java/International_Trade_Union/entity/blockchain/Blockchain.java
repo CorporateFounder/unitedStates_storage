@@ -314,14 +314,14 @@ public class Blockchain implements Cloneable{
 
                     if(index == size){
                         block = UtilsJson.jsonToBLock(s);
-                        System.out.println("block index: " + block.getIndex() + " size: "
-                        + size);
+//                        System.out.println("block index: " + block.getIndex() + " size: "
+//                        + size);
 
                         if(block.getIndex() == size) {
-                            System.out.println("************************************");
-                            System.out.println("indexFromFile:  " + block.getIndex() + " index: "
-                                    + index + " size: " + size);
-                            System.out.println("************************************");
+//                            System.out.println("************************************");
+//                            System.out.println("indexFromFile:  " + block.getIndex() + " index: "
+//                                    + index + " size: " + size);
+//                            System.out.println("************************************");
 
                             return block;
                         }

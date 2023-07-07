@@ -249,7 +249,7 @@ public class BasisController {
     @PostMapping("/block")
     @ResponseBody
     public Block getBlock(@RequestBody Integer index) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        System.out.println("start getBlock");
+//        System.out.println("start getBlock");
         if(blockchainValid == false || blockcheinSize == 0){
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
@@ -258,7 +258,7 @@ public class BasisController {
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
         }
-        System.out.println("finish getBlock");
+//        System.out.println("finish getBlock");
         return Blockchain.indexFromFile(index, Seting.ORIGINAL_BLOCKCHAIN_FILE);
     }
     @GetMapping("/nodes/resolve")
@@ -419,7 +419,7 @@ public class BasisController {
     }
 
     public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        System.out.println("start addBLock");;
+        System.out.println("start addBLock");
         isSave = false;
         System.out.println("start  save in addBlock");
 
@@ -427,11 +427,6 @@ public class BasisController {
             UtilsBlock.saveBLock(block, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         }
         System.out.println("finish save in addBlock");
-        System.out.println("saving block: " + orignalBlocks.size());
-
-
-
-        System.out.println("finish add block");
         System.out.println("BasisController: addBlock: finish");
 
 
@@ -489,11 +484,11 @@ public class BasisController {
             }
 
             DataShortBlockchainInformation temp =Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-//            DataShortBlockchainInformation testVersion = Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("original: " + shortDataBlockchain);
             System.out.println("temp: " + temp);
-//            System.out.println("test version: " + testVersion);
+
 
             System.out.println("address mininer: " + blocks.get(blocks.size()-1).getMinerAddress());
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");

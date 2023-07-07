@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"/>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<header th:insert="blocks/header :: header "></header>
+
+
+<div class="alert alert-info mt-2">
+    <h6 th:text="':' + ${text1}"/>
+    <img  th:src="@{/how_to_transaction_p/update_blockchainEng.png}"/>
+    <h6 th:text="':' + ${text2}"/>
+    <img  th:src="@{/how_to_transaction_p/send-moneyEng.png}"/>
+</div>
+
+
+
+</div>
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>
