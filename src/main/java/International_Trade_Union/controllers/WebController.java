@@ -23,7 +23,7 @@ import java.util.List;
 public class WebController {
     @GetMapping("/")
     public String mainPage(Model model){
-        model.addAttribute("title", "Main page test");
+        model.addAttribute("title", "Main page");
         model.addAttribute("Summary", "Summary and Benefits");
         model.addAttribute("discord", "https://discord.gg/MqkvC3SGHH");
         model.addAttribute("telegram", "https://t.me/citu_coin");
@@ -32,25 +32,16 @@ public class WebController {
 
 
         model.addAttribute("text",
-                "1. There are no such problems as halving or inflation, as in other coins. All coins are " +
-                "divided into two groups, they either reduce production like bitcoin every four years," +
-                " which leads to the bankruptcy of small miners, since the cost of electricity is constant," +
-                " and the cost does not always double after halving, which reduces profits. " +
-                "There are coins that do not limit production, but then inflation occurs." +
-                " In this coin, we burn from all accounts every six months 0.1% of digital dollars and 0.2% " +
-                "of digital shares, which allows miners to always mine the same number of coins, but the " +
-                "total amount of money never increases.\n" +
-                "2. A unique electoral system that allows you to elect your representatives and directly " +
-                "vote on the rules of the network, which will prevent the community from splitting as" +
-                " it happened in other coins, when the community was forced to create hard forks simply" +
-                " because of the block size. This system has a contract mechanism.\n" +
-                "3. You can mine blocks immediately from your computer on a local server." +
-                " Your blocks will be transferred to the global server, which only stores," +
-                " distributes and records the blockchain.\n" +
-                "4. You can mine up to 576 blocks per day, and for" +
-                " each block you will receive 400 digital dollars and 400 digital shares. " +
-                "5. The unique architecture allows you to maintain a higher reliability of your money, " +
-                "while maintaining high competition among miners, allowing participants to mine more blocks.");
+                "1. The unique mining algorithm allows participants to continuously mine 400 digital dollars and digital shares without creating inflation.\n" +
+                        "2. Every six months, 0.1% of digital dollars and 0.2% of digital shares are burned, which allows the destruction of the same amount of coins that was created. Thus the total number of coins in a hundred years will not exceed 11 billion and will always be about 10 billion.\n" +
+                        "3. Difficulty is adjusted every 12 hours, allowing members to mine 576 blocks daily.\n" +
+                        "4. High transaction speed, as all transactions go to the global server and all miners simultaneously add transactions to the block, so the chance of your transaction hitting is higher than in other currencies.\n" +
+                        "5. The world's first cryptocurrency to achieve coin cap by burning and there are no more halvings that bring bankruptcies.\n" +
+                        "6. A unique voting system that allows participants to coordinate their actions very quickly and with minimal losses.\n" +
+                        "7. Due to the fact that coins are burned every half a year, conditions are created for exchange rate stability and become profitable for long-term investments." +
+                        "8. The number of mined coins and the percentage of burning was determined on the basis of knowledge of macroeconomics and also took into account such schools as the monetarism of Milton Friedman, the Austrian School of Economics, Silvio Gezel, as well as rich experience in the field of sociology, and trading on the forex exchange. Every detail including voting has been developed on the basis of scientific knowledge and scientific articles in the field of politics and economics." +
+                        "9. This system uses the SHA - 256 algorithm where a block is considered valid if its number of leading zeros corresponds to the complexity of the defined algorithm, which is optimized every 12 hours."
+                        );
 
         return "main";
     }

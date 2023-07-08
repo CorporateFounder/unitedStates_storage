@@ -1,8 +1,6 @@
 package International_Trade_Union.controllers;
 
-import International_Trade_Union.entity.AddressUrl;
-import International_Trade_Union.entity.SendBlocksEndInfo;
-import International_Trade_Union.entity.SubBlockchainEntity;
+import International_Trade_Union.entity.*;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import org.json.JSONException;
 
@@ -14,7 +12,6 @@ import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.config.BLockchainFactory;
 import International_Trade_Union.config.BlockchainFactoryEnum;
-import International_Trade_Union.entity.EntityChain;
 import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
@@ -39,6 +36,7 @@ import java.util.stream.Collectors;
 
 @RestController
 public class BasisController {
+    private static long dificultyOneBlock;
     private static boolean isSaveFile = true;
     private static Block prevBlock = null;
     private static DataShortBlockchainInformation shortDataBlockchain = null;
@@ -141,6 +139,18 @@ public class BasisController {
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
             prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            if(blockcheinSize > 600){
+                dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
+                        blockcheinSize-600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
+                        Seting.BLOCK_GENERATION_INTERVAL,
+                        Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+            }
+            else {
+                dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
+                                blockcheinSize-600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
+                        Seting.BLOCK_GENERATION_INTERVAL,
+                        Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+            }
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -537,6 +547,18 @@ public class BasisController {
                      System.out.println("after original: " + shortDataBlockchain);
                          System.out.println("after temp: " + temp);
                          prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                if(blockcheinSize > 600){
+                    dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
+                                    blockcheinSize-600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
+                            Seting.BLOCK_GENERATION_INTERVAL,
+                            Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                }
+                else {
+                    dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
+                                    0, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
+                            Seting.BLOCK_GENERATION_INTERVAL,
+                            Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                }
                     System.out.println("*************************************");
 
 
@@ -632,8 +654,6 @@ public class BasisController {
         }
 
     }
-
-
     public static void sendAddress() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         //лист временный для отправки аддресов
 
@@ -662,6 +682,15 @@ public class BasisController {
 
 
         }
+    }
+
+
+    @GetMapping("/difficultyBlockchain")
+    public InfoDificultyBlockchain dificultyBlockchain(){
+        InfoDificultyBlockchain dificultyBlockchain = new InfoDificultyBlockchain();
+       dificultyBlockchain.setDifficultyAllBlockchain(shortDataBlockchain.getHashCount());
+       dificultyBlockchain.setDiffultyOneBlock(dificultyOneBlock);
+        return dificultyBlockchain;
     }
 }
 
