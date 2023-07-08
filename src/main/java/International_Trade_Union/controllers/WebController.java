@@ -286,7 +286,7 @@ public class WebController {
         return "how_to_make_laws";
     }
 
-    @GetMapping("/how_to_vote_and_what_voting_types_are there")
+    @GetMapping("/how_to_vote_and_what_voting_types_are_there")
     public String howToVoteAndWhatVotingTypesAreThere(Model model){
         model.addAttribute("text1", "There are three types of voting that are used here." +
                 "1. ONE_VOTE (One Voice)\n" +
@@ -370,6 +370,6 @@ public class WebController {
                 "The 1 candidate who receives the most share ranking votes and the most faction ranking votes (more than 15% of the rating) becomes the Executive CEO.\n" +
                 "5. How laws are elected, any package of laws must receive more than 1 rating from the number of votes of shares and a rating from the votes of factions above 15% percent, then it is valid.");
 
-        return "how_to_vote_and_what_voting_types_are there";
+        return "how_to_vote_and_what_voting_types_are_there";
     }
 }
