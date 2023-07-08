@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"/>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<header th:insert="blocks/header :: header "></header>
+
+
+<div class="alert alert-info mt-2">
+    <h6 th:text="${text1}"/>
+    <h6 th:text="${text2}"/>
+    <h6 th:text="${text3}"/>
+
+    <img  th:src="@{/vote_p/vote1.png}"/>
+    <img  th:src="@{/vote_p/vote2.png}"/>
+    <img  th:src="@{/vote_p/vote3.png}"/>
+    <img  th:src="@{/vote_p/vote4.png}"/>
+
+
+
+</div>
+
+
+
+
+</div>
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>

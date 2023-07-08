@@ -262,9 +262,114 @@ public class WebController {
                 "2. Judges can only be 55 accounts with the highest number of ratings received from rating shares.\n" +
                 "3. fractions can be only two hundred with the highest number of ratings received from the rating of shares.\n" +
                 "4. Only one account with the highest number of ratings received from shares and from factions can be the CEO.\n" +
-                "5. Only one account with the highest number of ratings received from shares and from judges can be the chief judge.");
+                "5. Only one account with the highest number of ratings received from shares and from judges can be the chief judge." +
+                "all positions thus elected are legitimate.");
+        model.addAttribute("text3", "1. for the election of judges and factions, it is necessary that the rating with the help of shares be more than one,\n" +
+                "2. further all participants are sorted and participants with the highest number of ratings are selected.\n" +
+                "3. In order to elect a Chief Justice, apart from the fact that his rating received from shares must be high, he must also receive at least a rating from judges of 2 or more.\n" +
+                "4. For the CEO, also the rating received from the shares must be the highest and the rating from the factions must be 15% or more.\n" +
+                "Judges vote according to the ONE_VOTE type, participants who have just shares vote according to the STOCK_VOTE type and fractions vote according to the FRACTION_VOTE type");
 
         return "how_to_apply_for_a_job";
 
+    }
+
+    @GetMapping("/how_to_make_laws")
+    public String howToMakeLaws(Model model){
+        model.addAttribute("text1", "1. Go to the CREATE LAWS PACKAGE tab.\n" +
+                "2. fill in the fields, the name of the package must be filled in\n" +
+                "in capital letters and if the package name consists of several words, " +
+                "then they must be separated by an underscore: Example: LAW_ON_FREEDOM.\n" +
+                "after you click the send button, this transaction will go to all participants " +
+                "and when the miners include this transaction in the blockchain, it will go " +
+                "to the ALL CREATED LAW PACKAGES tab.");
+        return "how_to_make_laws";
+    }
+
+    @GetMapping("/how_to_vote_and_what_voting_types_are there")
+    public String howToVoteAndWhatVotingTypesAreThere(Model model){
+        model.addAttribute("text1", "There are three types of voting that are used here." +
+                "1. ONE_VOTE (One Voice)\n" +
+                "\n" +
+                "When these positions are voted count as one score = one vote\n" +
+                "(CORPORATE_COUNCIL_OF_REFEREES-Council of Corporate Judges,\n" +
+                "GENERAL_EXECUTIVE_DIRECTOR-General Executive Director,\n" +
+                "HIGH_JUDGE - Supreme Judge and Board of Shareholders).\n" +
+                "Each score that starts with LIBER counts all votes FOR (VoteEnum.YES) and AGAINST (VoteEnum.NO) for it\n" +
+                "further deducted from FOR - AGAINST = if the balances are above the threshold, then it becomes the current law. But if a position is elected,\n" +
+                "then after that it is sorted from largest to smallest and the largest number that is described for this position is selected.\n" +
+                "Recalculation of votes occurs every block.\n" +
+                "\n" +
+                "After voting, the vote can only be changed to the opposite one.\n" +
+                "There is no limit on the number of times you can change your vote. Only those votes that are given by accounts are taken into account\n" +
+                "in his position, for example, if the account ceased to be in CORPORATE_COUNCIL_OF_REFEREES, his vote as\n" +
+                "CORPORATE_COUNCIL_OF_REFEREES does not count and will not count in voting. All votes are valid until the bills\n" +
+                "voters are in their positions. Only those votes from which no more than\n" +
+                "four years, but each participant may at any time renew their vote." +
+                "" +
+                "2. VOTE_STOCK (How shares are voted.)\n" +
+                "How shares are voted.\n" +
+                "1. The number of shares is equal to the number of votes.\n" +
+                "2. Your votes are recounted every block and if you lose your shares,\n" +
+                "   or increase your shares, your cast votes also change\n" +
+                "   according to the number of shares.\n" +
+                "3. For each law that you voted, for this law, all\n" +
+                "   FOR and AGAINST and after that with FOR minus AGAINST and this is the rating of the law.\n" +
+                "4. Your votes are divided separately for all the laws that you voted FOR and separately AGAINST\n" +
+                "   Example: you have 100 shares and you voted FOR one candidate and for one law,\n" +
+                "   you also voted AGAINST two candidates and two laws.\n" +
+                "   Now each of your candidates and the law for which you voted FOR will receive 50 votes.\n" +
+                "   and for which you voted AGAINST will receive 25 votes AGAINST.\n" +
+                "   the formula is simple FOR/number of laws and AGAINST/number of laws you are against." +
+                "" +
+                "3. FAVORITE_FRACTION\n" +
+                "The faction is extracted like the chief judges, 200 scores received by the maximum number of votes\n" +
+                "from a unique electoral one, as previously and an observed share equal to one vote of the described\n" +
+                "in VOTE_STOCK\n" +
+                "\n" +
+                "#VOTE_FRACTION\n" +
+                "This voting system is used only for factions.\n" +
+                "First, 200 factions are selected that have become legitimate.\n" +
+                "Then all the votes given to 200 selected factions are summed up.\n" +
+                "After that, the share of each fraction from the total amount is determined.\n" +
+                "votes cast for this faction.\n" +
+                "The number of votes of each faction is equal to its percentage shares.\n" +
+                "Thus, if a faction has 23% of the votes of all votes, out of\n" +
+                "200 factions, then her vote is equal to 23%.\n" +
+                "On behalf of the factions, the leaders always act and because of this it is\n" +
+                "First of all, the leader system. Identical factions with ideological\n" +
+                "system here can be represented by different leaders, even\n" +
+                "if they are from the same community.\n" +
+                "\n" +
+                "Then every time a faction votes for laws,\n" +
+                "that start with LIBER (VoteEnum.YES) or (VoteEnum.NO).\n" +
+                "This law counts all the votes given *** for ***\n" +
+                "and *** against ***, after which it is subtracted from *** for *** - *** against ***.\n" +
+                "This result is displayed as a percentage.");
+
+        model.addAttribute("text2", "to vote you have to do a few things.\n" +
+                "1. First you must go to the tab of all created law packages.\n" +
+                "2. see the details of this law, if it is a network rule, there will be a list of laws inside the package.\n" +
+                "3. if this is a candidate, then the first line inside the packet will be the address of the candidate.\n" +
+                "4. copy the address of the law, it always starts with LIBER\n" +
+                "5. enter the vote tab.\n" +
+                "6. Enter your address in the first line.\n" +
+                "7. to the second address of the law,\n" +
+                "8. enter the amount of remuneration to the earner in digital dollars. Choose your vote YES or NO and click vote.");
+
+        model.addAttribute("text3", "1. If you are an independent member and your account is not an elected position, then your vote will be counted according to the second type.\n" +
+                "2. If you are a judge and you vote for chief judge, then your vote will be counted according to the first type only if you vote for chief judge, as a judge.\n" +
+                "3. if you are a faction and you vote for laws or the CEO, your vote will be counted by\n" +
+                "the third type, but if you do not vote for candidates of other positions.\n" +
+                "If you are a member of the Board of Shareholders and vote for amendments, then you vote by type 1.\n" +
+                "\n" +
+                "1. how the faction is elected. The 200 candidates who received the highest number of share rankings become factions.\n" +
+                "2. how judges are elected. The 55 candidates who receive the most votes in the ranking of the shares become judges.\n" +
+                "3. How the Chief Justice is elected. 1 candidate who received the most votes of the share rating and the most (more than 2 votes) the number of ratings from the votes of the judges, becomes the supreme judge.\n" +
+                "4. how the CEO is elected.\n" +
+                "The 1 candidate who receives the most share ranking votes and the most faction ranking votes (more than 15% of the rating) becomes the Executive CEO.\n" +
+                "5. How laws are elected, any package of laws must receive more than 1 rating from the number of votes of shares and a rating from the votes of factions above 15% percent, then it is valid.");
+
+        return "how_to_vote_and_what_voting_types_are there";
     }
 }
