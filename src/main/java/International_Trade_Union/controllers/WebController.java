@@ -245,4 +245,26 @@ public class WebController {
         return "how_to_transaction";
     }
 
+    @GetMapping("/how_to_apply_for_a_job")
+    public String howToApplyForAJob(Model model){
+        model.addAttribute("title", "how to apply for a job");
+        model.addAttribute("text1", "In this system, you can be elected as an independent judge, chief executive officer, chief justice, or a faction delegate representing a certain percentage of the shareholders. All positions are elected.\n" +
+                "1. All positions are elected.\n" +
+                "2. ordinary judges and factions are elected by any member of the network,\n" +
+                "who has shares.\n" +
+                "3. The chief judge is elected by the judges.\n" +
+                "4. the general executive judge is elected by the faction\n" +
+                "5. but it is important for the chief justice and the CEO that the shareholders also vote positively.\n" +
+                "6. at any time, network members can change their vote and remove from office.\n" +
+                "7. It is the rating that is taken into account everywhere, the rating is calculated as all votes YES-NO and this result is the rating.\n" +
+                "8. Only votes cast in the last four years count.");
+        model.addAttribute("text2", "1. all places are limited.\n" +
+                "2. Judges can only be 55 accounts with the highest number of ratings received from rating shares.\n" +
+                "3. fractions can be only two hundred with the highest number of ratings received from the rating of shares.\n" +
+                "4. Only one account with the highest number of ratings received from shares and from factions can be the CEO.\n" +
+                "5. Only one account with the highest number of ratings received from shares and from judges can be the chief judge.");
+
+        return "how_to_apply_for_a_job";
+
+    }
 }

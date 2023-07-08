@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"/>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<header th:insert="blocks/header :: header "></header>
+
+
+<div class="alert alert-info mt-2">
+    <h6 th:text="${text}"/>
+
+    <img  th:src="@{/app_a_job_p/apply1.png}"/>
+    <img  th:src="@{/app_a_job_p/apply2.png}"/>
+    <img  th:src="@{/app_a_job_p/apply3.png}"/>
+    <img  th:src="@{/app_a_job_p/apply4.png}"/>
+
+
+
+</div>
+
+
+
+
+</div>
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>
