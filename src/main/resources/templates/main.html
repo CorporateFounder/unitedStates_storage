@@ -7,13 +7,22 @@
 </head>
 <body>
 <header th:insert="blocks/header :: header "></header>
+
 <div class="alert alert-info mt-2">
-    <h1 th:text="${Summary}"/>
-    <h6 th:text="${text}"/>
+    <h6 th:text="'blockchain size: '+${size}"/>
+    <h6 th:text="'difficulty one block: '+${difficulty}"/>
+    <h6 th:text="'difficulty all blockchain: '+${difficultyAll}"/>
+</div>
+<div class="alert alert-info mt-2">
     <h6 th:text="'discord: '+${discord}"/>
     <h6 th:text="'telegeram: '+${telegram}"/>
     <h6 th:text="'wallet: '+${github}"/>
     <h6 th:text="'global server: '+${storage}"/>
+</div>
+<div class="alert alert-info mt-2">
+    <h1 th:text="${Summary}"/>
+    <h6 th:text="${text}"/>
+
 </div>
 
 <div class="container mt-5">
@@ -48,7 +57,7 @@
                     <li class="nav-item mb-2"><a href="/how_to_apply_for_a_job" class="nav-link p-0 text-body-secondary">how to apply for a job</a></li>
                     <li class="nav-item mb-2"><a href="/how_to_make_laws" class="nav-link p-0 text-body-secondary">how_to_make_laws</a></li>
                     <li class="nav-item mb-2"><a href="/how_to_vote_and_what_voting_types_are_there" class="nav-link p-0 text-body-secondary">how to vote and_what voting types are there</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-body-secondary">empty</a></li>
+                    <li class="nav-item mb-2"><a href="/solving_common_problems" class="nav-link p-0 text-body-secondary">solving_common_problems</a></li>
                 </ul>
             </div>
 

@@ -45,6 +45,19 @@ public class BasisController {
     private static Blockchain blockchain;
     private static Set<String> excludedAddresses = new HashSet<>();
     private static boolean isSave = true;
+
+    public static long getDificultyOneBlock() {
+        return dificultyOneBlock;
+    }
+
+    public static DataShortBlockchainInformation getShortDataBlockchain() {
+        return shortDataBlockchain;
+    }
+
+    public static int getBlockcheinSize() {
+        return blockcheinSize;
+    }
+
     public static HttpServletRequest getCurrentRequest() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if(requestAttributes == null)
@@ -119,15 +132,6 @@ public class BasisController {
     }
 
 
-    /**Возвращяет действующий блокчейн*/
-//    public static Blockchain getBlockchain() {
-//        return blockchain;
-//    }
-//
-//    public static synchronized void setBlockchain(Blockchain blockchain) {
-//        BasisController.blockchain = blockchain;
-//    }
-
     static {
         try {
             UtilsCreatedDirectory.createPackages();
@@ -176,41 +180,11 @@ public class BasisController {
     //TODO otherwise there will be a discrepancy in the balance file
 
 
-
-    /**Возвращает EntityChain который хранит в себе размер блокчейна и список блоков*/
-//    @GetMapping("/chain")
-//    @ResponseBody
-//    public  EntityChain full_chain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-//        System.out.println("start /chain");
-////       if(isSave == false)
-////
-////        while (isSave == false){
-//////            System.out.println("cannot save, because updating data");
-////        }
-////        if(isSave == true)
-////            System.out.println("start /chain");
-//        if(blockchainValid == false || blockcheinSize == 0){
-//            System.out.println("update blockchain");
-//            blockchain = Mining.getBlockchain(
-//                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-//                BlockchainFactoryEnum.ORIGINAL);
-//            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//            blockcheinSize = (int) shortDataBlockchain.getSize();
-//            blockchainValid = shortDataBlockchain.isValidation();
-//        }
-//        System.out.println("finish /chain");
-//        List<Block> blockList = Blockchain.subFromFile(0, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//        return new EntityChain(blockcheinSize, blockList);
-//    }
-
     /**возвращяет размер локального блокчейна*/
     @GetMapping("/size")
     @ResponseBody
     public  Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, InterruptedException {
         System.out.println("start /size");
-//        while (isSave ==false){
-////            System.out.println("now saving new blockchain");
-//        }
         if(blockcheinSize == 0){
             System.out.println("blockchain is 0 blockchainSize " + blockcheinSize);
             blockchain = Mining.getBlockchain(

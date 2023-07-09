@@ -23,12 +23,16 @@ import java.util.List;
 public class WebController {
     @GetMapping("/")
     public String mainPage(Model model){
+        model.addAttribute("size", BasisController.getBlockcheinSize());
+        model.addAttribute("difficulty", BasisController.getDificultyOneBlock());
+        model.addAttribute("difficultyAll", BasisController.getShortDataBlockchain().getHashCount());
         model.addAttribute("title", "Main page");
         model.addAttribute("Summary", "Summary and Benefits");
         model.addAttribute("discord", "https://discord.gg/MqkvC3SGHH");
         model.addAttribute("telegram", "https://t.me/citu_coin");
         model.addAttribute("github", "https://github.com/CorporateFounder/unitedStates_final");
         model.addAttribute("storage", "https://github.com/CorporateFounder/unitedStates_storage");
+
 
 
         model.addAttribute("text",
@@ -362,5 +366,38 @@ public class WebController {
                 "5. How laws are elected, any package of laws must receive more than 1 rating from the number of votes of shares and a rating from the votes of factions above 15% percent, then it is valid.");
 
         return "how_to_vote_and_what_voting_types_are_there";
+    }
+
+    @GetMapping("/solving_common_problems")
+    public String solvingCommonProblems(Model model){
+        model.addAttribute("titile", "solving common problems");
+        List<String> list = new ArrayList<>();
+        list.add("1. Problem with the port.\n" +
+                "If you see this error on the command line, then take this port.\n" +
+                "This problem occurs if you are on the same computer twice without closing the previous\n" +
+                "command line trying to run the program. You need to restart your computer.\n" +
+                "***************************\n" +
+                "APPLICATION FAILED TO START\n" +
+                "***************************\n" +
+                "Description:\n" +
+                "Web server failed to start. Port 8082 was already in use.\n" +
+                "action:\n" +
+                "Identify and stop the process that's listening on port 8082 or configure this application to listen on another port.\n");
+        list.add("2. Sometimes the balance display disappears.\n" +
+                "This occurs when, for some reason, the blockchain is incorrectly recorded.\n" +
+                "The actual blockchain is always stored in the global server.\n" +
+                "And to restore your balance, it is enough to update the blockchain on the main page.\n");
+        list.add("3. Your local blockchain outperforms the global one and then gets deleted and part of the balance is lost.\n" +
+                "The system after each finding of the block tries to connect to the global network for one minute,\n" +
+                "transfer the actual blockchain there. If, for example, there are 20 blocks on the global server,\n" +
+                "and you are trying to add N blocks, but their index continues the global blockchain. 21, 22, .... etc.\n" +
+                "Then when your wallet can connect, your block will be added.\n" +
+                "If your branch is different from the global one and perhaps someone has already added 21 blocks, then your\n" +
+                "blocks are removed and your balance is lost because of this. How so your balance contained not up-to-date\n" +
+                "blockchain.");
+
+        model.addAttribute("list", list);
+
+        return "solving_common_problems";
     }
 }
