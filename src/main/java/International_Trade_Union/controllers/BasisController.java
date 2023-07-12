@@ -100,19 +100,19 @@ public class BasisController {
 
         nodes = new HashSet<>();
 
-        Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+//        Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
 
-        nodes.addAll(temporary);
+//        nodes.addAll(temporary);
 
 
-        nodes = nodes.stream()
-                .filter(t -> !t.isBlank())
-                .filter(t -> t.startsWith("\""))
-                .collect(Collectors.toSet());
-        nodes = nodes.stream().map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
-        Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-        nodes.removeAll(bloked);
+//        nodes = nodes.stream()
+//                .filter(t -> !t.isBlank())
+//                .filter(t -> t.startsWith("\""))
+//                .collect(Collectors.toSet());
+//        nodes = nodes.stream().map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+//        Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+//        nodes.removeAll(bloked);
         nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
         nodes.addAll(Seting.ORIGINAL_ADDRESSES);
         return nodes;
