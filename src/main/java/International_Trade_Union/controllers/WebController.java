@@ -36,15 +36,20 @@ public class WebController {
 
 
         model.addAttribute("text",
-                "1. The unique mining algorithm allows participants to continuously mine 400 digital dollars and digital shares without creating inflation.\n" +
-                        "2. Every six months, 0.1% of digital dollars and 0.2% of digital shares are burned, which allows the destruction of the same amount of coins that was created. Thus the total number of coins in a hundred years will not exceed 11 billion and will always be about 10 billion.\n" +
-                        "3. Difficulty is adjusted every 12 hours, allowing members to mine 576 blocks daily.\n" +
-                        "4. High transaction speed, as all transactions go to the global server and all miners simultaneously add transactions to the block, so the chance of your transaction hitting is higher than in other currencies.\n" +
-                        "5. The world's first cryptocurrency to achieve coin cap by burning and there are no more halvings that bring bankruptcies.\n" +
-                        "6. A unique voting system that allows participants to coordinate their actions very quickly and with minimal losses.\n" +
-                        "7. Due to the fact that coins are burned every half a year, conditions are created for exchange rate stability and become profitable for long-term investments." +
-                        "8. The number of mined coins and the percentage of burning was determined on the basis of knowledge of macroeconomics and also took into account such schools as the monetarism of Milton Friedman, the Austrian School of Economics, Silvio Gezel, as well as rich experience in the field of sociology, and trading on the forex exchange. Every detail including voting has been developed on the basis of scientific knowledge and scientific articles in the field of politics and economics." +
-                        "9. This system uses the SHA - 256 algorithm where a block is considered valid if its number of leading zeros corresponds to the complexity of the defined algorithm, which is optimized every 12 hours."
+                "Hello bro.\n" +
+                        "If you are reading this text, you have stumbled upon a cryptocurrency that is completely written from scratch and is unique.\n" +
+                        "What are its benefits.\n" +
+                        "1. He has a unique mining system built on the basis of SHA - 256.\n" +
+                        "2. Difficulty adapts every 12 hours.\n" +
+                        "3. Two types of coins are mined at the same time, DIGITAL DOLLARS and DIGITAL SHARES.\n" +
+                        "4. A unique system that allows you to mine each block for 400 DIGITAL DOLLARS and 400 DIGITAL SHARES, while the total money supply does not constantly grow, since 0.2% of digital dollars and 0.4% of digital shares are burned from each account every six months.\n" +
+                        "5. An election system that allows you to create your own faction and vote on the rules of the network directly.\n" +
+                        "6. Budget system, a public budget that can be spent with the help of shareholder votes.\n" +
+                        "7. A unique system of government that is built with elements of the English Parliament and a charter that was inspired by the US constitution and Libertarian principles including the NAP.\n" +
+                        "8. The ability to mine blocks directly on the local server, which automatically connects to the global server that only stores, updates and gives the current blockchain.\n" +
+                        "9. There are 576 blocks per day.\n" +
+                        "10. All settings are made taking into account knowledge in the field of Macroeconomics and took into account such schools as Milton Friedman's Monetarism, the Austrian School of Economics (Mises, Hayek), Silvio Gezel - money with demurrage and other books.\n" +
+                        "11. The algorithm is designed in such a way that over time the economy will grow more steadily and will have a more stable course, which will prevent future crises such as the Deflationary Spiral and Stagflation, and also allow for the optimal development of all of humanity."
                         );
 
         return "main";

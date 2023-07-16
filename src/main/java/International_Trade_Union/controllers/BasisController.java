@@ -247,7 +247,7 @@ public class BasisController {
     }
     @GetMapping("/nodes/resolve")
     public synchronized int resolve_conflicts() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException {
-        System.out.println("start resolve");
+        System.out.println(" :start resolve");
         Blockchain temporaryBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         Blockchain bigBlockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
         if(blockchainValid == false || blockcheinSize == 0){
@@ -264,7 +264,7 @@ public class BasisController {
         long hashCountZeroTemporary = 0;
         long hashCountZeroBigBlockchain = 0;
         EntityChain entityChain = null;
-        System.out.println("resolve_conflicts: blocks_current_size: " + blocks_current_size);
+        System.out.println(" :resolve_conflicts: blocks_current_size: " + blocks_current_size);
         long hashCountZeroAll = 0;
         //count hash start with zero all
 
@@ -272,94 +272,105 @@ public class BasisController {
 
         Set<String> nodesAll = getNodes();
 
-        System.out.println("BasisController: resolve_conflicts: size nodes: " + getNodes().size());
+        System.out.println(":BasisController: resolve_conflicts: size nodes: " + getNodes().size());
         for (String s : nodesAll) {
-            System.out.println("while resolve_conflicts: node address: " + s);
+            System.out.println(":while resolve_conflicts: node address: " + s);
             String temporaryjson = null;
 
             if (BasisController.getExcludedAddresses().contains(s)) {
-                System.out.println("its your address or excluded address: " + s);
+                System.out.println(":its your address or excluded address: " + s);
                 continue;
             }
             try {
                 if(s.contains("localhost") || s.contains("127.0.0.1"))
-                    continue;
-                String address = s + "/chain";
+                    continue;;
 
-                System.out.println("resolve_conflicts: start /size");
-                System.out.println("BasisController:resolve conflicts: address: " + s + "/size");
+
+                System.out.println("start:BasisController:resolve conflicts: address: " + s + "/size");
                 String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
                 Integer size = Integer.valueOf(sizeStr);
 
-                System.out.println("resolve_conflicts: finish /size: " + size);
+                System.out.println(" :resolve_conflicts: finish /size: " + size);
                 if (size > blocks_current_size) {
 
-                    System.out.println("size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
+                    System.out.println(":size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
                     //Test start algorithm
                     SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(blocks_current_size, size);
                     String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
 
                     List<Block> emptyList = new ArrayList<>();
 
-                    System.out.println("download sub block: " + subBlockchainJson);
+                    System.out.println(":download sub block: " + subBlockchainJson);
                     List<Block> subBlocks = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                     emptyList.addAll(subBlocks);
-                    if(blocks_current_size > 1)
-                        emptyList.addAll(Blockchain.subFromFile(0, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE));
+                    System.out.println("blocks_current_size: " + blocks_current_size);
+                    System.out.println("sub: " + subBlocks.get(0).getIndex() + ":" + subBlocks.get(0).getHashBlock()+":"
+                            +"prevHash: " + subBlocks.get(0).getPreviousHash());
+                    if(blocks_current_size > 0){
+                        System.out.println("sub: from 0 " + ":" + blocks_current_size );
+                        List<Block> temp =blockchain.subBlock(0, blocks_current_size);
+
+                        emptyList.addAll(temp);
+                    }
+
 
                     emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                     temporaryBlockchain.setBlockchainList(emptyList);
-
+                    System.out.println("resolve: temporaryBlockchain: " + temporaryBlockchain.validatedBlockchain());
                     if (!temporaryBlockchain.validatedBlockchain()) {
-                        System.out.println("download blocks");
+                        System.out.println(":download blocks");
                         emptyList = new ArrayList<>();
 
                         for (int i = size - 1; i > 0; i--) {
 
                             Block block = UtilsJson.jsonToBLock(UtilUrl.getObject(UtilsJson.objToStringJson(i), s + "/block"));
 
-                            if(i > blockcheinSize -1){
-                                System.out.println("download blocks: " + block.getIndex()+
-                                        " your block : " + (blockcheinSize ));
+                            System.out.println("block index: " + block.getIndex());
+                            if(i >  blocks_current_size-1){
+                                System.out.println(":download blocks: " + block.getIndex()+
+                                        " your block : " + (blocks_current_size ) + ":wating need downoad blocks: "  + (block.getIndex()- blocks_current_size));
                                 emptyList.add(block);
                             }
-                            else if (
-                                    !Blockchain.indexFromFile(i, Seting.ORIGINAL_BLOCKCHAIN_FILE).getHashBlock().equals(block.getHashBlock())) {
+                            else if (!blockchain.getBlock(i).getHashBlock().equals(block.getHashBlock())) {
                                 emptyList.add(block);
                                 System.out.println("********************************");
-                                System.out.println("dowdnload block index: " + i);
-                                System.out.println("block original index: " + Blockchain.indexFromFile(i, Seting.ORIGINAL_BLOCKCHAIN_FILE).getIndex());
-                                System.out.println("block from index: " + block.getIndex());
+                                System.out.println(":dowdnload block index: " + i);
+                                System.out.println(":block original index: " + blockchain.getBlock(i).getIndex());
+                                System.out.println(":block from index: " + block.getIndex());
                                 System.out.println("---------------------------------");
                             } else {
                                 emptyList.add(block);
-                                System.out.println("sub: " + 0 + " : " + i);
+
                                 if(i != 0){
-                                    emptyList.addAll(Blockchain.subFromFile(0, i, Seting.ORIGINAL_BLOCKCHAIN_FILE));
+                                    System.out.println("portion:sub: " + 0 + " : " + i + " block index: " + block.getIndex());
+                                    emptyList.addAll(blockchain.subBlock(0, i));
                                 }
 
                                 emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                                 temporaryBlockchain.setBlockchainList(emptyList);
+                                System.out.println("<><><<><><><>><><><><><><><<>><><><><>");
+                                System.out.println(":resolve_conflicts: temporaryBlockchain: " + temporaryBlockchain.validatedBlockchain());
+                                System.out.println(":dowdnload block index: " + i);
+                                System.out.println(":block original index: " + blockchain.getBlock(i).getIndex());
+                                System.out.println(":block from index: " + block.getIndex());
+                                System.out.println("<><><<><><><>><><><><><><><<>><><><><>");
                                 break;
                             }
                         }
                     }
-//                    if (!temporaryBlockchain.validatedBlockchain()) {
-//                        System.out.println("download all blockchain");
-//                        temporaryjson = UtilUrl.readJsonFromUrl(address);
-//                        entityChain = UtilsJson.jsonToEntityChain(temporaryjson);
-//                        temporaryBlockchain.setBlockchainList(
-//                                entityChain.getBlocks().stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList()));
-//                    }
                 } else {
-                    System.out.println("BasisController: resove: size less: " + size + " address: " + address);
+                    System.out.println(":BasisController: resove: size less: " + size + " address: " + s);
                     continue;
                 }
             } catch (IOException e) {
 
 //                e.printStackTrace();
-                System.out.println("BasisController: resolve_conflicts: connect refused Error: " + s);
+                System.out.println(":BasisController: resolve_conflicts: connect refused Error: " + s);
                 continue;
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
             }
 
 
@@ -381,25 +392,27 @@ public class BasisController {
 
         }
 
-
-        if (bigBlockchain.sizeBlockhain() > blockcheinSize && hashCountZeroBigBlockchain > hashCountZeroAll)
+        System.out.println("bigBlockchain: " + bigBlockchain.validatedBlockchain() + " : " + bigBlockchain.sizeBlockhain());
+        if (bigBlockchain.validatedBlockchain() && bigBlockchain.sizeBlockhain() > blockcheinSize && hashCountZeroBigBlockchain > hashCountZeroAll)
         {
-
+            System.out.println("resolve start addBlock start: ");
             blockchain = bigBlockchain;
             UtilsBlock.deleteFiles();
             addBlock(bigBlockchain.getBlockchainList());
-            System.out.println("BasisController: resolve: bigblockchain size: " + bigBlockchain.sizeBlockhain());
+            System.out.println(":BasisController: resolve: bigblockchain size: " + bigBlockchain.sizeBlockhain());
+            System.out.println(":BasisController: resolve: validation bigblochain: " + bigBlockchain.validatedBlockchain());
 
+            if(blockcheinSize > bigSize){
+                return 1;
+            }
+            else if(blockcheinSize < bigSize){
+                return -1;
+            }
+            else {
+                return 0;
+            }
         }
-        if(blockcheinSize > bigSize){
-            return 1;
-        }
-        else if(blockcheinSize < bigSize){
-            return -1;
-        }
-        else {
-            return 0;
-        }
+        return -4;
     }
 
     public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
