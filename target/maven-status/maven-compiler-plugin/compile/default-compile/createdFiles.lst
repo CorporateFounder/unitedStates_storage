@@ -23,7 +23,6 @@ International_Trade_Union\entity\blockchain\DataShortBlockchainInformation.class
 International_Trade_Union\model\Keys.class
 International_Trade_Union\governments\CompareObject.class
 International_Trade_Union\utils\UtilsSecurity.class
-International_Trade_Union\controllers\WebController.class
 International_Trade_Union\model\CreateAccount.class
 International_Trade_Union\originalCorporateCharter\OriginalPreambleEng.class
 International_Trade_Union\utils\UtilsJson$4.class
