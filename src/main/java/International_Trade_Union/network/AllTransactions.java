@@ -46,7 +46,7 @@ public class AllTransactions {
 
             } catch (IOException | JSONException e) {
 
-                System.out.println("AllTransaction: getInstance: Error");
+//                System.out.println("AllTransaction: getInstance: Error");
                 continue;
             }
 

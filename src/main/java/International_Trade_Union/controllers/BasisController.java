@@ -216,7 +216,7 @@ public class BasisController {
     @PostMapping("/sub-blocks")
     @ResponseBody
     public  List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        System.out.println("start subBlocks");
+
         if(blockchainValid == false || blockcheinSize == 0){
             blockchain = Mining.getBlockchain(
                     Seting.ORIGINAL_BLOCKCHAIN_FILE,
@@ -225,7 +225,7 @@ public class BasisController {
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
         }
-        System.out.println("finish subBlocks");
+
 //        return blockchain.getBlockchainList().subList(entity.getStart(), entity.getFinish());
         return Blockchain.subFromFile(entity.getStart(), entity.getFinish(), Seting.ORIGINAL_BLOCKCHAIN_FILE);
     }
@@ -630,6 +630,7 @@ public class BasisController {
             return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
         }
         List<Block> blocks = sendBlocksEndInfo.getList();
+        System.out.println("miner address: " + blocks.get(blocks.size()-1).getMinerAddress());
         isSaveFile = false;
         try {
 
