@@ -622,6 +622,7 @@ public class BasisController {
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         System.out.println("start resolve_from_to_block");
+
         while (!isSaveFile){
             System.out.println("saving file: resolve_from_to_block");
         }
@@ -631,6 +632,7 @@ public class BasisController {
         }
         List<Block> blocks = sendBlocksEndInfo.getList();
         System.out.println("miner address: " + blocks.get(blocks.size()-1).getMinerAddress());
+
         isSaveFile = false;
         try {
 
@@ -644,8 +646,18 @@ public class BasisController {
                     || shortDataBlockchain.getHashCount() == 0){
                 shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
+            List<Block> lastDiff = Blockchain.subFromFile(
+                    (int) (prevBlock.getIndex()-Seting.PORTION_BLOCK_TO_COMPLEXCITY),
+                    (int) (prevBlock.getIndex()-1),
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE
+            );
+            System.out.println("+++++++++++++++++++++++++++++++++");
+            int diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+            System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
+                    + diff);
 
-            DataShortBlockchainInformation temp =Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+            System.out.println("+++++++++++++++++++++++++++++++++");
+            DataShortBlockchainInformation temp =Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("original: " + shortDataBlockchain);
@@ -699,18 +711,7 @@ public class BasisController {
                      System.out.println("after original: " + shortDataBlockchain);
                          System.out.println("after temp: " + temp);
                          prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                if(blockcheinSize > 600){
-                    dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
-                                    blockcheinSize-600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
-                            Seting.BLOCK_GENERATION_INTERVAL,
-                            Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-                }
-                else {
-                    dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
-                                    0, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
-                            Seting.BLOCK_GENERATION_INTERVAL,
-                            Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-                }
+
                     System.out.println("*************************************");
 
 
