@@ -648,7 +648,7 @@ public class BasisController {
             }
             List<Block> lastDiff = Blockchain.subFromFile(
                     (int) (prevBlock.getIndex()-Seting.PORTION_BLOCK_TO_COMPLEXCITY),
-                    (int) (prevBlock.getIndex()-1),
+                    (int) (prevBlock.getIndex()),
                     Seting.ORIGINAL_BLOCKCHAIN_FILE
             );
             System.out.println("+++++++++++++++++++++++++++++++++");
