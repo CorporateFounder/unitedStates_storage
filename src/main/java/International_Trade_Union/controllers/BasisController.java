@@ -651,6 +651,13 @@ public class BasisController {
                     (int) (prevBlock.getIndex()),
                     Seting.ORIGINAL_BLOCKCHAIN_FILE
             );
+
+            //удаление транзакций
+            if(prevBlock.getIndex() % 288 == 0)
+                Mining.deleteFiles(Seting.ORGINAL_ALL_TRANSACTION_FILE);
+            if(prevBlock.getIndex() % 288 == 0)
+                Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
+
             System.out.println("+++++++++++++++++++++++++++++++++");
             int diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
             System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
