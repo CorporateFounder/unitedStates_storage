@@ -35,6 +35,11 @@ import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -626,6 +631,8 @@ public class BasisController {
         while (!isSaveFile){
             System.out.println("saving file: resolve_from_to_block");
         }
+
+
         if(sendBlocksEndInfo.getVersion() != Seting.VERSION){
             System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
             return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
@@ -637,6 +644,28 @@ public class BasisController {
         try {
 
             List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
+
+            Timestamp actualTime = Timestamp.from(Instant.now());
+            Timestamp lastIndex = addlist.get(addlist.size()-1).getTimestamp();
+
+            Timestamp zeroIndex = addlist.get(0).getTimestamp();
+            Long result = lastIndex.toInstant().until(actualTime.toInstant(), ChronoUnit.MINUTES);
+            System.out.println("different time: " + result);
+            if(
+                       result > 10 || result < -10
+               ){
+                   System.out.println("_____________________________________________");
+                   System.out.println("wrong timestamp");
+                   System.out.println("new time 0 index: " + addlist.get(0).getTimestamp());
+                   System.out.println("new time last index: " + addlist.get(addlist.size()-1).getTimestamp());
+                   System.out.println("actual time: " + actualTime);
+                System.out.println("result: " + result);
+                System.out.println("miner: " + addlist.get(addlist.size()-1).getMinerAddress());
+
+                   System.out.println("_____________________________________________");
+                   return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+               }
+
             System.out.println("resolve_from_to_block");
             if(prevBlock == null){
                 prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -730,7 +759,8 @@ public class BasisController {
             }
 
 
-        }finally {
+        }
+        finally {
             prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            resolve_conflicts();
             isSaveFile = true;
