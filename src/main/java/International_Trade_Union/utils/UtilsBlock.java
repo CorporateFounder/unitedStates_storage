@@ -194,6 +194,8 @@ public class UtilsBlock {
     public static int difficulty(List<Block> blocks, long BLOCK_GENERATION_INTERVAL, int  DIFFICULTY_ADJUSTMENT_INTERVAL ){
 
         //секунды как часто создается блоки
+        //DIFFICULTY_ADJUSTMENT_INTERVAL = 288
+        //BLOCK_GENERATION_INTERVAL = 150000 миллисекунд
         int difficulty = 1;
         Block latestBlock = blocks.get(blocks.size() -1);
         if(latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0){

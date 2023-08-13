@@ -562,26 +562,6 @@ public class BasisController {
         blockcheinSize = (int) shortDataBlockchain.getSize();
         blockchainValid = shortDataBlockchain.isValidation();
 
-//        //recalculation of the balance
-//        //перерасчет баланса
-//        List<String> signs = new ArrayList<>();
-//        Map<String, Laws> allLaws = new HashMap<>();
-//        List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
-//        for (Block block :  originalBlocks) {
-//            calculateBalance(balances, block, signs);
-//            balances = UtilsBalance.calculateBalanceFromLaw(balances, block, allLaws, allLawsWithBalance);
-//        }
-//
-//        Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
-//        SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
-
-        //removal of obsolete laws
-        //удаление устаревших законов
-//        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-        //rewriting all existing laws
-        //перезапись всех действующих законов
-//        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
         System.out.println(":BasisController: addBlock2: finish: " + originalBlocks.size());
     }
     public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
@@ -652,7 +632,7 @@ public class BasisController {
             Long result = lastIndex.toInstant().until(actualTime.toInstant(), ChronoUnit.MINUTES);
             System.out.println("different time: " + result);
             if(
-                       result > 10 || result < -10
+                       result < 10 && result > 0
                ){
                    System.out.println("_____________________________________________");
                    System.out.println("wrong timestamp");
@@ -677,7 +657,7 @@ public class BasisController {
             }
             List<Block> lastDiff = Blockchain.subFromFile(
                     (int) (prevBlock.getIndex()-Seting.PORTION_BLOCK_TO_COMPLEXCITY),
-                    (int) (prevBlock.getIndex()),
+                    (int) (prevBlock.getIndex()+1),
                     Seting.ORIGINAL_BLOCKCHAIN_FILE
             );
 
