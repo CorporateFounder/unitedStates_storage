@@ -627,12 +627,10 @@ public class BasisController {
 
             Timestamp actualTime = Timestamp.from(Instant.now());
             Timestamp lastIndex = addlist.get(addlist.size()-1).getTimestamp();
-
-            Timestamp zeroIndex = addlist.get(0).getTimestamp();
-            Long result = lastIndex.toInstant().until(actualTime.toInstant(), ChronoUnit.MINUTES);
+            Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
             System.out.println("different time: " + result);
             if(
-                       result < 10 && result > 0
+                    result > 10 || result < 0
                ){
                    System.out.println("_____________________________________________");
                    System.out.println("wrong timestamp");
