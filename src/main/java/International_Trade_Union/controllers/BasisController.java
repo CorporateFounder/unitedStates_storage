@@ -231,8 +231,24 @@ public class BasisController {
             blockchainValid = shortDataBlockchain.isValidation();
         }
 
+        int start = entity.getStart();
+        int finish = entity.getFinish();
+        if(finish - start > Seting.PORTION_DOWNLOAD + 10){
+            int temp = Seting.PORTION_DOWNLOAD + 10;
+            temp = (finish - start) - temp;
+            finish = (finish - start) - temp;
+        }
+
+        if(start > blockcheinSize){
+            start = blockcheinSize - Seting.PORTION_DOWNLOAD;
+        }
+        if(finish > blockcheinSize){
+            finish = blockcheinSize -1;
+        }
+
+
 //        return blockchain.getBlockchainList().subList(entity.getStart(), entity.getFinish());
-        return Blockchain.subFromFile(entity.getStart(), entity.getFinish(), Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        return Blockchain.subFromFile(start, finish, Seting.ORIGINAL_BLOCKCHAIN_FILE);
     }
     /**Возвращяет блок по индексу*/
 
@@ -252,6 +268,9 @@ public class BasisController {
             shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
+        }
+        if(index > blockcheinSize-1){
+            index = blockcheinSize -1;
         }
 //        System.out.println("finish getBlock");
         return Blockchain.indexFromFile(index, Seting.ORIGINAL_BLOCKCHAIN_FILE);

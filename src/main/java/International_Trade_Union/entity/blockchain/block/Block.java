@@ -154,6 +154,7 @@ public final class Block implements Cloneable {
             hash = block.hashForTransaction();
             if(UtilsUse.hashComplexity(hash.substring(0, hashCoplexity), hashCoplexity))
             {
+                
                 System.out.println("block found: hash: " + hash);
                 break;
             }
