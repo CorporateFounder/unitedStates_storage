@@ -201,7 +201,6 @@ public class UtilsBlock {
             System.out.println("=======================================");
             difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
 
-
             //более умеренная модель сложности
             if (latestBlock.getIndex() - 20 > Seting.CHECK_DIFFICULTY_INDEX){
                 difficulty = UtilsDIfficult.difficultyBing(blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
