@@ -242,7 +242,7 @@ public interface Seting {
     double DIGITAL_DOLLAR_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_DOLLAR_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
     double DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_STOCK_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
 
-    int VERSION = 11;
+    int VERSION = 12;
     int PORTION_DOWNLOAD = 500;
     int CHECK_DIFFICULTY_INDEX = 39100;
     int TIME_STAMP_DEFFENCE = 36900;
