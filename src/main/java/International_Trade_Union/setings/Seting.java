@@ -242,9 +242,12 @@ public interface Seting {
     double DIGITAL_DOLLAR_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_DOLLAR_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
     double DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_STOCK_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
 
-    int VERSION = 12;
+    int VERSION = 13;
     int PORTION_DOWNLOAD = 500;
     int CHECK_DIFFICULTY_INDEX = 39100;
+    int CHECK_DIFFICULTY_BLOCK_2 = 40032;
+    //добыча должна происходить по формуле (сложность * 30) если индекс не четный +1, если четное  + 0
+    double MONEY = 30;
     int TIME_STAMP_DEFFENCE = 36900;
     int PORTION_BLOCK_TO_COMPLEXCITY = 600;
     String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";

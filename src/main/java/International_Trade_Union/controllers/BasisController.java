@@ -728,7 +728,8 @@ public class BasisController {
 
                     System.out.println("*************************************");
 
-
+                    //задержка чтобы другие участники смогли скачать более актуальный блокчейн
+                    Thread.sleep(20000);
 
                 return new ResponseEntity<>("OK", HttpStatus.OK);
             }
@@ -737,8 +738,9 @@ public class BasisController {
             }
 
 
-        }
-        finally {
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
             prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            resolve_conflicts();
             isSaveFile = true;
@@ -851,7 +853,6 @@ public class BasisController {
 
         }
     }
-
 
     @GetMapping("/difficultyBlockchain")
     public InfoDificultyBlockchain dificultyBlockchain(){
