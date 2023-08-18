@@ -722,6 +722,9 @@ public class BasisController {
                     shortDataBlockchain = temp;
                     blockcheinSize = (int) shortDataBlockchain.getSize();
                     blockchainValid = shortDataBlockchain.isValidation();
+
+                    dificultyOneBlock = diff;
+
                      System.out.println("after original: " + shortDataBlockchain);
                          System.out.println("after temp: " + temp);
                          prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
