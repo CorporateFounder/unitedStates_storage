@@ -2,7 +2,9 @@ package International_Trade_Union.entity.blockchain.block;
 
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.exception.NotValidTransactionException;
+import International_Trade_Union.model.Mining;
 import International_Trade_Union.utils.UtilsJson;
+import International_Trade_Union.utils.UtilsStorage;
 import International_Trade_Union.utils.UtilsUse;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
@@ -15,12 +17,18 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
 @JsonAutoDetect
 @Data
 public final class Block implements Cloneable {
+    private static long randomNumberProofStatic = 0;
+
     private List<DtoTransaction> dtoTransactions;
     private String previousHash;
     private String minerAddress;
@@ -32,14 +40,23 @@ public final class Block implements Cloneable {
     private long index;
     private String hashBlock;
 
-    public Block(List<DtoTransaction> dtoTransactions,  String previousHex, String minerAddress, String founderAddress, int hashCompexity, long index) throws IOException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
+    public static long getRandomNumberProofStatic() {
+        return randomNumberProofStatic;
+    }
+
+    public static void setRandomNumberProofStatic(long randomNumberProofStatic) {
+        Block.randomNumberProofStatic = randomNumberProofStatic;
+    }
+
+    public Block(List<DtoTransaction> dtoTransactions, String previousHex, String minerAddress, String founderAddress, int hashCompexity, long index) throws IOException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
         this.dtoTransactions = dtoTransactions;
         this.previousHash = previousHex;
         this.minerAddress = minerAddress;
         this.minerRewards = miningRewardsCount();
         this.hashCompexity = hashCompexity;
         this.founderAddress = founderAddress;
-        this.timestamp = new Timestamp(System.currentTimeMillis());
+        this.timestamp = Timestamp.from(Instant.now());
+//        this.timestamp = Timestamp.valueOf( OffsetDateTime.now( ZoneOffset.UTC ).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
         this.index = index;
         this.hashBlock = findHash(hashCompexity);
 
@@ -143,18 +160,43 @@ public final class Block implements Cloneable {
             throw new NotValidTransactionException();
         }
 
-        this.randomNumberProof = 0;
+        this.randomNumberProof = randomNumberProofStatic;
         String hash = "";
+        //используется для определения кто-нибудь уже успел добыть блок.
+        int size = UtilsStorage.getSize();
+        Timestamp previus = Timestamp.from(Instant.now());
         while (true){
             this.randomNumberProof++;
-
+//            System.out.println("A number is selected to generate the correct hash: " +
+//                    randomNumberProof + " is stop: " + Mining.isIsMiningStop() + " isBsolete: " + Mining.miningIsObsolete);
             BlockForHash block = new BlockForHash(this.dtoTransactions,
                     this.previousHash, this.minerAddress, this.founderAddress,
                     this.randomNumberProof, this.minerRewards, this.hashCompexity, this.timestamp, this.index);
             hash = block.hashForTransaction();
+
+            Timestamp actualTime = Timestamp.from(Instant.now());
+            Long result = actualTime.toInstant().until(previus.toInstant(), ChronoUnit.SECONDS);
+//            System.out.println("findhash time: " + result + " result > 10 || result < -10: " + (result > 10 || result < -10));
+            if(result > 10 || result < -10){
+                previus = actualTime;
+                int tempSize = UtilsStorage.getSize();
+                if(size < tempSize){
+                    Mining.miningIsObsolete = true;
+                    System.out.println("someone mined a block before you, the search for this block is no longer relevant and outdated: " + hash);
+                    return hash;
+
+                }
+            }
+
+            //отключить майнинг
+            if(Mining.isIsMiningStop()){
+                System.out.println("mining will be stopped");
+                return hash;
+
+            }
+
             if(UtilsUse.hashComplexity(hash.substring(0, hashCoplexity), hashCoplexity))
             {
-                
                 System.out.println("block found: hash: " + hash);
                 break;
             }

@@ -81,6 +81,7 @@ public class CurrentLawVotes {
     }
 
     //для избрания должностных лиц
+    //для избрания должностных лиц
     public double votesLaw(Map<String, Account> balances,
                            Map<String, Integer> yesAverage, Map<String, Integer> noAverage) {
         double yes = 0.0;
@@ -128,6 +129,7 @@ public class CurrentLawVotes {
 
         return yes - no;
     }
+
 
     @Override
     public boolean equals(Object o) {

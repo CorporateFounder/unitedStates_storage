@@ -3,12 +3,10 @@ package International_Trade_Union.network;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
-import International_Trade_Union.utils.UtilUrl;
-import International_Trade_Union.utils.UtilsJson;
-import International_Trade_Union.utils.UtilsTransaction;
-import International_Trade_Union.utils.UtilsUse;
+import International_Trade_Union.utils.*;
 import org.json.JSONException;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -36,22 +34,23 @@ public class AllTransactions {
         instance = new ArrayList<>();
 
         //считываем с пула транзакции из дисковери.
-        for (String s : Seting.ORIGINAL_ADDRESSES) {
-            try {
-                String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
-                List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
-
-                instance.addAll(list);
-
-
-            } catch (IOException | JSONException e) {
-
+//        for (String s : Seting.ORIGINAL_ADDRESSES) {
+//            try {
+//                System.out.println("get transactions from server: " + s + "its time 45 seconds");
+//                String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
+//                List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
+//
+//                instance.addAll(list);
+//
+//
+//            } catch (IOException | JSONException e) {
+//
 //                System.out.println("AllTransaction: getInstance: Error");
-                continue;
-            }
-
-
-        }
+//                continue;
+//            }
+//
+//
+//        }
 
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
         instance = instance.stream().distinct().collect(Collectors.toList());

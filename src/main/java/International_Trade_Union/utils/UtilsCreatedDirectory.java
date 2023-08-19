@@ -12,7 +12,7 @@ import java.util.List;
 public class UtilsCreatedDirectory {
     public static void createPackages() throws IOException {
         List<String> files = new ArrayList<>();
-//        files.add("C:/resources");
+
         files.add(Seting.ORIGINAL_BLOCKCHAIN_FILE);
         files.add(Seting.ORIGINAL_BALANCE_FILE);
 
@@ -27,10 +27,11 @@ public class UtilsCreatedDirectory {
         files.add(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
         files.add(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
 
-
         files.add(Seting.ORIGINAL_ACCOUNT);
         files.add(Seting.ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE);
         files.add(Seting.TEMPORARY_BLOCKCHAIN_FILE);
+        files.add(Seting.BALANCE_REPORT_ON_DESTROYED_COINS);
+        files.add(Seting.CURRENT_BUDGET_END_EMISSION);
 
         for (String s : files) {
             // specify an abstract pathname in the File object

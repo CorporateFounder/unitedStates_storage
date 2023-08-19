@@ -34,7 +34,7 @@ public class UtilsCurrentLaw {
             }
             else {
                 signs.add(transaction.toSign());
-                System.out.println("we added new sign transaction");
+//                System.out.println("we added new sign transaction");
             }
             if (transaction.getSender().startsWith(Seting.NAME_LAW_ADDRESS_START)) {
                 System.out.println("law balance cannot be sender");
@@ -212,8 +212,8 @@ public class UtilsCurrentLaw {
                     List<CurrentLawVotesEndBalance> electedByHouseOfRepresentatives =
                             curentLawVotesEndBalance.get(corp.getKey())
                                     .stream()
-                                    .filter(t->directors.isElectedByBoardOfDirectors(t.getPackageName()))
-                                    .filter(t -> t.getVotesBoardOfDirectors() >= Seting.ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS)
+                                    .filter(t->directors.isElectedByFractions(t.getPackageName()))
+                                    .filter(t -> t.getFractionVote() >= Seting.ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS)
                                     .sorted(Comparator.comparing(CurrentLawVotesEndBalance::getVotesBoardOfDirectors).reversed())
                                     .collect(Collectors.toList());
 

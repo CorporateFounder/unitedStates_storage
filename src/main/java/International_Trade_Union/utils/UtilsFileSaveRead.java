@@ -1,5 +1,6 @@
 package International_Trade_Union.utils;
 
+import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,6 +9,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,27 +51,27 @@ public class UtilsFileSaveRead {
             throw new RuntimeException(e);
         }
     }
-    public static boolean deleted( String fileName, String temp) throws IOException {
+    public static boolean deleted( String fileName, int index) throws IOException {
         File inputFile = new File(fileName);
 
-        File tempFile = new File(Seting.TEMPORARY_BLOCKCHAIN_FILE +"myTempFile.txt");
+        File tempFile = new File(Seting.ORIGINAL_BLOCKCHAIN_FILE +"myTempFile.txt");
         boolean deleted = false;
 
         BufferedReader reader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-        int index = 0;
-        String lineToRemove = temp;
+        int innerIndex = 0;
+
         String currentLine;
 
         while((currentLine = reader.readLine()) != null) {
 
-            // trim newline when comparing with lineToRemove
-            String trimmedLine = currentLine.trim();
-            if(trimmedLine.equals(lineToRemove)){
+            if(innerIndex == index){
+                System.out.println("deleted: " + index);
                 deleted = true;
                 return deleted;
             }
             writer.write(currentLine + System.getProperty("line.separator"));
+            innerIndex++;
         }
         writer.close();
         reader.close();

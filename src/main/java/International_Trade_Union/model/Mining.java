@@ -4,6 +4,7 @@ package International_Trade_Union.model;
 
 import International_Trade_Union.config.BLockchainFactory;
 import International_Trade_Union.config.BlockchainFactoryEnum;
+import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
@@ -13,9 +14,11 @@ import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
-import International_Trade_Union.vote.Laws;
-import International_Trade_Union.vote.VoteEnum;
+import International_Trade_Union.vote.*;
 import International_Trade_Union.utils.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +27,11 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Mining {
+import static International_Trade_Union.utils.UtilsBalance.calculateBalanceFromLaw;
 
+public class Mining {
+    public static boolean miningIsObsolete = false;
+    private static boolean isMiningStop = false;
     public static Blockchain getBlockchain(String filename, BlockchainFactoryEnum factoryEnum) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
         List<Block> blocks = UtilsBlock.readLineObject(filename);
@@ -36,6 +42,14 @@ public class Mining {
            blockchain.setBlockchainList(blocks);
         }
         return blockchain;
+    }
+
+    public static boolean isIsMiningStop() {
+        return isMiningStop;
+    }
+
+    public static void setIsMiningStop(boolean isMiningStop) {
+        Mining.isMiningStop = isMiningStop;
     }
 
     public static Map<String, Account> getBalances(String filename, Blockchain blockchain, Map<String, Account> balances, List<String> signs) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
@@ -67,8 +81,16 @@ public class Mining {
         if(blockchain != null && blockchain.sizeBlockhain() > 0){
             block = blockchain.getBlock(blockchain.sizeBlockhain() - 1);
             balances = UtilsBalance.calculateBalance(balances, block, signs);
+            //test
+//получает все созданные когда либо законы
+            Map<String, Laws> allLaws = UtilsLaws.getLaws(blockchain.getBlockchainList().subList(
+                    blockchain.sizeBlockhain()-Seting.LAW_MONTH_VOTE, blockchain.sizeBlockhain()
+            ), Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
 
-
+            //возвращает все законы с голосами проголосовавшими за них
+            List<LawEligibleForParliamentaryApproval> allLawsWithBalance =
+                    UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+           balances = UtilsBalance.calculateBalanceFromLaw(balances, block, allLaws, allLawsWithBalance);
         }
 
 
@@ -78,6 +100,8 @@ public class Mining {
     public static void deleteFiles(String fileDelit) {
         UtilsFileSaveRead.deleteAllFiles(fileDelit);
     }
+
+
 
 
     public static Block miningDay(
@@ -177,13 +201,8 @@ public class Mining {
         PrivateKey privateKey = UtilsSecurity.privateBytToPrivateKey(base.decode(Seting.BASIS_PASSWORD));
         double sumRewards = forAdd.stream().collect(Collectors.summingDouble(DtoTransaction::getBonusForMiner));
 
-        //вознаграждения майнера
-        DtoTransaction minerRew = new DtoTransaction(Seting.BASIS_ADDRESS, minner.getAccount(),
-                minerRewards, digitalReputationForMiner, new Laws(), sumRewards, VoteEnum.YES );
 
-        //подписывает
-        byte[] signGold = UtilsSecurity.sign(privateKey, minerRew.toSign());
-        minerRew.setSign(signGold);
+
 
         //вознаграждение основателя
         DtoTransaction founderRew = new DtoTransaction(Seting.BASIS_ADDRESS, blockchain.getADDRESS_FOUNDER(),
@@ -193,16 +212,33 @@ public class Mining {
         founderRew.setSign(signFounder);
 
 
-        forAdd.add(minerRew);
+
         forAdd.add(founderRew);
 
 
+        //здесь должна быть создана динамическая модель
         //определение сложности и создание блока
+
         int difficulty = UtilsBlock.difficulty(blockchain.getBlockchainList(), blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
 
         System.out.println("Mining: miningBlock: difficulty: " + difficulty + " index: " + index);
 
+        if(index > Seting.CHECK_DIFFICULTY_BLOCK_2) {
+            minerRewards = difficulty * Seting.MONEY;
+            digitalReputationForMiner= difficulty * Seting.MONEY;
+            minerRewards += index%2 == 0 ? 0 : 1;
+            digitalReputationForMiner += index%2 == 0 ? 0 : 1;
+        }
 
+        //вознаграждения майнера
+        DtoTransaction minerRew = new DtoTransaction(Seting.BASIS_ADDRESS, minner.getAccount(),
+                minerRewards, digitalReputationForMiner, new Laws(), sumRewards, VoteEnum.YES );
+
+
+        forAdd.add(minerRew);
+        //подписывает
+        byte[] signGold = UtilsSecurity.sign(privateKey, minerRew.toSign());
+        minerRew.setSign(signGold);
         //blockchain.getHashBlock(blockchain.sizeBlockhain() - 1)
         Block block = new Block(
                 forAdd,

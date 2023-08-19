@@ -2,11 +2,15 @@ package International_Trade_Union.entity.blockchain;
 
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.model.Account;
+import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
+import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
+import International_Trade_Union.vote.UtilsLaws;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -158,6 +162,7 @@ public class Blockchain implements Cloneable {
             }
 
             System.out.println("========================================================");
+            System.out.println("i: " + i);
             System.out.println("prev: index: " + prev.getIndex() + " hash: " + prev.getHashBlock());
             System.out.println("block: index: " + blocks.get(i).getIndex() + " hash: " + blocks.get(i).getPreviousHash());
             System.out.println("blocklist index: " + blockList.get(blockList.size()-1).getIndex() + " :hash: " +
@@ -282,6 +287,81 @@ public class Blockchain implements Cloneable {
     }
 
 
+    public static boolean saveBalanceFromfile(String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        boolean valid = true;
+        File folder = new File(filename);
+
+        Map<String, Account> balances = new HashMap<>();
+        List<String> signs = new ArrayList<>();
+        Map<String, Laws> allLaws = new HashMap<>();
+        List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
+        File file = new File(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
+
+        List<Laws> lawsList = new ArrayList<>();
+        if (file.exists()) {
+            lawsList = UtilsLaws.readLineLaws(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
+        }
+
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                System.out.println("is directory " + fileEntry.getAbsolutePath());
+                System.out.println("is directory " + fileEntry.getName());
+            } else {
+                List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
+                for (String s : list) {
+
+                    Block block = UtilsJson.jsonToBLock(s);
+
+                    UtilsBalance.calculateBalance(balances, block, signs);
+                    balances = UtilsBalance.calculateBalanceFromLaw(balances, block, allLaws, allLawsWithBalance);
+
+                    for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {
+                        if (dtoTransaction.verify()) {
+                            if (dtoTransaction.getCustomer().startsWith(Seting.NAME_LAW_ADDRESS_START) && dtoTransaction.getBonusForMiner() >= Seting.COST_LAW) {
+                                if(dtoTransaction.getLaws() != null && !allLaws.containsKey(dtoTransaction.getCustomer())){
+                                    allLaws.put(dtoTransaction.getCustomer(), dtoTransaction.getLaws());
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (Map.Entry<String, Laws> map : allLaws.entrySet()) {
+            if (!lawsList.contains(map.getValue())) {
+                if( map.getValue() != null &&
+                        map.getValue().getPacketLawName() != null&&
+                        map.getValue().getLaws() != null
+                        && !map.getValue().getHashLaw().isEmpty()
+                        && (map.getValue().getLaws().size() > 0)){
+
+                    lawsList.add(map.getValue());
+                }
+
+            }
+
+        }
+
+        SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
+        UtilsLaws.saveLaws(lawsList, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
+
+        //получение и отображение законов, а также сохранение новых законов
+        //и изменение действующих законов
+//        Map<String, Laws> allLaws = UtilsLaws.getLaws(blockchain.getBlockchainList(), Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
+
+        //возвращает все законы с балансом
+       allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
+                Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+
+        //removal of obsolete laws
+        //удаление устаревших законов
+        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        //rewriting all existing laws
+        //перезапись всех действующих законов
+        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        return valid;
+    }
     public static DataShortBlockchainInformation checkFromFile(
 
             String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -353,7 +433,29 @@ public class Blockchain implements Cloneable {
         return new DataShortBlockchainInformation(size, valid, hashCount);
     }
 
+    public static boolean deletedLastStrFromFile(String temp, int index) throws IOException {
+        boolean valid = false;
+        File folder = new File(temp);
 
+
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                System.out.println("is directory " + fileEntry.getAbsolutePath());
+            } else {
+
+                valid = UtilsFileSaveRead.deleted(fileEntry.getAbsolutePath(), index);
+                System.out.println("deletedLastStrFromFile: " + valid + " index: " + index +
+                        " :" + fileEntry.getName());
+                if (valid) {
+                    System.out.println("deletedLastStrFromFile: " + valid);
+                    break;
+                }
+            }
+        }
+
+
+        return valid;
+    }
 
     public static Block indexFromFile(int index, String filename) throws JsonProcessingException {
         File folder = new File(filename);

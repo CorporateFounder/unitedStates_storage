@@ -1,7 +1,11 @@
 package International_Trade_Union.utils;
 
+import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.governments.Directors;
+import International_Trade_Union.governments.UtilsGovernment;
+import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 
 import java.io.File;
@@ -84,6 +88,19 @@ public class UtilsTransaction {
         return dtoTransactions;
     }
 
+
+    /**минимальное вознаграждение за добавление в блок транзакции долларов*/
+    public static List<DtoTransaction> reward(List<DtoTransaction> transactions, double minRewards){
+
+        List<DtoTransaction> transactions1 = new ArrayList<>();
+        for (DtoTransaction dtoTransaction : transactions) {
+            if(dtoTransaction.getBonusForMiner() >= minRewards){
+                transactions1.add(dtoTransaction);
+            }
+        }
+
+        return transactions1;
+    }
 
     public static void sendTransaction(DtoTransaction dtoTransaction){
 

@@ -23,6 +23,7 @@ public class UtilUrl {
             ObjectMapper mapper = new ObjectMapper();
             return jsonText;
         } finally {
+            System.out.println("UtilUrl: readJsonFromUrl: " + url );
             is.close();
         }
     }
@@ -40,8 +41,8 @@ public class UtilUrl {
         URL url = new URL(requstStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 //        conn.connect();
-        conn.setReadTimeout(15000);
-        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(5000);
+        conn.setConnectTimeout(5000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
@@ -71,15 +72,13 @@ public class UtilUrl {
     }
 
 
-
-
-    public static void sendPost(String jsonObject, String requestStr) throws IOException {
-
+    public static int sendPost(String jsonObject, String requestStr) throws IOException {
+        int response;
         URL url = new URL(requestStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 //        conn.connect();
-        conn.setReadTimeout(15000);
-        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(5000);
+        conn.setConnectTimeout(5000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
@@ -90,11 +89,13 @@ public class UtilUrl {
         try(OutputStream outputStream = conn.getOutputStream()) {
             byte[] input = jsonObject.getBytes("utf-8");
             outputStream.write(input, 0, input.length);
-            conn.getResponseCode();
+             response = conn.getResponseCode();
+
         }
 
 
         conn.connect();
+        return response;
     }
 
 

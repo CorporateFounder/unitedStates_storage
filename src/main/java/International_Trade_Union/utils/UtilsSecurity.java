@@ -33,11 +33,11 @@ public class UtilsSecurity {
     private static final String PROVIDER = "BC";
 
     static {
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        Security.addProvider(new BouncyCastleProvider());
     }
     public static Keys generateKeyPair() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchProviderException, InvalidKeySpecException {
        Base base = new Base58();
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        Security.addProvider(new BouncyCastleProvider());
         ECGenParameterSpec ecSpec = new ECGenParameterSpec(SPEC);
         KeyPairGenerator g = KeyPairGenerator.getInstance(ALGO_ECDSA, PROVIDER);
         g.initialize(ecSpec, new SecureRandom());
@@ -111,7 +111,7 @@ public class UtilsSecurity {
     public static ECPublicKey decodeKey(byte[] encoded) {
 
         ECNamedCurveParameterSpec params = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec(SPEC);
-        org.bouncycastle.jce.spec.ECPublicKeySpec keySpec = new ECPublicKeySpec(params.getCurve().decodePoint(encoded), params);
+        ECPublicKeySpec keySpec = new ECPublicKeySpec(params.getCurve().decodePoint(encoded), params);
         return new BCECPublicKey(ALGO_ECDSA, keySpec, BouncyCastleProvider.CONFIGURATION);
     }
 }

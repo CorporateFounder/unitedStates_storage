@@ -3,6 +3,7 @@ package International_Trade_Union.utils;
 import International_Trade_Union.entity.blockchain.block.Block;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

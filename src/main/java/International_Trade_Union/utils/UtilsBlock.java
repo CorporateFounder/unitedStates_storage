@@ -1,25 +1,21 @@
 package International_Trade_Union.utils;
 
 
+import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import International_Trade_Union.config.BLockchainFactory;
 import International_Trade_Union.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.setings.Seting;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.http.converter.json.GsonBuilderUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
+
+import java.io.*;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UtilsBlock {
@@ -331,6 +327,7 @@ public class UtilsBlock {
             return false;
         }
 
+
         if (thisBlock.getIndex() > Seting.CHECK_DIFFICULTY_BLOCK_2){
             if (previusblock.getMinerAddress().equals(thisBlock.getMinerAddress())) {
                 System.out.println("two times in a row the same address cannot mine a block, you need to alternate");
@@ -353,9 +350,9 @@ public class UtilsBlock {
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BALANCE_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
+        UtilsFileSaveRead.deleteAllFiles(Seting.BALANCE_REPORT_ON_DESTROYED_COINS);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-
+        UtilsFileSaveRead.deleteAllFiles(Seting.CURRENT_BUDGET_END_EMISSION);
     }
 
     public static List<DtoTransaction> validDto(List<Block> blocks, List<DtoTransaction> transactions) {
