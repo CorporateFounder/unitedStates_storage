@@ -566,9 +566,9 @@ public class BasisController {
 //        blockchain = Mining.getBlockchain(
 //                Seting.ORIGINAL_BLOCKCHAIN_FILE,
 //                BlockchainFactoryEnum.ORIGINAL);
-        shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        blockcheinSize = (int) shortDataBlockchain.getSize();
-        blockchainValid = shortDataBlockchain.isValidation();
+//        shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//        blockcheinSize = (int) shortDataBlockchain.getSize();
+//        blockchainValid = shortDataBlockchain.isValidation();
 
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
@@ -683,7 +683,7 @@ public class BasisController {
                 account = new Account(addlist.get(0).getMinerAddress(), 0, 0);
             }
 
-            double tempbalance = account.getDigitalStockBalance() + 1;
+
 
             //четное и нечетное
             System.out.println("odd or not: " + addlist.get(0).getIndex() % 2);
@@ -699,7 +699,7 @@ public class BasisController {
             Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
             System.out.println("different time: " + result);
             if(
-                    result > 30 || result < 0
+                    result > 30 || result < -30
                ){
                    System.out.println("_____________________________________________");
                    System.out.println("wrong timestamp");
@@ -750,9 +750,7 @@ public class BasisController {
             System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             System.out.println("addList size: " + addlist.size());
             if(blockcheinSize == 0 || blockchainValid == false){
-//                blockchain = Mining.getBlockchain(
-//                        Seting.ORIGINAL_BLOCKCHAIN_FILE,
-//                        BlockchainFactoryEnum.ORIGINAL);
+
                 shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 blockcheinSize = (int) shortDataBlockchain.getSize();
                 blockchainValid = shortDataBlockchain.isValidation();
