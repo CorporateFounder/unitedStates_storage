@@ -699,7 +699,7 @@ public class BasisController {
             Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
             System.out.println("different time: " + result);
             if(
-                    result > 30 || result < -30
+                    result > 1440 || result < -1440
                ){
                    System.out.println("_____________________________________________");
                    System.out.println("wrong timestamp");

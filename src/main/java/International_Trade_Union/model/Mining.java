@@ -1,33 +1,32 @@
 package International_Trade_Union.model;
 
 
-
 import International_Trade_Union.config.BLockchainFactory;
 import International_Trade_Union.config.BlockchainFactoryEnum;
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.governments.Director;
 import International_Trade_Union.governments.Directors;
 import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
-import International_Trade_Union.vote.*;
-import International_Trade_Union.utils.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
+import International_Trade_Union.vote.Laws;
+import International_Trade_Union.vote.UtilsLaws;
+import International_Trade_Union.vote.VoteEnum;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static International_Trade_Union.utils.UtilsBalance.calculateBalanceFromLaw;
 
 public class Mining {
     public static boolean miningIsObsolete = false;
@@ -102,11 +101,9 @@ public class Mining {
     }
 
 
-
-
     public static Block miningDay(
             Account minner,
-            Blockchain blockchain,
+            List<Block> blockchain,
             long blockGenerationInterval,
             int DIFFICULTY_ADJUSTMENT_INTERVAL,
             List<DtoTransaction> transactionList,
@@ -185,8 +182,8 @@ public class Mining {
                 continue;
             }
         }
-
-
+        int difficulty = UtilsBlock.difficulty(blockchain, blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        Block prevBlock = blockchain.get(blockchain.size()-1);
         //доход майнера
         double minerRewards = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
         double digitalReputationForMiner = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
@@ -194,7 +191,17 @@ public class Mining {
         //доход основателя
         double founderReward = Seting.DIGITAL_DOLLAR_FOUNDER_REWARDS_BEFORE;
         double founderDigigtalReputationReward = Seting.DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE;
+        if(index > Seting.CHECK_FOUNDER_REWARD_INDEX){
+            if(difficulty >= 8){
+                founderReward = difficulty;
+                founderDigigtalReputationReward = digitalReputationForMiner;
+            }
+            else {
+                founderReward = 8;
+                founderDigigtalReputationReward = 8;
+            }
 
+        }
         Base base = new Base58();
 
         //суммирует все вознаграждения майнеров
@@ -204,8 +211,13 @@ public class Mining {
 
 
 
+        String addressFounrder = Blockchain.indexFromFile(0, Seting.ORIGINAL_BLOCKCHAIN_FILE).getFounderAddress();
+        if(!addressFounrder.equals(prevBlock.getFounderAddress())) {
+            System.out.println("wrong founder address: " );
+            return null;
+        }
         //вознаграждение основателя
-        DtoTransaction founderRew = new DtoTransaction(Seting.BASIS_ADDRESS, blockchain.getADDRESS_FOUNDER(),
+        DtoTransaction founderRew = new DtoTransaction(Seting.BASIS_ADDRESS, addressFounrder,
                 founderReward, founderDigigtalReputationReward, new Laws(), 0.0, VoteEnum.YES);
         byte[] signFounder = UtilsSecurity.sign(privateKey, founderRew.toSign());
 
@@ -219,7 +231,7 @@ public class Mining {
         //здесь должна быть создана динамическая модель
         //определение сложности и создание блока
 
-        int difficulty = UtilsBlock.difficulty(blockchain.getBlockchainList(), blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
+
 
         System.out.println("Mining: miningBlock: difficulty: " + difficulty + " index: " + index);
 
@@ -242,9 +254,9 @@ public class Mining {
         //blockchain.getHashBlock(blockchain.sizeBlockhain() - 1)
         Block block = new Block(
                 forAdd,
-                blockchain.getHashBlock(blockchain.sizeBlockhain() - 1),
+                prevBlock.getHashBlock(),
                 minner.getAccount(),
-                blockchain.getADDRESS_FOUNDER(),
+                addressFounrder,
                 difficulty,
                 index);
 
