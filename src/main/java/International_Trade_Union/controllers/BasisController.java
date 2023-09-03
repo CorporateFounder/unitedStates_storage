@@ -657,128 +657,130 @@ public class BasisController {
 
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-        System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
-
-
-        while (!isSaveFile){
-//            System.out.println("saving file: resolve_from_to_block");
-        }
-        isSaveFile = false;
-
-
-
-        if(sendBlocksEndInfo.getVersion() != Seting.VERSION){
-            System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
-            return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
-        }
-        List<Block> blocks = sendBlocksEndInfo.getList();
-        System.out.println("miner address: " + blocks.get(blocks.size()-1).getMinerAddress());
-
         try {
 
-            List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
-            System.out.println("account: " + addlist.get(0).getMinerAddress());
-            Account account = balances.get(addlist.get(0).getMinerAddress());
-            if(account == null){
-                account = new Account(addlist.get(0).getMinerAddress(), 0, 0);
+
+            System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
+
+
+            while (!isSaveFile) {
+//            System.out.println("saving file: resolve_from_to_block");
             }
+            isSaveFile = false;
 
 
+            if (sendBlocksEndInfo.getVersion() != Seting.VERSION) {
+                System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
+                return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
+            }
+            List<Block> blocks = sendBlocksEndInfo.getList();
+            System.out.println("miner address: " + blocks.get(blocks.size() - 1).getMinerAddress());
 
-            //четное и нечетное
-            System.out.println("odd or not: " + addlist.get(0).getIndex() % 2);
-            if(addlist.get(0).getIndex() % 2 == 0){
-                if(account.getDigitalStockBalance() == 0 || account.getDigitalStockBalance() %2 != 0){
-                    System.out.println("wrong balance: !=" );
-                    return new ResponseEntity<>("FALSE", HttpStatus.LOCKED);
+            try {
+
+                List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
+                System.out.println("account: " + addlist.get(0).getMinerAddress());
+                Account account = balances.get(addlist.get(0).getMinerAddress());
+                if (account == null) {
+                    account = new Account(addlist.get(0).getMinerAddress(), 0, 0);
                 }
-            }
-
-            Timestamp actualTime = Timestamp.from(Instant.now());
-            Timestamp lastIndex = addlist.get(addlist.size()-1).getTimestamp();
-            Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
-            System.out.println("different time: " + result);
-            if(
-                    result > 1440 || result < -1440
-               ){
-                   System.out.println("_____________________________________________");
-                   System.out.println("wrong timestamp");
-                   System.out.println("new time 0 index: " + addlist.get(0).getTimestamp());
-                   System.out.println("new time last index: " + addlist.get(addlist.size()-1).getTimestamp());
-                   System.out.println("actual time: " + actualTime);
-                System.out.println("result: " + result);
-                System.out.println("miner: " + addlist.get(addlist.size()-1).getMinerAddress());
-
-                   System.out.println("_____________________________________________");
-                   return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
-               }
-
-            if(prevBlock == null){
-                prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            }
-            if(shortDataBlockchain.getSize() == 0
-                    || !shortDataBlockchain.isValidation()
-                    || shortDataBlockchain.getHashCount() == 0){
-                shortDataBlockchain= Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            }
-            List<Block> lastDiff = Blockchain.subFromFile(
-                    (int) (prevBlock.getIndex()-Seting.PORTION_BLOCK_TO_COMPLEXCITY),
-                    (int) (prevBlock.getIndex()+1),
-                    Seting.ORIGINAL_BLOCKCHAIN_FILE
-            );
-
-            //удаление транзакций
-            if(prevBlock.getIndex() % 288 == 0)
-                Mining.deleteFiles(Seting.ORGINAL_ALL_TRANSACTION_FILE);
-            if(prevBlock.getIndex() % 288 == 0)
-                Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
-
-            System.out.println("+++++++++++++++++++++++++++++++++");
-            int diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-            System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
-                    + diff);
-
-            System.out.println("+++++++++++++++++++++++++++++++++");
-            DataShortBlockchainInformation temp =Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-
-            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-            System.out.println("original: " + shortDataBlockchain);
-            System.out.println("temp: " + temp);
 
 
-            System.out.println("address mininer: " + blocks.get(blocks.size()-1).getMinerAddress());
-            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-            System.out.println("addList size: " + addlist.size());
-            if(blockcheinSize == 0 || blockchainValid == false){
+                //четное и нечетное
+                System.out.println("odd or not: " + addlist.get(0).getIndex() % 2);
+                if (addlist.get(0).getIndex() % 2 == 0) {
+                    if (account.getDigitalStockBalance() == 0 || account.getDigitalStockBalance() % 2 != 0) {
+                        System.out.println("wrong balance: !=");
+                        return new ResponseEntity<>("FALSE", HttpStatus.LOCKED);
+                    }
+                }
 
-                shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                blockcheinSize = (int) shortDataBlockchain.getSize();
-                blockchainValid = shortDataBlockchain.isValidation();
-                prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                Timestamp actualTime = Timestamp.from(Instant.now());
+                Timestamp lastIndex = addlist.get(addlist.size() - 1).getTimestamp();
+                Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
+                System.out.println("different time: " + result);
+                if (
+                        result > 1440 || result < -1440
+                ) {
+                    System.out.println("_____________________________________________");
+                    System.out.println("wrong timestamp");
+                    System.out.println("new time 0 index: " + addlist.get(0).getTimestamp());
+                    System.out.println("new time last index: " + addlist.get(addlist.size() - 1).getTimestamp());
+                    System.out.println("actual time: " + actualTime);
+                    System.out.println("result: " + result);
+                    System.out.println("miner: " + addlist.get(addlist.size() - 1).getMinerAddress());
 
-            }
+                    System.out.println("_____________________________________________");
+                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+                }
 
-            if (!shortDataBlockchain.isValidation()) {
-                System.out.println("wrong block chain, delete blocks: from to block:");
-                UtilsBlock.deleteFiles();
+                if (prevBlock == null) {
+                    prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                }
+                if (shortDataBlockchain.getSize() == 0
+                        || !shortDataBlockchain.isValidation()
+                        || shortDataBlockchain.getHashCount() == 0) {
+                    shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                }
+                List<Block> lastDiff = Blockchain.subFromFile(
+                        (int) (prevBlock.getIndex() - Seting.PORTION_BLOCK_TO_COMPLEXCITY),
+                        (int) (prevBlock.getIndex() + 1),
+                        Seting.ORIGINAL_BLOCKCHAIN_FILE
+                );
+
+                //удаление транзакций
+                if (prevBlock.getIndex() % 288 == 0)
+                    Mining.deleteFiles(Seting.ORGINAL_ALL_TRANSACTION_FILE);
+                if (prevBlock.getIndex() % 288 == 0)
+                    Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
+
+                System.out.println("+++++++++++++++++++++++++++++++++");
+                int diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
+                        + diff);
+
+                System.out.println("+++++++++++++++++++++++++++++++++");
+                DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+
+                System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                System.out.println("original: " + shortDataBlockchain);
+                System.out.println("temp: " + temp);
+
+
+                System.out.println("address mininer: " + blocks.get(blocks.size() - 1).getMinerAddress());
+                System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                System.out.println("addList size: " + addlist.size());
+                if (blockcheinSize == 0 || blockchainValid == false) {
+
+                    shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                    blockcheinSize = (int) shortDataBlockchain.getSize();
+                    blockchainValid = shortDataBlockchain.isValidation();
+                    prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+                }
+
+                if (!shortDataBlockchain.isValidation()) {
+                    System.out.println("wrong block chain, delete blocks: from to block:");
+                    UtilsBlock.deleteFiles();
 //                blockchain.setBlockchainList(new ArrayList<>());
-                return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
-            }
-
-
-            if (temp.isValidation()) {
-                System.out.println("from to block is valid");
-
-            } else {
-                if(temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() > shortDataBlockchain.getHashCount()){
-                    return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
+                    return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
                 }
-                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
-            }
 
-            if (temp.getSize() > shortDataBlockchain.getSize()
-                    && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 
+                if (temp.isValidation()) {
+                    System.out.println("from to block is valid");
+
+                } else {
+                    if (temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
+                        System.out.println("code error: " + HttpStatus.CONFLICT);
+                        System.out.println("miner: " + account);
+                        return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
+                    }
+                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+                }
+
+                if (temp.getSize() > shortDataBlockchain.getSize()
+                        && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 
 
                     System.out.println("*************************************");
@@ -792,31 +794,35 @@ public class BasisController {
 
                     dificultyOneBlock = diff;
 
-                     System.out.println("after original: " + shortDataBlockchain);
-                         System.out.println("after temp: " + temp);
-                         prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                    System.out.println("after original: " + shortDataBlockchain);
+                    System.out.println("after temp: " + temp);
+                    prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
                     System.out.println("*************************************");
 
                     //задержка чтобы другие участники смогли скачать более актуальный блокчейн
                     Thread.sleep(20000);
 
-                return new ResponseEntity<>("OK", HttpStatus.OK);
-            }
-            else {
-                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
-            }
+                    return new ResponseEntity<>("OK", HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+                }
 
 
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            resolve_conflicts();
-            isSaveFile = true;
-            System.out.println("finish resolve_from_to_block");
-        }
+                isSaveFile = true;
+                System.out.println("finish resolve_from_to_block");
+            }
 
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+        }
     }
 
 

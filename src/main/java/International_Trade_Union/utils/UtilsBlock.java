@@ -197,20 +197,9 @@ public class UtilsBlock {
         Block latestBlock = blocks.get(blocks.size() - 1);
         if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
 
-            System.out.println("=======================================");
             difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-
-
             //более умеренная модель сложности
-            if (latestBlock.getIndex() - 20 > Seting.CHECK_DIFFICULTY_INDEX && latestBlock.getIndex() < Seting.CHECK_DIFFICULTY_BLOCK_2) {
-                difficulty = UtilsDIfficult.difficultyBing(blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-            } else if (latestBlock.getIndex() > Seting.CHECK_DIFFICULTY_BLOCK_2) {
-                difficulty = UtilsDIfficult.getAdjustedDifficulty2(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-            }
 
-
-            System.out.println("changes: " + difficulty);
-            System.out.println("=======================================");
 
         } else {
             difficulty = latestBlock.getHashCompexity();
@@ -249,7 +238,7 @@ public class UtilsBlock {
             if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                 double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
                 double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
-                if(thisBlock.getIndex() > Seting.CHECK_DIFFICULTY_BLOCK_2) {
+                if(thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION) {
                     minerReward = thisBlock.getHashCompexity() * Seting.MONEY;
                     minerPowerReward = thisBlock.getHashCompexity() * Seting.MONEY;
                     minerReward += thisBlock.getIndex()%2 == 0 ? 0 : 1;
@@ -278,7 +267,7 @@ public class UtilsBlock {
                 if (transaction.getSender().equals(Seting.BASIS_ADDRESS)
                         && transaction.getCustomer().equals(addressFounder)) {
                     countBasisSendFounder += 1;
-                    if(thisBlock.getIndex() > Seting.CHECK_FOUNDER_REWARD_INDEX){
+                    if(thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION){
                         if(thisBlock.getHashCompexity() >= 8){
                             if(transaction.getDigitalDollar() != thisBlock.getHashCompexity() ||
                                     thisBlock.getHashCompexity() != transaction.getDigitalStockBalance()){
@@ -304,8 +293,10 @@ public class UtilsBlock {
                     }
                 }
 
-                if (transaction.getSender().equals(Seting.BASIS_ADDRESS) && !transaction.getCustomer().equals(addressFounder)) {
+                if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
+                        !transaction.getCustomer().equals(addressFounder)) {
                     countBasisSendAll += 1;
+
                 }
 
                 if (countBasisSendFounder > 2 && thisBlock.getIndex() > 1) {
@@ -333,7 +324,7 @@ public class UtilsBlock {
         }
 
 
-        if (thisBlock.getIndex() > Seting.CHECK_DIFFICULTY_INDEX) {
+        if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION) {
 
             int diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
             if (thisBlock.getHashCompexity() != diff) {
@@ -352,7 +343,7 @@ public class UtilsBlock {
         }
 
 
-        if (thisBlock.getIndex() > Seting.CHECK_DIFFICULTY_BLOCK_2){
+        if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION){
             if (previusblock.getMinerAddress().equals(thisBlock.getMinerAddress())) {
                 System.out.println("two times in a row the same address cannot mine a block, you need to alternate");
                 return false;

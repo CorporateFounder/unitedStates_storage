@@ -191,7 +191,7 @@ public class Mining {
         //доход основателя
         double founderReward = Seting.DIGITAL_DOLLAR_FOUNDER_REWARDS_BEFORE;
         double founderDigigtalReputationReward = Seting.DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE;
-        if(index > Seting.CHECK_FOUNDER_REWARD_INDEX){
+        if(index > Seting.CHECK_UPDATING_VERSION){
             if(difficulty >= 8){
                 founderReward = difficulty;
                 founderDigigtalReputationReward = digitalReputationForMiner;
@@ -235,7 +235,7 @@ public class Mining {
 
         System.out.println("Mining: miningBlock: difficulty: " + difficulty + " index: " + index);
 
-        if(index > Seting.CHECK_DIFFICULTY_BLOCK_2) {
+        if(index > Seting.CHECK_UPDATING_VERSION) {
             minerRewards = difficulty * Seting.MONEY;
             digitalReputationForMiner= difficulty * Seting.MONEY;
             minerRewards += index%2 == 0 ? 0 : 1;
