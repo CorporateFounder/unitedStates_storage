@@ -1,4 +1,4 @@
-package International_Trade_Union.config;
+package International_Trade_Union.controllers.config;
 
 public enum BlockchainFactoryEnum {
     TEST,

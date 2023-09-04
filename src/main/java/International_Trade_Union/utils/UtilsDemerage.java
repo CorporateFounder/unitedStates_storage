@@ -1,10 +1,6 @@
 package International_Trade_Union.utils;
 
-import International_Trade_Union.config.BLockchainFactory;
-import International_Trade_Union.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.InfoDemerageMoney;
-import International_Trade_Union.entity.blockchain.Blockchain;
-import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.setings.Seting;
 
 import java.io.File;
@@ -15,7 +11,6 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 

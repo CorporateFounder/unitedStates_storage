@@ -1,4 +1,4 @@
-package International_Trade_Union.config;
+package International_Trade_Union.controllers.config;
 
 
 import International_Trade_Union.entity.blockchain.Blockchain;

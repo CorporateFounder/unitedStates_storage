@@ -8,14 +8,10 @@ import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
 import org.json.JSONException;
 
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.config.BLockchainFactory;
-import International_Trade_Union.config.BlockchainFactoryEnum;
 import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
@@ -26,10 +22,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.security.*;
@@ -37,8 +30,6 @@ import java.security.spec.InvalidKeySpecException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -822,6 +813,12 @@ public class BasisController {
         catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+        }
+        finally {
+            prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            resolve_conflicts();
+            isSaveFile = true;
+            System.out.println("finish resolve_from_to_block");
         }
     }
 

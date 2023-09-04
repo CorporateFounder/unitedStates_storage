@@ -1,9 +1,8 @@
 package International_Trade_Union.model;
 
 
-import International_Trade_Union.config.BLockchainFactory;
-import International_Trade_Union.config.BlockchainFactoryEnum;
-import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.controllers.config.BLockchainFactory;
+import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 
 public class Mining {
     public static boolean miningIsObsolete = false;
-    private static boolean isMiningStop = false;
+    private static volatile boolean isMiningStop = false;
     public static Blockchain getBlockchain(String filename, BlockchainFactoryEnum factoryEnum) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
         List<Block> blocks = UtilsBlock.readLineObject(filename);
@@ -47,7 +46,8 @@ public class Mining {
         return isMiningStop;
     }
 
-    public static void setIsMiningStop(boolean isMiningStop) {
+    public static synchronized void setIsMiningStop(boolean isMiningStop) {
+
         Mining.isMiningStop = isMiningStop;
     }
 
@@ -183,7 +183,11 @@ public class Mining {
             }
         }
         int difficulty = UtilsBlock.difficulty(blockchain, blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
+
+
         Block prevBlock = blockchain.get(blockchain.size()-1);
+
+
         //доход майнера
         double minerRewards = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
         double digitalReputationForMiner = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
@@ -194,7 +198,7 @@ public class Mining {
         if(index > Seting.CHECK_UPDATING_VERSION){
             if(difficulty >= 8){
                 founderReward = difficulty;
-                founderDigigtalReputationReward = digitalReputationForMiner;
+                founderDigigtalReputationReward = difficulty;
             }
             else {
                 founderReward = 8;
@@ -230,7 +234,6 @@ public class Mining {
 
         //здесь должна быть создана динамическая модель
         //определение сложности и создание блока
-
 
 
         System.out.println("Mining: miningBlock: difficulty: " + difficulty + " index: " + index);

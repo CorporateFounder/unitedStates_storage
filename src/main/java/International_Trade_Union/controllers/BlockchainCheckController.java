@@ -1,6 +1,6 @@
 package International_Trade_Union.controllers;
 
-import International_Trade_Union.config.BlockchainFactoryEnum;
+import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;

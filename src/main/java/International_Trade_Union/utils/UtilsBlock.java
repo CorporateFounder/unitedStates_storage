@@ -1,15 +1,13 @@
 package International_Trade_Union.utils;
 
 
-import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import International_Trade_Union.config.BLockchainFactory;
-import International_Trade_Union.config.BlockchainFactoryEnum;
+import International_Trade_Union.controllers.config.BLockchainFactory;
+import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.setings.Seting;
-import org.springframework.http.converter.json.GsonBuilderUtils;
 
 
 import java.io.*;
@@ -197,7 +195,7 @@ public class UtilsBlock {
         Block latestBlock = blocks.get(blocks.size() - 1);
         if(latestBlock.getIndex() > 576){
             difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-//            System.out.println("difficult: " + difficulty + " index: " + latestBlock.getIndex());
+            System.out.println("difficult: " + difficulty + " index: " + latestBlock.getIndex());
         }
 
         else if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
@@ -332,7 +330,7 @@ public class UtilsBlock {
         if (thisBlock.getIndex() > Seting.NEW_START_DIFFICULT) {
 
             int diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-            if (thisBlock.getHashCompexity() != diff) {
+            if (thisBlock.getHashCompexity() < diff - 1) {
                 System.out.println("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
                         + diff);
                 System.out.println("wrong difficult");
