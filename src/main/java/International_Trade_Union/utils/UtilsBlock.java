@@ -193,9 +193,14 @@ public class UtilsBlock {
         //BLOCK_GENERATION_INTERVAL =  150000 милисекунд
         int difficulty = 1;
         Block latestBlock = blocks.get(blocks.size() - 1);
+        if(latestBlock.getIndex() > Seting.NEW_START_DIFFICULT - 3
+                && latestBlock.getIndex() < Seting.NEW_START_DIFFICULT + 288){
+            difficulty = 3;
+            return difficulty;
+        }
         if(latestBlock.getIndex() > 576){
             difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-            System.out.println("difficult: " + difficulty + " index: " + latestBlock.getIndex());
+//            System.out.println("difficult: " + difficulty + " index: " + latestBlock.getIndex());
         }
 
         else if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
