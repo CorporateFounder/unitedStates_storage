@@ -800,7 +800,11 @@ public class BasisController {
                 }
 
 
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
+
+                prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            resolve_conflicts();
+                isSaveFile = true;
                 throw new RuntimeException(e);
             } finally {
                 prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -812,6 +816,9 @@ public class BasisController {
         }
         catch (Exception e){
             e.printStackTrace();
+            prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            resolve_conflicts();
+            isSaveFile = true;
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         }
         finally {
