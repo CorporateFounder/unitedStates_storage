@@ -16,6 +16,7 @@ D:\unitedStates original storage\unitedStates duplicates original storage\src\ma
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\entity\blockchain\Blockchain.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\exception\NotValidTransactionException.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\entity\InfoDemerageMoney.java
+D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\controllers\config\BLockchainFactory.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\entity\AddressUrl.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\controllers\BlockchainCheckController.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\entity\DataForTransaction.java
@@ -28,10 +29,10 @@ D:\unitedStates original storage\unitedStates duplicates original storage\src\ma
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\utils\base\Base58.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\utils\UtilsDemerage.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\model\FIndPositonHelperData.java
+D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\controllers\config\BlockchainFactoryEnum.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterDraft\PreambleDraft.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\PreambleEngDraft.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\vote\LawEligibleForParliamentaryApproval.java
-D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\config\BlockchainFactoryEnum.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\entity\DtoTransaction\DtoTransaction.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterDraft\ArticleTwoSpecialPositionDraft.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\vote\Laws.java
@@ -47,6 +48,7 @@ D:\unitedStates original storage\unitedStates duplicates original storage\src\ma
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\ArticleSixBillOfRightsEngDraft.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\model\Account.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\UnitedStatesApplication.java
+D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\utils\BlockchainDifficulty.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\utils\UtilsSecurity.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\controllers\TransactionController.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\ArticleOneLegistratureEngDraft.java
@@ -82,6 +84,5 @@ D:\unitedStates original storage\unitedStates duplicates original storage\src\ma
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\originalCorporateCharter\OriginalCHARTER_ENG.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\about_us_engDraft\AboutUsEngDraft.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterDraft\ArticleFourAmendmentProcessDraft.java
-D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\config\BLockchainFactory.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterDraft\ArticleSixBillOfRightsDraft.java
 D:\unitedStates original storage\unitedStates duplicates original storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\ArticleTwoSpecialPositionEngDraft.java

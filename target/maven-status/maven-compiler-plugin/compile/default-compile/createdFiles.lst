@@ -29,6 +29,7 @@ International_Trade_Union\utils\UtilsJson$4.class
 International_Trade_Union\entity\blockchain\Blockchain.class
 International_Trade_Union\setings\Seting.class
 International_Trade_Union\CorporateCharterDraft\ArticleTwoSpecialPositionDraft.class
+International_Trade_Union\utils\BlockchainDifficulty.class
 International_Trade_Union\vote\UtilsLaws.class
 International_Trade_Union\entity\ResultMiningData.class
 International_Trade_Union\governments\Director.class

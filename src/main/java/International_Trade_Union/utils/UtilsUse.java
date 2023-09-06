@@ -1,11 +1,9 @@
 package International_Trade_Union.utils;
 
 
-
 import International_Trade_Union.setings.Seting;
 
 import java.io.IOException;
-
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +15,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 public class UtilsUse {
     private static MessageDigest digest;
@@ -107,6 +103,14 @@ public class UtilsUse {
         double operation2 = Math.pow(opeartion1, year);
         double result = money * operation2;
         return result;
+    }
+
+    public static boolean chooseComplexity(String literral, int hashComplexity, long index){
+        if(index < Seting.NEW_START_DIFFICULT){
+            return hashComplexity(literral, hashComplexity);
+        }else {
+            return BlockchainDifficulty.meetsDifficulty(literral.getBytes(), hashComplexity);
+        }
     }
 
     public static boolean hashComplexity(String literral, int hashComplexity){
