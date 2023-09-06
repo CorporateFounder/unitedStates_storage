@@ -107,8 +107,10 @@ public class UtilsUse {
 
     public static boolean chooseComplexity(String literral, int hashComplexity, long index){
         if(index < Seting.NEW_START_DIFFICULT){
+
             return hashComplexity(literral, hashComplexity);
         }else {
+
             return BlockchainDifficulty.meetsDifficulty(literral.getBytes(), hashComplexity);
         }
     }

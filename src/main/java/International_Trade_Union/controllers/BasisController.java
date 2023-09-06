@@ -654,10 +654,7 @@ public class BasisController {
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
 
 
-            while (!isSaveFile) {
-//            System.out.println("saving file: resolve_from_to_block");
-            }
-            isSaveFile = false;
+
 
 
             if (sendBlocksEndInfo.getVersion() != Seting.VERSION) {
@@ -725,12 +722,7 @@ public class BasisController {
                 if (prevBlock.getIndex() % 288 == 0)
                     Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
 
-                System.out.println("+++++++++++++++++++++++++++++++++");
-                int diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-                System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
-                        + diff);
 
-                System.out.println("+++++++++++++++++++++++++++++++++");
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -770,6 +762,11 @@ public class BasisController {
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
                 }
 
+
+                while (!isSaveFile) {
+//            System.out.println("saving file: resolve_from_to_block");
+                }
+                isSaveFile = false;
                 if (temp.getSize() > shortDataBlockchain.getSize()
                         && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 
@@ -782,7 +779,12 @@ public class BasisController {
                     shortDataBlockchain = temp;
                     blockcheinSize = (int) shortDataBlockchain.getSize();
                     blockchainValid = shortDataBlockchain.isValidation();
+                    System.out.println("+++++++++++++++++++++++++++++++++");
+                    int diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                    System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
+                            + diff);
 
+                    System.out.println("+++++++++++++++++++++++++++++++++");
                     dificultyOneBlock = diff;
 
                     System.out.println("after original: " + shortDataBlockchain);
