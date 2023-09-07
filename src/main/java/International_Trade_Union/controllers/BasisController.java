@@ -675,13 +675,13 @@ public class BasisController {
 
 
                 //четное и нечетное
-                System.out.println("odd or not: " + addlist.get(0).getIndex() % 2);
-                if (addlist.get(0).getIndex() % 2 == 0) {
-                    if (account.getDigitalStockBalance() == 0 || account.getDigitalStockBalance() % 2 != 0) {
-                        System.out.println("wrong balance: !=");
-                        return new ResponseEntity<>("FALSE", HttpStatus.LOCKED);
-                    }
-                }
+//                System.out.println("odd or not: " + addlist.get(0).getIndex() % 2);
+//                if (addlist.get(0).getIndex() % 2 == 0) {
+//                    if (account.getDigitalStockBalance() == 0 || account.getDigitalStockBalance() % 2 != 0) {
+//                        System.out.println("wrong balance: !=");
+//                        return new ResponseEntity<>("FALSE", HttpStatus.LOCKED);
+//                    }
+//                }
 
                 Timestamp actualTime = Timestamp.from(Instant.now());
                 Timestamp lastIndex = addlist.get(addlist.size() - 1).getTimestamp();
@@ -763,14 +763,14 @@ public class BasisController {
                 }
 
 
-                while (!isSaveFile) {
-//            System.out.println("saving file: resolve_from_to_block");
-                }
-                isSaveFile = false;
+
                 if (temp.getSize() > shortDataBlockchain.getSize()
                         && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
 
-
+                    while (!isSaveFile) {
+//            System.out.println("saving file: resolve_from_to_block");
+                    }
+                    isSaveFile = false;
                     System.out.println("*************************************");
                     System.out.println("before original: " + shortDataBlockchain);
                     System.out.println("before temp: " + temp);
