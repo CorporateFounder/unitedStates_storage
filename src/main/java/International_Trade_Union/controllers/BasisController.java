@@ -936,7 +936,6 @@ public class BasisController {
         }
     }
 
-
     @GetMapping("/difficultyBlockchain")
     public InfoDificultyBlockchain dificultyBlockchain(){
         InfoDificultyBlockchain dificultyBlockchain = new InfoDificultyBlockchain();
