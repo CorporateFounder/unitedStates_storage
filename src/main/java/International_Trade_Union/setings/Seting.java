@@ -244,6 +244,7 @@ public interface Seting {
     int NEW_START_ADJUSTMENT = 53792;
     int NEW_CHECK_UTILS_BLOCK = 53949;
 
+
     int PORTION_BLOCK_TO_COMPLEXCITY = 600;
     //version
     int VERSION = 22;

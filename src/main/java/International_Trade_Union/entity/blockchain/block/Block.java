@@ -57,6 +57,7 @@ public final class Block implements Cloneable {
     private double minerRewards;
     private int hashCompexity;
     private Timestamp timestamp;
+
     private long index;
     private String hashBlock;
 
