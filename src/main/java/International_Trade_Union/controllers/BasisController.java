@@ -842,29 +842,36 @@ public class BasisController {
             System.out.println("miner address: " + blocks.get(blocks.size() - 1).getMinerAddress());
 
 
-            List<DtoTransaction> dtoTransactions = blocks.get(0).getDtoTransactions();
-            //blocked stole
-            if(cheaters.containsKey(blocks.get(0).getMinerAddress())) {
-                int countStole = cheaters.get(blocks.get(0).getMinerAddress());
-                if(countStole > 10){
-                    System.out.println("blocked address: " + cheaters.get(blocks.get(0).getMinerAddress())
-                    + "countStole: " + countStole);
-                    return new ResponseEntity<>("FALSE", HttpStatus.SEE_OTHER);
-                }
-
-            }
-            for (DtoTransaction dtoTransaction : dtoTransactions) {
-                if (cheaters.containsKey(dtoTransaction.getSender())){
-                      int countStole = cheaters.get(dtoTransaction.getSender());
-                      if(countStole > 10){
-                          System.out.println("blocked address: " + cheaters.get(blocks.get(0).getMinerAddress())
-                                  + "countStole: " + countStole);
-                          return new ResponseEntity<>("FALSE", HttpStatus.SEE_OTHER);
-                      }
+            if(blocks.get(blocks.size()-1).getMinerAddress() != null &&
+            !blocks.get(blocks.size()-1).getMinerAddress().isEmpty()){
+                String address = blocks.get(blocks.size()-1).getMinerAddress();
+                List<DtoTransaction> dtoTransactions = blocks.get(0).getDtoTransactions();
+                //blocked stole
+                if(cheaters.containsKey(address)) {
+                    int countStole = cheaters.get(address);
+                    if(countStole > 10){
+                        System.out.println("blocked address: " + cheaters.get(address)
+                                + "countStole: " + countStole);
+                        return new ResponseEntity<>("FALSE", HttpStatus.SEE_OTHER);
+                    }
 
                 }
+                for (DtoTransaction dtoTransaction : dtoTransactions) {
+                    if (cheaters.containsKey(dtoTransaction.getSender())){
+                        int countStole = cheaters.get(dtoTransaction.getSender());
+                        if(countStole > 10){
+                            System.out.println("blocked address: " + cheaters.get(blocks.get(0).getMinerAddress())
+                                    + "countStole: " + countStole);
+                            return new ResponseEntity<>("FALSE", HttpStatus.SEE_OTHER);
+                        }
 
+                    }
+
+                }
+            }else {
+                return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
             }
+
 
             try {
 

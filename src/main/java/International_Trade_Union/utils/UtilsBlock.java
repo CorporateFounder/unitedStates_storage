@@ -364,10 +364,6 @@ public class UtilsBlock {
 
 
         if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION){
-//            if (previusblock.getMinerAddress().equals(thisBlock.getMinerAddress())) {
-//                System.out.println("two times in a row the same address cannot mine a block, you need to alternate");
-//                return false;
-//            }
 
             if(previusblock.getIndex()+1 != thisBlock.getIndex()) {
                 System.out.println("wrong index sequence");
