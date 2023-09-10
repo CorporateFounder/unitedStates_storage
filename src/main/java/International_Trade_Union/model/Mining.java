@@ -1,6 +1,5 @@
 package International_Trade_Union.model;
 
-
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
@@ -26,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 
 public class Mining {
     public static boolean miningIsObsolete = false;
@@ -236,6 +237,7 @@ public class Mining {
         //определение сложности и создание блока
 
 
+
         System.out.println("Mining: miningBlock: difficulty: " + difficulty + " index: " + index);
 
         if(index > Seting.CHECK_UPDATING_VERSION) {
@@ -243,6 +245,11 @@ public class Mining {
             digitalReputationForMiner= difficulty * Seting.MONEY;
             minerRewards += index%2 == 0 ? 0 : 1;
             digitalReputationForMiner += index%2 == 0 ? 0 : 1;
+        }
+
+        if(index == Seting.SPECIAL_BLOCK_FORK && minner.getAccount().equals(Seting.FORK_ADDRESS_SPECIAL)){
+            minerRewards = SPECIAL_FORK_BALANCE;
+            digitalReputationForMiner = SPECIAL_FORK_BALANCE;
         }
 
         //вознаграждения майнера

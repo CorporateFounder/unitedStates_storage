@@ -16,6 +16,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
+
 public class UtilsBlock {
 
 
@@ -193,23 +195,16 @@ public class UtilsBlock {
         //BLOCK_GENERATION_INTERVAL =  150000 милисекунд
         int difficulty = 1;
         Block latestBlock = blocks.get(blocks.size() - 1);
-        if(latestBlock.getIndex() > Seting.NEW_START_DIFFICULT - 3
-                && latestBlock.getIndex() < Seting.NEW_START_DIFFICULT + 288){
+        if (latestBlock.getIndex() > Seting.NEW_START_DIFFICULT - 3
+                && latestBlock.getIndex() < Seting.NEW_START_DIFFICULT + 288) {
             difficulty = 3;
-
             return difficulty;
-        }
-        if(latestBlock.getIndex() > 576){
+        } else if (latestBlock.getIndex() > Seting.NEW_START_DIFFICULT + 288) {
             difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-//            System.out.println("difficult: " + difficulty + " index: " + latestBlock.getIndex());
-        }
-
-        else if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
+        } else if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
 
             difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
             //более умеренная модель сложности
-
-
         } else {
             difficulty = latestBlock.getHashCompexity();
         }
@@ -252,6 +247,11 @@ public class UtilsBlock {
                     minerPowerReward = thisBlock.getHashCompexity() * Seting.MONEY;
                     minerReward += thisBlock.getIndex()%2 == 0 ? 0 : 1;
                     minerPowerReward += thisBlock.getIndex()%2 == 0 ? 0 : 1;
+                }
+
+                if(thisBlock.getIndex() == Seting.SPECIAL_BLOCK_FORK && thisBlock.getMinerAddress().equals(Seting.FORK_ADDRESS_SPECIAL)){
+                    minerReward = SPECIAL_FORK_BALANCE;
+                    minerPowerReward = SPECIAL_FORK_BALANCE;
                 }
 
                 if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
@@ -346,12 +346,14 @@ public class UtilsBlock {
             }
         }
 
+
         if(thisBlock.getIndex() >Seting.NEW_CHECK_UTILS_BLOCK && !thisBlock.getHashBlock().equals(thisBlock.hashForTransaction())){
             System.out.println("false hash added wrong hash");
             System.out.println("actual: " + thisBlock.getHashBlock());
             System.out.println("expected: " + thisBlock.hashForTransaction());
             return false;
         }
+
 
         if (!actualPrevHash.equals(recordedPrevHash)) {
             System.out.println("Blockchain is invalid, expected: " + recordedPrevHash + " actual: " + actualPrevHash);
@@ -362,10 +364,10 @@ public class UtilsBlock {
 
 
         if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION){
-            if (previusblock.getMinerAddress().equals(thisBlock.getMinerAddress())) {
-                System.out.println("two times in a row the same address cannot mine a block, you need to alternate");
-                return false;
-            }
+//            if (previusblock.getMinerAddress().equals(thisBlock.getMinerAddress())) {
+//                System.out.println("two times in a row the same address cannot mine a block, you need to alternate");
+//                return false;
+//            }
 
             if(previusblock.getIndex()+1 != thisBlock.getIndex()) {
                 System.out.println("wrong index sequence");
