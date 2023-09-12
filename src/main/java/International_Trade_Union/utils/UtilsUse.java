@@ -178,12 +178,17 @@ public class UtilsUse {
     }
 
     //подсчитать количество нулей идущих подряд в hash
-    public static long hashCount(String hash) {
+    public static long hashCount(String hash, long index) {
         long count = 0;
-        for (int i = 0; i < hash.length(); i++) {
-            if (hash.charAt(i) == '0') count++;
-            else return count;
+        if(index < Seting.v3MeetsDifficulty){
+            for (int i = 0; i < hash.length(); i++) {
+                if (hash.charAt(i) == '0') count++;
+                else return count;
+            }
+        }else {
+            count = BlockchainDifficulty.countLeadingZeros(hash);
         }
+
         return count;
     }
 
