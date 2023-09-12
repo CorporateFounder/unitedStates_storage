@@ -1,13 +1,9 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.setings.Seting;
 
 import java.util.BitSet;
 import java.util.List;
-
-import static International_Trade_Union.utils.HashPrinter.bytesToBinary;
-import static International_Trade_Union.utils.HashPrinter.countLeadingZeros;
 
 
 public class BlockchainDifficulty {
@@ -53,18 +49,36 @@ public class BlockchainDifficulty {
     int zeroBits = countLeadingZeroBits(hash);
     return zeroBits >= difficulty;
   }
+  public static String bytesToBinary(byte[] bytes) {
+    String binary = "";
+    for(byte b : bytes) {
+      binary += String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
+    }
+    return binary;
+  }
 
-  public static boolean v2MeetsDifficulty(byte[]hash, int difficulty, long index){
+  public static int countLeadingZeros(String binary) {
 
-    int zeroBits = 0;
-     if(index > Seting.SETING_UTILS_USE_v2MeetsDifficulty){
-       String binary = bytesToBinary(hash);
-        zeroBits = countLeadingZeros(binary);
-     }else {
-       countLeadingZeroBits(hash);
-     }
+    int count = 0;
+    for(int i = 0; i < binary.length(); i++) {
+      if(binary.charAt(i) == '0') {
+        count++;
+      } else {
+        break;
+      }
+    }
 
+    return count;
+  }
+  public static boolean v2MeetsDifficulty(byte[]hash, int difficulty){
+    int zeroBits = countLeadingZeroBits(hash);
     return zeroBits == difficulty;
+  }
+  public static boolean v3MeetsDifficulty(byte[]hash, int difiiculty, long index){
+    String binary = bytesToBinary(hash);
+
+    int leadingZeros = countLeadingZeros(binary);
+    return leadingZeros == difiiculty;
   }
 
   private static Block getLatestBlock(List<Block> blocks) {

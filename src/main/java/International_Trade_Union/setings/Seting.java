@@ -250,6 +250,7 @@ public interface Seting {
     String FORK_ADDRESS_SPECIAL = "jPjuyLStHTCzwYt9J7R5M7pGUKshfcmEbtE3zVvCBE52";
     double SPECIAL_FORK_BALANCE = 12000000;
     String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";
+    int v3MeetsDifficulty = 25435;
 
     int LIMIT_CHEATING = 10;
     int SETING_UTILS_USE_v2MeetsDifficulty = 25436;
