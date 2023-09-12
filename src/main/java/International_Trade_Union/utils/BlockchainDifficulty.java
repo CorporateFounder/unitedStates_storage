@@ -1,9 +1,13 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.setings.Seting;
 
 import java.util.BitSet;
 import java.util.List;
+
+import static International_Trade_Union.utils.HashPrinter.bytesToBinary;
+import static International_Trade_Union.utils.HashPrinter.countLeadingZeros;
 
 
 public class BlockchainDifficulty {
@@ -50,8 +54,16 @@ public class BlockchainDifficulty {
     return zeroBits >= difficulty;
   }
 
-  public static boolean v2MeetsDifficulty(byte[]hash, int difficulty){
-    int zeroBits = countLeadingZeroBits(hash);
+  public static boolean v2MeetsDifficulty(byte[]hash, int difficulty, long index){
+
+    int zeroBits = 0;
+     if(index > Seting.SETING_UTILS_USE_v2MeetsDifficulty){
+       String binary = bytesToBinary(hash);
+        zeroBits = countLeadingZeros(binary);
+     }else {
+       countLeadingZeroBits(hash);
+     }
+
     return zeroBits == difficulty;
   }
 

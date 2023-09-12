@@ -43,7 +43,7 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 public class BasisController {
     private static Map<String, Account> balances = new HashMap<>();
     private static long dificultyOneBlock;
-    private static boolean isSaveFile = true;
+    private volatile static boolean isSaveFile = true;
     private static Block prevBlock = null;
     private static DataShortBlockchainInformation shortDataBlockchain = null;
     private static int blockcheinSize = 0;
@@ -387,6 +387,7 @@ public class BasisController {
             prevBlock = Blockchain.indexFromFile(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
         }
+
 
         if(blockchainValid == false){
             System.out.println("/size blockchain not valid: " + blockchainValid);
@@ -834,25 +835,29 @@ public class BasisController {
 
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
 
+
+
             if (sendBlocksEndInfo.getVersion() != Seting.VERSION) {
                 System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
                 return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
             }
             List<Block> blocks = sendBlocksEndInfo.getList();
+
+            ///последовательность временных меток
+            if(prevBlock.getTimestamp().getTime() > blocks.get(blocks.size()-1).getTimestamp().getTime()){
+                System.out.println("wrong time: prev uper now");
+                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+            }
             String addressMiner = null;
             if(blocks.get(blocks.size() - 1).getMinerAddress() != null && !blocks.get(blocks.size() - 1).getMinerAddress().isEmpty()){
                 addressMiner   = blocks.get(blocks.size() - 1).getMinerAddress();
 
             }else {
                 System.out.println("wrong: empty address;");
-                return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
+                return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
             }
 
             System.out.println("miner address: "+  addressMiner);
-
-
-
-
 
                 System.out.println("cheaters: " + cheaters.containsKey(addressMiner));
 
@@ -971,7 +976,7 @@ public class BasisController {
                     System.out.println("from to block is valid");
 
                 } else {
-                    if (temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
+                    if (temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() >= shortDataBlockchain.getHashCount()) {
                         System.out.println("code error: " + HttpStatus.CONFLICT);
                         System.out.println("miner: " + account);
                         return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);

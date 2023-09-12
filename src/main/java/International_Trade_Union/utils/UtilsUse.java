@@ -111,13 +111,14 @@ public class UtilsUse {
             return hashComplexity(literral, hashComplexity);
         }
         else if (index >= Seting.CHANGE_MEET_DIFFICULTY){
-            return BlockchainDifficulty.v2MeetsDifficulty(literral.getBytes(), hashComplexity);
+            return BlockchainDifficulty.v2MeetsDifficulty(literral.getBytes(), hashComplexity, index);
         }
-        else {
+            else {
 
             return BlockchainDifficulty.meetsDifficulty(literral.getBytes(), hashComplexity);
         }
     }
+
     public static boolean hashComplexity(String literral, int hashComplexity){
 
         String regex = "^[0]{" + Integer.toString(hashComplexity) + "}";
@@ -172,12 +173,17 @@ public class UtilsUse {
         return t -> seen.add(keyExtractor.apply(t));
     }
     //подсчитать количество нулей идущих подряд в hash
-    public static long hashCount(String hash) {
+    public static long hashCount(String hash, long index) {
         long count = 0;
-        for (int i = 0; i < hash.length(); i++) {
-            if(hash.charAt(i) == '0') count++;
-            else return count;
+        if(index > Seting.CHANGE_MEET_DIFFICULTY){
+            count = BlockchainDifficulty.countLeadingZeroBits(hash.getBytes());
+        }else {
+            for (int i = 0; i < hash.length(); i++) {
+                if(hash.charAt(i) == '0') count++;
+                else return count;
+            }
         }
+
         return count;
     }
 
