@@ -235,19 +235,18 @@ public interface Seting {
     double DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_STOCK_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
 
 
-    //каким количеством порций отправлять блоки
 
-    int DELETED_PORTION = 150;
-    int PORTION_DOWNLOAD = 500;
+
     int CHECK_UPDATING_VERSION = 24281;
     int NEW_START_DIFFICULT = 24281;
-    int NEW_START_ADJUSTMENT = 24281;
+
     int NEW_CHECK_UTILS_BLOCK = 0;
     int SPECIAL_BLOCK_FORK = 24281;
+    int CHANGE_MEET_DIFFICULTY = 24858;
 
     int PORTION_BLOCK_TO_COMPLEXCITY = 600;
     //version
-    int VERSION = 23;
+    int VERSION = 25;
     String FORK_ADDRESS_SPECIAL = "jPjuyLStHTCzwYt9J7R5M7pGUKshfcmEbtE3zVvCBE52";
     double SPECIAL_FORK_BALANCE = 12000000;
     String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";

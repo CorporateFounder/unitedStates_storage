@@ -7,7 +7,12 @@ import java.util.List;
 
 
 public class BlockchainDifficulty {
-
+  public static void printBinary(byte[] bytes) {
+    for(byte b : bytes) {
+      String binary = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
+      System.out.print(binary);
+    }
+  }
   public static int getAdjustedDifficulty(Block latestBlock, List<Block> blocks,
                                           long blockInterval, int difficultyInterval) {
     
@@ -43,6 +48,11 @@ public class BlockchainDifficulty {
    
     int zeroBits = countLeadingZeroBits(hash);
     return zeroBits >= difficulty;
+  }
+
+  public static boolean v2MeetsDifficulty(byte[]hash, int difficulty){
+    int zeroBits = countLeadingZeroBits(hash);
+    return zeroBits == difficulty;
   }
 
   private static Block getLatestBlock(List<Block> blocks) {

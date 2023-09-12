@@ -839,18 +839,29 @@ public class BasisController {
                 return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
             }
             List<Block> blocks = sendBlocksEndInfo.getList();
-            System.out.println("miner address: " + blocks.get(blocks.size() - 1).getMinerAddress());
+            String addressMiner = null;
+            if(blocks.get(blocks.size() - 1).getMinerAddress() != null && !blocks.get(blocks.size() - 1).getMinerAddress().isEmpty()){
+                addressMiner   = blocks.get(blocks.size() - 1).getMinerAddress();
+
+            }else {
+                System.out.println("wrong: empty address;");
+                return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
+            }
+
+            System.out.println("miner address: "+  addressMiner);
 
 
-            if(blocks.get(blocks.size()-1).getMinerAddress() != null &&
-            !blocks.get(blocks.size()-1).getMinerAddress().isEmpty()){
-                String address = blocks.get(blocks.size()-1).getMinerAddress();
+
+
+
+                System.out.println("cheaters: " + cheaters.containsKey(addressMiner));
+
                 List<DtoTransaction> dtoTransactions = blocks.get(0).getDtoTransactions();
                 //blocked stole
-                if(cheaters.containsKey(address)) {
-                    int countStole = cheaters.get(address);
+                if(cheaters.containsKey(addressMiner)) {
+                    int countStole = cheaters.get(addressMiner);
                     if(countStole > 10){
-                        System.out.println("blocked address: " + cheaters.get(address)
+                        System.out.println("blocked address: " + cheaters.get(addressMiner)
                                 + "countStole: " + countStole);
                         return new ResponseEntity<>("FALSE", HttpStatus.SEE_OTHER);
                     }
@@ -860,7 +871,7 @@ public class BasisController {
                     if (cheaters.containsKey(dtoTransaction.getSender())){
                         int countStole = cheaters.get(dtoTransaction.getSender());
                         if(countStole > 10){
-                            System.out.println("blocked address: " + cheaters.get(blocks.get(0).getMinerAddress())
+                            System.out.println("blocked address: " + cheaters.get(dtoTransaction.getSender())
                                     + "countStole: " + countStole);
                             return new ResponseEntity<>("FALSE", HttpStatus.SEE_OTHER);
                         }
@@ -868,18 +879,15 @@ public class BasisController {
                     }
 
                 }
-            }else {
-                return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
-            }
 
 
             try {
 
                 List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
-                System.out.println("account: " + addlist.get(0).getMinerAddress());
-                Account account = balances.get(addlist.get(0).getMinerAddress());
+                System.out.println("account: " + addressMiner);
+                Account account = balances.get(addressMiner);
                 if (account == null) {
-                    account = new Account(addlist.get(0).getMinerAddress(), 0, 0);
+                    account = new Account(addressMiner, 0, 0);
                 }
 
 
@@ -892,7 +900,7 @@ public class BasisController {
 //                    }
 //                }
 
-                Timestamp actualTime =new Timestamp(UtilsTime.getUniversalTimestamp());
+                Timestamp actualTime = new Timestamp(UtilsTime.getUniversalTimestamp());
                 Timestamp lastIndex = addlist.get(addlist.size() - 1).getTimestamp();
                 Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
                 System.out.println("different time: " + result);
