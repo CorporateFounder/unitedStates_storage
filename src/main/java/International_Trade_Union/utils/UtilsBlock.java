@@ -209,18 +209,24 @@ public class UtilsBlock {
         }
         else if(latestBlock.getIndex() > Seting.v3MeetsDifficulty && latestBlock.getIndex() < Seting.v3MeetsDifficulty + 288){
             difficulty = 2;
-        }else if(latestBlock.getIndex() >= Seting.v3MeetsDifficulty + 288){
+        }else if(latestBlock.getIndex() >= Seting.v3MeetsDifficulty + 288 &&latestBlock.getIndex() < Seting.v4MeetsDifficulty){
             difficulty = UtilsDIfficult.getAdjustedDifficultyMedian(latestBlock,
                     blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty && latestBlock.getIndex() < Seting.v4MeetsDifficulty + 288) {
+            difficulty = 2;
+        } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty) {
+            System.out.println("last version difficulty");
+
+            if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
+
+                difficulty = UtilsDIfficult.v2getAdjustedDifficultyMedian(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+                //более умеренная модель сложности
+            } else {
+                difficulty = latestBlock.getHashCompexity();
+            }
         }
 
-//        else if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
-//
-//            difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-//            //более умеренная модель сложности
-//        } else {
-//            difficulty = latestBlock.getHashCompexity();
-//        }
+
 //
 
 
@@ -372,9 +378,9 @@ public class UtilsBlock {
         }
 
 
-        if (thisBlock.getIndex() > Seting.NEW_START_DIFFICULT) {
+        if (thisBlock.getIndex() > Seting.v4MeetsDifficulty) {
             int diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-            if (thisBlock.getHashCompexity() < diff - 1) {
+            if (thisBlock.getHashCompexity() != diff ) {
                 System.out.println("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
                         + diff);
                 System.out.println("wrong difficult");

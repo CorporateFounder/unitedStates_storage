@@ -422,7 +422,7 @@ public class BasisController {
     public double version(){
         return Seting.VERSION;
     }
-    @PostMapping("/block")
+    @GetMapping("/block")
     @ResponseBody
     public Block getBlock(@RequestBody Integer index) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        System.out.println("start getBlock");
