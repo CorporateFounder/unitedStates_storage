@@ -976,7 +976,7 @@ public class BasisController {
                     System.out.println("from to block is valid");
 
                 } else {
-                    if (temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() >= shortDataBlockchain.getHashCount()) {
+                    if (temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
                         System.out.println("code error: " + HttpStatus.CONFLICT);
                         System.out.println("miner: " + account);
                         return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
@@ -987,7 +987,7 @@ public class BasisController {
 
 
                 if (temp.getSize() > shortDataBlockchain.getSize()
-                        && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
+                        && temp.getHashCount() >= shortDataBlockchain.getHashCount()) {
 
                     while (!isSaveFile) {
 //            System.out.println("saving file: resolve_from_to_block");

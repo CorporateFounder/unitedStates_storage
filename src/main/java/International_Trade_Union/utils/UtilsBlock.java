@@ -207,7 +207,7 @@ public class UtilsBlock {
             difficulty = UtilsDIfficult.getAdjustedDifficultyMedian(latestBlock,
                     blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
         }
-        else if(latestBlock.getIndex() >= Seting.v3MeetsDifficulty && latestBlock.getIndex() < Seting.v3MeetsDifficulty + 288){
+        else if(latestBlock.getIndex() > Seting.v3MeetsDifficulty && latestBlock.getIndex() < Seting.v3MeetsDifficulty + 288){
             difficulty = 2;
         }else if(latestBlock.getIndex() >= Seting.v3MeetsDifficulty + 288){
             difficulty = UtilsDIfficult.getAdjustedDifficultyMedian(latestBlock,
@@ -246,23 +246,23 @@ public class UtilsBlock {
         }
         if(thisBlock.getHashCompexity() < 1){
             System.out.println("wrong: difficulty less 1: " + thisBlock.getHashCompexity());
-//            return false;
+            return false;
         }
         if(thisBlock == null){
             System.out.println("wrong: block is null: ");
-//            return false;
+            return false;
         }
         if(thisBlock.getHashBlock().isEmpty() || thisBlock.getHashBlock() == null){
             System.out.println("wrong: hash empty or null");
-//            return false;
+            return false;
         }
         if(thisBlock.getMinerAddress().isEmpty() || thisBlock.getMinerAddress() == null){
             System.out.println("wrong: miner address empty or null");
-//            return false;
+            return false;
         }
         if(thisBlock.getFounderAddress().isEmpty() || thisBlock.getFounderAddress() == null){
             System.out.println("wrong: miner address empty or null");
-//            return false;
+            return false;
         }
 
 

@@ -16,6 +16,8 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static International_Trade_Union.utils.BlockchainDifficulty.bytesToBinary;
+
 public class UtilsUse {
     private static MessageDigest digest;
 
@@ -117,8 +119,8 @@ public class UtilsUse {
 
             result = BlockchainDifficulty.meetsDifficulty(literral.getBytes(), hashComplexity);
         }
-        if (index >= Seting.v3MeetsDifficulty) {
-          result = BlockchainDifficulty.v3MeetsDifficulty(literral.getBytes(), hashComplexity, index);
+        if (index > Seting.v3MeetsDifficulty) {
+          result = BlockchainDifficulty.v3MeetsDifficulty(literral.getBytes(), hashComplexity);
         }
     return result;
     }
@@ -186,12 +188,12 @@ public class UtilsUse {
                 else return count;
             }
         }else {
+            hash = bytesToBinary(hash.getBytes());
             count = BlockchainDifficulty.countLeadingZeros(hash);
         }
 
         return count;
     }
-
     //подсчитывает долю в процентах одного числа от другого
     public static double percentageShare(double first, double allNumber) {
         return (first / allNumber) * Seting.HUNDRED_PERCENT;
