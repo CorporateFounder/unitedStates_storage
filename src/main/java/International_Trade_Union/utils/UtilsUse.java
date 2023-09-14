@@ -119,8 +119,10 @@ public class UtilsUse {
 
             result = BlockchainDifficulty.meetsDifficulty(literral.getBytes(), hashComplexity);
         }
-        if (index > Seting.v3MeetsDifficulty) {
+        if (index > Seting.v3MeetsDifficulty && index <= Seting.v4MeetsDifficulty) {
           result = BlockchainDifficulty.v3MeetsDifficulty(literral.getBytes(), hashComplexity);
+        }else if (index > Seting.v4MeetsDifficulty){
+            result = BlockchainDifficulty.v4MeetsDifficulty(literral, hashComplexity);
         }
     return result;
     }
@@ -194,6 +196,7 @@ public class UtilsUse {
 
         return count;
     }
+
     //подсчитывает долю в процентах одного числа от другого
     public static double percentageShare(double first, double allNumber) {
         return (first / allNumber) * Seting.HUNDRED_PERCENT;

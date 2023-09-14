@@ -251,7 +251,8 @@ public interface Seting {
     double SPECIAL_FORK_BALANCE = 12000000;
     String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";
     int v3MeetsDifficulty = 25434;
-    int v4MeetsDifficulty = 25842;
+    int v4MeetsDifficulty = 26496;
+    int FIXED_BITE = 2;
 
     int LIMIT_CHEATING = 10;
     int SETING_UTILS_USE_v2MeetsDifficulty = 25436;
