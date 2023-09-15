@@ -32,6 +32,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -834,7 +835,7 @@ public class BasisController {
         try {
 
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
-
+            System.out.println("isSave: " + isSaveFile);
 
 
             if (sendBlocksEndInfo.getVersion() != Seting.VERSION) {
@@ -907,6 +908,7 @@ public class BasisController {
 
                 Timestamp actualTime = new Timestamp(UtilsTime.getUniversalTimestamp());
                 Timestamp lastIndex = addlist.get(addlist.size() - 1).getTimestamp();
+
                 Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
                 System.out.println("different time: " + result);
                 if (
