@@ -11,14 +11,19 @@ public interface Seting {
     int HUNDRED_PERCENT = 100;
     // значение используется как константа года,
     // в данной системе отсутствует високосный год
+    //storage
+
+    boolean IS_TEST = true;
     int YEAR = 360;
-    int FIFTEEN_DAYS = 15;
+    int FIFTEEN_DAYS = IS_TEST ? 5: 15;
 
 
     Directors directors = new Directors();
 
 
-
+    //фракционный голос минимум 15.0
+    double ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS = IS_TEST ? 1.0: 15.0;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS =IS_TEST ? 1: 10;
 
 
     //За какой период последних блоков учитывать для отбора акционеров.
@@ -39,7 +44,7 @@ public interface Seting {
 
 
     //Минимальное значение чтобы Совет Корпоративных Верховных Судей могла избрать Верховного Судью
-    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = 2;
+    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = IS_TEST ? 1: 2;
 
 
 
@@ -51,7 +56,7 @@ public interface Seting {
     int ORIGINAL_LIMIT_MIN_VOTE_GENERAL_EXECUTIVE_DIRECTOR = 1;
 
     //фракционный голос минимум 15.0
-    double ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS = 15.0;
+
 
     //голос Верховного Судьи
     int ORIGINAL_LIMIT_MIN_VOTE_HIGHT_JUDGE = 1;
@@ -171,26 +176,28 @@ public interface Seting {
     //сколько блоков добывается в сутки
     double COUNT_BLOCK_IN_DAY = (DAY_SECOND / BLOCK_TIME);
 
+    String testPath = IS_TEST? "D:/" :"";
 
-    String ORIGINAL_BLOCKCHAIN_FILE = "/resources/blockchain/";
-    String ORIGINAL_BALANCE_FILE = "/resources/balance/";
-    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = "/resources/federalGovernment/federalGovernment.txt";
-    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = "/resources/federalLaws/";
-    String ORIGINAL_ACCOUNT = "/resources/minerAccount/minerAccount.txt";
-    String ORIGINAL_CORPORATE_VOTE_FILE = "/resources/vote/";
+    String ORIGINAL_BLOCKCHAIN_FILE = testPath+"/resources/blockchain/";
+    String ORIGINAL_BALANCE_FILE = testPath+"/resources/balance/";
+    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = testPath+"/resources/federalGovernment/federalGovernment.txt";
+    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = testPath+"/resources/federalLaws/";
+    String ORIGINAL_ACCOUNT = testPath+"/resources/minerAccount/minerAccount.txt";
+    String ORIGINAL_CORPORATE_VOTE_FILE = testPath+"/resources/vote/";
 
-    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = "/resources/allLawsWithBalance/";
-    String ORGINAL_ALL_TRANSACTION_FILE = "/resources/transactions/";
+    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = testPath+"/resources/allLawsWithBalance/";
+    String ORGINAL_ALL_TRANSACTION_FILE = testPath+"/resources/transactions/";
 
-    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = "/resources/sendedTransaction/";
-    String ORIGINAL_POOL_URL_ADDRESS_FILE = "/resources/poolAddress/";
-    String ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE = "/resources/pooAddressBlocked/";
+    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = testPath+"/resources/sendedTransaction/";
+    String ORIGINAL_POOL_URL_ADDRESS_FILE = testPath+"/resources/poolAddress/";
+    String ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE = testPath+"/resources/pooAddressBlocked/";
 
-    String TEMPORARY_BLOCKCHAIN_FILE = "/resources/tempblockchain/";
+    String TEMPORARY_BLOCKCHAIN_FILE = testPath+"/resources/tempblockchain/shortBlockchain.txt";
 
     //отчет об уничтоженных монетах
-    String BALANCE_REPORT_ON_DESTROYED_COINS = "/resources/balanceReportOnDestroyedCoins/";
-    String CURRENT_BUDGET_END_EMISSION = "/resources/budgetEndEmission/";
+    String BALANCE_REPORT_ON_DESTROYED_COINS = testPath+"/resources/balanceReportOnDestroyedCoins/";
+    String CURRENT_BUDGET_END_EMISSION = testPath+"/resources/budgetEndEmission/";
+    String H2_DB = testPath+"/resources/h2DB/";
 
 
     //адресса внешних сервисов
@@ -255,5 +262,6 @@ public interface Seting {
     int FIXED_BITE = 2;
 
     int LIMIT_CHEATING = 10;
-    int SETING_UTILS_USE_v2MeetsDifficulty = 25436;
+    int TRANSACTIONS_COUNT_ADDED = 100;
+    int COUNT_HASH_ZERO = 30446;
 }

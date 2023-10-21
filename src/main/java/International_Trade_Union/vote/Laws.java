@@ -1,10 +1,10 @@
 package International_Trade_Union.vote;
 
 
-import lombok.Data;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsJson;
 import International_Trade_Union.utils.UtilsUse;
+import lombok.Data;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,8 +31,34 @@ public class Laws {
         if (this == o) return true;
         if (!(o instanceof Laws)) return false;
         Laws laws = (Laws) o;
+
+
+        boolean hashOriginal = false;
+        boolean hash = false;
+        boolean nameOriginal = false;
+        boolean name = false;
+
+        if(getHashLaw() == null || getHashLaw().isEmpty()){
+            hashOriginal = true;
+        }
+        if(laws.getHashLaw() == null || laws.getHashLaw().isEmpty()){
+            hash = true;
+        }
+        if(getPacketLawName() == null || getPacketLawName().isEmpty()){
+            nameOriginal = true;
+        }
+        if(laws.getPacketLawName() == null || laws.getPacketLawName().isEmpty()){
+            name = true;
+        }
+        if(hashOriginal && hash && nameOriginal && name){
+            return true;
+        }
+        if(!hashOriginal ^ !hash || !nameOriginal ^ !name){
+            return false;
+        }
         return getHashLaw().equals(laws.getHashLaw());
     }
+
 
     @Override
     public int hashCode() {

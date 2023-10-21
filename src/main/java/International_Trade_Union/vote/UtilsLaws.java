@@ -1,16 +1,15 @@
 package International_Trade_Union.vote;
 
-import International_Trade_Union.governments.Director;
-import International_Trade_Union.governments.Directors;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.setings.Seting;
+import International_Trade_Union.governments.Director;
+import International_Trade_Union.governments.Directors;
 import International_Trade_Union.model.Account;
+import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsFileSaveRead;
 import International_Trade_Union.utils.UtilsJson;
 import International_Trade_Union.utils.UtilsUse;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.File;
 import java.io.IOException;
@@ -242,9 +241,9 @@ public class UtilsLaws {
     }
 
     //возвращает пакет законов и их счета
-    public static Map<String, Laws> getPackageLaws(List<Block> blocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        Map<String, Laws> laws = new HashMap<>();
-        for (Block block : blocks) {
+    public static Map<String, Laws> getPackageLaws(Block block, Map<String, Laws> laws) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+//        Map<String, Laws> laws = new HashMap<>();
+
             for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {
                 if (dtoTransaction.verify()) {
                     if (dtoTransaction.getCustomer().startsWith(Seting.NAME_LAW_ADDRESS_START) && dtoTransaction.getBonusForMiner() >= Seting.COST_LAW) {
@@ -254,7 +253,7 @@ public class UtilsLaws {
 
                     }
                 }
-            }
+
 
         }
         return laws;
@@ -279,16 +278,20 @@ public class UtilsLaws {
         return currentLaws;
     }
 
+
     //возвращяет список всех законов, как действующих, так и не действующих, если закон новый то автоматически сохраняет его
-    public static Map<String, Laws> getLaws(List<Block> blocks, String fileLaws) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public static Map<String, Laws> getLaws(Block block, String fileLaws, Map<String, Laws> lawsMap) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         List<Laws> lawsForSave = new ArrayList<>();
-        Map<String, Laws> lawsMap = new HashMap<>();
+//        Map<String, Laws> lawsMap = new HashMap<>();
         File file = new File(fileLaws);
         List<Laws> lawsList = new ArrayList<>();
         if (file.exists()) {
             lawsList = readLineLaws(fileLaws);
         }
-        lawsMap = getPackageLaws(blocks);
+
+        Map<String, Laws> laws = new HashMap<>();
+//        lawsMap = getPackageLaws(block, laws);
+        lawsMap.putAll(getPackageLaws(block, laws));
 
         for (Map.Entry<String, Laws> map : lawsMap.entrySet()) {
             if (!lawsList.contains(map.getValue())) {
@@ -305,6 +308,7 @@ public class UtilsLaws {
 
         }
         saveLaws(lawsForSave, fileLaws);
+        System.out.println("UtilsLaws: getLaws: lawMap size: " + lawsMap.size() + " index: " + block.getIndex());
         return lawsMap;
     }
     public static List<LawEligibleForParliamentaryApproval> getCurrentLaws(Map<String, Laws> lawsMap, Map<String, Account> balances, String fileCurrentLaws) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {

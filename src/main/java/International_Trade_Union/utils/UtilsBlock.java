@@ -1,17 +1,23 @@
 package International_Trade_Union.utils;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-
-import java.io.*;
-import java.security.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,6 +25,10 @@ import java.util.stream.Collectors;
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 
 public class UtilsBlock {
+
+    //storage
+    //this need olny find cheater
+    public static Map<String, Account> cheater = new HashMap<>();
 
 
     public static void saveBlocks(List<Block> blocks, String filename) throws IOException {
@@ -215,7 +225,7 @@ public class UtilsBlock {
         } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty && latestBlock.getIndex() < Seting.v4MeetsDifficulty + 288) {
             difficulty = 2;
         } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty +288) {
-            System.out.println("last version difficulty");
+
 
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
 
@@ -232,9 +242,6 @@ public class UtilsBlock {
 
         return difficulty == 0 ? 1 : difficulty;
     }
-
-
-
     public static boolean validationOneBlock(
             String addressFounder,
             Block previusblock,
@@ -247,28 +254,28 @@ public class UtilsBlock {
             System.out.println("genesis address not equals block founder: ");
             System.out.println("genesis address: " + addressFounder);
             System.out.println("block address: " + thisBlock.getFounderAddress());
-            return false;
+//            return false;
 
         }
         if(thisBlock.getHashCompexity() < 1){
             System.out.println("wrong: difficulty less 1: " + thisBlock.getHashCompexity());
-            return false;
+//            return false;
         }
         if(thisBlock == null){
             System.out.println("wrong: block is null: ");
-            return false;
+//            return false;
         }
         if(thisBlock.getHashBlock().isEmpty() || thisBlock.getHashBlock() == null){
             System.out.println("wrong: hash empty or null");
-            return false;
+//            return false;
         }
         if(thisBlock.getMinerAddress().isEmpty() || thisBlock.getMinerAddress() == null){
             System.out.println("wrong: miner address empty or null");
-            return false;
+//            return false;
         }
         if(thisBlock.getFounderAddress().isEmpty() || thisBlock.getFounderAddress() == null){
             System.out.println("wrong: miner address empty or null");
-            return false;
+//            return false;
         }
 
 
@@ -374,9 +381,9 @@ public class UtilsBlock {
 
             System.out.println("this block hash: " + thisBlock.getHashBlock());
 
+
             return false;
         }
-
 
         if (thisBlock.getIndex() > Seting.v4MeetsDifficulty) {
             int diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
@@ -391,9 +398,10 @@ public class UtilsBlock {
 
         if (thisBlock.getIndex() > Seting.NEW_CHECK_UTILS_BLOCK && !thisBlock.getHashBlock().equals(thisBlock.hashForTransaction())) {
             System.out.println("false hash added wrong hash");
-//            System.out.println("actual: " + thisBlock.getHashBlock());
-//            System.out.println("expected: " + thisBlock.hashForTransaction());
+            System.out.println("actual: " + thisBlock.getHashBlock());
+            System.out.println("expected: " + thisBlock.hashForTransaction());
             System.out.println("address: " + thisBlock.getMinerAddress());
+            System.out.println("prevHash: " + thisBlock.getPreviousHash());
 
 
 //            //for find cheater
@@ -451,6 +459,7 @@ public class UtilsBlock {
 
     public static void deleteFiles() {
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_TEMPORARY_BLOCKS);
 //        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BALANCE_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
@@ -458,6 +467,13 @@ public class UtilsBlock {
         UtilsFileSaveRead.deleteAllFiles(Seting.BALANCE_REPORT_ON_DESTROYED_COINS);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.CURRENT_BUDGET_END_EMISSION);
+        UtilsFileSaveRead.deleteAllFiles(Seting.H2_DB);
+
+
+        UtilsFileSaveRead.deleteFile(Seting.TEMPORARY_BLOCKCHAIN_FILE);
+//        UtilsFileSaveRead.deleteFile(Seting.ORIGINAL_TEMPORARY_SHORT);
+//        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CLASSIC_LAWS);
+
     }
 
     public static List<DtoTransaction> validDto(List<Block> blocks, List<DtoTransaction> transactions) {
@@ -475,7 +491,7 @@ public class UtilsBlock {
 
     }
 
-    public static boolean validation(List<Block> blocks, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+    public static boolean validation(List<Block> blocks, int checkIndex, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         boolean validated = true;
         int index = 0;
 
@@ -485,6 +501,11 @@ public class UtilsBlock {
         List<Block> tempList = new ArrayList<>();
         for (int i = 1; i < blocks.size(); i++) {
             index++;
+
+            if (i < checkIndex) {
+                System.out.println("already checked");
+                return true;
+            }
             Block block = blocks.get(i);
 
 
@@ -515,6 +536,8 @@ public class UtilsBlock {
                     BLOCK_GENERATION_INTERVAL,
                     DIFFICULTY_ADJUSTMENT_INTERVAL,
                     tempList);
+
+//            SaveBalances.saveBalances(cheater, "C://testing/cheaters/");
             if (validated == false) {
 
                 System.out.println("ERROR: UtilsBlock: validation: prevBLock.Hash():" + prevBlock.getHashBlock());

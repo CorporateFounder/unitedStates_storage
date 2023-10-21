@@ -82,15 +82,16 @@ public class Mining {
             block = blockchain.getBlock(blockchain.sizeBlockhain() - 1);
             balances = UtilsBalance.calculateBalance(balances, block, signs);
             //test
-//получает все созданные когда либо законы
-            Map<String, Laws> allLaws = UtilsLaws.getLaws(blockchain.getBlockchainList().subList(
-                    blockchain.sizeBlockhain()-Seting.LAW_MONTH_VOTE, blockchain.sizeBlockhain()
-            ), Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
+            Map<String, Laws> allLaws = new HashMap<>();
+
+            for (int i = blockchain.sizeBlockhain()-Seting.LAW_MONTH_VOTE; i < blockchain.sizeBlockhain(); i++) {
+                allLaws = UtilsLaws.getLaws(blockchain.getBlock(i), Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+            }
 
             //возвращает все законы с голосами проголосовавшими за них
             List<LawEligibleForParliamentaryApproval> allLawsWithBalance =
                     UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-           balances = UtilsBalance.calculateBalanceFromLaw(balances, block, allLaws, allLawsWithBalance);
+
         }
 
 

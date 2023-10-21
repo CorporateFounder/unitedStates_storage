@@ -3,14 +3,12 @@ package International_Trade_Union.entity.blockchain;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.model.Account;
-import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
-import International_Trade_Union.vote.UtilsLaws;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -63,16 +61,7 @@ public class Blockchain implements Cloneable {
     }
 
     public void addBlock(Block newBlock) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-//        if(blockchainList.size() > 2){
-//            boolean time = UtilsBlock.isValidTimestamp(blockchainList.get(blockchainList.size()-1), newBlock, INTERVAL_TARGET);
-//            if(!time){
-//                System.out.println("time out block add " + time);
-//               return;
-//            }
-//        }
         blockchainList.add(newBlock);
-
-
     }
 
     public Block genesisBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, SignatureException, InvalidKeyException {
@@ -82,7 +71,7 @@ public class Blockchain implements Cloneable {
         //transactions
         List<DtoTransaction> transactions = new ArrayList<>();
 
-        DtoTransaction gold = new DtoTransaction(Seting.BASIS_ADDRESS, ADDRESS_FOUNDER,
+        DtoTransaction gold = new DtoTransaction(Seting.BASIS_ADDRESS, Seting.ADDRESS_FOUNDER,
                 Seting.FOUNDERS_REMUNERATION_DIGITAL_DOLLAR, Seting.FOUNDERS_REMNUNERATION_DIGITAL_STOCK, new Laws(), 0.0, VoteEnum.YES);
         PrivateKey privateKey = UtilsSecurity.privateBytToPrivateKey(base.decode(Seting.BASIS_PASSWORD));
         byte[] signGold = UtilsSecurity.sign(privateKey, gold.toSign());
@@ -161,13 +150,6 @@ public class Blockchain implements Cloneable {
                 blockList.remove(0);
             }
 
-            System.out.println("========================================================");
-            System.out.println("i: " + i);
-            System.out.println("prev: index: " + prev.getIndex() + " hash: " + prev.getHashBlock());
-            System.out.println("block: index: " + blocks.get(i).getIndex() + " hash: " + blocks.get(i).getPreviousHash());
-            System.out.println("blocklist index: " + blockList.get(blockList.size()-1).getIndex() + " :hash: " +
-                    blockList.get(blockList.size()-1).getHashBlock());
-            System.out.println("========================================================");
             blockList = blockList.stream()
                     .sorted(Comparator.comparing(Block::getIndex))
                     .collect(Collectors.toList());
@@ -295,18 +277,13 @@ public class Blockchain implements Cloneable {
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
-        File file = new File(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
-
-        List<Laws> lawsList = new ArrayList<>();
-        if (file.exists()) {
-            lawsList = UtilsLaws.readLineLaws(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
-        }
 
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
                 System.out.println("is directory " + fileEntry.getName());
             } else {
+
                 List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                 for (String s : list) {
 
@@ -314,54 +291,15 @@ public class Blockchain implements Cloneable {
 
                     UtilsBalance.calculateBalance(balances, block, signs);
                     balances = UtilsBalance.calculateBalanceFromLaw(balances, block, allLaws, allLawsWithBalance);
+//
 
-                    for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {
-                        if (dtoTransaction.verify()) {
-                            if (dtoTransaction.getCustomer().startsWith(Seting.NAME_LAW_ADDRESS_START) && dtoTransaction.getBonusForMiner() >= Seting.COST_LAW) {
-                                if(dtoTransaction.getLaws() != null && !allLaws.containsKey(dtoTransaction.getCustomer())){
-                                    allLaws.put(dtoTransaction.getCustomer(), dtoTransaction.getLaws());
-                                }
-
-                            }
-                        }
-                    }
                 }
             }
         }
-        for (Map.Entry<String, Laws> map : allLaws.entrySet()) {
-            if (!lawsList.contains(map.getValue())) {
-                if( map.getValue() != null &&
-                        map.getValue().getPacketLawName() != null&&
-                        map.getValue().getLaws() != null
-                        && !map.getValue().getHashLaw().isEmpty()
-                        && (map.getValue().getLaws().size() > 0)){
 
-                    lawsList.add(map.getValue());
-                }
-
-            }
-
-        }
-
-        SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
-        UtilsLaws.saveLaws(lawsList, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
-
-        //получение и отображение законов, а также сохранение новых законов
-        //и изменение действующих законов
-//        Map<String, Laws> allLaws = UtilsLaws.getLaws(blockchain.getBlockchainList(), Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
-
-        //возвращает все законы с балансом
-       allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
-                Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-        //removal of obsolete laws
-        //удаление устаревших законов
-        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-        //rewriting all existing laws
-        //перезапись всех действующих законов
-        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         return valid;
     }
+
     public static DataShortBlockchainInformation checkFromFile(
 
             String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -457,6 +395,30 @@ public class Blockchain implements Cloneable {
         return valid;
     }
 
+    public static Block hashFromFile(String hash, String filename) throws JsonProcessingException {
+        File folder = new File(filename);
+        Block block = null;
+
+
+        for (final File fileEntry : folder.listFiles()) {
+
+            if (fileEntry.isDirectory()) {
+                System.out.println("is directory " + fileEntry.getAbsolutePath());
+            } else {
+
+                List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
+                for (String s : list) {
+                    block = UtilsJson.jsonToBLock(s);
+
+                    if (block.getHashBlock() == hash) {
+                        return block;
+                    }
+                }
+            }
+        }
+        return block;
+    }
+
     public static Block indexFromFile(int index, String filename) throws JsonProcessingException {
         File folder = new File(filename);
         Block block = null;
@@ -492,7 +454,78 @@ public class Blockchain implements Cloneable {
 
         return block;
     }
+    // Константа для размера буфера
+    public static Block indexFromFileBing(int index, String filename) throws JsonProcessingException {
+        if(index == 0){
+            Block block = UtilsJson.jsonToBLock("{\"dtoTransactions\":[{\"sender\":\"faErFrDnBhfSfNnj1hYjxydKNH28cRw1PBwDQEXH3QsJ\",\"customer\":\"nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43\",\"digitalDollar\":6.5E7,\"digitalStockBalance\":6.5E7,\"laws\":{\"packetLawName\":null,\"laws\":null,\"hashLaw\":null},\"bonusForMiner\":0.0,\"voteEnum\":\"YES\",\"sign\":\"MEUCIDDW9fKvwUY0aXpvamxOU6pypicO3eCqEVM9LDFrIpjIAiEA81Zh7yCBbJOLrAzx4mg5HS0hMdqvB0obO2CZARczmfY=\"}],\"previousHash\":\"0234a350f4d56ae45c5ece57b08c54496f372bc570bd83a465fb6d2d85531479\",\"minerAddress\":\"nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43\",\"founderAddress\":\"nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43\",\"randomNumberProof\":12,\"minerRewards\":0.0,\"hashCompexity\":1,\"timestamp\":1685942742706,\"index\":1,\"hashBlock\":\"08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c\"}");
+            return block;
+        }
 
+        File folder = new File(filename);
+        File[] files = folder.listFiles(); // получаем массив файлов
+        Arrays.sort(files); // сортируем файлы по имени
+        int left = 0; // левая граница поиска
+        int right = files.length - 1; // правая граница поиска
+        while (left <= right) { // пока границы не сомкнутся
+            int mid = (left + right) / 2; // находим середину
+            File file = files[mid]; // берем файл в середине
+            if (file.isDirectory()) { // если это директория, пропускаем ее
+                left = mid + 1;
+                continue;
+            }
+            List<String> list = UtilsFileSaveRead.reads(file.getAbsolutePath()); // читаем содержимое файла
+            Block first = UtilsJson.jsonToBLock(list.get(0)); // получаем первый блок в файле
+            Block last = UtilsJson.jsonToBLock(list.get(list.size() - 1)); // получаем последний блок в файле
+            if (first.getIndex() <= index && index <= last.getIndex()) { // если индекс находится в диапазоне файла
+                return binarySearchBlock(list, index); // ищем блок бинарным поиском внутри файла
+            } else if (index < first.getIndex()) { // если индекс меньше первого блока в файле
+                right = mid - 1; // сдвигаем правую границу налево
+            } else { // если индекс больше последнего блока в файле
+                left = mid + 1; // сдвигаем левую границу направо
+            }
+        }
+        return null; // если индекс не найден, возвращаем null
+    }
+    // метод для бинарного поиска блока в списке строк с json-объектами
+    public static Block binarySearchBlock(List<String> list, int index) throws JsonProcessingException {
+        int left = 0; // левая граница поиска
+        int right = list.size() - 1; // правая граница поиска
+        while (left <= right) { // пока границы не сомкнутся
+            int mid = (left + right) / 2; // находим середину
+            String s = list.get(mid); // берем строку в середине
+            Block block = UtilsJson.jsonToBLock(s); // преобразуем ее в блок
+            if (block.getIndex() == index) { // если индекс совпадает с искомым
+                return block; // возвращаем блок
+            } else if (index < block.getIndex()) { // если индекс меньше блока в середине
+                right = mid - 1; // сдвигаем правую границу налево
+            } else { // если индекс больше блока в середине
+                left = mid + 1; // сдвигаем левую границу направо
+            }
+        }
+        return null; // если индекс не найден, возвращаем null
+    }
+    public static boolean compareLists(List<Block> list1, List<Block> list2) {
+
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < list1.size(); i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    public static List<Block> subFromFileBing(int indexFrom, int indexTo, String filename) throws JsonProcessingException {
+        List<Block> blocks = new ArrayList<>();
+        for (int i = indexFrom; i < indexTo; i++) {
+            Block temp = indexFromFileBing(i, filename);
+            blocks.add(temp);
+        }
+        return blocks;
+    }
     public static List<Block> subFromFile(int indexFrom, int indexTo, String filename) throws JsonProcessingException {
         File folder = new File(filename);
         Block block = null;
@@ -541,7 +574,11 @@ public class Blockchain implements Cloneable {
 //        Blockchain blockchain = Mining.getBlockchain(
 //                Seting.ORIGINAL_BLOCKCHAIN_FILE,
 //                BlockchainFactoryEnum.ORIGINAL);
-        return UtilsBlock.validation(blockchainList, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        return UtilsBlock.validation(blockchainList, 0, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+    }
+
+    public boolean validatedBlockchain(int index) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        return UtilsBlock.validation(blockchainList, index, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
     }
 
     public String jsonString() throws IOException {

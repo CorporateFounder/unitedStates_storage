@@ -1,6 +1,5 @@
 package International_Trade_Union.entity.DtoTransaction;
 
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsJson;
 import International_Trade_Union.utils.UtilsSecurity;
@@ -10,12 +9,14 @@ import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-
 import lombok.Data;
-
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 
 import java.io.IOException;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Objects;
