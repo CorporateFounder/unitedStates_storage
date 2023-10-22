@@ -1,6 +1,5 @@
 package International_Trade_Union.entity.services;
 
-import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.entities.EntityDtoTransaction;
@@ -8,16 +7,13 @@ import International_Trade_Union.entity.repository.EntityAccountRepository;
 import International_Trade_Union.entity.repository.EntityBlockRepository;
 import International_Trade_Union.entity.repository.EntityDtoTransactionRepository;
 import International_Trade_Union.entity.repository.EntityLawsRepository;
-import International_Trade_Union.utils.UtilsBlockToEntityBlock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class BlockService {
@@ -113,6 +109,21 @@ public class BlockService {
         accountService.flush();
 
     }
+
+    public static EntityDtoTransaction findBySign(String sign){
+        Base64.Decoder decoder = Base64.getDecoder();
+
+// декодируем строку обратно в массив байтов
+        byte[] decoded = decoder.decode(sign);
+        return dtoService.findBySign(decoded);
+
+    }
+    public static List<EntityDtoTransaction> findAllDto(){
+        return dtoService.findAll();
+    }
+    public static EntityDtoTransaction findByIdDto(long id){
+        return dtoService.findById(id);
+    }
     public static EntityBlock findById(long id){
         return blockService.findById(id);
     }
@@ -146,34 +157,6 @@ public class BlockService {
     public static boolean isEmpty() {
         boolean exists = blockService.existsById(1L);
         return exists;
-    }
-
-    public static DtoTransaction findByIdDto(long id) throws IOException {
-
-        Optional<EntityDtoTransaction> dtoTransaction = dtoService.findById(id);
-        if(!dtoTransaction.isEmpty()){
-            DtoTransaction dtoTransaction1 =
-                    UtilsBlockToEntityBlock.entityDtoToDto(dtoTransaction.get());
-            return dtoTransaction1;
-        }else {
-            return null;
-        }
-
-    }
-
-    public static DtoTransaction findBySign(String hash) throws IOException {
-
-        EntityDtoTransaction entityDtoTransaction
-                = dtoService.findByToSign(hash);
-
-
-        if(entityDtoTransaction == null){
-            return null;
-        }
-        DtoTransaction dtoTransaction
-                = UtilsBlockToEntityBlock.entityDtoToDto(entityDtoTransaction);
-
-        return dtoTransaction;
     }
 
 

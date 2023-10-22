@@ -13,7 +13,7 @@ public interface Seting {
     // в данной системе отсутствует високосный год
     //storage
 
-    boolean IS_TEST = true;
+    boolean IS_TEST = false;
     int YEAR = 360;
     int FIFTEEN_DAYS = IS_TEST ? 5: 15;
 
@@ -253,7 +253,7 @@ public interface Seting {
 
     int PORTION_BLOCK_TO_COMPLEXCITY = 600;
     //version
-    int VERSION = 26;
+    int VERSION = 27;
     String FORK_ADDRESS_SPECIAL = "jPjuyLStHTCzwYt9J7R5M7pGUKshfcmEbtE3zVvCBE52";
     double SPECIAL_FORK_BALANCE = 12000000;
     String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";

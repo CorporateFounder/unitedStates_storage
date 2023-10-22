@@ -46,6 +46,35 @@ public class UtilsBlockToEntityBlock {
         return entityBlock;
     }
 
+    public static DtoTransaction EntityDto(EntityDtoTransaction entityDtoTransaction) throws IOException {
+        Laws laws = entityLawsToLaws(entityDtoTransaction.getEntityLaws());
+        DtoTransaction dtoTransaction = new DtoTransaction(
+                entityDtoTransaction.getSender(),
+                entityDtoTransaction.getCustomer(),
+                entityDtoTransaction.getDigitalDollar(),
+                entityDtoTransaction.getDigitalStockBalance(),
+                laws,
+                entityDtoTransaction.getBonusForMiner(),
+                entityDtoTransaction.getVoteEnum());
+        dtoTransaction.setSign(entityDtoTransaction.getSign());
+        return dtoTransaction;
+    }
+
+    public static DtoTransaction entityToDto(EntityDtoTransaction entityDtoTransaction) throws IOException {
+
+        Laws laws = UtilsBlockToEntityBlock.entityLawsToLaws(entityDtoTransaction.getEntityLaws());
+        DtoTransaction transaction = new DtoTransaction(
+                entityDtoTransaction.getSender(),
+                entityDtoTransaction.getCustomer(),
+                entityDtoTransaction.getDigitalDollar(),
+                entityDtoTransaction.getDigitalStockBalance(),
+                laws,
+                entityDtoTransaction.getBonusForMiner(),
+                entityDtoTransaction.getVoteEnum()
+        );
+        transaction.setSign(entityDtoTransaction.getSign());
+        return transaction;
+    }
     public static List<EntityDtoTransaction> dtoTransactionToEntity(List<DtoTransaction> list) {
         List<EntityDtoTransaction> entityDtoTransactions = new ArrayList<>();
         for (DtoTransaction transaction : list) {
@@ -58,8 +87,7 @@ public class UtilsBlockToEntityBlock {
                     entityLaws,
                     transaction.getBonusForMiner(),
                     transaction.getVoteEnum(),
-                    transaction.getSign(),
-                    transaction.toSign()
+                    transaction.getSign()
             );
             entityLaws.setEntityDtoTransaction(entityDtoTransaction);
             entityDtoTransaction.setEntityBlock(null); // Поле будет заполнено при преобразовании блока
@@ -129,24 +157,6 @@ public class UtilsBlockToEntityBlock {
                 entityBlock.getHashBlock()
         );
         return block;
-    }
-
-
-    public static DtoTransaction entityDtoToDto(
-            EntityDtoTransaction entityDtoTransaction
-    ) throws IOException {
-        Laws laws = entityLawsToLaws(entityDtoTransaction.getEntityLaws());
-        DtoTransaction dtoTransaction = new DtoTransaction(
-                entityDtoTransaction.getSender(),
-                entityDtoTransaction.getCustomer(),
-                entityDtoTransaction.getDigitalDollar(),
-                entityDtoTransaction.getDigitalStockBalance(),
-                laws,
-                entityDtoTransaction.getBonusForMiner(),
-                entityDtoTransaction.getVoteEnum()
-        );
-        dtoTransaction.setSign(entityDtoTransaction.getSign());
-        return dtoTransaction;
     }
     public static List<DtoTransaction> entityDtoTransactionToDtoTransaction(
             List<EntityDtoTransaction> entityDtoTransactions

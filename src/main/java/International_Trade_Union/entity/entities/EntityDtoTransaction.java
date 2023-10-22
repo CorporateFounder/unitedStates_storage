@@ -27,15 +27,7 @@ public class EntityDtoTransaction {
     }
 
 
-    public EntityDtoTransaction(String sender,
-                                String customer,
-                                double digitalDollar,
-                                double digitalStockBalance,
-                                EntityLaws entityLaws,
-                                double bonusForMiner,
-                                VoteEnum voteEnum,
-                                byte[] sign,
-                                String toSign) {
+    public EntityDtoTransaction(String sender, String customer, double digitalDollar, double digitalStockBalance, EntityLaws entityLaws, double bonusForMiner, VoteEnum voteEnum, byte[] sign) {
 
         this.sender = sender;
         this.customer = customer;
@@ -58,8 +50,6 @@ public class EntityDtoTransaction {
     private double bonusForMiner;
     private VoteEnum voteEnum;
     private byte[] sign;
-    private String toSign;
-
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "entity_block_id")
