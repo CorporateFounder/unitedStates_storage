@@ -13,17 +13,17 @@ public interface Seting {
     // в данной системе отсутствует високосный год
     //storage
 
-    boolean IS_TEST = false;
+    boolean IS_TEST = true;
     int YEAR = 360;
-    int FIFTEEN_DAYS = IS_TEST ? 5: 15;
+    int FIFTEEN_DAYS =  15;
 
 
     Directors directors = new Directors();
 
 
     //фракционный голос минимум 15.0
-    double ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS = IS_TEST ? 1.0: 15.0;
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS =IS_TEST ? 1: 10;
+    double ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS = 15.0;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS = 10;
 
 
     //За какой период последних блоков учитывать для отбора акционеров.
@@ -44,7 +44,7 @@ public interface Seting {
 
 
     //Минимальное значение чтобы Совет Корпоративных Верховных Судей могла избрать Верховного Судью
-    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = IS_TEST ? 1: 2;
+    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = 2;
 
 
 
@@ -264,4 +264,6 @@ public interface Seting {
     int LIMIT_CHEATING = 10;
     int TRANSACTIONS_COUNT_ADDED = 100;
     int COUNT_HASH_ZERO = 30446;
+
+    int PORTION_DOWNLOAD = 500;
 }

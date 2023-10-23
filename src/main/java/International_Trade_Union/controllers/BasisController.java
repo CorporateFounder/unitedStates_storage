@@ -1,5 +1,6 @@
 package International_Trade_Union.controllers;
 
+import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.*;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
@@ -236,7 +237,7 @@ public class BasisController {
      */
     @GetMapping("/size")
     @ResponseBody
-    public Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, InterruptedException {
+    public Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, InterruptedException, CloneNotSupportedException {
 //        System.out.println("start /size");
         if (blockcheinSize == 0) {
             System.out.println("blockchain is 0 blockchainSize " + blockcheinSize);
@@ -247,6 +248,7 @@ public class BasisController {
             prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
         }
+
 
 
         if (blockchainValid == false) {
@@ -408,7 +410,105 @@ public class BasisController {
         return balances.get(address);
     }
 
+    public static void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+        java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
 
+        List<EntityBlock> list = new ArrayList<>();
+        List<String> signs = new ArrayList<>();
+        Map<String, Laws> allLaws = new HashMap<>();
+        List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
+
+        for (Block block : originalBlocks) {
+            System.out.println(" :BasisController: addBlock3: blockchain is being updated: ");
+            UtilsBlock.saveBLock(block, filename);
+            EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
+            list.add(entityBlock);
+            calculateBalance(balances, block, signs);
+            balances = UtilsBalance.calculateBalanceFromLaw(balances, block, allLaws, allLawsWithBalance);
+
+            //получение и отображение законов, а также сохранение новых законов
+            //и изменение действующих законов
+            allLaws = UtilsLaws.getLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+
+        }
+        BlockService.saveAllBlock(list);
+        List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
+                .accountsToEntityAccounts(balances);
+        BlockService.saveAccountAll(entityBalances);
+
+        Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
+        SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
+
+
+
+
+        //возвращает все законы с балансом
+        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
+                Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+
+        //removal of obsolete laws
+        //удаление устаревших законов
+        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        //rewriting all existing laws
+        //перезапись всех действующих законов
+        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+
+
+        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+
+
+        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
+        System.out.println("addBlock 3: time: result: " + result);
+        System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
+
+    }
+    public static void getBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+        int size = 0;
+
+
+        Blockchain blockchain = Mining.getBlockchain(
+                Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                BlockchainFactoryEnum.ORIGINAL);
+
+
+        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BALANCE_FILE);
+        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
+        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        UtilsFileSaveRead.deleteAllFiles(Seting.BALANCE_REPORT_ON_DESTROYED_COINS);
+        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+        UtilsFileSaveRead.deleteAllFiles(Seting.CURRENT_BUDGET_END_EMISSION);
+//        UtilsFileSaveRead.deleteAllFiles(Seting.H2_DB);
+//        UtilsCreatedDirectory.createPackage(Seting.H2_DB);
+//        UtilsCreatedDirectory.createPackage(Seting.H2_DB+"db.mv.db");
+
+        UtilsFileSaveRead.deleteFile(Seting.TEMPORARY_BLOCKCHAIN_FILE);
+        BlockService.deletedAll();
+        List<Block> list = new ArrayList<>();
+
+        Map<String, Account> balances = new HashMap<>();
+
+        while (true){
+            if(size > Seting.PORTION_DOWNLOAD){
+                list = blockchain.subBlock(size, Seting.PORTION_DOWNLOAD);
+
+                addBlock3(list, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+            }else {
+                list = blockchain.subBlock(size, blockchain.sizeBlockhain());
+                addBlock3(list, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                break;
+            }
+            Block block = list.get(list.size()-1);
+            size = (int) (block.getIndex());
+
+        }
+
+
+        shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        blockcheinSize = (int) shortDataBlockchain.getSize();
+        blockchainValid = shortDataBlockchain.isValidation();
+    }
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         try {
