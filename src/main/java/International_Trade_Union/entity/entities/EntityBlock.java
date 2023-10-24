@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.List;
 
 @Getter
@@ -17,21 +16,20 @@ public class EntityBlock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     public EntityBlock() {
     }
 
-    public EntityBlock( List<EntityDtoTransaction> dtoTransactions,
-                        String previousHash,
-                        String minerAddress,
-                        String founderAddress,
-                        long randomNumberProof,
-                        double minerRewards,
-                        int hashCompexity,
-                        Timestamp timestamp,
-                        long index,
-                        String hashBlock,
-                        long specialIndex) {
+    public EntityBlock(List<EntityDtoTransaction> dtoTransactions,
+                       String previousHash,
+                       String minerAddress,
+                       String founderAddress,
+                       long randomNumberProof,
+                       double minerRewards,
+                       int hashCompexity,
+                       long timestamp,
+                       long index,
+                       String hashBlock,
+                       long specialIndex) {
         this.dtoTransactions = dtoTransactions;
         this.previousHash = previousHash;
         this.minerAddress = minerAddress;
@@ -52,7 +50,9 @@ public class EntityBlock {
     private long randomNumberProof;
     private double minerRewards;
     private int hashCompexity;
-    private Timestamp timestamp;
+
+
+    private long timestamp;
     private long index;
     private String hashBlock;
 

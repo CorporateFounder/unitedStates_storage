@@ -13,7 +13,7 @@ public interface Seting {
     // в данной системе отсутствует високосный год
     //storage
 
-    boolean IS_TEST = true;
+    boolean IS_TEST = false;
     int YEAR = 360;
     int FIFTEEN_DAYS =  15;
 

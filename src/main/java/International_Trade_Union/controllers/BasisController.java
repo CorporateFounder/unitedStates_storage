@@ -250,7 +250,6 @@ public class BasisController {
         }
 
 
-
         if (blockchainValid == false) {
             System.out.println("/size blockchain not valid: " + blockchainValid);
             UtilsBlock.deleteFiles();
