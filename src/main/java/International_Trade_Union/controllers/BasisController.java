@@ -282,6 +282,15 @@ public class BasisController {
             return new ArrayList<>();
         }
 
+        //проверить на ограничение порций
+        if(finish - start > Seting.PORTION_BLOCK_TO_COMPLEXCITY){
+            if(finish - start < blockcheinSize ){
+                finish = start + Seting.PORTION_BLOCK_TO_COMPLEXCITY;
+            }else {
+                finish = blockcheinSize-1;
+            }
+        }
+
 
         System.out.println("blockchain size: " + blockcheinSize);
         System.out.println("start sub: " + start);

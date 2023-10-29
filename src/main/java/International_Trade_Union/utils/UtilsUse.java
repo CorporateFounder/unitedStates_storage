@@ -16,8 +16,6 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static International_Trade_Union.utils.BlockchainDifficulty.bytesToBinary;
-
 public class UtilsUse {
     private static MessageDigest digest;
 
@@ -184,16 +182,22 @@ public class UtilsUse {
     //подсчитать количество нулей идущих подряд в hash
     public static long hashCount(String hash, long index) {
         long count = 0;
-        if(index < Seting.v3MeetsDifficulty){
-            for (int i = 0; i < hash.length(); i++) {
-                if (hash.charAt(i) == '0') count++;
-                else return count;
-            }
-        }else {
-            hash = bytesToBinary(hash.getBytes());
-            count = BlockchainDifficulty.countLeadingZeros(hash);
-        }
+//        if(index < Seting.v3MeetsDifficulty){
+//            for (int i = 0; i < hash.length(); i++) {
+//                if (hash.charAt(i) == '0') count++;
+//                else return count;
+//            }
+//        }else {
+//            hash = bytesToBinary(hash.getBytes());
+//            count = BlockchainDifficulty.countLeadingZeros(hash);
+//        }
 
+
+        //оптимизирован код
+        for (int i = 0; i < hash.length(); i++) {
+            if (hash.charAt(i) == '0') count++;
+            else return count;
+        }
         return count;
     }
 
