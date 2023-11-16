@@ -205,7 +205,10 @@ public class BasisController {
             if (balances.isEmpty()) {
                 Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-            } else balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+            } else {
+                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+
+            }
 
 
         } catch (NoSuchAlgorithmException e) {
@@ -265,7 +268,7 @@ public class BasisController {
     @PostMapping("/sub-blocks")
     @ResponseBody
     public List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) throws Exception {
-
+        System.out.println("start sub block");
         if (blockchainValid == false || blockcheinSize == 0) {
 
             shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -448,8 +451,6 @@ public class BasisController {
         SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
 
 
-
-
         //возвращает все законы с балансом
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
                 Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
@@ -563,20 +564,24 @@ public class BasisController {
 
                 Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
                 System.out.println("different time: " + result);
-                if (
-                        result > 120 || result < -120
-                ) {
-                    System.out.println("_____________________________________________");
-                    System.out.println("wrong timestamp");
-                    System.out.println("new time 0 index: " + addlist.get(0).getTimestamp());
-                    System.out.println("new time last index: " + addlist.get(addlist.size() - 1).getTimestamp());
-                    System.out.println("actual time: " + actualTime);
-                    System.out.println("result: " + result);
-                    System.out.println("miner: " + addlist.get(addlist.size() - 1).getMinerAddress());
 
-                    System.out.println("_____________________________________________");
-                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+                if(!Seting.IS_TEST){
+                    if (
+                            result > 120 || result < -120
+                    ) {
+                        System.out.println("_____________________________________________");
+                        System.out.println("wrong timestamp");
+                        System.out.println("new time 0 index: " + addlist.get(0).getTimestamp());
+                        System.out.println("new time last index: " + addlist.get(addlist.size() - 1).getTimestamp());
+                        System.out.println("actual time: " + actualTime);
+                        System.out.println("result: " + result);
+                        System.out.println("miner: " + addlist.get(addlist.size() - 1).getMinerAddress());
+
+                        System.out.println("_____________________________________________");
+                        return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+                    }
                 }
+
 
                 if (prevBlock == null) {
 //                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -588,17 +593,21 @@ public class BasisController {
                         || shortDataBlockchain.getHashCount() == 0) {
                     shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 }
-//                List<Block> lastDiff = Blockchain.subFromFile(
+                List<Block> lastDiff = new ArrayList<>();
+
+//                    lastDiff = Blockchain.subFromFile(
 //                        (int) (prevBlock.getIndex() - Seting.PORTION_BLOCK_TO_COMPLEXCITY),
 //                        (int) (prevBlock.getIndex() + 1),
 //                        Seting.ORIGINAL_BLOCKCHAIN_FILE
 //                );
-                List<Block> lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
+
+                lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
                         BlockService.findBySpecialIndexBetween(
                                 (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
                                 prevBlock.getIndex() + 1
                         )
                 );
+
 
                 //удаление транзакций
                 if (prevBlock.getIndex() % 288 == 0)
@@ -681,8 +690,9 @@ public class BasisController {
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                     System.out.println("*************************************");
 
-                    //задержка чтобы другие участники смогли скачать более актуальный блокчейн
-                    Thread.sleep(20000);
+//                    //задержка чтобы другие участники смогли скачать более актуальный блокчейн
+//                    if(!Seting.IS_TEST)
+//                     Thread.sleep(20000);
 
                     return new ResponseEntity<>("OK", HttpStatus.OK);
                 } else {
@@ -834,6 +844,44 @@ public class BasisController {
         dificultyBlockchain.setDifficultyAllBlockchain(shortDataBlockchain.getHashCount());
         dificultyBlockchain.setDiffultyOneBlock(dificultyOneBlock);
         return dificultyBlockchain;
+    }
+
+
+    @GetMapping("/senderTransactions")
+    @ResponseBody
+    public List<DtoTransaction> senderTransactions(
+            @RequestParam String address,
+            @RequestParam int from,
+            @RequestParam int to
+    ) throws IOException {
+        return BlockService.findBySender(address, from, to);
+    }
+
+
+    @GetMapping("/customerTransactions")
+    @ResponseBody
+    public List<DtoTransaction> customerTransactions(
+            @RequestParam String address,
+            @RequestParam int from,
+            @RequestParam int to
+    ) throws IOException {
+        return BlockService.findByCustomer(address, from, to);
+    }
+
+    @GetMapping("/senderCountDto")
+    @ResponseBody
+    public long countSenderTransaction(
+            @RequestParam String address
+    ){
+        return BlockService.countSenderTransaction(address);
+    }
+
+    @GetMapping("/customerCountDto")
+    @ResponseBody
+    public long countCustomerTransaction(
+            @RequestParam String address
+    ){
+        return BlockService.countCustomerTransaction(address);
     }
 }
 

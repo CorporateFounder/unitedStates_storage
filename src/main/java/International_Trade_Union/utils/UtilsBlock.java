@@ -237,7 +237,17 @@ public class UtilsBlock {
         }
 
 
-//
+        //TODO определить оптимальную сложность
+        if(Seting.IS_TEST && latestBlock.getIndex() > 71647){
+
+            if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
+                UtilsDIfficult.v2getAdjustedDifficultyMedian(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+                //более умеренная модель сложности
+            } else {
+                difficulty = latestBlock.getHashCompexity();
+            }
+
+        }
 
 
         return difficulty == 0 ? 1 : difficulty;

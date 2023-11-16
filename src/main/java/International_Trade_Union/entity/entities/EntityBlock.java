@@ -19,17 +19,17 @@ public class EntityBlock {
     public EntityBlock() {
     }
 
-    public EntityBlock(List<EntityDtoTransaction> dtoTransactions,
-                       String previousHash,
-                       String minerAddress,
-                       String founderAddress,
-                       long randomNumberProof,
-                       double minerRewards,
-                       int hashCompexity,
-                       long timestamp,
-                       long index,
-                       String hashBlock,
-                       long specialIndex) {
+    public EntityBlock( List<EntityDtoTransaction> dtoTransactions,
+                        String previousHash,
+                        String minerAddress,
+                        String founderAddress,
+                        long randomNumberProof,
+                        double minerRewards,
+                        int hashCompexity,
+                        long timestamp,
+                        long index,
+                        String hashBlock,
+                        long specialIndex) {
         this.dtoTransactions = dtoTransactions;
         this.previousHash = previousHash;
         this.minerAddress = minerAddress;

@@ -1,5 +1,6 @@
 package International_Trade_Union.entity.services;
 
+import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.entities.EntityDtoTransaction;
@@ -7,10 +8,16 @@ import International_Trade_Union.entity.repository.EntityAccountRepository;
 import International_Trade_Union.entity.repository.EntityBlockRepository;
 import International_Trade_Union.entity.repository.EntityDtoTransactionRepository;
 import International_Trade_Union.entity.repository.EntityLawsRepository;
+import International_Trade_Union.utils.UtilsBlockToEntityBlock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -110,6 +117,10 @@ public class BlockService {
 
     }
 
+    public static EntityBlock findByHashBlock(String hashBlock){
+        return blockService.findByHashBlock(hashBlock);
+    }
+
     public static EntityDtoTransaction findBySign(String sign){
         Base64.Decoder decoder = Base64.getDecoder();
 
@@ -159,5 +170,33 @@ public class BlockService {
         return exists;
     }
 
+
+    public static List<DtoTransaction> findBySender(String sender, int from, int to) throws IOException {
+        Pageable firstPageWithTenElements = (Pageable) PageRequest.of(from, to);
+        List<EntityDtoTransaction> list =
+                 dtoService.findBySender(sender, firstPageWithTenElements)
+                        .getContent();
+        List<DtoTransaction> dtoTransactions =
+                UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
+        return dtoTransactions;
+    }
+
+    public static List<DtoTransaction> findByCustomer(String customer, int from, int to) throws IOException {
+        Pageable firstPageWithTenElements = (Pageable) PageRequest.of(from, to);
+        List<EntityDtoTransaction> list =
+                 dtoService.findByCustomer(customer,firstPageWithTenElements)
+                        .getContent();
+        List<DtoTransaction> dtoTransactions =
+                UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
+        return dtoTransactions;
+    }
+
+    public static long countSenderTransaction(String sender){
+        return dtoService.countBySender(sender);
+    }
+
+    public static long countCustomerTransaction(String customer){
+        return dtoService.countByCustomer(customer);
+    }
 
 }
