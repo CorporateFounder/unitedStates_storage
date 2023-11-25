@@ -311,12 +311,41 @@ public class Blockchain implements Cloneable {
         long hashCount = 0;
 
         List<Block> tempList = new ArrayList<>();
-        for (final File fileEntry : folder.listFiles()) {
+        List<File> folders = new ArrayList<>(List.of(folder.listFiles()));
+
+        folders = folders.stream().sorted(new Comparator<File> () {
+            public int compare (File f1, File f2) {
+                String [] parts1 = f1.getName ().split ("\\D+");
+                String [] parts2 = f2.getName ().split ("\\D+");
+                int len = Math.min (parts1.length, parts2.length);
+                for (int i = 0; i < len; i++) {
+                    try {
+                        int n1 = Integer.parseInt (parts1[i]);
+                        int n2 = Integer.parseInt (parts2[i]);
+                        if (n1 != n2) {
+                            return n1 - n2;
+                        }
+                    } catch (NumberFormatException e) {
+                        // not a number, compare as strings
+                        int cmp = parts1[i].compareTo (parts2[i]);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                    }
+                }
+                // all equal so far, compare by length
+                return parts1.length - parts2.length;
+            }
+        }).collect(Collectors.toList());
+
+        for (final File fileEntry : folders) {
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
             } else {
+                System.out.println("file name: " + fileEntry.getName());
                 List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
                 for (String s : list) {
+
 
                     size += 1;
                     index += 1;
@@ -328,8 +357,10 @@ public class Blockchain implements Cloneable {
                         block.getHashBlock().equals(Seting.ORIGINAL_HASH);
                     }
                     if (index != block.getIndex()) {
-                        System.out.println("wrong blockchain missing block: " + size + " index: " + block.getIndex());
+                        System.out.println("1. checkFromFile:wrong blockchain missing block: " + size + " index: " + block.getIndex());
                         valid = false;
+                        System.out.println("index: " + index + " block.index: " + block.getIndex());
+
                         return new DataShortBlockchainInformation(size, valid, hashCount);
                     }
 
