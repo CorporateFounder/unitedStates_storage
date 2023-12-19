@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 
 public class UtilsBlock {
+    //wallet
 
-    //storage
     //this need olny find cheater
     public static Map<String, Account> cheater = new HashMap<>();
 
@@ -44,7 +44,30 @@ public class UtilsBlock {
         }
 
         int count = 0;
-        files = files.stream().sorted().collect(Collectors.toList());
+        files = files.stream().sorted(new Comparator<String> () {
+            public int compare (String f1, String f2) {
+                String [] parts1 = f1.split ("\\D+");
+                String [] parts2 = f2.split ("\\D+");
+                int len = Math.min (parts1.length, parts2.length);
+                for (int i = 0; i < len; i++) {
+                    try {
+                        int n1 = Integer.parseInt (parts1[i]);
+                        int n2 = Integer.parseInt (parts2[i]);
+                        if (n1 != n2) {
+                            return n1 - n2;
+                        }
+                    } catch (NumberFormatException e) {
+                        // not a number, compare as strings
+                        int cmp = parts1[i].compareTo (parts2[i]);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                    }
+                }
+                // all equal so far, compare by length
+                return parts1.length - parts2.length;
+            }
+        }).collect(Collectors.toList());
         String nextFile = "";
 
         if (files.size() > 0) {
@@ -81,6 +104,8 @@ public class UtilsBlock {
         //папка чтобы проверить есть ли
         File folder = new File(filename);
         List<String> files = new ArrayList<>();
+
+
         for (File file : folder.listFiles()) {
             if (!file.isDirectory()) {
                 files.add(file.getAbsolutePath());
@@ -89,7 +114,30 @@ public class UtilsBlock {
 
 
         int count = 0;
-        files = files.stream().sorted().collect(Collectors.toList());
+        files = files.stream().sorted(new Comparator<String> () {
+            public int compare (String f1, String f2) {
+                String [] parts1 = f1.split ("\\D+");
+                String [] parts2 = f2.split ("\\D+");
+                int len = Math.min (parts1.length, parts2.length);
+                for (int i = 0; i < len; i++) {
+                    try {
+                        int n1 = Integer.parseInt (parts1[i]);
+                        int n2 = Integer.parseInt (parts2[i]);
+                        if (n1 != n2) {
+                            return n1 - n2;
+                        }
+                    } catch (NumberFormatException e) {
+                        // not a number, compare as strings
+                        int cmp = parts1[i].compareTo (parts2[i]);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                    }
+                }
+                // all equal so far, compare by length
+                return parts1.length - parts2.length;
+            }
+        }).collect(Collectors.toList());
         String nextFile = "";
 
         if (files.size() > 0) {
@@ -124,7 +172,34 @@ public class UtilsBlock {
         List<Block> blocks = new ArrayList<>();
         File folder = new File(filename);
 
-        for (final File fileEntry : folder.listFiles()) {
+        //******************************************************************
+        List<File> folders = new ArrayList<>(List.of(folder.listFiles()));
+        folders = folders.stream().sorted(new Comparator<File> () {
+            public int compare (File f1, File f2) {
+                String [] parts1 = f1.getName ().split ("\\D+");
+                String [] parts2 = f2.getName ().split ("\\D+");
+                int len = Math.min (parts1.length, parts2.length);
+                for (int i = 0; i < len; i++) {
+                    try {
+                        int n1 = Integer.parseInt (parts1[i]);
+                        int n2 = Integer.parseInt (parts2[i]);
+                        if (n1 != n2) {
+                            return n1 - n2;
+                        }
+                    } catch (NumberFormatException e) {
+                        // not a number, compare as strings
+                        int cmp = parts1[i].compareTo (parts2[i]);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                    }
+                }
+                // all equal so far, compare by length
+                return parts1.length - parts2.length;
+            }
+        }).collect(Collectors.toList());
+        //******************************************************************
+        for (final File fileEntry : folders) {
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
             } else {
@@ -150,8 +225,34 @@ public class UtilsBlock {
         List<List<Block>> list = new ArrayList<>();
 
         File folder = new File(nameFile);
-
-        for (final File fileEntry : folder.listFiles()) {
+        //******************************************************************
+        List<File> folders = new ArrayList<>(List.of(folder.listFiles()));
+        folders = folders.stream().sorted(new Comparator<File> () {
+            public int compare (File f1, File f2) {
+                String [] parts1 = f1.getName ().split ("\\D+");
+                String [] parts2 = f2.getName ().split ("\\D+");
+                int len = Math.min (parts1.length, parts2.length);
+                for (int i = 0; i < len; i++) {
+                    try {
+                        int n1 = Integer.parseInt (parts1[i]);
+                        int n2 = Integer.parseInt (parts2[i]);
+                        if (n1 != n2) {
+                            return n1 - n2;
+                        }
+                    } catch (NumberFormatException e) {
+                        // not a number, compare as strings
+                        int cmp = parts1[i].compareTo (parts2[i]);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                    }
+                }
+                // all equal so far, compare by length
+                return parts1.length - parts2.length;
+            }
+        }).collect(Collectors.toList());
+        //******************************************************************
+        for (final File fileEntry : folders) {
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
             } else {
@@ -200,10 +301,10 @@ public class UtilsBlock {
      * определяет сложность, раз пол дня корректирует сложность. В сутках 576 блоков.
      * каждый блок добывается примерно 2.3 минуты
      */
-    public static int difficulty(List<Block> blocks, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL) {
+    public static long difficulty(List<Block> blocks, long BLOCK_GENERATION_INTERVAL, int DIFFICULTY_ADJUSTMENT_INTERVAL) {
         //DIFFICULTY_ADJUSTMENT_INTERVAL = 288
         //BLOCK_GENERATION_INTERVAL =  150000 милисекунд
-        int difficulty = 1;
+        long difficulty = 1;
         Block latestBlock = blocks.get(blocks.size() - 1);
         if (latestBlock.getIndex() > Seting.NEW_START_DIFFICULT - 3
                 && latestBlock.getIndex() < Seting.NEW_START_DIFFICULT + 288) {
@@ -224,7 +325,7 @@ public class UtilsBlock {
                     blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
         } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty && latestBlock.getIndex() < Seting.v4MeetsDifficulty + 288) {
             difficulty = 2;
-        } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty +288) {
+        } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty +288 && latestBlock.getIndex() < Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
 
 
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
@@ -237,17 +338,25 @@ public class UtilsBlock {
         }
 
 
-        //TODO определить оптимальную сложность
-        if(Seting.IS_TEST && latestBlock.getIndex() > 71647){
-
+        ///*****************************************************************************************
+        else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && latestBlock.getIndex() < Seting.V28_CHANGE_ALGORITH_DIFF_INDEX + 288) {
+            System.out.println("difficulty: V28: " + 1);
+            difficulty = 1;
+        } else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX +288) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
-                UtilsDIfficult.v2getAdjustedDifficultyMedian(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+                difficulty = UtilsDIfficult.v28_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
             } else {
                 difficulty = latestBlock.getHashCompexity();
             }
-
         }
+
+//
+//        //testing method
+        if(Seting.IS_TEST && latestBlock.getIndex() == Seting.V28_CHANGE_ALGORITH_DIFF_INDEX - 1){
+            difficulty = 1;
+        }
+
 
 
         return difficulty == 0 ? 1 : difficulty;
@@ -308,6 +417,17 @@ public class UtilsBlock {
                     minerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
                     minerPowerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
                 }
+                if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+                    long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                            / (576 * Seting.YEAR);
+                    money = (long) (Seting.MULTIPLIER - money);
+                    money = money < 1 ? 1: money;
+
+                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions());
+                    minerReward = (Seting.V28_REWARD + G) * money;
+                    minerPowerReward = (Seting.V28_REWARD + G) * money;
+
+                }
 
                 if (thisBlock.getIndex() == Seting.SPECIAL_BLOCK_FORK && thisBlock.getMinerAddress().equals(Seting.FORK_ADDRESS_SPECIAL)) {
                     minerReward = SPECIAL_FORK_BALANCE;
@@ -336,7 +456,7 @@ public class UtilsBlock {
                 if (transaction.getSender().equals(Seting.BASIS_ADDRESS)
                         && transaction.getCustomer().equals(addressFounder)) {
                     countBasisSendFounder += 1;
-                    if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION) {
+                    if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION && thisBlock.getIndex() <= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
                         if (thisBlock.getHashCompexity() >= 8) {
                             if (transaction.getDigitalDollar() != thisBlock.getHashCompexity() ||
                                     thisBlock.getHashCompexity() != transaction.getDigitalStockBalance()) {
@@ -358,6 +478,23 @@ public class UtilsBlock {
                             }
                         }
 
+                    }
+                    else if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+                        if(transaction.getDigitalDollar() !=( minerReward/Seting.DOLLAR)){
+                            System.out.printf("wrong founder reward dollar: index: %d, " +
+                                    " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
+                                    (minerReward/Seting.DOLLAR), transaction.getDigitalDollar());
+
+                            validated = false;
+                            break;
+                        }
+                        if (transaction.getDigitalStockBalance() != (minerPowerReward / Seting.STOCK)){
+                            System.out.printf("wrong founder reward stock: index: %d, " +
+                                            " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
+                                    (minerPowerReward/Seting.STOCK), transaction.getDigitalStockBalance());
+                            validated = false;
+                            break;
+                        }
                     }
                 }
 
@@ -386,7 +523,8 @@ public class UtilsBlock {
 
         }
 
-        if (!UtilsUse.chooseComplexity(thisBlock.getHashBlock(), thisBlock.getHashCompexity(), thisBlock.getIndex())) {
+        String target = BlockchainDifficulty.calculateTarget(thisBlock.getHashCompexity());
+        if (!UtilsUse.chooseComplexity(thisBlock.getHashBlock(), thisBlock.getHashCompexity(), thisBlock.getIndex(), target)) {
             System.out.println("does't start hash with 0");
 
             System.out.println("this block hash: " + thisBlock.getHashBlock());
@@ -396,7 +534,7 @@ public class UtilsBlock {
         }
 
         if (thisBlock.getIndex() > Seting.v4MeetsDifficulty) {
-            int diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+            long diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
             if (thisBlock.getHashCompexity() != diff ) {
                 System.out.println("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
                         + diff);
@@ -410,8 +548,7 @@ public class UtilsBlock {
             System.out.println("false hash added wrong hash");
             System.out.println("actual: " + thisBlock.getHashBlock());
             System.out.println("expected: " + thisBlock.hashForTransaction());
-            System.out.println("address: " + thisBlock.getMinerAddress());
-            System.out.println("prevHash: " + thisBlock.getPreviousHash());
+            System.out.println("miner address: " + thisBlock.getMinerAddress());
 
 
 //            //for find cheater
@@ -444,6 +581,7 @@ public class UtilsBlock {
 
 
         if (!actualPrevHash.equals(recordedPrevHash)) {
+
             System.out.println("Blockchain is invalid, expected: " + recordedPrevHash + " actual: " + actualPrevHash);
             System.out.println("index block: " + thisBlock.getIndex());
             System.out.println("wrong chain hash");
@@ -469,7 +607,7 @@ public class UtilsBlock {
 
     public static void deleteFiles() {
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_TEMPORARY_BLOCKS);
+
 //        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BALANCE_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
@@ -481,8 +619,7 @@ public class UtilsBlock {
 
 
         UtilsFileSaveRead.deleteFile(Seting.TEMPORARY_BLOCKCHAIN_FILE);
-//        UtilsFileSaveRead.deleteFile(Seting.ORIGINAL_TEMPORARY_SHORT);
-//        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CLASSIC_LAWS);
+
 
     }
 
@@ -525,7 +662,7 @@ public class UtilsBlock {
                 block.getHashBlock().equals(Seting.ORIGINAL_HASH);
             }
             if (index != block.getIndex()) {
-                System.out.println("wrong blockchain missing block: " + index + " index: " + block.getIndex());
+                System.out.println("method: validation: wrong blockchain missing block: " + index + " index: " + block.getIndex());
                 validated = false;
                 return validated;
             }
@@ -540,6 +677,7 @@ public class UtilsBlock {
             if (tempList.size() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
                 tempList.remove(0);
             }
+//            tempList = tempList.stream().distinct().collect(Collectors.toList());
             validated = validationOneBlock(block.getFounderAddress(),
                     prevBlock,
                     block,

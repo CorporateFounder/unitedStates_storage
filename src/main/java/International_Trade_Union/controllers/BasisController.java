@@ -48,12 +48,16 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 @RestController
 public class BasisController {
 
+    private static int totalTransactionsDays = 0;
+    private static double totalTransactionsSumDllar =0.0;
+
     @Autowired
     BlockService blockService;
 
     @Autowired
     UtilsAddBlock utilsAddBlock;
     private static Map<String, Account> balances = new HashMap<>();
+    private static double totalDollars = 0;
     private static long dificultyOneBlock;
     private volatile static boolean isSaveFile = true;
     private static Block prevBlock = null;
@@ -107,6 +111,63 @@ public class BasisController {
         return servletRequest;
     }
 
+    @GetMapping("/v28Index")
+    public int v28Start(){
+        return Seting.V28_CHANGE_ALGORITH_DIFF_INDEX;
+    }
+    @GetMapping("/allAccounts")
+    public long accounts(){
+        return balances.size();
+    }
+    @GetMapping("/totalDollars")
+    public double getTotalDollars(){
+        if(totalDollars == 0){
+            for (Map.Entry<String, Account> account : balances.entrySet()) {
+                totalDollars += account.getValue().getDigitalDollarBalance();
+            }
+
+        }
+        return totalDollars;
+    }
+
+    @GetMapping("/totalTransactionsDay")
+    public int getTotalTransactionsDays(){
+        return totalTransactionsDays;
+    }
+
+    @GetMapping("/totalTransactionsSum")
+    public double getTotalTransactionsSumDllar(){
+        return totalTransactionsSumDllar;
+    }
+    
+    @GetMapping("/multiplier")
+    public long multiplier(){
+        long money = Seting.MULTIPLIER;
+        if(prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+             money = (prevBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                    / (576 * Seting.YEAR);
+            money = (long) (Seting.MULTIPLIER - money);
+            money = money < 1 ? 1: money;
+        }
+        return money;
+    }
+
+
+
+    @GetMapping("/dayReduce")
+    public long daysReduce(){
+        long reduceDays = 0;
+        if(prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+            int blocksPerDay = 576;
+            int blocksSinceReduction = (int) ((prevBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                                % (blocksPerDay * Seting.YEAR));
+
+            // Оставшиеся блоки до следующего снижения
+            reduceDays = (blocksPerDay * Seting.YEAR) - blocksSinceReduction;
+
+        }
+        return reduceDays;
+    }
     public static Set<String> getExcludedAddresses() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null)
@@ -267,45 +328,52 @@ public class BasisController {
      */
     @PostMapping("/sub-blocks")
     @ResponseBody
-    public List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) throws Exception {
-        System.out.println("start sub block");
-        if (blockchainValid == false || blockcheinSize == 0) {
+    public List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) {
+        List<Block> blocksDb = null;
+        try {
+            System.out.println("************************************");
+            System.out.println("subBlocks");
+            System.out.println("valid: " + blockchainValid);
+            System.out.println("size:" + blockcheinSize);
+            if (blockchainValid == false || blockcheinSize == 0) {
 
-            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            blockcheinSize = (int) shortDataBlockchain.getSize();
-            blockchainValid = shortDataBlockchain.isValidation();
-        }
-
-        int start = entity.getStart() >= 1 ? entity.getStart() : 0;
-        int finish = entity.getFinish() > start ? entity.getFinish() : blockcheinSize-1;
-        if (start >= blockcheinSize || finish > blockcheinSize) {
-            System.out.println("blockchain size: " + blockcheinSize);
-            System.out.println("start sub: " + start);
-            System.out.println("finish sub: " + finish);
-            return new ArrayList<>();
-        }
-
-        //проверить на ограничение порций
-        if(finish - start > Seting.PORTION_BLOCK_TO_COMPLEXCITY){
-            if(finish - start < blockcheinSize ){
-                finish = start + Seting.PORTION_BLOCK_TO_COMPLEXCITY;
-            }else {
-                finish = blockcheinSize-1;
+                shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                blockcheinSize = (int) shortDataBlockchain.getSize();
+                blockchainValid = shortDataBlockchain.isValidation();
             }
-        }
+
+            int start = entity.getStart() >= 1 ? entity.getStart() : 0;
+            int finish = entity.getFinish() > start ? entity.getFinish() : blockcheinSize - 1;
+            if (start >= blockcheinSize || finish > blockcheinSize) {
+
+                System.out.println("start >= blockcheinSize || finish > blockcheinSize");
+                return new ArrayList<>();
+            }
+
+            //проверить на ограничение порций
+            if (finish - start > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
+                if (finish - start < blockcheinSize) {
+                    finish = start + Seting.PORTION_BLOCK_TO_COMPLEXCITY;
+                } else {
+                    finish = blockcheinSize - 1;
+                }
+            }
 
 
-        System.out.println("blockchain size: " + blockcheinSize);
-        System.out.println("start sub: " + start);
-        System.out.println("finish sub: " + finish);
 
-        List<Block> blocksDb;
-        List<EntityBlock> entityBlocks =
-                BlockService.findBySpecialIndexBetween(start, finish);
-        blocksDb = UtilsBlockToEntityBlock.entityBlocksToBlocks(entityBlocks);
+            List<EntityBlock> entityBlocks =
+                    BlockService.findBySpecialIndexBetween(start, finish);
+            blocksDb = UtilsBlockToEntityBlock.entityBlocksToBlocks(entityBlocks);
 
 //        return Blockchain.subFromFileBing(start,finish, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            System.out.println("finish sub: " + finish);
+            System.out.println("******************************************************");
+        }catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
+                NoSuchProviderException | InvalidKeyException e){
+            System.out.println("exception sub");
+            return new ArrayList<>();
 
+        }
         return blocksDb;
     }
 
@@ -670,12 +738,15 @@ public class BasisController {
 //                    addBlock2(addlist, balances);
                     utilsAddBlock.addBlock2(addlist, balances);
 
+                    //прибавить к общей сумме денег
+                    totalDollars += addlist.get(0).getMinerRewards();
+
                     balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
                     shortDataBlockchain = temp;
                     blockcheinSize = (int) shortDataBlockchain.getSize();
                     blockchainValid = shortDataBlockchain.isValidation();
                     System.out.println("+++++++++++++++++++++++++++++++++");
-                    int diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                    long diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
                     System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
                             + diff);
 
@@ -689,10 +760,18 @@ public class BasisController {
                     EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                     System.out.println("*************************************");
-
-//                    //задержка чтобы другие участники смогли скачать более актуальный блокчейн
-//                    if(!Seting.IS_TEST)
-//                     Thread.sleep(20000);
+                    if(addlist.get(0).getIndex() % 576 == 0){
+                        totalTransactionsDays = 0;
+                        totalTransactionsSumDllar = 0;
+                    }
+                    totalTransactionsDays += addlist.get(0).getDtoTransactions().size();
+                    totalTransactionsSumDllar += addlist.get(0).getDtoTransactions().stream()
+                            .mapToDouble(t->t.getDigitalDollar())
+                            .sum();
+                    System.out.println("*************************************");
+////                    //задержка чтобы другие участники смогли скачать более актуальный блокчейн
+//                    if(diff >= 9)
+//                        Thread.sleep(30000);
 
                     return new ResponseEntity<>("OK", HttpStatus.OK);
                 } else {

@@ -17,9 +17,11 @@ International_Trade_Union\entity\repository\EntityAccountRepository.class
 International_Trade_Union\utils\UtilsBlock.class
 International_Trade_Union\entity\blockchain\DataShortBlockchainInformation.class
 International_Trade_Union\entity\entities\EntityLaws.class
+International_Trade_Union\utils\UtilsBlock$4.class
 International_Trade_Union\model\CreateAccount.class
 International_Trade_Union\originalCorporateCharter\OriginalPreambleEng.class
 International_Trade_Union\utils\UtilsJson$4.class
+International_Trade_Union\entity\blockchain\Blockchain$2.class
 International_Trade_Union\setings\Seting.class
 International_Trade_Union\entity\blockchain\Blockchain$1.class
 International_Trade_Union\vote\UtilsLaws.class
@@ -33,10 +35,12 @@ International_Trade_Union\utils\UtilsBalance.class
 International_Trade_Union\exception\NotValidTransactionException.class
 International_Trade_Union\entity\services\BlockService.class
 International_Trade_Union\CorporateCharterEngDraft\ArticleOneLegistratureEngDraft.class
+International_Trade_Union\entity\blockchain\Blockchain$3.class
 International_Trade_Union\controllers\BasisController.class
 International_Trade_Union\controllers\BlockchainCheckController.class
 International_Trade_Union\originalCorporateCharter\OriginalPreamble.class
 International_Trade_Union\controllers\config\BLockchainFactory.class
+International_Trade_Union\entity\blockchain\Blockchain$6.class
 International_Trade_Union\CorporateCharterDraft\ArticleOneLegistratureDraft.class
 International_Trade_Union\CorporateCharterDraft\ArticleFiveCharterSupremacyDraft.class
 International_Trade_Union\utils\UtilsCheckDtoTransaction.class
@@ -47,12 +51,14 @@ International_Trade_Union\entity\repository\EntityLawsRepository.class
 International_Trade_Union\CorporateCharterEngDraft\ArticleTwoSpecialPositionEngDraft.class
 International_Trade_Union\CorporateCharterDraft\CorporateCharter.class
 International_Trade_Union\CorporateCharterEngDraft\PreambleEngDraft.class
+International_Trade_Union\entity\blockchain\Blockchain$5.class
 International_Trade_Union\network\AllTransactions.class
 International_Trade_Union\entity\SendBlocksEndInfo.class
 International_Trade_Union\utils\UtilsTransaction.class
 International_Trade_Union\CorporateCharterEngDraft\ArticleFourAmendmentProcessEngDraft.class
 International_Trade_Union\about_usDraft\AboutUsDraft.class
 International_Trade_Union\utils\base\Base.class
+International_Trade_Union\entity\blockchain\Blockchain$4.class
 International_Trade_Union\entity\entities\EntityBlock.class
 International_Trade_Union\vote\VoteEnum.class
 International_Trade_Union\governments\FractionPower.class
@@ -63,6 +69,7 @@ International_Trade_Union\vote\Laws.class
 International_Trade_Union\vote\CurrentLawVotes.class
 International_Trade_Union\entity\repository\EntityDtoTransactionRepository.class
 International_Trade_Union\entity\InfoDificultyBlockchain.class
+International_Trade_Union\utils\UtilsBlock$1.class
 International_Trade_Union\entity\entities\EntityDtoTransaction.class
 International_Trade_Union\model\Keys.class
 International_Trade_Union\governments\CompareObject.class
@@ -78,6 +85,7 @@ International_Trade_Union\model\User.class
 International_Trade_Union\entity\entities\EntityAccount.class
 International_Trade_Union\utils\SaveBalances.class
 International_Trade_Union\utils\UtilsCreatedDirectory.class
+International_Trade_Union\utils\UtilsBlock$2.class
 International_Trade_Union\controllers\config\BlockchainFactoryEnum.class
 International_Trade_Union\network\Transactions.class
 International_Trade_Union\governments\NamePOSITION.class
@@ -97,6 +105,7 @@ International_Trade_Union\controllers\TransactionController.class
 International_Trade_Union\CorporateCharterEngDraft\ArticleThreeJudiciaryEngDraft.class
 International_Trade_Union\utils\UtilsJson$1.class
 International_Trade_Union\UnitedStatesApplication.class
+International_Trade_Union\utils\UtilsBlock$3.class
 International_Trade_Union\model\Account.class
 International_Trade_Union\utils\UtilsFileSaveRead.class
 International_Trade_Union\utils\UtilsTime.class

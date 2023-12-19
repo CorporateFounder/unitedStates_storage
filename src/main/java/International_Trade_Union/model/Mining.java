@@ -88,10 +88,12 @@ public class Mining {
                 allLaws = UtilsLaws.getLaws(blockchain.getBlock(i), Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
             }
 
+//получает все созданные когда либо законы
+
+
             //возвращает все законы с голосами проголосовавшими за них
             List<LawEligibleForParliamentaryApproval> allLawsWithBalance =
                     UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
         }
 
 
@@ -184,7 +186,7 @@ public class Mining {
                 continue;
             }
         }
-        int difficulty = UtilsBlock.difficulty(blockchain, blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        long difficulty = UtilsBlock.difficulty(blockchain, blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
 
 
         Block prevBlock = blockchain.get(blockchain.size()-1);
@@ -207,6 +209,26 @@ public class Mining {
                 founderDigigtalReputationReward = 8;
             }
 
+        }
+        if(index > Seting.CHECK_UPDATING_VERSION) {
+            minerRewards = difficulty * Seting.MONEY;
+            digitalReputationForMiner= difficulty * Seting.MONEY;
+            minerRewards += index%2 == 0 ? 0 : 1;
+            digitalReputationForMiner += index%2 == 0 ? 0 : 1;
+        }
+
+        if(index > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+            long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                    / (576 * Seting.YEAR);
+            money = (long) (Seting.MULTIPLIER - money);
+            money = money < 1 ? 1: money;
+
+
+            double G = UtilsUse.blocksReward(forAdd, prevBlock.getDtoTransactions());
+            minerRewards = (Seting.V28_REWARD + G) * money;
+            digitalReputationForMiner = (Seting.V28_REWARD + G) * money;
+            founderReward = minerRewards/Seting.DOLLAR;
+            founderDigigtalReputationReward = digitalReputationForMiner/Seting.STOCK;
         }
         Base base = new Base58();
 
@@ -241,12 +263,7 @@ public class Mining {
 
         System.out.println("Mining: miningBlock: difficulty: " + difficulty + " index: " + index);
 
-        if(index > Seting.CHECK_UPDATING_VERSION) {
-            minerRewards = difficulty * Seting.MONEY;
-            digitalReputationForMiner= difficulty * Seting.MONEY;
-            minerRewards += index%2 == 0 ? 0 : 1;
-            digitalReputationForMiner += index%2 == 0 ? 0 : 1;
-        }
+
 
         if(index == Seting.SPECIAL_BLOCK_FORK && minner.getAccount().equals(Seting.FORK_ADDRESS_SPECIAL)){
             minerRewards = SPECIAL_FORK_BALANCE;
