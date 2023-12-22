@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -338,11 +339,11 @@ public class UtilsBlock {
         }
 
 
+
         ///*****************************************************************************************
         else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && latestBlock.getIndex() < Seting.V28_CHANGE_ALGORITH_DIFF_INDEX + 288) {
-            System.out.println("difficulty: V28: " + 1);
             difficulty = 1;
-        } else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX +288) {
+        } else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX +288 && latestBlock.getIndex() < Seting.V30_INDEX_ALGO) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v28_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
@@ -351,12 +352,20 @@ public class UtilsBlock {
             }
         }
 
-//
-//        //testing method
-        if(Seting.IS_TEST && latestBlock.getIndex() == Seting.V28_CHANGE_ALGORITH_DIFF_INDEX - 1){
+        else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO && latestBlock.getIndex() < Seting.V30_INDEX_ALGO + 288) {
+
+            difficulty = 7;
+        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO +288) {
+            if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
+                difficulty = UtilsDIfficult.v30_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+                //более умеренная модель сложности
+            } else {
+                difficulty = latestBlock.getHashCompexity();
+            }
+        }
+        if(Seting.IS_TEST && latestBlock.getIndex() == Seting.V30_INDEX_ALGO -1){
             difficulty = 1;
         }
-
 
 
         return difficulty == 0 ? 1 : difficulty;
@@ -480,15 +489,14 @@ public class UtilsBlock {
 
                     }
                     else if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
-                        if(transaction.getDigitalDollar() !=( minerReward/Seting.DOLLAR)){
+                        if(transaction.getDigitalDollar() < minerReward/Seting.DOLLAR || transaction.getDigitalDollar() > minerReward){
                             System.out.printf("wrong founder reward dollar: index: %d, " +
                                     " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
                                     (minerReward/Seting.DOLLAR), transaction.getDigitalDollar());
-
                             validated = false;
                             break;
                         }
-                        if (transaction.getDigitalStockBalance() != (minerPowerReward / Seting.STOCK)){
+                        if (transaction.getDigitalStockBalance() < minerPowerReward/Seting.STOCK || transaction.getDigitalStockBalance() > minerPowerReward){
                             System.out.printf("wrong founder reward stock: index: %d, " +
                                             " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
                                     (minerPowerReward/Seting.STOCK), transaction.getDigitalStockBalance());
@@ -524,7 +532,8 @@ public class UtilsBlock {
         }
 
         String target = BlockchainDifficulty.calculateTarget(thisBlock.getHashCompexity());
-        if (!UtilsUse.chooseComplexity(thisBlock.getHashBlock(), thisBlock.getHashCompexity(), thisBlock.getIndex(), target)) {
+        BigInteger bigTarget = BlockchainDifficulty.calculateTargetV30(thisBlock.getHashCompexity());
+        if (!UtilsUse.chooseComplexity(thisBlock.getHashBlock(), thisBlock.getHashCompexity(), thisBlock.getIndex(), target, bigTarget)) {
             System.out.println("does't start hash with 0");
 
             System.out.println("this block hash: " + thisBlock.getHashBlock());

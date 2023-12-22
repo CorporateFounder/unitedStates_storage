@@ -253,7 +253,7 @@ public interface Seting {
 
     int PORTION_BLOCK_TO_COMPLEXCITY = 600;
     //version
-    int VERSION = 28;
+    int VERSION = 30;
     String FORK_ADDRESS_SPECIAL = "jPjuyLStHTCzwYt9J7R5M7pGUKshfcmEbtE3zVvCBE52";
     double SPECIAL_FORK_BALANCE = 12000000;
     String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";
@@ -269,6 +269,7 @@ public interface Seting {
 
     //изменение алгоритма добычи
     int V28_CHANGE_ALGORITH_DIFF_INDEX = 133750;
+    int V29_CHANGE_ALGO_DIFF_INDEX = 138488;
 
     //мультипликатор
     int MULTIPLIER = 29;
@@ -280,4 +281,6 @@ public interface Seting {
     //фиксированная награда за блок 5 монет
     double V28_REWARD = 5;
     double COEFFICIENT = 3;
+    int V30_INDEX_ALGO = 142082;
+    String MAX_TARGET_v30 = "0000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 }
