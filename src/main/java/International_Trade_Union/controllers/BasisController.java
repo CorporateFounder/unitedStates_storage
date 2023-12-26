@@ -111,6 +111,14 @@ public class BasisController {
         return servletRequest;
     }
 
+    public static Map<String, Account> getBalances() {
+        return balances;
+    }
+
+    public static void setBalances(Map<String, Account> balances) {
+        BasisController.balances = balances;
+    }
+
     @GetMapping("/v28Index")
     public int v28Start(){
         return Seting.V28_CHANGE_ALGORITH_DIFF_INDEX;
@@ -242,13 +250,24 @@ public class BasisController {
 //            blockchain = Mining.getBlockchain(
 //                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
 //                    BlockchainFactoryEnum.ORIGINAL);
-            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            String json = UtilsFileSaveRead.read(Seting.TEMPORARY_BLOCKCHAIN_FILE);
+            if(!json.isEmpty() || !json.isBlank()){
+                shortDataBlockchain = UtilsJson.jsonToDataShortBlockchainInformation(json);
+
+            }else {
+                shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+//            prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(BlockService.findById((long) blockchainSize+1));
+
+                json = UtilsJson.objToStringJson(shortDataBlockchain);
+                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+            }
             System.out.println("static: shortDataBlockchain: " + shortDataBlockchain);
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
             prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            String json = UtilsJson.objToStringJson(shortDataBlockchain);
-            UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+
 
             if (blockcheinSize > 600) {
                 dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
@@ -702,6 +721,8 @@ public class BasisController {
 //                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                     EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
+                    String json = UtilsJson.objToStringJson(shortDataBlockchain);
+                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
                 }
 
                 if (!shortDataBlockchain.isValidation()) {
@@ -737,9 +758,20 @@ public class BasisController {
                     System.out.println("before temp: " + temp);
 //                    addBlock2(addlist, balances);
                     utilsAddBlock.addBlock2(addlist, balances);
-
+                    String json = UtilsJson.objToStringJson(shortDataBlockchain);
+                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
                     //прибавить к общей сумме денег
-                    totalDollars += addlist.get(0).getMinerRewards();
+                    if(totalDollars == 0){
+                        for (Map.Entry<String, Account> ba : balances.entrySet()) {
+                            totalDollars += ba.getValue().getDigitalDollarBalance();
+                        }
+
+                    }
+                    totalDollars += addlist.get(0).getDtoTransactions()
+                            .stream()
+                            .filter(t->t.getSender().equals(Seting.BASIS_ADDRESS))
+                            .mapToDouble(t->t.getDigitalDollar())
+                            .sum();
 
                     balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
                     shortDataBlockchain = temp;

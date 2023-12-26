@@ -4,6 +4,7 @@ package International_Trade_Union.controllers;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.model.Account;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,10 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -57,9 +55,26 @@ public class TransactionController {
     @GetMapping("/getTransactions")
     public List<DtoTransaction> getTransaction() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
        List<DtoTransaction> transactions= AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
-       return getTransactions(transactions);
+       transactions = getTransactions(transactions);
+       transactions = balanceTransaction(transactions);
+       return transactions;
     }
 
+    public static List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions){
+        List<DtoTransaction> dtoTransactions = new ArrayList<>();
+        Map<String, Account> balances = BasisController.getBalances();
+        for (DtoTransaction transaction : transactions) {
+            if(balances.containsKey(transaction.getSender())){
+                Account account = balances.get(transaction.getSender());
+                if(account.getDigitalStockBalance() >= transaction.getDigitalDollar()
+                        + transaction.getBonusForMiner() &&
+                account.getDigitalStockBalance() >= transaction.getDigitalStockBalance()){
+                    dtoTransactions.add(transaction);
+                }
+            }
+        }
+        return transactions;
+    }
     //вычисляет транзакции которые были добавлены в блок, и их снова не добавляет
     public static List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws JsonProcessingException {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();

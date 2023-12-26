@@ -2,6 +2,7 @@ package International_Trade_Union.utils;
 
 import International_Trade_Union.entity.InfoDemerageMoney;
 import International_Trade_Union.entity.InfoDificultyBlockchain;
+import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import International_Trade_Union.vote.CurrentLawVotesEndBalance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,6 +22,10 @@ import java.util.List;
 import java.util.Set;
 
 public class UtilsJson {
+    public static DataShortBlockchainInformation jsonToDataShortBlockchainInformation(String json) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, DataShortBlockchainInformation.class);
+    }
     public static String objToStringJson(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         StringWriter writer = new StringWriter();

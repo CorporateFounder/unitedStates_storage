@@ -354,8 +354,8 @@ public class UtilsBlock {
 
         else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO && latestBlock.getIndex() < Seting.V30_INDEX_ALGO + 288) {
 
-            difficulty = 7;
-        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO +288) {
+            difficulty = 1;
+        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO +288 && latestBlock.getIndex() < Seting.V30_INDEX_DIFF) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v30_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
@@ -363,9 +363,49 @@ public class UtilsBlock {
                 difficulty = latestBlock.getHashCompexity();
             }
         }
-        if(Seting.IS_TEST && latestBlock.getIndex() == Seting.V30_INDEX_ALGO -1){
+
+        else if (latestBlock.getIndex() >= Seting.V30_INDEX_DIFF && latestBlock.getIndex() < Seting.V30_INDEX_DIFF + 288) {
+
             difficulty = 1;
+        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO +288 && latestBlock.getIndex() < Seting.V30_INDEX_DIFF) {
+            if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
+                difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+                //более умеренная модель сложности
+            } else {
+                difficulty = latestBlock.getHashCompexity();
+            }
         }
+
+        else if (latestBlock.getIndex() >= Seting.V30_1_FIXED_DIFF && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING) {
+            System.out.println("algo V30_1_FIXED_DIFF");
+            if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
+                difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+                //более умеренная модель сложности
+            } else {
+                difficulty = latestBlock.getHashCompexity();
+            }
+        }
+
+
+        else if (latestBlock.getIndex() >= Seting.V31_DIFF_END_MINING && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING + 288) {
+
+            difficulty = 14;
+        }
+        else if (latestBlock.getIndex() >= Seting.V31_FIX_DIFF ) {
+            if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
+                difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+                //более умеренная модель сложности
+            } else {
+                difficulty = latestBlock.getHashCompexity();
+            }
+        }
+
+        if(latestBlock.getIndex() > Seting.V31_FIX_DIFF){
+            difficulty = difficulty < 11? 11: difficulty;
+        }
+//        if(Seting.IS_TEST && latestBlock.getIndex() == Seting.V30_INDEX_ALGO -1){
+//            difficulty = 1;
+//        }
 
 
         return difficulty == 0 ? 1 : difficulty;
