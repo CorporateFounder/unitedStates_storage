@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
+import static International_Trade_Union.setings.Seting.TEST_DIFF;
 
 public class UtilsBlock {
     //wallet
@@ -400,8 +401,8 @@ public class UtilsBlock {
             }
         }
 
-        if(latestBlock.getIndex() > Seting.V31_FIX_DIFF){
-            difficulty = difficulty < 11? 11: difficulty;
+        if(Seting.IS_TEST && latestBlock.getIndex() == TEST_DIFF){
+            difficulty = 1;
         }
 //        if(Seting.IS_TEST && latestBlock.getIndex() == Seting.V30_INDEX_ALGO -1){
 //            difficulty = 1;

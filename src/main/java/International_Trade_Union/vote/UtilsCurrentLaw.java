@@ -161,7 +161,7 @@ public class UtilsCurrentLaw {
 
             //получить баланс и голоса для действующих законов
             curentLawVotesEndBalance.put(corp.getKey(), UtilsGovernment.filters(corp.getValue(), balances, BoardOfShareholders,
-                    blockchain.getBlockchainList(), Seting.POSITION_YEAR_VOTE));
+                    blockchain.getBlockchainList(), Seting.CHECK_ELECTION));
             List<CurrentLawVotesEndBalance> temporary;
             if (fIndPositonHelperData.get(corp.getKey()).isElectedWithStock()) {
 
@@ -312,7 +312,7 @@ public class UtilsCurrentLaw {
 
             //получить баланс и голоса для действующих законов
             curentLawVotesEndBalance.put(corp.getKey(), UtilsGovernment.filters(corp.getValue(), balances, BoardOfShareholders,
-                    blockchain.getBlockchainList(), Seting.POSITION_YEAR_VOTE));
+                    blockchain.getBlockchainList(), Seting.CHECK_ELECTION));
             List<CurrentLawVotesEndBalance> temporary;
             if (withLimit) {
                 //отобрать голоса выше лимита
