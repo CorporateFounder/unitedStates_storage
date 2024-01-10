@@ -16,6 +16,9 @@ import lombok.Data;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -28,11 +31,18 @@ public class Blockchain implements Cloneable {
 
     private List<Block> blockchainList;
     //как часто должно создаваться блок в миллисекундах 1000 миллисекунд = 1 секунд
+    //каждый блок должен находиться каждые 150 секунд.
+    //how often should a block be created in milliseconds 1000 milliseconds = 1 seconds
+    //each block should be found every 150 seconds.
     private long BLOCK_GENERATION_INTERVAL;
-    //каждые сколько блоков должен происходить перерасчет сложности
+    //каждые сколько блоков должен происходить перерасчет сложности, каждые 288 блоков происходит регулировка сложности.
+    //every number of blocks the difficulty should be recalculated, every 288 blocks the difficulty should be adjusted.
     private int DIFFICULTY_ADJUSTMENT_INTERVAL;
     //блок действителен, если значение блока меньше данного занчения в миллисекунда
     private long INTERVAL_TARGET;
+
+    //адрес основателя.
+    //founder's address.
     private String ADDRESS_FOUNDER;
 
     public int sizeBlockhain() {
@@ -64,6 +74,8 @@ public class Blockchain implements Cloneable {
         blockchainList.add(newBlock);
     }
 
+    /**Этим методом был создан генезис блок.
+     * This method was used to create the genesis block.*/
     public Block genesisBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, SignatureException, InvalidKeyException {
         Base base = new Base58();
         //dto sign
@@ -83,6 +95,9 @@ public class Blockchain implements Cloneable {
         Block block = new Block(transactions, genesisHash, ADDRESS_FOUNDER, ADDRESS_FOUNDER, Seting.HASH_COMPLEXITY_GENESIS, blockchainList.size());
         return block;
     }
+
+    /**TODO не используется.
+     * TODO is not used.*/
 
     public static Map<String, Object> shortCheck2(Block prevBlock, Block block, DataShortBlockchainInformation data, List<Block> tempList) throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         Map<String, Object> map = new HashMap<>();
@@ -129,6 +144,9 @@ public class Blockchain implements Cloneable {
 
     }
 
+
+    /**Проверяет блок на целостность по отношению к предыдущим блокам.
+     * Checks the block for integrity in relation to previous blocks.*/
     public static DataShortBlockchainInformation shortCheck(Block prevBlock, List<Block> blocks, DataShortBlockchainInformation data, List<Block> tempList) throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         int size = (int) data.getSize();
         if (size >= blocks.get(0).getIndex() + 1 || prevBlock == null) {
@@ -597,13 +615,42 @@ public class Blockchain implements Cloneable {
         }
 
         File folder = new File(filename);
-        File[] files = folder.listFiles(); // получаем массив файлов
-        Arrays.sort(files); // сортируем файлы по имени
+
+//        Arrays.sort(files); // сортируем файлы по имени
+        List<File> folders = new ArrayList<>(List.of(folder.listFiles()));
+
+        folders = folders.stream().sorted(new Comparator<File> () {
+            public int compare (File f1, File f2) {
+                String [] parts1 = f1.getName ().split ("\\D+");
+                String [] parts2 = f2.getName ().split ("\\D+");
+                int len = Math.min (parts1.length, parts2.length);
+                for (int i = 0; i < len; i++) {
+                    try {
+                        int n1 = Integer.parseInt (parts1[i]);
+                        int n2 = Integer.parseInt (parts2[i]);
+                        if (n1 != n2) {
+                            return n1 - n2;
+                        }
+                    } catch (NumberFormatException e) {
+                        // not a number, compare as strings
+                        int cmp = parts1[i].compareTo (parts2[i]);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                    }
+                }
+                // all equal so far, compare by length
+                return parts1.length - parts2.length;
+            }
+        }).collect(Collectors.toList());
+
+
+
         int left = 0; // левая граница поиска
-        int right = files.length - 1; // правая граница поиска
+        int right = folders.size() - 1; // правая граница поиска
         while (left <= right) { // пока границы не сомкнутся
             int mid = (left + right) / 2; // находим середину
-            File file = files[mid]; // берем файл в середине
+            File file = folders.get(mid); // берем файл в середине
             if (file.isDirectory()) { // если это директория, пропускаем ее
                 left = mid + 1;
                 continue;

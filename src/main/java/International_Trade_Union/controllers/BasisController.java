@@ -11,6 +11,7 @@ import International_Trade_Union.model.Account;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,23 @@ public class BasisController {
     //    private static Blockchain blockchain;
     private static Set<String> excludedAddresses = new HashSet<>();
     private static boolean isSave = true;
+
+
+    @GetMapping("/status")
+    @ResponseBody
+    public String status() throws JsonProcessingException {
+        String strIsSave ="isSave: "+ isIsSave() + "\n";
+        String strBlockchainSize = "blockchainSize: " + getBlockcheinSize() + "\n";
+        String isSaveFile = "isSaveFile: "+ isSaveFile() + "\n";
+        String blockFromDb =
+               "blockFromDb: " +String.valueOf(BlockService.findBySpecialIndex(blockcheinSize-1))
+                + "\n";
+        String blockFromFile = "*********************************blockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
+                + "\n";
+
+        String result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
+        return result;
+    }
 
     public static boolean isIsSaveFile() {
         return isSaveFile;
@@ -348,17 +366,23 @@ public class BasisController {
     @PostMapping("/sub-blocks")
     @ResponseBody
     public List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) {
-        List<Block> blocksDb = null;
+        List<Block> blocksDb = new ArrayList<>();
         try {
             System.out.println("************************************");
             System.out.println("subBlocks");
             System.out.println("valid: " + blockchainValid);
             System.out.println("size:" + blockcheinSize);
+
+
             if (blockchainValid == false || blockcheinSize == 0) {
 
                 shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 blockcheinSize = (int) shortDataBlockchain.getSize();
                 blockchainValid = shortDataBlockchain.isValidation();
+            }
+            while (!isSaveFile) {
+            System.out.println("saving file: resolve_from_to_block: sub block");
+            return new ArrayList<>();
             }
 
             int start = entity.getStart() >= 1 ? entity.getStart() : 0;
@@ -392,8 +416,10 @@ public class BasisController {
             System.out.println("exception sub");
             return new ArrayList<>();
 
+        }finally {
+            return blocksDb;
         }
-        return blocksDb;
+
     }
 
     /**
@@ -605,6 +631,12 @@ public class BasisController {
         blockcheinSize = (int) shortDataBlockchain.getSize();
         blockchainValid = shortDataBlockchain.isValidation();
     }
+
+    @GetMapping("/prevBlock")
+    @ResponseBody
+    public Block getPrevBlock(){
+        return prevBlock;
+    }
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         try {
@@ -634,7 +666,7 @@ public class BasisController {
             }
 
             System.out.println("miner address: " + addressMiner);
-
+            System.out.println("block: " + sendBlocksEndInfo.getList());
 
             try {
 
@@ -654,7 +686,7 @@ public class BasisController {
 
                 if(!Seting.IS_TEST){
                     if (
-                            result > 120 || result < -120
+                            result > 400 || result < -400
                     ) {
                         System.out.println("_____________________________________________");
                         System.out.println("wrong timestamp");
