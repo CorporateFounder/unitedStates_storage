@@ -8,6 +8,7 @@ import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.Account;
+import International_Trade_Union.model.Tournament;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
@@ -42,15 +43,20 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 
 @RestController
 public class BasisController {
+    private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
     private static int totalTransactionsDays = 0;
     private static double totalTransactionsSumDllar =0.0;
+
+    @Autowired
+    Tournament tournament;
 
     @Autowired
     BlockService blockService;
@@ -68,6 +74,33 @@ public class BasisController {
     //    private static Blockchain blockchain;
     private static Set<String> excludedAddresses = new HashSet<>();
     private static boolean isSave = true;
+
+    public static void setBlockchainValid(boolean blockchainValid) {
+        BasisController.blockchainValid = blockchainValid;
+    }
+
+    public static void setShortDataBlockchain(DataShortBlockchainInformation shortDataBlockchain) {
+        BasisController.shortDataBlockchain = shortDataBlockchain;
+    }
+    public static Block prevBlock(){
+        return prevBlock;
+    }
+    public static void changePrevBlock(Block block){
+        prevBlock = block;
+    }
+
+
+    public static void setPrevBlock(Block prevBlock) {
+        BasisController.prevBlock = prevBlock;
+    }
+
+    public static CopyOnWriteArrayList<Block> getWinnerList() {
+        return winnerList;
+    }
+
+    public static void setWinnerList(CopyOnWriteArrayList<Block> winnerList) {
+        BasisController.winnerList = winnerList;
+    }
 
 
     @GetMapping("/status")
@@ -263,6 +296,7 @@ public class BasisController {
 
     static {
         try {
+
             UtilsCreatedDirectory.createPackages();
 //            blockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
 //            blockchain = Mining.getBlockchain(
@@ -548,7 +582,7 @@ public class BasisController {
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
             calculateBalance(balances, block, signs);
-            balances = UtilsBalance.calculateBalanceFromLaw(balances, block, allLaws, allLawsWithBalance);
+
 
             //получение и отображение законов, а также сохранение новых законов
             //и изменение действующих законов
@@ -637,6 +671,7 @@ public class BasisController {
     public Block getPrevBlock(){
         return prevBlock;
     }
+
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         try {
@@ -665,16 +700,13 @@ public class BasisController {
                 return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
             }
 
-            System.out.println("miner address: " + addressMiner);
-            System.out.println("block: " + sendBlocksEndInfo.getList());
-
             try {
 
                 List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
                 System.out.println("account: " + addressMiner);
                 Account account = balances.get(addressMiner);
                 if (account == null) {
-                    account = new Account(addressMiner, 0, 0);
+                    account = new Account(addressMiner, 0, 0, 0, 0);
                 }
 
 
@@ -734,8 +766,9 @@ public class BasisController {
                 if (prevBlock.getIndex() % 288 == 0)
                     Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
 
-
-                DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+                List<String> sign = new ArrayList<>();
+                Map<String, Account> tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+                DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
                 System.out.println("original: " + shortDataBlockchain);
@@ -789,9 +822,12 @@ public class BasisController {
                     System.out.println("before original: " + shortDataBlockchain);
                     System.out.println("before temp: " + temp);
 //                    addBlock2(addlist, balances);
-                    utilsAddBlock.addBlock2(addlist, balances);
-                    String json = UtilsJson.objToStringJson(shortDataBlockchain);
-                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+//                    utilsAddBlock.addBlock2(addlist, balances);
+//                    String json = UtilsJson.objToStringJson(shortDataBlockchain);
+//                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+                    winnerList.addAll(addlist);
                     //прибавить к общей сумме денег
                     if(totalDollars == 0){
                         for (Map.Entry<String, Account> ba : balances.entrySet()) {
@@ -805,17 +841,12 @@ public class BasisController {
                             .mapToDouble(t->t.getDigitalDollar())
                             .sum();
 
-                    balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                    shortDataBlockchain = temp;
-                    blockcheinSize = (int) shortDataBlockchain.getSize();
-                    blockchainValid = shortDataBlockchain.isValidation();
-                    System.out.println("+++++++++++++++++++++++++++++++++");
-                    long diff = UtilsBlock.difficulty(lastDiff, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-                    System.out.println("actual difficult: " + blocks.get(0).getHashCompexity() + ":expected: "
-                            + diff);
+//                    balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+//                    shortDataBlockchain = temp;
+//                    blockcheinSize = (int) shortDataBlockchain.getSize();
+//                    blockchainValid = shortDataBlockchain.isValidation();
 
-                    System.out.println("+++++++++++++++++++++++++++++++++");
-                    dificultyOneBlock = diff;
+                    dificultyOneBlock = prevBlock().getHashCompexity();
 
                     System.out.println("after original: " + shortDataBlockchain);
                     System.out.println("after temp: " + temp);
@@ -869,8 +900,9 @@ public class BasisController {
             isSaveFile = true;
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {
-//            prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//            resolve_conflicts();EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
+            prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            resolve_conflicts();
+//            EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
 //                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
             isSaveFile = true;
             System.out.println("finish resolve_from_to_block");

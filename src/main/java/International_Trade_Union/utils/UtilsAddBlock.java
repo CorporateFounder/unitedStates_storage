@@ -64,11 +64,8 @@ public class UtilsAddBlock {
                 .accountsToEntityAccounts(balances);
         blockService.getEntityAccountRepository().saveAll(entityBalances);
 
-
         Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
         SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
-
-
 
         System.out.println(":BasisController: addBlock2: finish: " + originalBlocks.size());
     }

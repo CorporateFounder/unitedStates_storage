@@ -3,6 +3,7 @@ package International_Trade_Union.utils;
 
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
 
 import java.io.IOException;
@@ -320,5 +321,15 @@ public class UtilsUse {
         System.out.println("result: " + result);
         return result;
     }
+    public static Map<String, Account> balancesClone(Map<String, Account> balances) throws CloneNotSupportedException {
+        Map<String, Account> temp = new HashMap<>();
+        for (Map.Entry<String, Account> accountEntry : balances.entrySet()) {
+            temp.put(accountEntry.getKey(), accountEntry.getValue().clone());
+        }
+        return temp;
+    }
 
+    public static long powerDiff(long diff){
+        return (long) Math.pow(diff, 2);
+    }
 }

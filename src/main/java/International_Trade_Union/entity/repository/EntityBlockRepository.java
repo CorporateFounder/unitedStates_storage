@@ -2,6 +2,7 @@ package International_Trade_Union.entity.repository;
 
 import International_Trade_Union.entity.entities.EntityBlock;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 public interface EntityBlockRepository extends JpaRepository<EntityBlock, Long> {
 
         List<EntityBlock> findAllByIdBetween(long from, long to);
+
         List<EntityBlock> findBySpecialIndexBetween(long from, long to);
         EntityBlock findBySpecialIndex(long specialIndex);
         EntityBlock findById(long id);

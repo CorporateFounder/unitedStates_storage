@@ -1,13 +1,13 @@
 package International_Trade_Union.model;
 
 
-import lombok.Data;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.utils.UtilsSecurity;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.VoteEnum;
+import lombok.Data;
 
 import java.io.IOException;
 import java.security.*;
@@ -16,21 +16,25 @@ import java.util.Objects;
 
 
 @Data
-public class Account {
+public class Account implements Cloneable {
     private String account;
     private double digitalDollarBalance;
     private double digitalStockBalance;
+    private double digitalStakingBalance;
+    private long epoch;
 
 
     public Account(String account, double digitalDollarBalance) {
-        this(account, digitalDollarBalance, 0.0);
+        this(account, digitalDollarBalance, 0.0, 0, 0);
 
     }
 
-    public Account(String account, double digitalDollarBalance, double digitalStockBalance) {
+    public Account(String account, double digitalDollarBalance, double digitalStockBalance, double digitalStakingBalance, long epoch) {
         this.account = account;
         this.digitalDollarBalance = digitalDollarBalance;
         this.digitalStockBalance = digitalStockBalance;
+        this.digitalStakingBalance = digitalStakingBalance;
+        this.epoch = epoch;
     }
 
     public Account() {
@@ -82,8 +86,8 @@ public class Account {
          return sendMoney(recipient,privateKey, digitalDollar, digitalReputation, laws, minerRewards, voteEnum);
     }
 
-
-
-
-
+    @Override
+    public Account clone() throws CloneNotSupportedException {
+        return new Account(account, digitalDollarBalance, digitalStockBalance, digitalStakingBalance, epoch);
+    }
 }

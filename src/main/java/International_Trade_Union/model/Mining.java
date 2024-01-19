@@ -1,5 +1,7 @@
 package International_Trade_Union.model;
 
+
+
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 
 public class Mining {
+    private static int customDiff = Seting.V34_MIN_DIFF;
     public static boolean miningIsObsolete = false;
     private static volatile boolean isMiningStop = false;
     public static Blockchain getBlockchain(String filename, BlockchainFactoryEnum factoryEnum) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -41,6 +44,15 @@ public class Mining {
            blockchain.setBlockchainList(blocks);
         }
         return blockchain;
+    }
+
+    public static int getCustomDiff() {
+        return customDiff;
+    }
+
+    public static void setCustomDiff(int customDiff) {
+        customDiff = customDiff < Seting.V34_MIN_DIFF? Seting.V34_MIN_DIFF: customDiff;
+        Mining.customDiff = customDiff;
     }
 
     public static boolean isIsMiningStop() {
@@ -173,10 +185,11 @@ public class Mining {
                             System.out.println("digital reputation for send: " + (transaction.getDigitalDollar() + transaction.getBonusForMiner()));
                             continue cicle;
                         }
-                        if (transaction.getSender().equals(transaction.getCustomer())) {
-                            System.out.println("sender end recipient equals " + transaction.getSender() + " : recipient: " + transaction.getCustomer());
-                            continue cicle;
-                        }
+//                        if (transaction.getSender().equals(transaction.getCustomer()) && !transaction.getVoteEnum().equals(VoteEnum.STAKING) ||
+//                                transaction.getSender().equals(transaction.getCustomer()) && !transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)) {
+//                            System.out.println("sender end recipient equals " + transaction.getSender() + " : recipient: " + transaction.getCustomer());
+//                            continue cicle;
+//                        }
                         forAdd.add(transaction);
                     }
 
@@ -186,8 +199,11 @@ public class Mining {
                 continue;
             }
         }
-        long difficulty = UtilsBlock.difficulty(blockchain, blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
 
+        long difficulty = UtilsBlock.difficulty(blockchain, blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        if(index >= Seting.V34_NEW_ALGO){
+            difficulty = Mining.customDiff;
+        }
 
         Block prevBlock = blockchain.get(blockchain.size()-1);
 
@@ -217,7 +233,7 @@ public class Mining {
             digitalReputationForMiner += index%2 == 0 ? 0 : 1;
         }
 
-        if(index > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+        if(index > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && index < Seting.V34_NEW_ALGO){
             long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
                     / (576 * Seting.YEAR);
             money = (long) (Seting.MULTIPLIER - money);
@@ -227,6 +243,19 @@ public class Mining {
             double G = UtilsUse.blocksReward(forAdd, prevBlock.getDtoTransactions());
             minerRewards = (Seting.V28_REWARD + G) * money;
             digitalReputationForMiner = (Seting.V28_REWARD + G) * money;
+            founderReward = minerRewards/Seting.DOLLAR;
+            founderDigigtalReputationReward = digitalReputationForMiner/Seting.STOCK;
+        }
+        if( index >= Seting.V34_NEW_ALGO){
+            long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                    / (576 * Seting.YEAR);
+            money = (long) (Seting.MULTIPLIER - money);
+            money = money < 1 ? 1: money;
+
+
+            double G = UtilsUse.blocksReward(forAdd, prevBlock.getDtoTransactions());
+            minerRewards = (Seting.V28_REWARD + G + (difficulty * Seting.V34_MINING_REWARD)) * money;
+            digitalReputationForMiner = (Seting.V28_REWARD + G + (difficulty * Seting.V34_MINING_REWARD))* money;
             founderReward = minerRewards/Seting.DOLLAR;
             founderDigigtalReputationReward = digitalReputationForMiner/Seting.STOCK;
         }
