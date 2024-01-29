@@ -7,7 +7,7 @@ import International_Trade_Union.utils.UtilsUse;
 import java.util.Set;
 
 public interface Seting {
-    boolean IS_TEST = true;
+    boolean IS_TEST = false;
     int TEST_DIFF = 167343;
     int TEST_ELECTION_DAY = 4;
     int TEST_ELECTION_CEO = 8;
@@ -259,7 +259,7 @@ public interface Seting {
 
     int PORTION_BLOCK_TO_COMPLEXCITY = 600;
     //version
-    int VERSION = 33;
+    int VERSION = 34;
     String FORK_ADDRESS_SPECIAL = "jPjuyLStHTCzwYt9J7R5M7pGUKshfcmEbtE3zVvCBE52";
     double SPECIAL_FORK_BALANCE = 12000000;
     String ORIGINAL_HASH = "08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c";
@@ -294,11 +294,13 @@ public interface Seting {
     int V32_FIX_DIFF = 167343;
     int V31_FIX_DIFF = 151940;
 
-    int V34_NEW_ALGO = 167650;
+    int V34_NEW_ALGO = 187200;
     double V34_MINING_REWARD = 0.2;
     int V34_MIN_DIFF = 17;
 
     int TIME_TOURNAMENT_SECOND = 100;
     String MAX_TARGET_v30 = "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
-
+    int POWER_WINNER = 200;
+    int TRANSACTION_WINNER = 150;
+    int STAKING_WINNER = 130;
 }

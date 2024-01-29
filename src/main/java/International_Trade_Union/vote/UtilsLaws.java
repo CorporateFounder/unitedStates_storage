@@ -65,44 +65,6 @@ public class UtilsLaws {
 //        UtilsFileSaveRead.save(json + "\n", nextFile);
         UtilsFileSaveRead.saves(jsons, nextFile, true);
     }
-    public static void saveLaw(Laws laws, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
-
-        //папка чтобы проверить есть ли
-        File folder = new File(filename);
-        List<String> files = new ArrayList<>();
-        for (File file : folder.listFiles()) {
-            if (!file.isDirectory()) {
-                files.add(file.getAbsolutePath());
-            }
-        }
-
-        int count = 0;
-        files = files.stream().sorted().collect(Collectors.toList());
-        String nextFile = "";
-
-        if (files.size() > 0) {
-            nextFile = files.get(files.size() - 1);
-
-            count = Integer.parseInt(nextFile.replaceAll("[^\\d]", ""));
-
-
-        }
-
-        File file = new File(nextFile);
-
-        if (file.length() >= fileLimit) {
-            count++;
-
-        }
-
-        nextFile = filename + count + ".txt";
-
-        String json = UtilsJson.objToStringJson(laws);
-        UtilsFileSaveRead.save(json + "\n", nextFile);
-
-    }
-
     public static void saveCurrentsLaws(List<LawEligibleForParliamentaryApproval> lawEligibleForParliamentaryApprovals, String filename) throws IOException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
 
@@ -145,43 +107,6 @@ public class UtilsLaws {
 //        String json = UtilsJson.objToStringJson(minerAccount);
 //        UtilsFileSaveRead.save(json + "\n", nextFile);
         UtilsFileSaveRead.saves(jsons, nextFile, true);
-    }
-    public static void saveCurrentLaw(LawEligibleForParliamentaryApproval lawEligibleForParliamentaryApproval, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
-
-        //папка чтобы проверить есть ли
-        File folder = new File(filename);
-        List<String> files = new ArrayList<>();
-        for (File file : folder.listFiles()) {
-            if (!file.isDirectory()) {
-                files.add(file.getAbsolutePath());
-            }
-        }
-
-        int count = 0;
-        files = files.stream().sorted().collect(Collectors.toList());
-        String nextFile = "";
-
-        if (files.size() > 0) {
-            nextFile = files.get(files.size() - 1);
-
-            count = Integer.parseInt(nextFile.replaceAll("[^\\d]", ""));
-
-
-        }
-
-        File file = new File(nextFile);
-
-        if (file.length() >= fileLimit) {
-            count++;
-
-        }
-
-        nextFile = filename + count + ".txt";
-
-        String json = UtilsJson.objToStringJson(lawEligibleForParliamentaryApproval);
-        UtilsFileSaveRead.save(json + "\n", nextFile);
-
     }
 
     public static List<Laws> readLineLaws(String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -240,6 +165,8 @@ public class UtilsLaws {
         return laws;
     }
 
+
+
     //возвращает пакет законов и их счета
     public static Map<String, Laws> getPackageLaws(Block block, Map<String, Laws> laws) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Laws> laws = new HashMap<>();
@@ -259,27 +186,49 @@ public class UtilsLaws {
         return laws;
     }
 
-    //проверяет валидность закона
-    public static boolean isValidHashLaw(Laws laws) throws IOException {
-        String hash = laws.getHashLaw();
-        String hashLaw = Seting.NAME_LAW_ADDRESS_START + UtilsUse.sha256hash(UtilsJson.objToStringJson(laws));
-        System.out.println("UtilsLaw: isValidHashLaw: " + hash.equals(hashLaw));
-        System.out.println("hash: " + hash);
-        System.out.println("hashLaw: " + hashLaw);
-        return hash.equals(hashLaw);
+
+    /**Удаляет законы, которые были из не актуальной ветки.*/
+    public static Map<String, Laws> rollBackLaws(
+            Block block,
+            String fileLaws,
+            Map<String, Laws> lawsMap
+    ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        List<Laws> lawsForSave = new ArrayList<>();
+        List<Laws> lawsFromFile = readLineLaws(fileLaws);
+//        Map<String, Laws> lawsMap = new HashMap<>();
+        File file = new File(fileLaws);
+        List<Laws> lawsList = new ArrayList<>();
+        if (file.exists()) {
+            lawsList = readLineLaws(fileLaws);
+        }
+
+        Map<String, Laws> laws = new HashMap<>();
+//        lawsMap = getPackageLaws(block, laws);
+        lawsMap.putAll(getPackageLaws(block, laws));
+
+        for (Map.Entry<String, Laws> map : lawsMap.entrySet()) {
+            if (!lawsList.contains(map.getValue())) {
+                if( map.getValue() != null &&
+                        map.getValue().packetLawName != null&&
+                        map.getValue().getLaws() != null
+                        && !map.getValue().getHashLaw().isEmpty()
+                        && (map.getValue().getLaws().size() > 0)){
+
+                    lawsForSave.add(map.getValue());
+                }
+
+            }
+
+        }
+
+        lawsFromFile.removeAll(lawsForSave);
+        saveLaws(lawsFromFile, fileLaws);
+
+        return lawsMap;
     }
 
 
-
-    public static List<Account> allPackageLaws(List<Account> accounts){
-        List<Account> currentLaws = accounts.stream()
-                .filter(t -> t.getAccount().startsWith(Seting.NAME_LAW_ADDRESS_START))
-                .collect(Collectors.toList());
-        return currentLaws;
-    }
-
-
-    //возвращяет список всех законов, как действующих, так и не действующих, если закон новый то автоматически сохраняет его
+    /**возвращает список всех законов, как действующих, так и не действующих, если закон новый то автоматически сохраняет его*/
     public static Map<String, Laws> getLaws(Block block, String fileLaws, Map<String, Laws> lawsMap) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         List<Laws> lawsForSave = new ArrayList<>();
 //        Map<String, Laws> lawsMap = new HashMap<>();
@@ -308,7 +257,7 @@ public class UtilsLaws {
 
         }
         saveLaws(lawsForSave, fileLaws);
-        System.out.println("UtilsLaws: getLaws: lawMap size: " + lawsMap.size() + " index: " + block.getIndex());
+
         return lawsMap;
     }
     public static List<LawEligibleForParliamentaryApproval> getCurrentLaws(Map<String, Laws> lawsMap, Map<String, Account> balances, String fileCurrentLaws) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
@@ -401,5 +350,97 @@ public class UtilsLaws {
         return temporary;
     }
 
+    public static void saveLaw(Laws laws, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
+
+        //папка чтобы проверить есть ли
+        File folder = new File(filename);
+        List<String> files = new ArrayList<>();
+        for (File file : folder.listFiles()) {
+            if (!file.isDirectory()) {
+                files.add(file.getAbsolutePath());
+            }
+        }
+
+        int count = 0;
+        files = files.stream().sorted().collect(Collectors.toList());
+        String nextFile = "";
+
+        if (files.size() > 0) {
+            nextFile = files.get(files.size() - 1);
+
+            count = Integer.parseInt(nextFile.replaceAll("[^\\d]", ""));
+
+
+        }
+
+        File file = new File(nextFile);
+
+        if (file.length() >= fileLimit) {
+            count++;
+
+        }
+
+        nextFile = filename + count + ".txt";
+
+        String json = UtilsJson.objToStringJson(laws);
+        UtilsFileSaveRead.save(json + "\n", nextFile);
+
+    }
+    //проверяет валидность закона
+    public static boolean isValidHashLaw(Laws laws) throws IOException {
+        String hash = laws.getHashLaw();
+        String hashLaw = Seting.NAME_LAW_ADDRESS_START + UtilsUse.sha256hash(UtilsJson.objToStringJson(laws));
+        System.out.println("UtilsLaw: isValidHashLaw: " + hash.equals(hashLaw));
+        System.out.println("hash: " + hash);
+        System.out.println("hashLaw: " + hashLaw);
+        return hash.equals(hashLaw);
+    }
+
+    public static void saveCurrentLaw(LawEligibleForParliamentaryApproval lawEligibleForParliamentaryApproval, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
+
+        //папка чтобы проверить есть ли
+        File folder = new File(filename);
+        List<String> files = new ArrayList<>();
+        for (File file : folder.listFiles()) {
+            if (!file.isDirectory()) {
+                files.add(file.getAbsolutePath());
+            }
+        }
+
+        int count = 0;
+        files = files.stream().sorted().collect(Collectors.toList());
+        String nextFile = "";
+
+        if (files.size() > 0) {
+            nextFile = files.get(files.size() - 1);
+
+            count = Integer.parseInt(nextFile.replaceAll("[^\\d]", ""));
+
+
+        }
+
+        File file = new File(nextFile);
+
+        if (file.length() >= fileLimit) {
+            count++;
+
+        }
+
+        nextFile = filename + count + ".txt";
+
+        String json = UtilsJson.objToStringJson(lawEligibleForParliamentaryApproval);
+        UtilsFileSaveRead.save(json + "\n", nextFile);
+
+    }
+
+
+    public static List<Account> allPackageLaws(List<Account> accounts){
+        List<Account> currentLaws = accounts.stream()
+                .filter(t -> t.getAccount().startsWith(Seting.NAME_LAW_ADDRESS_START))
+                .collect(Collectors.toList());
+        return currentLaws;
+    }
 
 }

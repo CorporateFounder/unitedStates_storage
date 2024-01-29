@@ -49,12 +49,12 @@ public class UtilsGovernment {
             minersHaveMoreStock = blocks;
         }
         List<Account> boardAccounts = minersHaveMoreStock.stream().map(
-                        t -> new Account(t.getMinerAddress(), 0, 0, 0, 0))
+                        t -> new Account(t.getMinerAddress(), 0, 0, 0))
                 .collect(Collectors.toList());
 
         for (Block block : minersHaveMoreStock) {
             for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {
-                boardAccounts.add(new Account(dtoTransaction.getSender(), 0, 0, 0, 0));
+                boardAccounts.add(new Account(dtoTransaction.getSender(), 0, 0, 0));
             }
 
         }

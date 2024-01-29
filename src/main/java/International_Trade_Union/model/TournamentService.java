@@ -6,7 +6,6 @@ import International_Trade_Union.entity.blockchain.DataShortBlockchainInformatio
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
-import International_Trade_Union.governments.Director;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +13,8 @@ import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
+import java.math.BigInteger;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -36,8 +33,52 @@ public class TournamentService {
     private List<Block> winnerStaking = new ArrayList<>();
     private List<Block> winner = new ArrayList<>();
 
+
+    public static Block selectWinner(List<Block> candidates, int limit) {
+        Block winner = null;
+        BigInteger highestValue = BigInteger.ZERO;
+
+        for (Block candidate : candidates) {
+            // Суммирование хешей
+            String combinedHash = candidate.getPreviousHash() + candidate.getHashBlock(); // предполагается, что у блока есть метод getHash
+            BigInteger seed = new BigInteger(combinedHash.getBytes());
+
+            // Генерация числа в диапазоне от 1 до limit
+            BigInteger candidateValue = new BigInteger(limit, new SecureRandom(seed.toByteArray()));
+            BigInteger result = candidateValue.mod(new BigInteger("131"));
+
+            // Проверка, является ли текущий кандидат победителем
+            if (result.compareTo(highestValue) > 0) {
+                highestValue = candidateValue;
+                winner = candidate;
+            }
+        }
+
+        return winner;
+    }
+
+    public List<LiteVersionWiner> blockToLiteVersion(List<Block> list, Map<String, Account> balances) {
+        List<LiteVersionWiner> list1 = new ArrayList<>();
+        for (Block block : list) {
+            Account account = balances.get(block.getMinerAddress());
+            if (account == null)
+                account = new Account(block.getMinerAddress(), 0, 0, 0);
+            LiteVersionWiner liteVersionWiner = new LiteVersionWiner(
+                    block.getIndex(),
+                    block.getMinerAddress(),
+                    block.getHashBlock(),
+                    block.getDtoTransactions().size(),
+                    account.getDigitalStakingBalance(),
+                    UtilsUse.bigRandomWinner(block),
+                    block.getHashCompexity()
+            );
+            list1.add(liteVersionWiner);
+        }
+        return list1;
+    }
+
     @Transactional
-    public void tournament(){
+    public void tournament() {
         long timestamp = UtilsTime.getUniversalTimestampSecond();
         try {
             ;
@@ -47,7 +88,7 @@ public class TournamentService {
 
                 BasisController.setIsSaveFile(false);
                 List<Block> list = BasisController.getWinnerList();
-                if(list.isEmpty() || list.size() == 0)
+                if (list.isEmpty() || list.size() == 0)
                     return;
 
                 //Сначала отбираем 200 блоков с высокой сложностью.
@@ -56,18 +97,17 @@ public class TournamentService {
                         .filter(UtilsUse.distinctByKey(Block::getHashBlock))
                         .sorted(Comparator.comparing(Block::getHashCompexity).reversed())
                         .filter(t -> t.getHashCompexity() >= Seting.V34_MIN_DIFF)
-                        .limit(200)
+                        .limit(Seting.POWER_WINNER)
                         .collect(Collectors.toList());
 
                 winnerCountTransaction = winnerDiff.stream()
                         .sorted((t1, t2) -> t2.getDtoTransactions().size() - t1.getDtoTransactions().size())
-                        .limit(100)
+                        .limit(Seting.TRANSACTION_WINNER)
                         .collect(Collectors.toList());
 
                 Map<String, Account> balances = null;
 
                 balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-
 
 
                 Map<String, Account> tempBalances = new HashMap<>();
@@ -79,10 +119,10 @@ public class TournamentService {
                     }
                 }
 
-                //создает карту из 50 счетов с наибольшим стэйкингом.
+                //создает карту из 130 счетов с наибольшим стэйкингом.
                 tempBalances = tempBalances.entrySet().stream()
                         .sorted(Map.Entry.comparingByValue(Comparator.comparing(Account::getDigitalStakingBalance).reversed()))
-                        .limit(50)
+                        .limit(Seting.STAKING_WINNER)
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
                 //создает список 50 с наибольшим стэйкингом
@@ -91,31 +131,28 @@ public class TournamentService {
                         winnerStaking.add(block);
                     }
                 }
-                tempBalances = tempBalances.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue(Comparator.comparing(Account::getEpoch)))
-                        .limit(1)
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-                //отбирает счет с наибольшей эпохой.
-                for (Block block : winnerStaking) {
-                    if (tempBalances.containsKey(block.getMinerAddress())) {
-                        winner.add(block);
-                    }
-                }
+                Block prevBlock = BasisController.prevBlock();
+                winnerStaking = winnerStaking.stream().sorted(Comparator.comparing(Block::getHashBlock))
+                        .collect(Collectors.toList());
+                //случайный выбор победителя.
+                ;
+                winner.add(selectWinner(winnerStaking, Seting.STAKING_WINNER));
 
                 List<Block> lastDiff = new ArrayList<>();
                 List<String> sign = new ArrayList<>();
-                Block prevBlock = BasisController.prevBlock();
+
                 lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
                         BlockService.findBySpecialIndexBetween(
                                 (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
                                 prevBlock.getIndex() + 1
                         )
                 );
+
                 //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
 
-                if(!temp.isValidation()){
+                if (!temp.isValidation()) {
                     System.out.println("wrong validation short: " + temp);
                     return;
                 }
@@ -134,8 +171,8 @@ public class TournamentService {
                 BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
                 BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
 
-                EntityBlock entityBlock = BlockService.findBySpecialIndex(temp.getSize()-1);
-                System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize()-1));
+                EntityBlock entityBlock = BlockService.findBySpecialIndex(temp.getSize() - 1);
+                System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
                 //берет последний блок, и добавляет его в статистическую переменную.
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
@@ -155,12 +192,17 @@ public class TournamentService {
 
 
 
-
+                BasisController.setAllWiners(blockToLiteVersion(list, balances));
+                BasisController.setPowerWiners(blockToLiteVersion(winnerDiff, balances));
+                BasisController.setCountTransactionsWiner(blockToLiteVersion(winnerCountTransaction, balances));
+                BasisController.setStakingWiners(blockToLiteVersion(winnerStaking, balances));
+                BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
 
                 winnerDiff = new ArrayList<>();
                 winnerCountTransaction = new ArrayList<>();
                 winnerStaking = new ArrayList<>();
                 winner = new ArrayList<>();
+
                 Thread.sleep(1000);
                 BasisController.setIsSaveFile(true);
             }

@@ -8,6 +8,7 @@ import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.Account;
+import International_Trade_Union.model.LiteVersionWiner;
 import International_Trade_Union.model.Tournament;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
@@ -31,16 +32,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
 import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -51,6 +48,110 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 @RestController
 public class BasisController {
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
+
+    //список всех победителей
+    private static List<LiteVersionWiner> allWiners = new ArrayList<>();
+    private static List<LiteVersionWiner> powerWiners = new ArrayList<>();
+    private static List<LiteVersionWiner> countTransactionsWiner = new ArrayList<>();
+    private static List<LiteVersionWiner> stakingWiners = new ArrayList<>();
+    private static List<LiteVersionWiner> bigRandomWiner = new ArrayList<>();
+
+
+    @GetMapping("/allwinners")
+    @ResponseBody
+    public String allWinners() throws IOException {
+        String json = UtilsJson.objToStringJson(allWiners);
+        System.out.println("----------------------------");
+        System.out.println("allWinners: ");
+        System.out.println(json);
+        System.out.println("----------------------------");
+
+        return json;
+    }
+
+    @GetMapping("/powerWiners")
+    @ResponseBody
+    public String powerWiners() throws IOException {
+        String json = UtilsJson.objToStringJson(powerWiners);
+        System.out.println("----------------------------");
+        System.out.println("powerWiners: ");
+        System.out.println(json);
+        System.out.println("----------------------------");
+        return json;
+    }
+
+    @GetMapping("/countTransactionsWiner")
+    @ResponseBody
+    public String countTransactionsWiner() throws IOException {
+        String json = UtilsJson.objToStringJson(countTransactionsWiner);
+        System.out.println("----------------------------");
+        System.out.println("countTransactionsWiner: ");
+        System.out.println(json);
+        System.out.println("----------------------------");
+        return json;
+    }
+
+    @GetMapping("/stakingWiners")
+    @ResponseBody
+    public String stakingWiners() throws IOException {
+        String json = UtilsJson.objToStringJson(stakingWiners);
+        System.out.println("----------------------------");
+        System.out.println("stakingWiners: ");
+        System.out.println(json);
+        System.out.println("----------------------------");
+        return json;
+    }
+
+    @GetMapping("/bigRandomWiner")
+    @ResponseBody
+    public String bigRandomWiner() throws IOException {
+        String json = UtilsJson.objToStringJson(bigRandomWiner);
+        System.out.println("----------------------------");
+        System.out.println("bigRandomWiner: ");
+        System.out.println(json);
+        System.out.println("----------------------------");
+        return json;
+    }
+
+    public static List<LiteVersionWiner> getCountTransactionsWiner() {
+        return countTransactionsWiner;
+    }
+
+    public static void setCountTransactionsWiner(List<LiteVersionWiner> countTransactionsWiner) {
+        BasisController.countTransactionsWiner = countTransactionsWiner;
+    }
+
+    public static List<LiteVersionWiner> getBigRandomWiner() {
+        return bigRandomWiner;
+    }
+
+    public static void setBigRandomWiner(List<LiteVersionWiner> bigRandomWiner) {
+        BasisController.bigRandomWiner = bigRandomWiner;
+    }
+
+    public static List<LiteVersionWiner> getStakingWiners() {
+        return stakingWiners;
+    }
+
+    public static void setStakingWiners(List<LiteVersionWiner> stakingWiners) {
+        BasisController.stakingWiners = stakingWiners;
+    }
+
+    public static List<LiteVersionWiner> getPowerWiners() {
+        return powerWiners;
+    }
+
+    public static void setPowerWiners(List<LiteVersionWiner> powerWiners) {
+        BasisController.powerWiners = powerWiners;
+    }
+
+    public static List<LiteVersionWiner> getAllWiners() {
+        return allWiners;
+    }
+
+    public static void setAllWiners(List<LiteVersionWiner> allWiners) {
+        BasisController.allWiners = allWiners;
+    }
 
     private static int totalTransactionsDays = 0;
     private static double totalTransactionsSumDllar =0.0;
@@ -89,6 +190,13 @@ public class BasisController {
         prevBlock = block;
     }
 
+    @GetMapping("/datashort")
+    public DataShortBlockchainInformation dataShortBlockchainInformation(){
+        System.out.println("get /datashort");
+        DataShortBlockchainInformation temp = shortDataBlockchain;
+        System.out.println("/datashort: " + temp);
+        return temp;
+    }
 
     public static void setPrevBlock(Block prevBlock) {
         BasisController.prevBlock = prevBlock;
@@ -106,16 +214,18 @@ public class BasisController {
     @GetMapping("/status")
     @ResponseBody
     public String status() throws JsonProcessingException {
+
         String strIsSave ="isSave: "+ isIsSave() + "\n";
         String strBlockchainSize = "blockchainSize: " + getBlockcheinSize() + "\n";
         String isSaveFile = "isSaveFile: "+ isSaveFile() + "\n";
         String blockFromDb =
                "blockFromDb: " +String.valueOf(BlockService.findBySpecialIndex(blockcheinSize-1))
                 + "\n";
-        String blockFromFile = "*********************************blockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
+        String blockFromFile = "*********************************\nblockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
                 + "\n";
 
         String result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
+
         return result;
     }
 
@@ -466,7 +576,7 @@ public class BasisController {
         return Seting.VERSION;
     }
 
-    @GetMapping("/block")
+    @PostMapping("/block")
     @ResponseBody
     public Block getBlock(@RequestBody Integer index) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        System.out.println("start getBlock");
@@ -644,14 +754,16 @@ public class BasisController {
 
         Map<String, Account> balances = new HashMap<>();
 
+
         while (true){
             if(size > Seting.PORTION_DOWNLOAD){
                 list = blockchain.subBlock(size, Seting.PORTION_DOWNLOAD);
-
+                list = list.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                 addBlock3(list, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
             }else {
                 list = blockchain.subBlock(size, blockchain.sizeBlockhain());
+                list = list.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                 addBlock3(list, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 break;
             }
@@ -706,7 +818,7 @@ public class BasisController {
                 System.out.println("account: " + addressMiner);
                 Account account = balances.get(addressMiner);
                 if (account == null) {
-                    account = new Account(addressMiner, 0, 0, 0, 0);
+                    account = new Account(addressMiner, 0, 0, 0);
                 }
 
 
