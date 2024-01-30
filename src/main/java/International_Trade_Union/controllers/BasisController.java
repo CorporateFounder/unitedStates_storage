@@ -56,16 +56,35 @@ public class BasisController {
     private static List<LiteVersionWiner> stakingWiners = new ArrayList<>();
     private static List<LiteVersionWiner> bigRandomWiner = new ArrayList<>();
 
+    public static void setTotalTransactionsDays(int totalTransactionsDays) {
+        BasisController.totalTransactionsDays = totalTransactionsDays;
+    }
+    public static long totalTransactionsDays(){
+        return BasisController.totalTransactionsDays;
+    }
+    public static double totalTransactionsSumDollar(){
+        return BasisController.totalTransactionsSumDllar;
+    }
+
+    public static void setTotalTransactionsSumDllar(double totalTransactionsSumDllar) {
+        BasisController.totalTransactionsSumDllar = totalTransactionsSumDllar;
+    }
+
+    public static void setTotalDollars(double totalDollars) {
+        BasisController.totalDollars = totalDollars;
+    }
+
+    public static boolean isBlockchainValid() {
+        return blockchainValid;
+    }
+    public static double totalDollars(){
+        return totalDollars;
+    }
 
     @GetMapping("/allwinners")
     @ResponseBody
     public String allWinners() throws IOException {
         String json = UtilsJson.objToStringJson(allWiners);
-        System.out.println("----------------------------");
-        System.out.println("allWinners: ");
-        System.out.println(json);
-        System.out.println("----------------------------");
-
         return json;
     }
 
@@ -73,10 +92,6 @@ public class BasisController {
     @ResponseBody
     public String powerWiners() throws IOException {
         String json = UtilsJson.objToStringJson(powerWiners);
-        System.out.println("----------------------------");
-        System.out.println("powerWiners: ");
-        System.out.println(json);
-        System.out.println("----------------------------");
         return json;
     }
 
@@ -84,10 +99,6 @@ public class BasisController {
     @ResponseBody
     public String countTransactionsWiner() throws IOException {
         String json = UtilsJson.objToStringJson(countTransactionsWiner);
-        System.out.println("----------------------------");
-        System.out.println("countTransactionsWiner: ");
-        System.out.println(json);
-        System.out.println("----------------------------");
         return json;
     }
 
@@ -95,10 +106,6 @@ public class BasisController {
     @ResponseBody
     public String stakingWiners() throws IOException {
         String json = UtilsJson.objToStringJson(stakingWiners);
-        System.out.println("----------------------------");
-        System.out.println("stakingWiners: ");
-        System.out.println(json);
-        System.out.println("----------------------------");
         return json;
     }
 
@@ -106,10 +113,6 @@ public class BasisController {
     @ResponseBody
     public String bigRandomWiner() throws IOException {
         String json = UtilsJson.objToStringJson(bigRandomWiner);
-        System.out.println("----------------------------");
-        System.out.println("bigRandomWiner: ");
-        System.out.println(json);
-        System.out.println("----------------------------");
         return json;
     }
 
@@ -640,27 +643,7 @@ public class BasisController {
 
         isSave = true;
     }
-//    @GetMapping("/addBlock")
-//    public boolean getBLock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-//        System.out.println("start /addblock");
-//        if( blockcheinSize == 0){
-//
-//            blockcheinSize = blockchain.sizeBlockhain();
-//            blockchainValid = blockchain.validatedBlockchain();
-//        }
-//
-////        System.out.println("size /addblock blockchain size before: " + blockcheinSize);
-//
-//
-//        UtilsBlock.deleteFiles();
-////        System.out.println("files deleted");
-////        System.out.println("size /addblock blockchain size after: " + blockcheinSize);
-////        System.out.println("start addBlock save");
-//        addBlock(blockchain.getBlockchainList());
-//
-//        System.out.println("finish addblock finish");
-//        return true;
-//    }
+
 
     @GetMapping("/isSaveFile")
     @ResponseBody
@@ -941,17 +924,7 @@ public class BasisController {
 
                     winnerList.addAll(addlist);
                     //прибавить к общей сумме денег
-                    if(totalDollars == 0){
-                        for (Map.Entry<String, Account> ba : balances.entrySet()) {
-                            totalDollars += ba.getValue().getDigitalDollarBalance();
-                        }
 
-                    }
-                    totalDollars += addlist.get(0).getDtoTransactions()
-                            .stream()
-                            .filter(t->t.getSender().equals(Seting.BASIS_ADDRESS))
-                            .mapToDouble(t->t.getDigitalDollar())
-                            .sum();
 
 //                    balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
 //                    shortDataBlockchain = temp;
@@ -967,14 +940,7 @@ public class BasisController {
                     EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                     System.out.println("*************************************");
-                    if(addlist.get(0).getIndex() % 576 == 0){
-                        totalTransactionsDays = 0;
-                        totalTransactionsSumDllar = 0;
-                    }
-                    totalTransactionsDays += addlist.get(0).getDtoTransactions().size();
-                    totalTransactionsSumDllar += addlist.get(0).getDtoTransactions().stream()
-                            .mapToDouble(t->t.getDigitalDollar())
-                            .sum();
+
                     System.out.println("*************************************");
 ////                    //задержка чтобы другие участники смогли скачать более актуальный блокчейн
 //                    if(diff >= 9)

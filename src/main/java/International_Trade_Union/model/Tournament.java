@@ -38,7 +38,7 @@ public class Tournament implements Runnable {
     @Override
     public void run() {
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println("start tournament:");
+        System.out.println("tournament:");
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
 
@@ -49,7 +49,7 @@ public class Tournament implements Runnable {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                   e.printStackTrace();
                 }
                 continue;
 
