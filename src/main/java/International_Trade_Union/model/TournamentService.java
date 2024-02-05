@@ -95,12 +95,19 @@ public class TournamentService {
                 balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
                 BasisController.setIsSaveFile(false);
                 List<Block> list = BasisController.getWinnerList();
+                list = list.stream()
+                        .filter(t->t.getIndex() == BasisController.getBlockcheinSize())
+                        .collect(Collectors.toList());
+
 
                 if (list.isEmpty() || list.size() == 0)
                     return;
 
 
                 Map<String, Account> finalBalances = balances;
+                // Обеспечение наличия всех аккаунтов в finalBalances
+                list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, 0.0, 0.0, 0.0)));
+
                 Comparator<Block> comparator = Comparator
                         .comparing(Block::getHashCompexity, Comparator.reverseOrder())
                         .thenComparing(
@@ -146,6 +153,9 @@ public class TournamentService {
                     // Если номер счета из списка строк является ключом в карте, добавим аккаунт в список
                     if (balances.containsKey(entry.getMinerAddress())) {
                         tempBalances.put(entry.getMinerAddress(), balances.get(entry.getMinerAddress()));
+                    }else {
+                        Account miner = new Account(entry.getMinerAddress(), 0, 0, 0);
+                        tempBalances.put(entry.getMinerAddress(), miner);
                     }
                 }
 
@@ -160,6 +170,7 @@ public class TournamentService {
                     if (tempBalances.containsKey(block.getMinerAddress())) {
                         winnerStaking.add(block);
                     }
+
                 }
 
                 Block prevBlock = BasisController.prevBlock();

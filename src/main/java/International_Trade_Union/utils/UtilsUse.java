@@ -333,8 +333,13 @@ public class UtilsUse {
         // Конкатенация двух хешей
         String combinedHash = actual.getHashBlock();
 
+        if (actual == null || actual.getHashBlock() == null || actual.getHashBlock().isBlank() || actual.getHashBlock().isEmpty())
+            return 0;
         // Преобразование объединенных хешей в BigInteger
         BigInteger hashAsNumber = new BigInteger(combinedHash, 16);
+        if(hashAsNumber == null){
+            return 0;
+        }
 
         // Использование BigInteger как seed для детерминированного генератора случайных чисел
         Random deterministicRandom = new Random(hashAsNumber.longValue());
@@ -342,25 +347,9 @@ public class UtilsUse {
         // Генерация случайного числа в диапазоне от 0 до 130
         int limit = 131; // Предполагается, что limit это максимальное значение + 1
         int result = deterministicRandom.nextInt(limit);
+        result = (int) (result + (actual.getHashCompexity() * 3));
         return result;
 
     }
-    public static Block selectMaxValueBlock(List<Block> blocks) {
-        if (blocks == null || blocks.isEmpty()) {
-            return null; // или выбросить исключение, если список блоков не должен быть пустым
-        }
 
-        Block maxBlock = null;
-        int maxValue = -1;
-
-        for (Block block : blocks) {
-            int currentValue = bigRandomWinner(block);
-            if (currentValue > maxValue) {
-                maxValue = currentValue;
-                maxBlock = block;
-            }
-        }
-
-        return maxBlock;
-    }
 }
