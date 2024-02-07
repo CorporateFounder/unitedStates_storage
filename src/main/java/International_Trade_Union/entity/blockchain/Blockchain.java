@@ -138,9 +138,9 @@ public class Blockchain implements Cloneable {
         Account miner = balances.get(block.getMinerAddress());
         miner = miner != null? miner: new Account(block.getMinerAddress(), 0, 0, 0);
 
-        staking += miner.getDigitalStakingBalance();
+        staking += miner.getDigitalStakingBalance() / Seting.ONE_HUNDRED_THOUSAND;
         tranasactions += block.getDtoTransactions().size();
-        bigRandomNumber += UtilsUse.bigRandomWinner(block);
+        bigRandomNumber += UtilsUse.bigRandomWinner(block, miner);
 
 
         if (validation == false) {
@@ -170,6 +170,7 @@ public class Blockchain implements Cloneable {
             Map<String, Account> balances,
             List<String> sign) {
         int size = (int) data.getSize();
+
         if (size >= blocks.get(0).getIndex() + 1 || prevBlock == null) {
             System.out.println("size: " + size + blocks.get(0).getIndex());
             System.out.println(" shortCheck: null");
@@ -220,8 +221,8 @@ public class Blockchain implements Cloneable {
                 miner = miner != null? miner: new Account(blocks.get(i).getMinerAddress(), 0, 0, 0);
                 System.out.println("shortCheck miner: " + miner);
 //                staking += miner.getDigitalStakingBalance();
-                staking += miner.getDigitalStakingBalance();
-                bigRandomNumber += UtilsUse.bigRandomWinner(blocks.get(i));
+                staking += miner.getDigitalStakingBalance() / Seting.ONE_HUNDRED_THOUSAND;
+                bigRandomNumber += UtilsUse.bigRandomWinner(blocks.get(i), miner);
                 System.out.println("shortCheck: size: " + blocks.get(i).getIndex() + " validation: " + validation + " size: " + size);
 
                 tranasactions += blocks.get(i).getDtoTransactions().size();
@@ -296,9 +297,9 @@ public class Blockchain implements Cloneable {
                     balances = UtilsBalance.calculateBalance(balances, block, sign);
                     Account miner = balances.get(block.getMinerAddress());
                     miner = miner != null? miner: new Account(block.getMinerAddress(), 0, 0, 0);
-                    staking += miner.getDigitalStakingBalance();
+                    staking += miner.getDigitalStakingBalance() / Seting.ONE_HUNDRED_THOUSAND;
                     transactions += block.getDtoTransactions().size();
-                    bigRandomNumber += UtilsUse.bigRandomWinner(block);
+                    bigRandomNumber += UtilsUse.bigRandomWinner(block, miner);
 
                     valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
                             prevBlock,
@@ -336,10 +337,10 @@ public class Blockchain implements Cloneable {
                 hashCount += UtilsUse.powerDiff(block.getHashCompexity());
                 balances = UtilsBalance.calculateBalance(balances, block, sign);
                 Account miner = balances.get(block.getMinerAddress());
-                staking += miner.getDigitalStakingBalance();
+                staking += miner.getDigitalStakingBalance() / Seting.ONE_HUNDRED_THOUSAND;
 
                 transactions += block.getDtoTransactions().size();
-                bigRandomNumber += UtilsUse.bigRandomWinner(block);
+                bigRandomNumber += UtilsUse.bigRandomWinner(block, miner);
 
                 valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
                         prevBlock,
@@ -429,9 +430,9 @@ public class Blockchain implements Cloneable {
                     Account miner = balances.get(block.getMinerAddress());
                     miner = miner != null? miner: new Account(block.getMinerAddress(), 0, 0, 0);
 
-                    staking += miner.getDigitalStakingBalance();
+                    staking += miner.getDigitalStakingBalance() / Seting.ONE_HUNDRED_THOUSAND;
                     transactions += block.getDtoTransactions().size();
-                    bigRandomNumber += UtilsUse.bigRandomWinner(block);
+                    bigRandomNumber += UtilsUse.bigRandomWinner(block, miner);
 
                     tempList.add(prevBlock);
                     if (tempList.size() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
@@ -608,10 +609,11 @@ public class Blockchain implements Cloneable {
     {
     }
 
+
     //название файла, по индексу
-    public static String indexNameFileBlock(int index, String filename) throws JsonProcessingException {
+    public static File indexNameFileBlock(int index, String filename) throws JsonProcessingException {
         if (index == 0) {
-            return "0.txt";
+            return new File("0.txt");
         }
 
         File folder = new File(filename);
@@ -642,7 +644,7 @@ public class Blockchain implements Cloneable {
             Block last = UtilsJson.jsonToBLock(list.get(list.size() - 1)); // получаем последний блок в файле
             if (first.getIndex() <= index && index <= last.getIndex()) { // если индекс находится в диапазоне файла
                 if (binarySearchBlock(list, index) != null) {
-                    return file.getName();
+                    return file;
                 }
                 ; // ищем блок бинарным поиском внутри файла
             } else if (index < first.getIndex()) { // если индекс меньше первого блока в файле
@@ -659,6 +661,7 @@ public class Blockchain implements Cloneable {
      */
     public static void deleteFileBlockchain(int deleteFrom, String directoryPath) {
         File folder = new File(directoryPath);
+
         File[] files = folder.listFiles();
 
         if (files != null) {
@@ -882,16 +885,16 @@ public class Blockchain implements Cloneable {
     ) throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 
         int size = (int) data.getSize();
-        if (size >= blocks.get(0).getIndex() + 1 || prevBlock == null) {
-            System.out.println("size: " + size + blocks.get(0).getIndex());
-            System.out.println(" shortCheck: null");
-            return new DataShortBlockchainInformation(size, false, 0, 0, 0, 0);
-        }
+//        if (size >= blocks.get(0).getIndex() + 1 || prevBlock == null) {
+//            System.out.println("rollBackShortCheck:   size: " + size + " block index: " +blocks.get(0).getIndex());
+//            System.out.println(" shortCheck: null");
+//            return new DataShortBlockchainInformation(size, false, 0, 0, 0, 0);
+//        }
         long hashcount = data.getHashCount();
         double staking = data.getStaking();
         long tranasactions = data.getTransactions();
         int bigRandomNumber = data.getBigRandomNumber();
-        boolean validation = false;
+        boolean validation = true;
         Block prev = prevBlock.clone();
         List<Block> blockList = new ArrayList<>();
         for (int i = 0; i < tempList.size(); i++) {
@@ -907,28 +910,16 @@ public class Blockchain implements Cloneable {
             blockList = blockList.stream()
                     .sorted(Comparator.comparing(Block::getIndex))
                     .collect(Collectors.toList());
-            validation = UtilsBlock.validationOneBlock(
-                    Seting.ADDRESS_FOUNDER,
-                    prev,
-                    blocks.get(i),
-                    Seting.BLOCK_GENERATION_INTERVAL,
-                    Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                    blockList);
-            prev = blocks.get(i).clone();
             size--;
 
 
             hashcount -= UtilsUse.powerDiff(blocks.get(i).getHashCompexity());
-            staking -= balances.get(blocks.get(i).getMinerAddress()).getDigitalStakingBalance();
+            staking -= balances.get(blocks.get(i).getMinerAddress()).getDigitalStakingBalance() / Seting.ONE_HUNDRED_THOUSAND;
 
             tranasactions -= blocks.get(i).getDtoTransactions().size();
-            bigRandomNumber -= UtilsUse.bigRandomWinner(blocks.get(i));
-            balances = UtilsBalance.calculateBalance(balances, blocks.get(i), sign);
+            bigRandomNumber -= UtilsUse.bigRandomWinner(blocks.get(i), balances.get(blocks.get(i).getMinerAddress()));
+            balances = UtilsBalance.rollbackCalculateBalance(balances, blocks.get(i), sign);
 
-            if (validation == false) {
-                System.out.println("false shortCheck");
-                return new DataShortBlockchainInformation(size, validation, hashcount, staking, tranasactions, bigRandomNumber);
-            }
 
         }
 

@@ -35,13 +35,13 @@ public class TournamentService {
     private List<Block> winner = new ArrayList<>();
 
 
-    public static Block selectWinner(List<Block> candidates) {
+    public static Block selectWinner(List<Block> candidates, Map<String, Account> list) {
         Block winner = null;
         int highestValue = 0;
 
         for (Block candidate : candidates) {
             // Использование bigRandomWinner для генерации случайного числа для кандидата
-            int candidateValue = bigRandomWinner(candidate);
+            int candidateValue = bigRandomWinner(candidate, list.get(candidate.getMinerAddress()));
 
             // Проверка, является ли текущий кандидат победителем
             if (candidateValue > highestValue) {
@@ -66,7 +66,7 @@ public class TournamentService {
                     block.getHashBlock(),
                     block.getDtoTransactions().size(),
                     account.getDigitalStakingBalance(),
-                    bigRandomWinner(block),
+                    bigRandomWinner(block, account),
                     block.getHashCompexity()
             );
             list1.add(liteVersionWiner);
@@ -178,7 +178,7 @@ public class TournamentService {
                         .collect(Collectors.toList());
                 //случайный выбор победителя.
                 ;
-                winner.add(selectWinner(winnerStaking));
+                winner.add(selectWinner(winnerStaking, finalBalances));
                 if(winner.size() == 0 || winner == null){
                     System.out.println("--------------------------------------------");
 
