@@ -1,7 +1,6 @@
 package International_Trade_Union.utils;
 
 
-
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
@@ -24,7 +23,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
-import static International_Trade_Union.setings.Seting.TEST_DIFF;
 
 public class UtilsBlock {
     //wallet
@@ -83,6 +81,7 @@ public class UtilsBlock {
         UtilsFileSaveRead.saves(jsons, nextFile, true);
     }
 
+    /**Записывает блок в файл, если файл больше 10 мегабайт, создает новый файл с новым идентификационным номером.*/
     public static void saveBLock(Block block, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
 
@@ -128,6 +127,7 @@ public class UtilsBlock {
 
         String json = UtilsJson.objToStringJson(block);
         UtilsFileSaveRead.save(json + "\n", nextFile);
+        System.out.println("UtilsBlock: saveBlock: " + block.getIndex() + " file name: " + nextFile);
 
     }
 
@@ -310,7 +310,7 @@ public class UtilsBlock {
         }
 
         else if (latestBlock.getIndex() >= Seting.V30_1_FIXED_DIFF && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING) {
-            System.out.println("algo V30_1_FIXED_DIFF");
+
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
@@ -321,7 +321,7 @@ public class UtilsBlock {
 
 
         else if (latestBlock.getIndex() >= Seting.V31_DIFF_END_MINING && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING + 288) {
-
+            System.out.println("algo V31_FIXED_DIFF");
             difficulty = 14;
         }
         else if (latestBlock.getIndex() >= Seting.V31_FIX_DIFF && latestBlock.getIndex() <= Seting.V32_FIX_DIFF) {
@@ -566,10 +566,14 @@ public class UtilsBlock {
 
 
         if (!actualPrevHash.equals(recordedPrevHash)) {
+            System.out.println("-------------------------------------------------------");
 
             System.out.println("Blockchain is invalid, expected: " + recordedPrevHash + " actual: " + actualPrevHash);
-            System.out.println("index block: " + thisBlock.getIndex());
+            System.out.println("actual index block: " + thisBlock.getIndex());
+
+            System.out.println("previusblock: " + previusblock.getIndex());
             System.out.println("wrong chain hash");
+            System.out.println("-------------------------------------------------------");
             return false;
         }
 

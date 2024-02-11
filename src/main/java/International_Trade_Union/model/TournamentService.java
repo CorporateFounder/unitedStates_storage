@@ -159,7 +159,7 @@ public class TournamentService {
                     }
                 }
 
-                //создает карту из 130 счетов с наибольшим стэйкингом.
+                //создает карту из 55 счетов с наибольшим стэйкингом.
                 tempBalances = tempBalances.entrySet().stream()
                         .sorted(Map.Entry.comparingByValue(Comparator.comparing(Account::getDigitalStakingBalance).reversed()))
                         .limit(Seting.STAKING_WINNER)
