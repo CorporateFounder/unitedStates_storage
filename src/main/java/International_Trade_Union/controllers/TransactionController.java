@@ -7,6 +7,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -67,8 +68,17 @@ public class TransactionController {
             if(balances.containsKey(transaction.getSender())){
                 Account account = balances.get(transaction.getSender());
                 if(account.getDigitalStockBalance() >= transaction.getDigitalDollar()
-                        + transaction.getBonusForMiner() &&
-                account.getDigitalStockBalance() >= transaction.getDigitalStockBalance()){
+                        + transaction.getBonusForMiner()
+                ){
+                    dtoTransactions.add(transaction);
+                }
+                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() && transaction.getVoteEnum().equals(VoteEnum.YES)){
+                    dtoTransactions.add(transaction);
+                }
+                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() && transaction.getVoteEnum().equals(VoteEnum.NO)){
+                    dtoTransactions.add(transaction);
+                }
+                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() && transaction.getVoteEnum().equals(VoteEnum.STAKING)){
                     dtoTransactions.add(transaction);
                 }
             }
