@@ -60,9 +60,27 @@ public class UtilsAddBlock {
 
         blockService.getEntityBlockRepository().saveAll(entityBlocks);
 
-        List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
-                .accountsToEntityAccounts(balances);
-        blockService.getEntityAccountRepository().saveAll(entityBalances);
+//        List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
+//                .accountsToEntityAccounts(balances);
+//        blockService.getEntityAccountRepository().saveAll(entityBalances);
+        List<EntityAccount> entityAccounts = new ArrayList<>();
+        for (Map.Entry<String, Account> accountEntry : balances.entrySet()) {
+            if(accountEntry.getValue().getAccount() != null || !accountEntry.getValue().getAccount().isBlank()){
+                EntityAccount temp = BlockService.entityAccount(accountEntry.getValue().getAccount());
+                if(temp != null){
+                    temp.setDigitalDollarBalance(accountEntry.getValue().getDigitalDollarBalance());
+                    temp.setDigitalStockBalance(accountEntry.getValue().getDigitalStockBalance());
+                    temp.setDigitalStakingBalance(accountEntry.getValue().getDigitalStakingBalance());
+                    entityAccounts.add(temp);
+                }else {
+                    temp = UtilsAccountToEntityAccount.account(accountEntry.getValue());
+                    entityAccounts.add(temp);
+                }
+
+            }
+
+        }
+        BlockService.saveAccountAll(entityAccounts);
 
         Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
         SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
