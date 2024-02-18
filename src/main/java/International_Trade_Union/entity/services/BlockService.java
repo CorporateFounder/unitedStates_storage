@@ -8,22 +8,26 @@ import International_Trade_Union.entity.repository.EntityAccountRepository;
 import International_Trade_Union.entity.repository.EntityBlockRepository;
 import International_Trade_Union.entity.repository.EntityDtoTransactionRepository;
 import International_Trade_Union.entity.repository.EntityLawsRepository;
+import International_Trade_Union.model.Account;
 import International_Trade_Union.utils.UtilsBlockToEntityBlock;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class BlockService {
+    @Autowired
+    private EntityLawsRepository entityLawsRepository;
     private static EntityBlockRepository blockService;
     private static EntityLawsRepository lawService;
     private static EntityDtoTransactionRepository dtoService;
@@ -34,8 +38,7 @@ public class BlockService {
     @Autowired
     private EntityBlockRepository entityBlockRepository;
 
-    @Autowired
-    private EntityLawsRepository entityLawsRepository;
+
     @Autowired
     private EntityDtoTransactionRepository dtoTransactionRepository;
 
@@ -89,22 +92,67 @@ public class BlockService {
 
     }
 
+
+
+
+    @Transactional
+    public  void deleteEntityBlocksAndRelatedData(Long threshold) {
+        blockService.deleteBySpecialIndexGreaterThanOrEqualTo(threshold);
+    }
+
+
+
+    public List<EntityAccount> findByAccountIn(Map<String, Account> map){
+        List<String> accounts = map.entrySet().stream().map(t->t.getValue().getAccount()).collect(Collectors.toList());
+        return accountService.findByAccountIn(accounts);
+    }
+
+
+    public static List<EntityAccount> findAllAccounts(){
+        return accountService.findAll();
+
+    }
+
+
+
+
+    public static long sizeBlock(){
+        return  blockService.count();
+    }
+    public static EntityBlock lastBlock(){
+        return blockService.findBySpecialIndex(blockService.count()-1);
+    }
+
+    @Transactional
+    public void saveAllBLockF(List<EntityBlock> entityBlocks){
+        entityBlockRepository.saveAll(entityBlocks);
+        entityBlockRepository.flush();
+    }
     public static void saveAllBlock(List<EntityBlock> entityBlocks) {
         blockService.saveAll(entityBlocks);
         blockService.flush();
     }
-
+    public static void removeAllBlock(List<EntityBlock> entityBlocks){
+        blockService.deleteAll(entityBlocks);
+        blockService.flush();
+    }
     public static void saveAccount(EntityAccount entityAccount){
 
         accountService.save(entityAccount);
         accountService.flush();
     }
-    public static void saveAccountAll(List<EntityAccount> entityAccounts){
 
+
+
+    @PersistenceContext
+    EntityManager entityManager;
+    public void saveAccountAllF(List<EntityAccount> entityAccounts){
+        Session session = entityManager.unwrap(Session.class);
+        session.setJdbcBatchSize(50);
         List<EntityAccount> entityResult = new ArrayList<>();
         for (EntityAccount entityAccount : entityAccounts) {
-            if(accountService.findByAccount(entityAccount.getAccount()) != null){
-                EntityAccount temp = accountService.findByAccount(entityAccount.getAccount());
+            if(entityAccountRepository.findByAccount(entityAccount.getAccount()) != null){
+                EntityAccount temp = entityAccountRepository.findByAccount(entityAccount.getAccount());
                 temp.setDigitalDollarBalance(entityAccount.getDigitalDollarBalance());
                 temp.setDigitalStockBalance(entityAccount.getDigitalStockBalance());
                 entityResult.add(temp);
@@ -112,8 +160,49 @@ public class BlockService {
                 entityResult.add(entityAccount);
             }
         }
-        accountService.saveAll(entityResult);
-        accountService.flush();
+
+        entityAccountRepository.saveAll(entityResult);
+        entityAccountRepository.flush();
+        session.clear();
+    }
+    public static void saveAccountAll(List<EntityAccount> entityAccounts){
+
+
+        // Кэш для результатов findByAccount
+        Map<String, EntityAccount> cache = new HashMap<>();
+
+        // Списки для пакетного обновления
+        List<String> accounts = new ArrayList<>();
+        List<Double> digitalDollarBalances = new ArrayList<>();
+        List<Double> digitalStockBalances = new ArrayList<>();
+        List<Double> digitalStakingBalances = new ArrayList<>();
+
+        for (EntityAccount entityAccount : entityAccounts) {
+            EntityAccount cachedAccount = cache.get(entityAccount.getAccount());
+
+            if (cachedAccount != null) {
+                // Обновить существующую запись в кэше
+                cachedAccount.setDigitalDollarBalance(entityAccount.getDigitalDollarBalance());
+                cachedAccount.setDigitalStockBalance(entityAccount.getDigitalStockBalance());
+            } else {
+                // Добавить новую запись для пакетного обновления
+                accounts.add(entityAccount.getAccount());
+                digitalDollarBalances.add(entityAccount.getDigitalDollarBalance());
+                digitalStockBalances.add(entityAccount.getDigitalStockBalance());
+                digitalStakingBalances.add(entityAccount.getDigitalStakingBalance());
+            }
+
+            // Сохранить в кэш для потенциального обновления
+            cache.put(entityAccount.getAccount(), entityAccount);
+        }
+
+        // Пакетное обновление
+        accountService.batchInsert(accounts, digitalDollarBalances, digitalStockBalances, digitalStakingBalances);
+
+        // Обновить кэш с новыми данными (необязательно, зависит от логики)
+        for (EntityAccount entityAccount : entityAccounts) {
+            cache.put(entityAccount.getAccount(), entityAccount);
+        }
 
     }
 

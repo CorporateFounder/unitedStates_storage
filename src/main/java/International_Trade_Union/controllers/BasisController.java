@@ -47,6 +47,9 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 
 @RestController
 public class BasisController {
+    @Autowired
+    BlockService blockService;
+
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
     //список всех победителей
@@ -162,8 +165,7 @@ public class BasisController {
     @Autowired
     Tournament tournament;
 
-    @Autowired
-    BlockService blockService;
+
 
     @Autowired
     UtilsAddBlock utilsAddBlock;
@@ -446,14 +448,17 @@ public class BasisController {
                         Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
             }
 
-            balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-            if (balances.isEmpty()) {
-                Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-            } else {
-                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-
-            }
+//            balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+//            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+//            if (balances.isEmpty()) {
+//                Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+////                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+//                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+//            } else {
+////                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+//                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+//
+//            }
 
 
         } catch (NoSuchAlgorithmException e) {
@@ -487,6 +492,8 @@ public class BasisController {
     @ResponseBody
     public Integer sizeBlockchain() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, InterruptedException, CloneNotSupportedException {
 //        System.out.println("start /size");
+
+
         if (blockcheinSize == 0) {
             System.out.println("blockchain is 0 blockchainSize " + blockcheinSize);
 //
@@ -612,6 +619,11 @@ public class BasisController {
         System.out.println("start  save in addBlock");
         List<String> signs = new ArrayList<>();
 
+        if(balances == null || balances.isEmpty()){
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+
+        }
+
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
         List<EntityBlock> entityBlocks = new ArrayList<>();
         for (Block block : orignalBlocks) {
@@ -654,16 +666,21 @@ public class BasisController {
     @GetMapping("/balance")
     @ResponseBody
     public Account getBalance(@RequestParam String address) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        if (balances.isEmpty()) {
-            Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+        if (balances == null ||balances.isEmpty()) {
+//            Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+//            balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+            balances  = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
         }
+
         return balances.get(address);
     }
 
     public static void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        if(balances == null || balances.isEmpty()){
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
 
+        }
         List<EntityBlock> list = new ArrayList<>();
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
@@ -770,6 +787,10 @@ public class BasisController {
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         try {
+            if(balances == null || balances.isEmpty()){
+                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+
+            }
 
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
             System.out.println("isSave: " + isSaveFile);
@@ -862,7 +883,7 @@ public class BasisController {
                     Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
 
                 List<String> sign = new ArrayList<>();
-                Map<String, Account> tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");

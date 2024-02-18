@@ -28,6 +28,9 @@ public class TournamentService {
     UtilsAddBlock utilsAddBlock;
 
     @Autowired
+    UtilsResolving utilsResolving;
+
+    @Autowired
     BlockService blockService;
     private List<Block> winnerDiff = new ArrayList<>();
     private List<Block> winnerCountTransaction = new ArrayList<>();
@@ -77,7 +80,7 @@ public class TournamentService {
     @Transactional
     public void tournament() {
 
-        long timestamp = UtilsTime.getUniversalTimestampSecond();
+        long timestamp = UtilsTime.getUniversalTimestamp();
         try {
 
             if (timestamp % Seting.TIME_TOURNAMENT_SECOND == 0) {
@@ -92,7 +95,8 @@ public class TournamentService {
                 System.out.println("tournament: winner: " + winner.size());
                 Map<String, Account> balances = null;
 
-                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+//                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
+                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
                 BasisController.setIsSaveFile(false);
                 List<Block> list = BasisController.getWinnerList();
                 list = list.stream()
@@ -212,7 +216,9 @@ public class TournamentService {
 
                 System.out.println("save winner: " + winner.size() + " balances: " + balances.size());
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-                utilsAddBlock.addBlock2(winner, balances);
+//                utilsAddBlock.addBlock2(winner, balances);
+                utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
 
 
                 //Добавляет мета данные в статическую переменную.

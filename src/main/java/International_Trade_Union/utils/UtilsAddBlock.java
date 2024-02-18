@@ -32,12 +32,16 @@ public class UtilsAddBlock {
     @Autowired
     BlockService blockService;
 
+
     public BlockService getBlockService() {
         return blockService;
     }
 
     public  void addBlock2(List<Block> originalBlocks, Map<String, Account> balances) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
 
+        //TODO найти различия после calculate Balance, после произсвести
+        //TODO сделать запись только те которые изменились.
+        Map<String, Account> prevBalances = UtilsUse.balancesClone(balances);
 
         System.out.println(" addBlock2 start: ");
 
@@ -58,29 +62,32 @@ public class UtilsAddBlock {
 
         }
 
+
         blockService.getEntityBlockRepository().saveAll(entityBlocks);
 
 //        List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
 //                .accountsToEntityAccounts(balances);
 //        blockService.getEntityAccountRepository().saveAll(entityBalances);
-        List<EntityAccount> entityAccounts = new ArrayList<>();
-        for (Map.Entry<String, Account> accountEntry : balances.entrySet()) {
-            if(accountEntry.getValue().getAccount() != null || !accountEntry.getValue().getAccount().isBlank()){
-                EntityAccount temp = BlockService.entityAccount(accountEntry.getValue().getAccount());
-                if(temp != null){
-                    temp.setDigitalDollarBalance(accountEntry.getValue().getDigitalDollarBalance());
-                    temp.setDigitalStockBalance(accountEntry.getValue().getDigitalStockBalance());
-                    temp.setDigitalStakingBalance(accountEntry.getValue().getDigitalStakingBalance());
-                    entityAccounts.add(temp);
-                }else {
-                    temp = UtilsAccountToEntityAccount.account(accountEntry.getValue());
-                    entityAccounts.add(temp);
-                }
+//        List<EntityAccount> entityAccounts = new ArrayList<>();
 
-            }
-
-        }
-        BlockService.saveAccountAll(entityAccounts);
+        //TODO найти решение для оптимизации
+//        for (Map.Entry<String, Account> accountEntry : balances.entrySet()) {
+//            if(accountEntry.getValue().getAccount() != null || !accountEntry.getValue().getAccount().isBlank()){
+//                EntityAccount temp = BlockService.entityAccount(accountEntry.getValue().getAccount());
+//                if(temp != null){
+//                    temp.setDigitalDollarBalance(accountEntry.getValue().getDigitalDollarBalance());
+//                    temp.setDigitalStockBalance(accountEntry.getValue().getDigitalStockBalance());
+//                    temp.setDigitalStakingBalance(accountEntry.getValue().getDigitalStakingBalance());
+//                    entityAccounts.add(temp);
+//                }else {
+//                    temp = UtilsAccountToEntityAccount.account(accountEntry.getValue());
+//                    entityAccounts.add(temp);
+//                }
+//
+//            }
+//
+//        }
+//        BlockService.saveAccountAll(entityAccounts);
 
         Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
         SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);

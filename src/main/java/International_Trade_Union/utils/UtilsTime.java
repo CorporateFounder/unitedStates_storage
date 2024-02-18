@@ -7,12 +7,14 @@ public class UtilsTime {
     public static long getUniversalTimestamp() {
         return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond() * 1000L;
     }
-    public static long getUniversalTimestampSecond() {
-        return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond() ;
-    }
+
 
     // Возвращает временную метку в текстовом формате UTC
     String getUniversalTimestampString() {
         return ZonedDateTime.now(ZoneOffset.UTC).toString();
+    }
+
+    public static long differentMillSecondTime(long first, long second){
+        return second - first;
     }
 }

@@ -7,6 +7,7 @@ import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.governments.Directors;
 import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.setings.Seting;
@@ -66,26 +67,28 @@ public class Mining {
         //start test
 
 
-        //папка чтобы проверить есть ли
-        File folder = new File(filename);
-        List<String> files = new ArrayList<>();
-        for (File file : folder.listFiles()) {
-            if(!file.isDirectory()){
-                files.add(file.getAbsolutePath());
-            }
-        }
-
-        if (files.size() > 0 ){
-            File file = new File(files.get(files.size()-1));
-            if(file.exists() && file.length() > 0){
-                balances = SaveBalances.readLineObject(filename);
-            }
-
-        }
-
+//        //папка чтобы проверить есть ли
+//        File folder = new File(filename);
+//        List<String> files = new ArrayList<>();
+//        for (File file : folder.listFiles()) {
+//            if(!file.isDirectory()){
+//                files.add(file.getAbsolutePath());
+//            }
+//        }
+//
+//        if (files.size() > 0 ){
+//            File file = new File(files.get(files.size()-1));
+//            if(file.exists() && file.length() > 0){
+//                balances = SaveBalances.readLineObject(filename);
+//            }
+//
+//        }
+//
+        balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
         if (balances == null) {
             balances = new HashMap<>();
         }
+
 
         Block block;
         if(blockchain != null && blockchain.sizeBlockhain() > 0){
