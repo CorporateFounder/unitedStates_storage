@@ -50,6 +50,7 @@ public class BasisController {
     @Autowired
     BlockService blockService;
 
+
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
     //список всех победителей
@@ -215,7 +216,23 @@ public class BasisController {
         BasisController.winnerList = winnerList;
     }
 
+    public static boolean utilsMethod() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        boolean result = false;
+        if (shortDataBlockchain.getSize() == 0
+                || !shortDataBlockchain.isValidation()
+                || shortDataBlockchain.getHashCount() == 0
+                || prevBlock == null) {
 
+            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
+
+            result = true;
+        }
+        return result;
+    }
     @GetMapping("/status")
     @ResponseBody
     public String status() throws JsonProcessingException {
@@ -376,19 +393,20 @@ public class BasisController {
 
         nodes = new HashSet<>();
 
-//        Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+        Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
 
-//        nodes.addAll(temporary);
+        nodes.addAll(temporary);
 
 
 //        nodes = nodes.stream()
 //                .filter(t -> !t.isBlank())
 //                .filter(t -> t.startsWith("\""))
 //                .collect(Collectors.toSet());
-//        nodes = nodes.stream().map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
-//        Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-//        nodes.removeAll(bloked);
+        nodes = nodes.stream()
+                .filter(t->!t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+        Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+        nodes.removeAll(bloked);
         nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
         nodes.addAll(Seting.ORIGINAL_ADDRESSES);
         return nodes;
@@ -397,8 +415,11 @@ public class BasisController {
     @GetMapping("/getNodes")
     public Set<String> getAllNodes() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+        System.out.println("getNodes: temporary: " + temporary);
         nodes.addAll(temporary);
+
         nodes.addAll(Seting.ORIGINAL_ADDRESSES);
+        System.out.println("getNodes: nodes: " + nodes);
         nodes = nodes.stream().filter(t -> t.startsWith("\""))
                 .collect(Collectors.toSet());
         Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);

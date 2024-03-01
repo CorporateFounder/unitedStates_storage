@@ -8,6 +8,8 @@ import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +34,8 @@ public class TournamentService {
 
     @Autowired
     BlockService blockService;
+
+
     private List<Block> winnerDiff = new ArrayList<>();
     private List<Block> winnerCountTransaction = new ArrayList<>();
     private List<Block> winnerStaking = new ArrayList<>();
@@ -86,6 +90,7 @@ public class TournamentService {
             if (timestamp % Seting.TIME_TOURNAMENT_SECOND == 0) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
+
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
                 winnerDiff = new ArrayList<>();
@@ -104,9 +109,11 @@ public class TournamentService {
                         .collect(Collectors.toList());
 
 
+
+                Thread.sleep(100);
                 if (list.isEmpty() || list.size() == 0)
                     return;
-
+                Thread.sleep(1000);
 
                 Map<String, Account> finalBalances = balances;
                 // Обеспечение наличия всех аккаунтов в finalBalances
@@ -219,8 +226,6 @@ public class TournamentService {
 //                utilsAddBlock.addBlock2(winner, balances);
                 utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-
-
                 //Добавляет мета данные в статическую переменную.
                 BasisController.setShortDataBlockchain(temp);
                 BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
@@ -231,9 +236,6 @@ public class TournamentService {
                 //берет последний блок, и добавляет его в статистическую переменную.
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
-
-
-
 
                 BasisController.setAllWiners(blockToLiteVersion(list, balances));
                 BasisController.setPowerWiners(blockToLiteVersion(winnerDiff, balances));
@@ -283,8 +285,76 @@ public class TournamentService {
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());
 
 
-                Thread.sleep(1000);
+
+
                 BasisController.setIsSaveFile(true);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (SignatureException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }  finally {
+
+            BasisController.setIsSaveFile(true);
+        }
+
+    }
+
+
+    public void updatingNodeEndBlocks() throws InterruptedException {
+        try {
+            long timestamp = UtilsTime.getUniversalTimestamp();
+            if(timestamp % Seting.TIME_UPDATING == 0){
+                System.out.println("start resolving ");
+                //TODO здесь будет скачиваться обновление
+                utilsResolving.resolve3();
+                //TODO отправка своего хоста
+                System.out.println("send my host");
+                Set<String> nodes = BasisController.getNodes();
+
+//                nodes.add("http://localhost:8085");
+                System.out.println("nodes: " + nodes);
+                System.out.println("my host: " + Seting.myhost);
+                UtilsAllAddresses.sendAddress(nodes);
+                //TODO отправка скачивание всех хостов
+                System.out.println("download host");
+                for (String s : BasisController.getNodes()) {
+                    try {
+                        Set<String> tempNode = UtilsJson.jsonToSetAddresses( UtilUrl.readJsonFromUrl(s + "/getNodes"));
+
+
+                        for (String s1 : tempNode) {
+                            System.out.println("put host: s1:  " + s1);
+                            UtilsAllAddresses.putHost(s1);
+                        }
+                    }
+                   catch (Exception e){
+                        e.printStackTrace();
+                        continue;
+                   }
+
+                }
+                System.out.println("finish download host");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -298,14 +368,10 @@ public class TournamentService {
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
             throw new RuntimeException(e);
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-
-            BasisController.setIsSaveFile(true);
+        }finally {
+            Thread.sleep(1000);
         }
+
 
     }
 }

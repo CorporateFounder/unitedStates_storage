@@ -1,6 +1,5 @@
 package International_Trade_Union.utils;
 
-import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.setings.Seting;
 
 import java.io.File;
@@ -72,12 +71,95 @@ public class UtilsAllAddresses {
             }
         }
 
-        allAddresses = allAddresses
-                .stream()
-                .collect(Collectors.toSet());
 
+
+        allAddresses = allAddresses.stream()
+                .map(address -> address.replace("\"", ""))
+                .collect(Collectors.toSet());
 
         return allAddresses;
     }
 
+    public static void sendAddress(Set<String> nodes) throws IOException {
+
+        for (String s : nodes) {
+            try{
+                String hostStr = s;
+                if(s.contains("\""))
+                    hostStr = s.replaceAll("\"", "");
+                UtilUrl.sendPost(UtilsJson.objToStringJson(Seting.myhost), hostStr + "/putNode");
+            }catch (Exception e){
+                e.printStackTrace();
+                continue;
+            }
+
+        }
+
+    }
+    public static void putNode(MyHost host){
+        try {
+            Set<String> myhosts = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+            Set<String> blocked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+
+
+            if (host != null
+                    && !host.getHost().isBlank()
+                    && !host.getHost().isEmpty()
+                    && HostValidator.isValidHost(host.getHost())) {
+                String hostStr = host.getHost();
+                if(host.getHost().contains("\""))
+                    hostStr = host.getHost().replaceAll("\"", "");
+                String sizeStr = UtilUrl.readJsonFromUrl(hostStr + "/size");
+                if (sizeStr.isBlank() || sizeStr.isEmpty()) {
+                    System.out.println("not added host: size is blank");
+                    return;
+                }
+                if(myhosts.contains(host.getHost()) || blocked.contains(host.getHost())){
+                    return;
+                }
+
+                UtilsAllAddresses.saveAllAddresses(host.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+                System.out.println("added host;");
+                return;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return;
+        }
+        System.out.println("not added host");
+        return ;
+    }
+    public static void putHost(String host){
+        try {
+            Set<String> myhosts = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+            Set<String> blocked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+
+            if (host != null
+                    && !host.isBlank()
+                    && !host.isEmpty()
+                    && HostValidator.isValidHost(host)) {
+
+                String hostStr = host;
+                if(host.contains("\""))
+                    hostStr = host.replaceAll("\"", "");
+
+                String sizeStr = UtilUrl.readJsonFromUrl(hostStr + "/size");
+                if (sizeStr.isBlank() || sizeStr.isEmpty()) {
+                    System.out.println("not added host: size is blank");
+                    return;
+                }
+                if(myhosts.contains(host) || blocked.contains(host)){
+                    return;
+                }
+
+                UtilsAllAddresses.saveAllAddresses(host, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+                System.out.println("added host: " + host);
+                return;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        System.out.println("not added host");
+        return ;
+    }
 }

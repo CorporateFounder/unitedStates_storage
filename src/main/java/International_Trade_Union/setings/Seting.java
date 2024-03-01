@@ -1,6 +1,7 @@
 package International_Trade_Union.setings;
 
 import International_Trade_Union.governments.Directors;
+import International_Trade_Union.utils.MyHost;
 import International_Trade_Union.utils.UtilsUse;
 
 
@@ -8,7 +9,7 @@ import java.util.Set;
 
 public interface Seting {
     boolean IS_TEST = true;
-    int TEST_DIFF = 167343;
+
     int TEST_ELECTION_DAY = 4;
     int TEST_ELECTION_CEO = 8;
 
@@ -182,7 +183,8 @@ public interface Seting {
     //сколько блоков добывается в сутки
     double COUNT_BLOCK_IN_DAY = (DAY_SECOND / BLOCK_TIME);
 
-    String testPath = IS_TEST? "D:/" :"";
+//    String testPath = IS_TEST? "D:/" :"";
+    String testPath = IS_TEST? "E:/" :"";
 
     String ORIGINAL_BLOCKCHAIN_FILE = testPath+"/resources/blockchain/";
     String ORIGINAL_BALANCE_FILE = testPath+"/resources/balance/";
@@ -304,4 +306,9 @@ public interface Seting {
     int TRANSACTION_WINNER = 55;
     int STAKING_WINNER = 55;
     double ONE_HUNDRED_THOUSAND = 100000;
+    int WAIGHT_MINING = 4;
+    long TIME_UPDATING = 150;
+
+    MyHost myhost = new MyHost("http://localhost:8085", "second pc", "general");
+//    MyHost myhost = new MyHost("http://localhost:8083", "first pc", "general");
 }

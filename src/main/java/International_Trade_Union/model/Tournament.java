@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class Tournament implements Runnable {
     @Autowired
     TournamentService tournament;
+
     @PostConstruct
     public void init() {
 
@@ -45,7 +46,9 @@ public class Tournament implements Runnable {
         while (true) {
             try {
                 List<Block> list = BasisController.getWinnerList();
-                if(list.isEmpty()){
+                tournament.updatingNodeEndBlocks();
+
+                if(list.isEmpty() || list.size() == 0){
                     BasisController.setIsSaveFile(true);
                     try {
                         Thread.sleep(1000);
