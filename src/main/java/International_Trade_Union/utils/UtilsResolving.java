@@ -32,6 +32,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.controllers.BasisController.getNodes;
@@ -71,6 +72,7 @@ public class UtilsResolving {
             //сортирует по приоритетности блокчейны
             Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
+            System.out.println("UtilsResolving: resolve3: sortPriorityHost: " + sortPriorityHost);
             for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
                 String s = hostEndDataShortB.getHost();
                 //if the local address matches the host address, it skips
@@ -82,7 +84,7 @@ public class UtilsResolving {
                 try {
                     //if the address is localhost, it skips
                     //если адрес локального хоста, он пропускает
-                    if (Seting.IS_TEST == false && (s.contains("localhost") || s.contains("127.0.0.1")))
+                    if (Seting.IS_TEST == false && (s.contains("localhost") || Seting.IS_TEST == false && s.contains("127.0.0.1")))
                         continue;
                     String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
                     Integer size = Integer.valueOf(sizeStr);
@@ -95,7 +97,7 @@ public class UtilsResolving {
 
 
                     String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
-                    System.out.println("jsonGlobalData: " + jsonGlobalData);
+                    System.out.println("jsonGlobalData: resolve3 " + jsonGlobalData);
                     DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
 //
                     //if the size from the storage is larger than on the local server, start checking
@@ -353,6 +355,9 @@ public class UtilsResolving {
                                 temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
                             }
 
+                            System.out.println("3: resove3: hostEndDataShortB: " + hostEndDataShortB.getDataShortBlockchainInformation());
+                            System.out.println("3: resove3: hostEndDataShortB: temp:  " + temp);
+                            System.out.println("3: isSmall: " + isSmall(hostEndDataShortB.getDataShortBlockchainInformation(), temp));
                             if(isSmall(hostEndDataShortB.getDataShortBlockchainInformation(), temp)){
                                 //TODO добавить хост в заблокированный файл
                                 System.out.println("-------------------------------------------------");
@@ -548,6 +553,7 @@ public class UtilsResolving {
             //вызывает методы, для сохранения списка блоков в текущий блокчейн,
             //так же записывает в базу h2, делает перерасчет всех балансов,
             //и так же их записывает, а так же записывает другие данные.
+            System.out.println("not new branch: " + subBlocks.size());
             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         }
 
@@ -762,7 +768,7 @@ public class UtilsResolving {
 
     }
 
-    public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) throws IOException, JSONException {
+    public List<HostEndDataShortB> sortPriorityHostOriginal(Set<String> hosts) throws IOException, JSONException {
         List<HostEndDataShortB> list = new ArrayList<>();
         System.out.println("start: sortPriorityHost: " + hosts);
         for (String s : hosts) {
@@ -811,6 +817,81 @@ public class UtilsResolving {
             result = false;
         }
         return result;
+    }
+    public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) {
+        List<CompletableFuture<HostEndDataShortB>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
+
+        // Вывод информации о начале метода
+        System.out.println("start: sortPriorityHost: " + hosts);
+
+        // Перебираем все хосты
+        for (String host : hosts) {
+            // Создаем CompletableFuture для каждого хоста
+            CompletableFuture<HostEndDataShortB> future = CompletableFuture.supplyAsync(() -> {
+                try {
+                    // Вызов метода для получения данных из источника
+                    DataShortBlockchainInformation global = fetchDataShortBlockchainInformation(host);
+                    // Если данные действительны, создаем объект HostEndDataShortB
+                    if (global != null && global.isValidation()) {
+                        return new HostEndDataShortB(host, global);
+                    }
+                } catch (IOException | JSONException e) {
+                    // Перехват и логирование ошибки
+                    logError("Error while retrieving data for host: " + host, e);
+                }
+                return null;
+            });
+
+            // Добавление CompletableFuture в список
+            futures.add(future);
+        }
+
+        // Получение CompletableFuture, которые будут завершены
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+        // Создание CompletableFuture для обработки завершенных результатов
+        CompletableFuture<List<HostEndDataShortB>> allComplete = allFutures.thenApplyAsync(result -> {
+            // Получение результатов из CompletableFuture, фильтрация недействительных результатов и сборка в список
+            return futures.stream()
+                    .map(CompletableFuture::join)
+                    .filter(result1 -> result1 != null)
+                    .collect(Collectors.toList());
+        });
+
+        // Получение итогового списка
+        List<HostEndDataShortB> resultList = allComplete.join();
+
+        // Сортировка списка по приоритету
+        Collections.sort(resultList, new HostEndDataShortBComparator());
+
+        // Вывод информации о завершении метода
+        System.out.println("finish: sortPriorityHost: " + resultList);
+
+        // Возвращение итогового списка
+        return resultList;
+    }
+
+    // Метод для получения данных из источника
+    private DataShortBlockchainInformation fetchDataShortBlockchainInformation(String host) throws IOException, JSONException {
+        // Загрузка JSON данных с URL
+        String jsonGlobalData = UtilUrl.readJsonFromUrl(host + "/datashort");
+        // Вывод загруженных данных
+        System.out.println("jsonGlobalData: " + jsonGlobalData);
+        // Преобразование JSON данных в объект
+        return UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
+    }
+
+    // Метод для логирования ошибки
+    private void logError(String message, Exception e) {
+        // Вывод ошибки и сообщения
+        System.out.println("-----------------------------------");
+        System.out.println("error: " + message);
+        // Вывод стека вызовов исключения
+        if (e != null) {
+//            e.printStackTrace();
+        }
+        // Завершение логирования
+        System.out.println("-----------------------------------");
     }
 
 }

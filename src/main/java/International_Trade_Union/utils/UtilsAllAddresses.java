@@ -73,9 +73,9 @@ public class UtilsAllAddresses {
 
 
 
-        allAddresses = allAddresses.stream()
-                .map(address -> address.replace("\"", ""))
-                .collect(Collectors.toSet());
+//        allAddresses = allAddresses.stream()
+//                .map(address -> address.replace("\"", ""))
+//                .collect(Collectors.toSet());
 
         return allAddresses;
     }
@@ -96,7 +96,11 @@ public class UtilsAllAddresses {
         }
 
     }
-    public static void putNode(MyHost host){
+    public static void putNode(MyHost host) {
+        //TODO test save
+        System.out.println("put host: " + host);
+
+
         try {
             Set<String> myhosts = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
             Set<String> blocked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
@@ -123,13 +127,22 @@ public class UtilsAllAddresses {
                 return;
             }
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println("---------------------------------------------------");
+            System.out.println("error putNode: ");
+//            e.printStackTrace();
+            System.out.println("---------------------------------------------------");
+
+
             return;
         }
         System.out.println("not added host");
         return ;
     }
-    public static void putHost(String host){
+    public static void putHost(String host) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        //TODO save test
+        System.out.println("put host: " + host);
+
+
         try {
             Set<String> myhosts = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
             Set<String> blocked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
@@ -157,7 +170,11 @@ public class UtilsAllAddresses {
                 return;
             }
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println("-----------------------------------");
+            System.out.println("error put host: ");
+//            e.printStackTrace();
+            System.out.println("-----------------------------------");
+
         }
         System.out.println("not added host");
         return ;

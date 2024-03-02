@@ -325,11 +325,11 @@ public class TournamentService {
         try {
             long timestamp = UtilsTime.getUniversalTimestamp();
             if(timestamp % Seting.TIME_UPDATING == 0){
-                System.out.println("start resolving ");
+                System.out.println("updatingNodeEndBlocks: start resolving ");
                 //TODO здесь будет скачиваться обновление
                 utilsResolving.resolve3();
                 //TODO отправка своего хоста
-                System.out.println("send my host");
+                System.out.println("updatingNodeEndBlocks: send my host");
                 Set<String> nodes = BasisController.getNodes();
 
 //                nodes.add("http://localhost:8085");
@@ -349,7 +349,8 @@ public class TournamentService {
                         }
                     }
                    catch (Exception e){
-                        e.printStackTrace();
+//                        e.printStackTrace();
+                       System.out.println("updatingNodeEndBlocks: host not worked: " + s);
                         continue;
                    }
 

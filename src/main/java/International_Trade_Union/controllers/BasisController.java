@@ -394,17 +394,21 @@ public class BasisController {
         nodes = new HashSet<>();
 
         Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+        System.out.println("//getNodes temporary nodes: " + temporary);
 
 
         nodes.addAll(temporary);
 
-
-//        nodes = nodes.stream()
-//                .filter(t -> !t.isBlank())
-//                .filter(t -> t.startsWith("\""))
-//                .collect(Collectors.toSet());
+        System.out.println("//getNodes  nodes: " + nodes);
+        nodes = nodes.stream()
+                .filter(t -> !t.isBlank())
+                .filter(t -> t.startsWith("\""))
+                .collect(Collectors.toSet());
+        System.out.println("//getNodes after filter: " + nodes);
         nodes = nodes.stream()
                 .filter(t->!t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+
+        System.out.println("//getNodes after filter: " + nodes);
         Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
         nodes.removeAll(bloked);
         nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
@@ -413,22 +417,35 @@ public class BasisController {
     }
 
     @GetMapping("/getNodes")
+    @ResponseBody
     public Set<String> getAllNodes() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        nodes = new HashSet<>();
+
         Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        System.out.println("getNodes: temporary: " + temporary);
+        System.out.println("//getNodes temporary nodes: " + temporary);
+
+
         nodes.addAll(temporary);
 
-        nodes.addAll(Seting.ORIGINAL_ADDRESSES);
-        System.out.println("getNodes: nodes: " + nodes);
-        nodes = nodes.stream().filter(t -> t.startsWith("\""))
+        System.out.println("//getNodes  nodes: " + nodes);
+        nodes = nodes.stream()
+                .filter(t -> !t.isBlank())
+                .filter(t -> t.startsWith("\""))
                 .collect(Collectors.toSet());
+
+        System.out.println("//getNodes after filter: " + nodes);
+        nodes = nodes.stream()
+                .filter(t->!t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+
+        System.out.println("//getNodes after filter: " + nodes);
         Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
         nodes.removeAll(bloked);
         nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
+        nodes.addAll(Seting.ORIGINAL_ADDRESSES);
         return nodes;
     }
 
-    public static Map<String, Integer> cheaters = new HashMap<>();
+
 
     static {
         try {
