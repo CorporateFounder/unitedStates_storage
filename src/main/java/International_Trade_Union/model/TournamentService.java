@@ -101,7 +101,7 @@ public class TournamentService {
                 Map<String, Account> balances = null;
 
 //                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                 BasisController.setIsSaveFile(false);
                 List<Block> list = BasisController.getWinnerList();
                 list = list.stream()
@@ -202,7 +202,7 @@ public class TournamentService {
                 List<String> sign = new ArrayList<>();
 
                 lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                        BlockService.findBySpecialIndexBetween(
+                        blockService.findBySpecialIndexBetween(
                                 (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
                                 prevBlock.getIndex() + 1
                         )
@@ -231,7 +231,7 @@ public class TournamentService {
                 BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
                 BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
 
-                EntityBlock entityBlock = BlockService.findBySpecialIndex(temp.getSize() - 1);
+                EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
                 System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
                 //берет последний блок, и добавляет его в статистическую переменную.
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);

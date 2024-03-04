@@ -210,6 +210,7 @@ public interface Seting {
 
     //адресса внешних сервисов
     Set<String> ORIGINAL_ADDRESSES = Set.of("http://194.87.236.238:80");
+//    Set<String> ORIGINAL_ADDRESSES = Set.of("http://localhost:8083");
     Set<String> ORIGINAL_BLOCKED_ADDRESS = Set.of("http://154.40.38.130:80",
             "http://10.0.36.2:80");
 

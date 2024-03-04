@@ -53,6 +53,7 @@ public class BasisController {
 
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
+    private static   boolean updating;
     //список всех победителей
     private static List<LiteVersionWiner> allWiners = new ArrayList<>();
     private static List<LiteVersionWiner> powerWiners = new ArrayList<>();
@@ -83,6 +84,13 @@ public class BasisController {
     }
     public static double totalDollars(){
         return totalDollars;
+    }
+
+    public static void setUpdating(boolean b) {
+        updating = b;
+    }
+    public static boolean getUpdating(){
+        return updating;
     }
 
     @GetMapping("/allwinners")
@@ -241,7 +249,7 @@ public class BasisController {
         String strBlockchainSize = "blockchainSize: " + getBlockcheinSize() + "\n";
         String isSaveFile = "isSaveFile: "+ isSaveFile() + "\n";
         String blockFromDb =
-               "blockFromDb: " +String.valueOf(BlockService.findBySpecialIndex(blockcheinSize-1))
+               "blockFromDb: " +String.valueOf(blockService.findBySpecialIndex(blockcheinSize-1))
                 + "\n";
         String blockFromFile = "*********************************\nblockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
                 + "\n";
@@ -597,7 +605,7 @@ public class BasisController {
 
 
             List<EntityBlock> entityBlocks =
-                    BlockService.findBySpecialIndexBetween(start, finish);
+                    blockService.findBySpecialIndexBetween(start, finish);
             blocksDb = UtilsBlockToEntityBlock.entityBlocksToBlocks(entityBlocks);
 
 //        return Blockchain.subFromFileBing(start,finish, Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -646,19 +654,19 @@ public class BasisController {
             index = blockcheinSize - 1;
         }
         return UtilsBlockToEntityBlock.entityBlockToBlock(
-                BlockService.findBySpecialIndex(index)
+                blockService.findBySpecialIndex(index)
         );
     }
 
 
-    public static void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+    public  void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start addBLock");
         isSave = false;
         System.out.println("start  save in addBlock");
         List<String> signs = new ArrayList<>();
 
         if(balances == null || balances.isEmpty()){
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         }
 
@@ -674,10 +682,10 @@ public class BasisController {
 
         }
 
-        BlockService.saveAllBlock(entityBlocks);
+        blockService.saveAllBlock(entityBlocks);
         List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
                 .accountsToEntityAccounts(balances);
-        BlockService.saveAccountAll(entityBalances);
+        blockService.saveAccountAll(entityBalances);
         System.out.println("finish save in addBlock");
         System.out.println("BasisController: addBlock: finish");
 
@@ -707,16 +715,16 @@ public class BasisController {
         if (balances == null ||balances.isEmpty()) {
 //            Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-            balances  = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+            balances  = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
         }
 
         return balances.get(address);
     }
 
-    public static void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public  void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         if(balances == null || balances.isEmpty()){
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         }
         List<EntityBlock> list = new ArrayList<>();
@@ -737,10 +745,10 @@ public class BasisController {
             allLaws = UtilsLaws.getLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
 
         }
-        BlockService.saveAllBlock(list);
+        blockService.saveAllBlock(list);
         List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
                 .accountsToEntityAccounts(balances);
-        BlockService.saveAccountAll(entityBalances);
+        blockService.saveAccountAll(entityBalances);
 
         Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
         SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
@@ -766,7 +774,7 @@ public class BasisController {
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
 
     }
-    public static void getBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public  void getBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         int size = 0;
 
 
@@ -787,7 +795,7 @@ public class BasisController {
 //        UtilsCreatedDirectory.createPackage(Seting.H2_DB+"db.mv.db");
 
         UtilsFileSaveRead.deleteFile(Seting.TEMPORARY_BLOCKCHAIN_FILE);
-        BlockService.deletedAll();
+        blockService.deletedAll();
         List<Block> list = new ArrayList<>();
 
         Map<String, Account> balances = new HashMap<>();
@@ -826,7 +834,7 @@ public class BasisController {
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         try {
             if(balances == null || balances.isEmpty()){
-                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
             }
 
@@ -890,7 +898,7 @@ public class BasisController {
 
                 if (prevBlock == null) {
 //                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize - 1);
+                    EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize - 1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                 }
                 if (shortDataBlockchain.getSize() == 0
@@ -907,7 +915,7 @@ public class BasisController {
 //                );
 
                 lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                        BlockService.findBySpecialIndexBetween(
+                        blockService.findBySpecialIndexBetween(
                                 (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
                                 prevBlock.getIndex() + 1
                         )
@@ -921,7 +929,7 @@ public class BasisController {
                     Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
 
                 List<String> sign = new ArrayList<>();
-                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -938,7 +946,7 @@ public class BasisController {
                     blockcheinSize = (int) shortDataBlockchain.getSize();
                     blockchainValid = shortDataBlockchain.isValidation();
 //                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
+                    EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                     String json = UtilsJson.objToStringJson(shortDataBlockchain);
                     UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
@@ -996,7 +1004,7 @@ public class BasisController {
                     System.out.println("after temp: " + temp);
 //                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-                    EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
+                    EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                     System.out.println("*************************************");
 
@@ -1015,13 +1023,13 @@ public class BasisController {
 
 //                prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            resolve_conflicts();
-                EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
+                EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                 isSaveFile = true;
                 throw new RuntimeException(e);
             } finally {
 //                prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
+                EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
 //            resolve_conflicts();
                 isSaveFile = true;
@@ -1032,7 +1040,7 @@ public class BasisController {
             e.printStackTrace();
 //            prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            resolve_conflicts();
-            EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
+            EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
             prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
             isSaveFile = true;
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
@@ -1166,7 +1174,7 @@ public class BasisController {
             @RequestParam int from,
             @RequestParam int to
     ) throws IOException {
-        return BlockService.findBySender(address, from, to);
+        return blockService.findBySender(address, from, to);
     }
 
 
@@ -1177,7 +1185,7 @@ public class BasisController {
             @RequestParam int from,
             @RequestParam int to
     ) throws IOException {
-        return BlockService.findByCustomer(address, from, to);
+        return blockService.findByCustomer(address, from, to);
     }
 
     @GetMapping("/senderCountDto")
@@ -1185,7 +1193,7 @@ public class BasisController {
     public long countSenderTransaction(
             @RequestParam String address
     ){
-        return BlockService.countSenderTransaction(address);
+        return blockService.countSenderTransaction(address);
     }
 
     @GetMapping("/customerCountDto")
@@ -1193,7 +1201,7 @@ public class BasisController {
     public long countCustomerTransaction(
             @RequestParam String address
     ){
-        return BlockService.countCustomerTransaction(address);
+        return blockService.countCustomerTransaction(address);
     }
 }
 

@@ -1,5 +1,6 @@
 package International_Trade_Union.utils;
 
+import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.setings.Seting;
 
 import java.io.File;
@@ -81,7 +82,9 @@ public class UtilsAllAddresses {
     }
 
     public static void sendAddress(Set<String> nodes) throws IOException {
-
+        if(BasisController.getUpdating() == false){
+            return;
+        }
         for (String s : nodes) {
             try{
                 String hostStr = s;
@@ -97,6 +100,9 @@ public class UtilsAllAddresses {
 
     }
     public static void putNode(MyHost host) {
+        if(BasisController.getUpdating() == false){
+            return;
+        }
         //TODO test save
         System.out.println("put host: " + host);
 
@@ -140,6 +146,9 @@ public class UtilsAllAddresses {
     }
     public static void putHost(String host) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //TODO save test
+        if(BasisController.getUpdating() == false){
+            return;
+        }
         System.out.println("put host: " + host);
 
 

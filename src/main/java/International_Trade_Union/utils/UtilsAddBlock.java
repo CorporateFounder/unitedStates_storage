@@ -117,7 +117,7 @@ public class UtilsAddBlock {
         List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
                 .accountsToEntityAccounts(balances);
         blockService.getEntityAccountRepository().saveAll(entityBalances);
-        BlockService.saveAccountAll(entityBalances);
+        blockService.saveAccountAll(entityBalances);
         System.out.println("finish save in addBlock");
         System.out.println("BasisController: addBlock: finish");
 

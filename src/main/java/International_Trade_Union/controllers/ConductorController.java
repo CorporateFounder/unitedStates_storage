@@ -57,7 +57,7 @@ public class ConductorController {
     @GetMapping("/account")
     public Account account(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
         Account account = UtilsBalance.getBalance(address, balances);
 
         return account;
@@ -69,7 +69,7 @@ public class ConductorController {
     @GetMapping("/dollar")
     public Double dollar(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-        Map<String, Account> balances =  balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+        Map<String, Account> balances =  balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
         Account account = UtilsBalance.getBalance(address, balances);
         return account.getDigitalDollarBalance();
     }
@@ -80,7 +80,7 @@ public class ConductorController {
     @GetMapping("/stock")
     public Double stock(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-        Map<String, Account>  balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
+        Map<String, Account>  balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
         Account account = UtilsBalance.getBalance(address, balances);
         return account.getDigitalStockBalance();
     }
@@ -220,7 +220,7 @@ public class ConductorController {
             index = BasisController.getBlockcheinSize() - 1;
         }
         return UtilsBlockToEntityBlock.entityBlockToBlock(
-                BlockService.findBySpecialIndex(index)
+                blockService.findBySpecialIndex(index)
         );
     }
 
@@ -228,10 +228,10 @@ public class ConductorController {
     @ResponseBody
     public DtoTransaction transaction(@RequestParam String hash) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         List<EntityDtoTransaction> entityDtoTransactions =
-                BlockService.findAllDto();
+                blockService.findAllDto();
         EntityDtoTransaction entityDtoTransaction = null;
         try {
-             entityDtoTransaction = BlockService.findBySign(hash);
+             entityDtoTransaction = blockService.findBySign(hash);
 
             if(entityDtoTransaction == null){
                 return null;
