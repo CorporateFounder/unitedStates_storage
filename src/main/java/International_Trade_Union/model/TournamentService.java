@@ -325,10 +325,14 @@ public class TournamentService {
         try {
             long timestamp = UtilsTime.getUniversalTimestamp();
             if(timestamp % Seting.TIME_UPDATING == 0){
+                System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
                 //TODO здесь будет скачиваться обновление
                 utilsResolving.resolve3();
+                System.out.println("finish updating --------------------------------------------");
+
                 //TODO отправка своего хоста
+                System.out.println("sending host --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: send my host");
                 Set<String> nodes = BasisController.getNodes();
 
@@ -336,7 +340,9 @@ public class TournamentService {
                 System.out.println("nodes: " + nodes);
                 System.out.println("my host: " + Seting.myhost);
                 UtilsAllAddresses.sendAddress(nodes);
+                System.out.println("finish sending host --------------------------------------------");
                 //TODO отправка скачивание всех хостов
+                System.out.println("download host --------------------------------------------");
                 System.out.println("download host");
                 for (String s : BasisController.getNodes()) {
                     try {
@@ -356,6 +362,8 @@ public class TournamentService {
 
                 }
                 System.out.println("finish download host");
+                System.out.println("download host --------------------------------------------");
+
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

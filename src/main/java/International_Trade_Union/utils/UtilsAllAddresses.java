@@ -74,22 +74,21 @@ public class UtilsAllAddresses {
 
 
 
-//        allAddresses = allAddresses.stream()
-//                .map(address -> address.replace("\"", ""))
-//                .collect(Collectors.toSet());
+        allAddresses = allAddresses.stream()
+                .map(address -> address.replace("\"", ""))
+                .collect(Collectors.toSet());
 
         return allAddresses;
     }
 
     public static void sendAddress(Set<String> nodes) throws IOException {
-        if(BasisController.getUpdating() == false){
-            return;
-        }
+
         for (String s : nodes) {
             try{
                 String hostStr = s;
                 if(s.contains("\""))
                     hostStr = s.replaceAll("\"", "");
+                System.out.println("send " + s +" my host: " + Seting.myhost);
                 UtilUrl.sendPost(UtilsJson.objToStringJson(Seting.myhost), hostStr + "/putNode");
             }catch (Exception e){
                 e.printStackTrace();
@@ -100,9 +99,7 @@ public class UtilsAllAddresses {
 
     }
     public static void putNode(MyHost host) {
-        if(BasisController.getUpdating() == false){
-            return;
-        }
+
         //TODO test save
         System.out.println("put host: " + host);
 
@@ -129,7 +126,7 @@ public class UtilsAllAddresses {
                 }
 
                 UtilsAllAddresses.saveAllAddresses(host.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-                System.out.println("added host;");
+                System.out.println("added host: " + host.getHost());
                 return;
             }
         }catch (Exception e){
@@ -144,11 +141,8 @@ public class UtilsAllAddresses {
         System.out.println("not added host");
         return ;
     }
-    public static void putHost(String host) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        //TODO save test
-        if(BasisController.getUpdating() == false){
-            return;
-        }
+    public static void putHost(String host)  {
+
         System.out.println("put host: " + host);
 
 
