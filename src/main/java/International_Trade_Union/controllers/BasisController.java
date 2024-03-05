@@ -436,10 +436,6 @@ public class BasisController {
         nodes.addAll(temporary);
 
         System.out.println("//getNodes  nodes: " + nodes);
-//        nodes = nodes.stream()
-//                .filter(t -> !t.isBlank())
-//                .filter(t -> t.startsWith("\""))
-//                .collect(Collectors.toSet());
 
         System.out.println("//getNodes after filter: " + nodes);
         nodes = nodes.stream()
