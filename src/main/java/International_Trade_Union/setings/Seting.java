@@ -309,7 +309,7 @@ public interface Seting {
     double ONE_HUNDRED_THOUSAND = 100000;
     int WAIGHT_MINING = 4;
 
-    int TIME_CHECK_BLOCK = 216107;
+    int TIME_CHECK_BLOCK = 261055; //221055
 
     long TIME_UPDATING = 150;
 

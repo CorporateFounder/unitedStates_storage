@@ -317,6 +317,7 @@ public class TournamentService {
                 node.remove(Seting.myhost.getHost());
                 for (String s : node) {
                     try {
+                        System.out.println("updating");
                         Set<String> tempNode = UtilsJson.jsonToSetAddresses( UtilUrl.readJsonFromUrl(s + "/getNodes"));
 
                         if (BasisController.getExcludedAddresses().contains(s) || s.equals(Seting.myhost.getHost())) {

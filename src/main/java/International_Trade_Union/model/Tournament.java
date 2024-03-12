@@ -41,14 +41,14 @@ public class Tournament implements Runnable {
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         System.out.println("tournament:");
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
+
 
 
         while (true) {
             try {
                 List<Block> list = BasisController.getWinnerList();
 
-                System.out.println("before updating");
+//                System.out.println("before updating");
                 tournament.updatingNodeEndBlocks();
                 if(list.isEmpty() || list.size() == 0){
                     BasisController.setIsSaveFile(true);
