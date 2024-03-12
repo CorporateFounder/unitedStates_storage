@@ -317,7 +317,10 @@ public class TournamentService {
                     try {
                         Set<String> tempNode = UtilsJson.jsonToSetAddresses( UtilUrl.readJsonFromUrl(s + "/getNodes"));
 
-
+                        if (BasisController.getExcludedAddresses().contains(s) || s.equals(Seting.myhost.getHost())) {
+                            System.out.println(":its your address or excluded address: " + s);
+                            continue;
+                        }
                         for (String s1 : tempNode) {
                             System.out.println("put host: s1:  " + s1);
                             UtilsAllAddresses.putHost(s1);
