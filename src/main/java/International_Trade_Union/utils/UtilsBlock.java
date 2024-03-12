@@ -22,6 +22,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.setings.Seting.IS_TEST;
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 
 public class UtilsBlock {
@@ -548,7 +549,7 @@ public class UtilsBlock {
                 return false;
             }
         } else if (thisBlock.getHashCompexity() >= Seting.V34_NEW_ALGO) {
-            if(thisBlock.getHashCompexity() < Seting.V34_MIN_DIFF){
+            if(Seting.IS_TEST == false && thisBlock.getHashCompexity() < Seting.V34_MIN_DIFF){
                 System.out.printf("your diff %d, less than it %d\n", thisBlock.getHashCompexity(),
                         Seting.V34_MIN_DIFF);
             }
@@ -582,6 +583,18 @@ public class UtilsBlock {
 
             if (previusblock.getIndex() + 1 != thisBlock.getIndex()) {
                 System.out.println("wrong index sequence");
+                return false;
+            }
+        }
+
+        long timeDifferenceSeconds = (thisBlock.getTimestamp().getTime() - previusblock.getTimestamp().getTime()) / 1000;
+
+        if(IS_TEST == false && thisBlock.getIndex() >= Seting.TIME_CHECK_BLOCK){
+            if (timeDifferenceSeconds < 100 || timeDifferenceSeconds >= 500) {
+                // Время thisBlock не соответствует условиям
+                System.out.println("----------------------------------------------");
+                System.out.println("wrong time different: " + timeDifferenceSeconds);
+                System.out.println("----------------------------------------------");
                 return false;
             }
         }

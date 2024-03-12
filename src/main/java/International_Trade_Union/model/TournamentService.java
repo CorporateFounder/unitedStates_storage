@@ -19,6 +19,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
@@ -42,6 +43,28 @@ public class TournamentService {
     private List<Block> winner = new ArrayList<>();
 
 
+    public static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list){
+        //TODO start test ---------------------------------------------------------
+        // Получение big random значения для блока
+        Function<Block, Integer> bigRandomValue = block -> bigRandomWinner(block, finalBalances.get(block.getMinerAddress()));
+
+// Создание компаратора с учетом big random, hashComplexity, staking и transactionCount
+        Comparator<Block> blockComparator = Comparator
+                .comparing(bigRandomValue, Comparator.reverseOrder()) // Сначала по bigRandom
+                .thenComparing(Block::getHashCompexity, Comparator.reverseOrder()) // Затем по hashComplexity
+                .thenComparing(block -> Optional.ofNullable(finalBalances.get(block.getMinerAddress()))
+                        .map(Account::getDigitalStakingBalance)
+                        .orElse(0.0), Comparator.reverseOrder()) // Затем по staking
+                .thenComparing(block -> block.getDtoTransactions().size(), Comparator.reverseOrder()); // И наконец, по количеству транзакций
+
+// Применение компаратора для сортировки списка
+        List<Block> sortedList = list.stream()
+                .sorted(blockComparator)
+                .collect(Collectors.toList());
+
+        return sortedList;
+        //TODO finish test ---------------------------------------------------------
+    }
     public static Block selectWinner(List<Block> candidates, Map<String, Account> list) {
         Block winner = null;
         int highestValue = 0;
@@ -84,12 +107,13 @@ public class TournamentService {
     @Transactional
     public void tournament() {
 
-        long timestamp = UtilsTime.getUniversalTimestamp();
+        long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
         try {
 
             if (timestamp % Seting.TIME_TOURNAMENT_SECOND == 0) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
+                long startTournament = UtilsTime.getUniversalTimestamp();
 
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
@@ -110,86 +134,27 @@ public class TournamentService {
 
 
 
-                Thread.sleep(100);
+
+
+//                Thread.sleep(100);
                 if (list.isEmpty() || list.size() == 0)
                     return;
-                Thread.sleep(1000);
+//                Thread.sleep(1000);
 
                 Map<String, Account> finalBalances = balances;
                 // Обеспечение наличия всех аккаунтов в finalBalances
                 list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, 0.0, 0.0, 0.0)));
 
-                Comparator<Block> comparator = Comparator
-                        .comparing(Block::getHashCompexity, Comparator.reverseOrder())
-                        .thenComparing(
-                                block -> Optional.ofNullable(finalBalances.get(block.getMinerAddress()))
-                                        .map(Account::getDigitalStakingBalance)
-                                        .orElse(0.0),
-                                Comparator.reverseOrder());
-                //Сначала отбираем 200 блоков с высокой сложностью.
-                //С уникальным хэш блока
-                List<Block> winnerDiff = list.stream()
-                        .filter(UtilsUse.distinctByKey(Block::getHashBlock))
-                        .sorted(comparator)
-                        .filter(t -> t.getHashCompexity() >= Seting.V34_MIN_DIFF)
-                        .limit(Seting.POWER_WINNER)
-                        .collect(Collectors.toList());
+               List<Block> winnerList = new ArrayList<>();
 
-
-                 comparator = (Block t1, Block t2) -> {
-                    int sizeComparison = Integer.compare(t2.getDtoTransactions().size(), t1.getDtoTransactions().size());
-                    if (sizeComparison != 0) {
-                        return sizeComparison;
-                    } else {
-                        double stakingBalance1 = Optional.ofNullable(finalBalances.get(t1.getMinerAddress()))
-                                .map(Account::getDigitalStakingBalance)
-                                .orElse(0.0);
-                        double stakingBalance2 = Optional.ofNullable(finalBalances.get(t2.getMinerAddress()))
-                                .map(Account::getDigitalStakingBalance)
-                                .orElse(0.0);
-                        return Double.compare(stakingBalance2, stakingBalance1);
-                    }
-                };
-
-                winnerCountTransaction = winnerDiff.stream()
-                        .sorted(comparator)
-                        .limit(Seting.TRANSACTION_WINNER)
-                        .collect(Collectors.toList());
+                winnerList = sortWinner(finalBalances, list);
 
 
 
-                Map<String, Account> tempBalances = new HashMap<>();
-                // Пройдемся по списку пар ключ-значение
-                for (Block entry : winnerCountTransaction) {
-                    // Если номер счета из списка строк является ключом в карте, добавим аккаунт в список
-                    if (balances.containsKey(entry.getMinerAddress())) {
-                        tempBalances.put(entry.getMinerAddress(), balances.get(entry.getMinerAddress()));
-                    }else {
-                        Account miner = new Account(entry.getMinerAddress(), 0, 0, 0);
-                        tempBalances.put(entry.getMinerAddress(), miner);
-                    }
-                }
-
-                //создает карту из 55 счетов с наибольшим стэйкингом.
-                tempBalances = tempBalances.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue(Comparator.comparing(Account::getDigitalStakingBalance).reversed()))
-                        .limit(Seting.STAKING_WINNER)
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-                //создает список 50 с наибольшим стэйкингом
-                for (Block block : winnerCountTransaction) {
-                    if (tempBalances.containsKey(block.getMinerAddress())) {
-                        winnerStaking.add(block);
-                    }
-
-                }
 
                 Block prevBlock = BasisController.prevBlock();
-                winnerStaking = winnerStaking.stream().sorted(Comparator.comparing(Block::getHashBlock))
-                        .collect(Collectors.toList());
-                //случайный выбор победителя.
-                ;
-                winner.add(selectWinner(winnerStaking, finalBalances));
+
+                winner.add(winnerList.get(0));
                 if(winner.size() == 0 || winner == null){
                     System.out.println("--------------------------------------------");
 
@@ -209,6 +174,7 @@ public class TournamentService {
                 );
 
 
+                Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
                 //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
 
@@ -223,7 +189,6 @@ public class TournamentService {
 
                 System.out.println("save winner: " + winner.size() + " balances: " + balances.size());
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-//                utilsAddBlock.addBlock2(winner, balances);
                 utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
                 //Добавляет мета данные в статическую переменную.
@@ -237,12 +202,14 @@ public class TournamentService {
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
 
-                BasisController.setAllWiners(blockToLiteVersion(list, balances));
-                BasisController.setPowerWiners(blockToLiteVersion(winnerDiff, balances));
-                BasisController.setCountTransactionsWiner(blockToLiteVersion(winnerCountTransaction, balances));
-                BasisController.setStakingWiners(blockToLiteVersion(winnerStaking, balances));
+                BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+
+
+                BasisController.setCountTransactionsWiner(blockToLiteVersion(new ArrayList<>(), balances));
+                BasisController.setStakingWiners(blockToLiteVersion(new ArrayList<>(), balances));
                 BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
 
+                BasisController.setPowerWiners(blockToLiteVersion(new ArrayList<>(), balances));
                 if(winner.get(0).getIndex() % 576 == 0){
                     BasisController.setTotalTransactionsDays(0);
                     BasisController.setTotalTransactionsSumDllar(0);
@@ -286,9 +253,14 @@ public class TournamentService {
 
 
 
-
+                System.out.println("___________________________________________________");
+                long finishTournament = UtilsTime.getUniversalTimestamp();
+                System.out.println("finish time: " + UtilsTime.differentMillSecondTime(startTournament, finishTournament));
+                System.out.println("___________________________________________________");
                 BasisController.setIsSaveFile(true);
             }
+
+
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -310,9 +282,6 @@ public class TournamentService {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
         }  finally {
 
             BasisController.setIsSaveFile(true);
@@ -323,7 +292,7 @@ public class TournamentService {
 
     public void updatingNodeEndBlocks() throws InterruptedException {
         try {
-            long timestamp = UtilsTime.getUniversalTimestamp();
+            long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
             if(timestamp % Seting.TIME_UPDATING == 0){
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
@@ -377,8 +346,6 @@ public class TournamentService {
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
             throw new RuntimeException(e);
-        }finally {
-            Thread.sleep(1000);
         }
 
 

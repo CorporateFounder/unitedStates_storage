@@ -89,7 +89,7 @@ public class BlockService {
     public  void deleteEntityBlocksAndRelatedData(Long threshold) {
         Session session = entityManager.unwrap(Session.class);
         session.setJdbcBatchSize(50);
-        entityBlockRepository.deleteBySpecialIndexGreaterThanOrEqualTo(threshold);
+        entityBlockRepository.deleteAllBySpecialIndexGreaterThanEqual(threshold);
         entityBlockRepository.flush();
         session.clear();
     }
@@ -135,6 +135,7 @@ public class BlockService {
         entityAccountRepository.save(entityAccount);
         entityAccountRepository.flush();
     }
+
 
 
 

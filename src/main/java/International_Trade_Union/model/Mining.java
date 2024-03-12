@@ -54,6 +54,7 @@ public class Mining {
 
     public static void setCustomDiff(int customDiff) {
         customDiff = customDiff < Seting.V34_MIN_DIFF? Seting.V34_MIN_DIFF: customDiff;
+
         Mining.customDiff = customDiff;
     }
 

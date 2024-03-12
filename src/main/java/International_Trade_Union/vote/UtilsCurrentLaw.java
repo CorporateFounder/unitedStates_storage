@@ -1,13 +1,8 @@
 package International_Trade_Union.vote;
 
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
-import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.governments.Director;
-import International_Trade_Union.governments.Directors;
-import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.model.Account;
-import International_Trade_Union.model.FIndPositonHelperData;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -19,17 +14,24 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class UtilsCurrentLaw {
     //подсчет по штучно баланса
     public static Map<String, CurrentLawVotes> calculateVote(Map<String, CurrentLawVotes> votes, List<Account> governments, Block block) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         Base base = new Base58();
         List<String> signs = new ArrayList<>();
+
+
+
+        System.out.println("calculate voting: index: " + block.getIndex());
         for (int j = 0; j < block.getDtoTransactions().size(); j++) {
+
             DtoTransaction transaction = block.getDtoTransactions().get(j);
+
+
             if(signs.contains(transaction.getSign())){
-                System.out.println("this transaction signature has already been used and is not valid");
+                System.out.println("this transaction signature has already been used and is not valid: sender: "
+                + transaction.getSender() + " customer: " + transaction.getCustomer());
                 continue;
             }
             else {
@@ -134,231 +136,4 @@ public class UtilsCurrentLaw {
 
 
 
-    //возвращает списки позиций
-    public static Map<Director, List<String>> findPositions(
-
-            Map<String, Account> balances,
-            Blockchain blockchain,
-            List<LawEligibleForParliamentaryApproval> allGovernment,
-            List<Account> BoardOfShareholders,
-            Map<Director, FIndPositonHelperData> fIndPositonHelperData
-
-    ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        //список должностей
-        Directors directors = new Directors();
-        Map<Director, List<LawEligibleForParliamentaryApproval>> positionsListMap = new HashMap<>();
-        //добавление всех должностей
-        for (Director higherSpecialPositions : directors.getDirectors()) {
-            positionsListMap.put(higherSpecialPositions, UtilsLaws.getPossions(allGovernment, higherSpecialPositions));
-        }
-        //список законов с голосами
-        Map<Director, List<CurrentLawVotesEndBalance>> curentLawVotesEndBalance = new HashMap<>();
-        for (Map.Entry<Director, List<LawEligibleForParliamentaryApproval>> corp : positionsListMap.entrySet()) {
-            //убрать повторяющиеся должности из списка.
-            corp.setValue(corp.getValue().stream()
-//                    .filter(t-> finalBoardOfShareholders.contains(new Account(t.getLaws().getLaws().get(0), 0, 0)))
-                    .distinct().collect(Collectors.toList()));
-
-            //получить баланс и голоса для действующих законов
-            curentLawVotesEndBalance.put(corp.getKey(), UtilsGovernment.filters(corp.getValue(), balances, BoardOfShareholders,
-                    blockchain.getBlockchainList(), Seting.CHECK_ELECTION));
-            List<CurrentLawVotesEndBalance> temporary;
-            if (fIndPositonHelperData.get(corp.getKey()).isElectedWithStock()) {
-
-
-                //отобрать голоса выше лимита
-                curentLawVotesEndBalance.put(corp.getKey(), curentLawVotesEndBalance.get(corp.getKey()));
-                List<CurrentLawVotesEndBalance> electedByStock =
-                        curentLawVotesEndBalance.get(corp.getKey())
-                                .stream()
-                                .filter(t->directors.isElectedByStocks(t.getPackageName()))
-                                .filter(t -> t.getVotes() >= Seting.ORIGINAL_LIMIT_MIN_VOTE)
-                                .sorted(Comparator.comparing(CurrentLawVotesEndBalance::getVotes).reversed())
-                                .limit(corp.getKey().getCount())
-                                .collect(Collectors.toList());
-
-                System.out.println("UtilsCurrentLaw: findPostion: ");
-                System.out.println("*******************************");
-                electedByStock.stream().forEach(System.out::println);
-                System.out.println("*******************************");
-
-                //отобрать то количество которое соответсвтвует данной должности
-                temporary = electedByStock;
-
-            } else {
-
-                curentLawVotesEndBalance.put(corp.getKey(), curentLawVotesEndBalance.get(corp.getKey()));
-                //отобрать то количество которое соответсвтвует данной должности
-                //избираемые премьер министром
-                if(fIndPositonHelperData.get(corp.getKey()).isElectedWithPrimeMinister()){
-                    //отобрать голоса выше лимита
-                    curentLawVotesEndBalance.put(corp.getKey(), curentLawVotesEndBalance.get(corp.getKey()));
-                    List<CurrentLawVotesEndBalance> electedByPrimeMinister =
-                            curentLawVotesEndBalance.get(corp.getKey())
-                                    .stream()
-                                    .filter(t->directors.isElectedCEO(t.getPackageName()))
-                                    .filter(t -> t.getVoteGeneralExecutiveDirector() >= Seting.ORIGINAL_LIMIT_MIN_VOTE_GENERAL_EXECUTIVE_DIRECTOR)
-                                    .sorted(Comparator.comparing(CurrentLawVotesEndBalance::getVoteGeneralExecutiveDirector).reversed())
-                                    .collect(Collectors.toList());
-
-
-                    //отобрать то количество которое соответсвтвует данной должности
-                    temporary = electedByPrimeMinister;
-                }
-                //избираемые палатой представителей
-                else if(fIndPositonHelperData.get(corp.getKey()).isElectedWithHousOfRepresentativies()){
-                    //отобрать голоса выше лимита
-                    curentLawVotesEndBalance.put(corp.getKey(), curentLawVotesEndBalance.get(corp.getKey()));
-                    List<CurrentLawVotesEndBalance> electedByHouseOfRepresentatives =
-                            curentLawVotesEndBalance.get(corp.getKey())
-                                    .stream()
-                                    .filter(t->directors.isElectedByFractions(t.getPackageName()))
-                                    .filter(t -> t.getFractionVote() >= Seting.ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS)
-                                    .sorted(Comparator.comparing(CurrentLawVotesEndBalance::getVotesBoardOfDirectors).reversed())
-                                    .collect(Collectors.toList());
-
-
-                    //отобрать то количество которое соответсвтвует данной должности
-                    temporary = electedByHouseOfRepresentatives;
-
-
-
-                }
-                //избираемые палатаой верховных судей
-                else if(fIndPositonHelperData.get(corp.getKey()).isElectedWithChamberOfHightJudjes()){
-                    //отобрать голоса выше лимита
-                    curentLawVotesEndBalance.put(corp.getKey(), curentLawVotesEndBalance.get(corp.getKey()));
-                    List<CurrentLawVotesEndBalance> electedByChamberOfSupremeJudges =
-                            curentLawVotesEndBalance.get(corp.getKey())
-                                    .stream()
-                                    .filter(t->directors.isElectedBYCorporateCouncilOfReferees(t.getPackageName()))
-                                    .filter(t -> t.getVotesCorporateCouncilOfReferees() >= Seting.ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES)
-                                    .sorted(Comparator.comparing(CurrentLawVotesEndBalance::getVotesCorporateCouncilOfReferees).reversed())
-                                    .collect(Collectors.toList());
-
-
-                    //отобрать то количество которое соответсвтвует данной должности
-                    temporary = electedByChamberOfSupremeJudges;
-
-                }
-                else {
-                    temporary = curentLawVotesEndBalance.get(corp.getKey()).stream()
-
-                            .collect(Collectors.toList());
-                }
-
-            }
-
-            temporary = temporary.stream().distinct().collect(Collectors.toList());
-
-            curentLawVotesEndBalance.put(corp.getKey(), temporary);
-        }
-
-
-        List<LawEligibleForParliamentaryApproval> lawEligibleForParliamentaryApprovals =
-                UtilsLaws.readLineCurrentLaws(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-
-        Map<Director, List<String>> currentPossitions = new HashMap<>();
-        for (Map.Entry<Director, FIndPositonHelperData> fIndPositonHelperData1 : fIndPositonHelperData.entrySet()) {
-            List<CurrentLawVotesEndBalance> position = curentLawVotesEndBalance.get(fIndPositonHelperData1.getKey());
-            //список адресов на данную позицию, пример члена палаты представителей
-            List<String> currntAddress = new ArrayList<>();
-            for (CurrentLawVotesEndBalance address : position) {
-                for (LawEligibleForParliamentaryApproval lawEligibleForParliamentaryApproval : lawEligibleForParliamentaryApprovals) {
-
-
-                    if (lawEligibleForParliamentaryApproval.getLaws().getHashLaw().equals(address.getAddressLaw())) {
-
-                        currntAddress.add(lawEligibleForParliamentaryApproval.getLaws().getLaws().get(0));
-
-                    }
-                }
-
-            }
-            currentPossitions.put(fIndPositonHelperData1.getKey(), currntAddress);
-
-        }
-
-
-        return currentPossitions;
-    }
-
-    //найти членов палаты представителей
-    //возвращает список позиций
-    public static List<String> findPosition(
-            Map<String, Account> balances,
-            Blockchain blockchain,
-            List<LawEligibleForParliamentaryApproval> allGovernment,
-            List<Account> BoardOfShareholders,
-            Directors positions,
-            boolean withLimit
-
-    ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        //список должностей
-
-        Map<Director, List<LawEligibleForParliamentaryApproval>> positionsListMap = new HashMap<>();
-        //добавление всех должностей
-        for (Director higherSpecialPositions : positions.getDirectors()) {
-            positionsListMap.put(higherSpecialPositions, UtilsLaws.getPossions(allGovernment, higherSpecialPositions));
-        }
-        //список законов с голосами
-        Map<Director, List<CurrentLawVotesEndBalance>> curentLawVotesEndBalance = new HashMap<>();
-        for (Map.Entry<Director, List<LawEligibleForParliamentaryApproval>> corp : positionsListMap.entrySet()) {
-            //убрать повторяющиеся должности из списка.
-            corp.setValue(corp.getValue().stream()
-//                    .filter(t-> finalBoardOfShareholders.contains(new Account(t.getLaws().getLaws().get(0), 0, 0)))
-                    .distinct().collect(Collectors.toList()));
-
-            //получить баланс и голоса для действующих законов
-            curentLawVotesEndBalance.put(corp.getKey(), UtilsGovernment.filters(corp.getValue(), balances, BoardOfShareholders,
-                    blockchain.getBlockchainList(), Seting.CHECK_ELECTION));
-            List<CurrentLawVotesEndBalance> temporary;
-            if (withLimit) {
-                //отобрать голоса выше лимита
-                curentLawVotesEndBalance.put(corp.getKey(), curentLawVotesEndBalance.get(corp.getKey())
-                        .stream().filter(t -> t.getVotes() >= Seting.ORIGINAL_LIMIT_MIN_VOTE)
-                        .collect(Collectors.toList()));
-
-                //отобрать то количество которое соответсвтвует данной должности
-                temporary = curentLawVotesEndBalance.get(corp.getKey()).stream()
-                        .filter(t -> !t.getPackageName().equals(corp.getKey()))
-                        .sorted(Comparator.comparing(CurrentLawVotesEndBalance::getVotes).reversed())
-                        .limit(corp.getKey().getCount()).collect(Collectors.toList());
-            } else {
-                //отобрать то количество которое соответсвтвует данной должности
-                temporary = curentLawVotesEndBalance.get(corp.getKey()).stream()
-                        .filter(t -> !t.getPackageName().equals(corp.getKey()))
-                        .sorted(Comparator.comparing(CurrentLawVotesEndBalance::getVotes).reversed())
-                        .collect(Collectors.toList());
-            }
-
-
-            curentLawVotesEndBalance.put(corp.getKey(), temporary);
-        }
-
-
-        List<LawEligibleForParliamentaryApproval> lawEligibleForParliamentaryApprovals =
-                UtilsLaws.readLineCurrentLaws(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-        //список адресов на данную позицию, пример члена палаты представителей
-        List<String> currntAddress = new ArrayList<>();
-
-        List<CurrentLawVotesEndBalance> position = curentLawVotesEndBalance.get(positions);
-
-        for (CurrentLawVotesEndBalance address : position) {
-            for (LawEligibleForParliamentaryApproval lawEligibleForParliamentaryApproval : lawEligibleForParliamentaryApprovals) {
-
-
-                if (lawEligibleForParliamentaryApproval.getLaws().getHashLaw().equals(address.getAddressLaw())) {
-
-                    currntAddress.add(lawEligibleForParliamentaryApproval.getLaws().getLaws().get(0));
-
-                }
-            }
-        }
-
-
-        return currntAddress;
-    }
 }

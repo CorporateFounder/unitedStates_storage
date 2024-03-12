@@ -8,7 +8,7 @@ import International_Trade_Union.utils.UtilsUse;
 import java.util.Set;
 
 public interface Seting {
-    boolean IS_TEST = true;
+    boolean IS_TEST = false;
 
     int TEST_ELECTION_DAY = 4;
     int TEST_ELECTION_CEO = 8;
@@ -209,8 +209,8 @@ public interface Seting {
 
 
     //адресса внешних сервисов
-    Set<String> ORIGINAL_ADDRESSES = Set.of("http://194.87.236.238:82");
-//    Set<String> ORIGINAL_ADDRESSES = Set.of("http://localhost:8083");
+    Set<String> ORIGINAL_ADDRESSES =  Set.of("http://194.87.236.238:82");
+//    Set<String> ORIGINAL_ADDRESSES = Set.of();
     Set<String> ORIGINAL_BLOCKED_ADDRESS = Set.of("http://154.40.38.130:80",
             "http://10.0.36.2:80");
 
@@ -299,7 +299,7 @@ public interface Seting {
 
     int V34_NEW_ALGO = 187200;
     double V34_MINING_REWARD = 0.2;
-    int V34_MIN_DIFF = 17;
+    int V34_MIN_DIFF = IS_TEST == true? 1: 17;
 
     int TIME_TOURNAMENT_SECOND = 100;
     String MAX_TARGET_v30 = "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
@@ -308,8 +308,10 @@ public interface Seting {
     int STAKING_WINNER = 55;
     double ONE_HUNDRED_THOUSAND = 100000;
     int WAIGHT_MINING = 4;
+
+    int TIME_CHECK_BLOCK = 216107;
+
     long TIME_UPDATING = 150;
 
-    MyHost myhost = new MyHost("http://localhost:8085", "second pc", "general");
-//    MyHost myhost = new MyHost("http://localhost:8083", "first pc", "general");
+    MyHost myhost = new MyHost("http://194.87.236.238:82", "founder server", "general");
 }

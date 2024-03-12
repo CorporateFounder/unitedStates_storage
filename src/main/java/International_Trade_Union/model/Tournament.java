@@ -46,21 +46,25 @@ public class Tournament implements Runnable {
         while (true) {
             try {
                 List<Block> list = BasisController.getWinnerList();
+
+
                 tournament.updatingNodeEndBlocks();
+
 
                 if(list.isEmpty() || list.size() == 0){
                     BasisController.setIsSaveFile(true);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        continue;
-                    }
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                        continue;
+//                    }
                     continue;
 
                 }
 
                 tournament.tournament();
+                tournament.updatingNodeEndBlocks();
             }catch (Exception e){
                 e.printStackTrace();
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());

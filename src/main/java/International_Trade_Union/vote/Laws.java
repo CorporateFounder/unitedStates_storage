@@ -37,26 +37,46 @@ public class Laws {
         boolean hash = false;
         boolean nameOriginal = false;
         boolean name = false;
+        boolean stringsOriginal = false;
+        boolean strings = false;
 
-        if(getHashLaw() == null || getHashLaw().isEmpty()){
+        if(getHashLaw() == null ){
             hashOriginal = true;
         }
-        if(laws.getHashLaw() == null || laws.getHashLaw().isEmpty()){
+        if(laws.getHashLaw() == null ){
             hash = true;
         }
-        if(getPacketLawName() == null || getPacketLawName().isEmpty()){
+        if(getPacketLawName() == null ){
             nameOriginal = true;
         }
-        if(laws.getPacketLawName() == null || laws.getPacketLawName().isEmpty()){
+        if(laws.getPacketLawName() == null){
             name = true;
         }
-        if(hashOriginal && hash && nameOriginal && name){
+
+        if(getLaws() == null){
+            stringsOriginal = true;
+        }
+        if(laws.getLaws() == null){
+            strings = true;
+        }
+        if(hashOriginal && hash && nameOriginal && name && stringsOriginal && strings){
             return true;
         }
-        if(!hashOriginal ^ !hash || !nameOriginal ^ !name){
+
+        if(!hashOriginal ^ !hash || !nameOriginal ^ !name || !stringsOriginal ^ !strings){
             return false;
         }
-        return getHashLaw().equals(laws.getHashLaw());
+
+
+
+
+        if(getHashLaw().equals(laws.getHashLaw())
+                && getPacketLawName().equals(laws.getPacketLawName())
+                && getLaws().equals(laws.getLaws())){
+            return true;
+        }else {
+            return false;
+        }
     }
 
 

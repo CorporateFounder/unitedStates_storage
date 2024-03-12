@@ -1,8 +1,8 @@
 package International_Trade_Union.vote;
 
 
-import lombok.Data;
 import International_Trade_Union.model.Account;
+import lombok.Data;
 
 import java.util.Objects;
 

@@ -76,7 +76,7 @@ public class UtilsResolving {
                 String s = hostEndDataShortB.getHost();
                 //if the local address matches the host address, it skips
                 //если локальный адрес совпадает с адресом хоста, он пропускает
-                if (BasisController.getExcludedAddresses().contains(s)) {
+                if (BasisController.getExcludedAddresses().contains(s) || s.equals(Seting.myhost.getHost())) {
                     System.out.println(":its your address or excluded address: " + s);
                     continue;
                 }
@@ -612,6 +612,8 @@ public class UtilsResolving {
         blockService.saveAccountAllF(accountList);
         long finishTime = UtilsTime.getUniversalTimestamp();
 
+        System.out.println("Utils Resolving: accounts:");
+        System.out.println("UtilsResolving: accountList.size: " + accountList.size() );
         System.out.println("UtilsResolving: rollBackAddBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(startTime, finishTime));
         System.out.println("UtilsResolving: rollBackAddBlock3: total different balance: " + tempBalances.size());
         System.out.println("UtilsResolving: rollBackAddBlock3: total original balance: " + balances.size());
@@ -1030,7 +1032,7 @@ public class UtilsResolving {
 
 
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-        List<EntityAccount> accountList = blockService.findByAccountIn(balances);
+        List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
         accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
 
@@ -1038,6 +1040,8 @@ public class UtilsResolving {
         blockService.saveAccountAllF(accountList);
         finish = UtilsTime.getUniversalTimestamp();
 
+        System.out.println("UtilsResolving: addBlock3: accounts: ");
+        System.out.println("UtilsResolving: addBlock3: accounts: size:  " + accountList.size());
         System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
         System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
