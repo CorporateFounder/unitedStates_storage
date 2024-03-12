@@ -48,16 +48,8 @@ public class Tournament implements Runnable {
             try {
                 List<Block> list = BasisController.getWinnerList();
 
-
-                if(timestamp % Seting.TIME_UPDATING == 0){
-                    try {
-                        System.out.println("updating");
-                        tournament.updatingNodeEndBlocks();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
+                System.out.println("before updating");
+                tournament.updatingNodeEndBlocks();
                 if(list.isEmpty() || list.size() == 0){
                     BasisController.setIsSaveFile(true);
 //                    try {
