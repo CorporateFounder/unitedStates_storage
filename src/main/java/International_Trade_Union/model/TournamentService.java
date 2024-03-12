@@ -313,7 +313,9 @@ public class TournamentService {
                 //TODO отправка скачивание всех хостов
                 System.out.println("download host --------------------------------------------");
                 System.out.println("download host");
-                for (String s : BasisController.getNodes()) {
+                Set<String> node = BasisController.getNodes();
+                node.remove(Seting.myhost.getHost());
+                for (String s : node) {
                     try {
                         Set<String> tempNode = UtilsJson.jsonToSetAddresses( UtilUrl.readJsonFromUrl(s + "/getNodes"));
 

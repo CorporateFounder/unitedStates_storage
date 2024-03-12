@@ -72,11 +72,13 @@ public class UtilsResolving {
             //сортирует по приоритетности блокчейны
             Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
+
+
             for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
                 String s = hostEndDataShortB.getHost();
                 //if the local address matches the host address, it skips
                 //если локальный адрес совпадает с адресом хоста, он пропускает
-                if (BasisController.getExcludedAddresses().contains(s) || s.equals(Seting.myhost.getHost())) {
+                if (BasisController.getExcludedAddresses().contains(s) ) {
                     System.out.println(":its your address or excluded address: " + s);
                     continue;
                 }
@@ -1121,8 +1123,14 @@ public class UtilsResolving {
         // Вывод информации о начале метода
         System.out.println("start: sortPriorityHost: " + hosts);
 
+
         // Перебираем все хосты
         for (String host : hosts) {
+
+            if(host.equals(Seting.myhost.getHost())){
+                System.out.println("sortPriorityHost: its my host: " + host);
+                continue;
+            }
             // Создаем CompletableFuture для каждого хоста
             CompletableFuture<HostEndDataShortB> future = CompletableFuture.supplyAsync(() -> {
                 try {
