@@ -206,9 +206,9 @@ public class BasisController {
 
     @GetMapping("/datashort")
     public DataShortBlockchainInformation dataShortBlockchainInformation(){
-        System.out.println("get /datashort");
+//        System.out.println("get /datashort");
         DataShortBlockchainInformation temp = shortDataBlockchain;
-        System.out.println("/datashort: " + temp);
+//        System.out.println("/datashort: " + temp);
         return temp;
     }
 
