@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 
+@Component
 public class Mining {
     @Autowired
     BlockService blockService;
@@ -54,7 +55,6 @@ public class Mining {
 
     public static void setCustomDiff(int customDiff) {
         customDiff = customDiff < Seting.V34_MIN_DIFF? Seting.V34_MIN_DIFF: customDiff;
-
         Mining.customDiff = customDiff;
     }
 
@@ -88,11 +88,11 @@ public class Mining {
 //
 //        }
 //
+
         balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
         if (balances == null) {
             balances = new HashMap<>();
         }
-
 
         Block block;
         if(blockchain != null && blockchain.sizeBlockhain() > 0){

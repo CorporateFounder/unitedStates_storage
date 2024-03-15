@@ -9,27 +9,16 @@ import java.util.Set;
 
 public interface Seting {
     boolean IS_TEST = false;
+    boolean IS_SECURITY = true;
 
-    int TEST_ELECTION_DAY = 4;
-    int TEST_ELECTION_CEO = 8;
-
-    // значение используется для вычисления процентов
     int HUNDRED_PERCENT = 100;
     // значение используется как константа года,
     // в данной системе отсутствует високосный год
-    //storage
-
-
     int YEAR = 360;
     int FIFTEEN_DAYS =  15;
 
 
     Directors directors = new Directors();
-
-
-    //фракционный голос минимум 15.0
-    double ORIGINAL_LIMIT_MIN_VOTE_FRACTIONS = 15.0;
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS = 10;
 
 
     //За какой период последних блоков учитывать для отбора акционеров.
@@ -56,7 +45,7 @@ public interface Seting {
 
     //Минимальное количество остатка голосов чтобы Совет Акционеров
     //утверждал вместе с остальными участниками в утверждении законов.
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_SHAREHOLDERS = 10; //100;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_SHAREHOLDERS = 57; //100;
 
     //голос Генерального Исполнительного Директора
     int ORIGINAL_LIMIT_MIN_VOTE_GENERAL_EXECUTIVE_DIRECTOR = 1;
@@ -121,8 +110,7 @@ public interface Seting {
     //бюджет должен формировать только палата представителей
     String BUDGET = "BUDGET";
     String EMISSION = "EMISSION";
-    //сколько голосов нужно
-    int LIMIT_VOTING_FOR_BUDJET_END_EMISSION = 300000;
+
     double EMISSION_BUDGET = 25000;
 
     //план также утверждается на четыре года и утверждается только палатой представителей
@@ -135,10 +123,10 @@ public interface Seting {
     //палата судей минимум 5 голосов
     int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES_AMENDMENT = 5;// 5;
     //палата представителей 20% голосов
-//    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS_AMENDMENT =
-//           directors.getDirector(NamePOSITION.BOARD_OF_DIRECTORS.toString()).getCount() * 20 / 100;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS_AMENDMENT =
+           75;
 
-    //Совет акционеров минимум 20% голосов
+    //Совет стэйкеров минимум 35% голосов
     int ORIGINAL_LIMIT_MINT_VOTE_BOARD_OF_SHAREHOLDERS_AMENDMENT = BOARD_OF_SHAREHOLDERS * 35 / 100;
 
 
@@ -164,10 +152,9 @@ public interface Seting {
     //которые не позже четырех лет для законов и должностей,
     //голоса отданные за законы должны обновляться каждые четыре года
     //как и за должности
-    int CHECK_ELECTION =  IS_TEST ? TEST_ELECTION_DAY: (int) Seting.COUNT_BLOCK_IN_DAY * YEAR * 2;
+    int CHECK_ELECTION = (int) (Seting.COUNT_BLOCK_IN_DAY * YEAR * 2);
     //подсчет голосов для законов в годах
-    int CHECK_ELECTION_CEO = IS_TEST? TEST_ELECTION_CEO:
-            (int) Seting.COUNT_BLOCK_IN_DAY * YEAR * 2 + (576 * 30);
+    int CHECK_ELECTION_CEO = (int) (Seting.COUNT_BLOCK_IN_DAY * YEAR * 2);
 
     //используется для утверждения бюджета и эмиссии
     int LAW_MONTH_VOTE = (int) (FIFTEEN_DAYS * Seting.COUNT_BLOCK_IN_DAY);

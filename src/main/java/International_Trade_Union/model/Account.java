@@ -99,7 +99,4 @@ public class Account implements Cloneable {
     public Account clone() throws CloneNotSupportedException {
         return new Account(account, digitalDollarBalance, digitalStockBalance, digitalStakingBalance);
     }
-
-
-
 }
