@@ -8,7 +8,7 @@ import International_Trade_Union.utils.UtilsUse;
 import java.util.Set;
 
 public interface Seting {
-    boolean IS_TEST = true;
+    boolean IS_TEST = false;
 
     int TEST_ELECTION_DAY = 4;
     int TEST_ELECTION_CEO = 8;
