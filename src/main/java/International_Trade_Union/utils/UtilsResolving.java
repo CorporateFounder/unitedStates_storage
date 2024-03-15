@@ -22,6 +22,7 @@ import International_Trade_Union.vote.UtilsLaws;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,8 +74,6 @@ public class UtilsResolving {
             //сортирует по приоритетности блокчейны
             Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
-
-
             for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
                 String s = hostEndDataShortB.getHost();
                 //if the local address matches the host address, it skips
@@ -689,6 +688,7 @@ public class UtilsResolving {
      */
 
 
+    @Transactional
     public void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
 
@@ -736,8 +736,6 @@ public class UtilsResolving {
         blockService.saveAccountAllF(accountList);
         finish = UtilsTime.getUniversalTimestamp();
 
-        System.out.println("UtilsResolving: addBlock3: accounts: ");
-        System.out.println("UtilsResolving: addBlock3: accounts: size:  " + accountList.size());
         System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
         System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());

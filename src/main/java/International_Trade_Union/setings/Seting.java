@@ -36,27 +36,23 @@ public interface Seting {
     //без необходимости правительства
     double ALL_STOCK_VOTE = 1.0;
 
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS =  57;
-
 
     //Минимальное значение чтобы Совет Корпоративных Верховных Судей могла избрать Верховного Судью
-    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = 2;
-
+    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES =  0;
 
 
     //Минимальное количество остатка голосов чтобы Совет Акционеров
     //утверждал вместе с остальными участниками в утверждении законов.
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_SHAREHOLDERS = 57; //100;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_SHAREHOLDERS = 100;  //100;
 
     //голос Генерального Исполнительного Директора
     int ORIGINAL_LIMIT_MIN_VOTE_GENERAL_EXECUTIVE_DIRECTOR = 1;
 
-    //фракционный голос минимум 15.0
 
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS =  57;
 
     //голос Верховного Судьи
     int ORIGINAL_LIMIT_MIN_VOTE_HIGHT_JUDGE = 1;
-
 
 
     //голос должностных лиц,
@@ -88,8 +84,8 @@ public interface Seting {
     //каждые сколько месяцев снимать
     int HALF_YEAR = 2;
 
-    //стоимость создания закона 5
-    double COST_LAW = 3;
+    //стоимость создания закона 0
+    double COST_LAW = 0;
     //с чего начинается адрес пакета закона
     //сокращенно корпорация
     String NAME_LAW_ADDRESS_START = "LIBER";
@@ -100,12 +96,11 @@ public interface Seting {
    int BOARD_OF_SHAREHOLDERS = 1500;
 
     //ПОПРАВКА В УСТАВЕ
-   //требования к поправкам
+    //требования к поправкам
     String AMENDMENT_TO_THE_CHARTER = "AMENDMENT_TO_THE_CHARTER";
 
     //директора созданные Советом директоров
     String ADD_DIRECTOR = "ADD_DIRECTOR_";
-
 
 
     //бюджет должен формировать только палата представителей
@@ -131,8 +126,6 @@ public interface Seting {
     int ORIGINAL_LIMIT_MINT_VOTE_BOARD_OF_SHAREHOLDERS_AMENDMENT = BOARD_OF_SHAREHOLDERS * 35 / 100;
 
 
-
-
     //    адресс основателя: здесь будет мой адрес. Сейчас заглушка
     String ADDRESS_FOUNDER_TEST = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
     String ADDRESS_FOUNDER = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
@@ -153,9 +146,9 @@ public interface Seting {
     //которые не позже четырех лет для законов и должностей,
     //голоса отданные за законы должны обновляться каждые четыре года
     //как и за должности
-    int CHECK_ELECTION = (int) (Seting.COUNT_BLOCK_IN_DAY * YEAR * 2);
+    int POSITION_YEAR_VOTE = (int) Seting.COUNT_BLOCK_IN_DAY * YEAR * 2;
     //подсчет голосов для законов в годах
-    int CHECK_ELECTION_CEO = (int) (Seting.COUNT_BLOCK_IN_DAY * YEAR * 2);
+    int LAW_YEAR_VOTE = (int) Seting.COUNT_BLOCK_IN_DAY * YEAR * 2;
 
     //используется для утверждения бюджета и эмиссии
     int LAW_MONTH_VOTE = (int) (FIFTEEN_DAYS * Seting.COUNT_BLOCK_IN_DAY);
@@ -217,7 +210,6 @@ public interface Seting {
     String TEST_ALL_FEDERAL_LAWS_WITH_BALANCE_FILE = "/src/test/java/unitted_states_of_mankind/resourceTestingFileSaved/allLawsWithBalance/";
 
 
-
     //Временный блокчейн для тестирования
     String TEST_LAST_BLOCK_TEMPORARY = "/src/test/java/unitted_states_of_mankind/resourceTestingFileWithoutSave/lastBlock/";
     String TEST_INDEX_TEMPORARY = "/src/test/java/unitted_states_of_mankind/resourceTestingFileWithoutSave/index/index.txt";
@@ -239,15 +231,22 @@ public interface Seting {
     double DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_STOCK_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
 
 
+    //каким количеством порций отправлять блоки
 
-
+    int DELETED_PORTION = 150;
+    int PORTION_DOWNLOAD = 500;
+    //for find cheater 51648
+    //after fork 24281
     int CHECK_UPDATING_VERSION = 24281;
+
+    //for find cheater 53391
+    //after fork 24281
     int NEW_START_DIFFICULT = 24281;
+    int CHANGE_MEET_DIFFICULTY = 24858;
+
 
     int NEW_CHECK_UTILS_BLOCK = 0;
     int SPECIAL_BLOCK_FORK = 24281;
-    int CHANGE_MEET_DIFFICULTY = 24858;
-
     int PORTION_BLOCK_TO_COMPLEXCITY = 600;
     //version
     int VERSION = 39;
@@ -262,7 +261,7 @@ public interface Seting {
     int TRANSACTIONS_COUNT_ADDED = 100;
     int COUNT_HASH_ZERO = 30446;
 
-    int PORTION_DOWNLOAD = 500;
+
 
     //изменение алгоритма добычи
     int V28_CHANGE_ALGORITH_DIFF_INDEX = 133750;
@@ -291,9 +290,7 @@ public interface Seting {
 
     int TIME_TOURNAMENT_SECOND = 100;
     String MAX_TARGET_v30 = "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
-    int POWER_WINNER = 65;
-    int TRANSACTION_WINNER = 55;
-    int STAKING_WINNER = 55;
+
     double ONE_HUNDRED_THOUSAND = 100000;
     int WAIGHT_MINING = 4;
 
