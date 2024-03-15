@@ -41,8 +41,8 @@ public class UtilUrl {
         URL url = new URL(requstStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 //        conn.connect();
-        conn.setReadTimeout(5000);
-        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(7000);
+        conn.setConnectTimeout(7000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");

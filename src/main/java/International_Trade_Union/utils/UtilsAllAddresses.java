@@ -100,8 +100,9 @@ public class UtilsAllAddresses {
     }
     public static void putNode(MyHost host) {
 
+        System.out.println("-----------------------------------------------------");
         //TODO test save
-        System.out.println("put host: " + host);
+        System.out.println("start testing host for put: " + host);
 
 
         try {
@@ -118,7 +119,7 @@ public class UtilsAllAddresses {
                     hostStr = host.getHost().replaceAll("\"", "");
                 String sizeStr = UtilUrl.readJsonFromUrl(hostStr + "/size");
                 if (sizeStr.isBlank() || sizeStr.isEmpty()) {
-                    System.out.println("not added host: size is blank");
+                    System.out.println("not added host: size is blank: " + sizeStr);
                     return;
                 }
                 if(myhosts.contains(host.getHost()) || blocked.contains(host.getHost())){
@@ -126,19 +127,26 @@ public class UtilsAllAddresses {
                 }
 
                 UtilsAllAddresses.saveAllAddresses(host.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-                System.out.println("added host: " + host.getHost());
+                System.out.println("___________________________________");
+                System.out.println("added host: " + host);
+                System.out.println("___________________________________");
+
                 return;
             }
         }catch (Exception e){
             System.out.println("---------------------------------------------------");
-            System.out.println("error putNode: ");
+            System.out.println("error putNode: " + host);
 //            e.printStackTrace();
             System.out.println("---------------------------------------------------");
 
 
             return;
+        }finally {
+            System.out.println("finish put");
+            System.out.println("-----------------------------------------------------");
+
         }
-        System.out.println("not added host");
+        System.out.println("not added host: " + host);
         return ;
     }
     public static void putHost(String host)  {

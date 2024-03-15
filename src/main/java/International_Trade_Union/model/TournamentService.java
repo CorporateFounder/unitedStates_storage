@@ -133,9 +133,6 @@ public class TournamentService {
                         .collect(Collectors.toList());
 
 
-
-
-
 //                Thread.sleep(100);
                 if (list.isEmpty() || list.size() == 0)
                     return;

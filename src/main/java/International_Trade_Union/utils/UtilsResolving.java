@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static International_Trade_Union.controllers.BasisController.getNodes;
 import static International_Trade_Union.controllers.BasisController.utilsMethod;
+import static International_Trade_Union.setings.Seting.RANDOM_HOSTS;
 import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 import static International_Trade_Union.utils.UtilsBalance.rollbackCalculateBalance;
 
@@ -812,24 +813,33 @@ public class UtilsResolving {
     }
 
     public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) {
+
+        // Добавляем ORIGINAL_ADDRESSES к входящему набору хостов
+        Set<String> modifiedHosts = new HashSet<>(hosts);
+        modifiedHosts.addAll(Seting.ORIGINAL_ADDRESSES);
+
+        // Отбираем случайные 10 хостов
+        Set<String> selectedHosts = modifiedHosts.stream()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        listHost -> {
+                            Collections.shuffle(listHost);
+                            return listHost.stream().limit(RANDOM_HOSTS).collect(Collectors.toSet());
+                        }
+                ));
+
+
         List<CompletableFuture<HostEndDataShortB>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
 
         // Вывод информации о начале метода
         System.out.println("start: sortPriorityHost: " + hosts);
 
-
         // Перебираем все хосты
         for (String host : hosts) {
-
-            if(host.equals(Seting.myhost.getHost())){
-                System.out.println("sortPriorityHost: its my host: " + host);
-                continue;
-            }
             // Создаем CompletableFuture для каждого хоста
             CompletableFuture<HostEndDataShortB> future = CompletableFuture.supplyAsync(() -> {
                 try {
                     // Вызов метода для получения данных из источника
-                    System.out.println("sortPriorityHost: ");
                     DataShortBlockchainInformation global = fetchDataShortBlockchainInformation(host);
                     // Если данные действительны, создаем объект HostEndDataShortB
                     if (global != null && global.isValidation()) {

@@ -8,7 +8,7 @@ import International_Trade_Union.utils.UtilsUse;
 import java.util.Set;
 
 public interface Seting {
-    boolean IS_TEST = false;
+    boolean IS_TEST = true;
 
     int TEST_ELECTION_DAY = 4;
     int TEST_ELECTION_CEO = 8;
@@ -210,7 +210,7 @@ public interface Seting {
 
     //адресса внешних сервисов
     Set<String> ORIGINAL_ADDRESSES =  Set.of("http://194.87.236.238:82");
-//    Set<String> ORIGINAL_ADDRESSES = Set.of();
+//    Set<String> ORIGINAL_ADDRESSES = Set.of("http://localhost:8083");
     Set<String> ORIGINAL_BLOCKED_ADDRESS = Set.of("http://154.40.38.130:80",
             "http://10.0.36.2:80");
 
@@ -309,10 +309,11 @@ public interface Seting {
     double ONE_HUNDRED_THOUSAND = 100000;
     int WAIGHT_MINING = 4;
 
-    int TIME_CHECK_BLOCK = 261055; //221055
+    int TIME_CHECK_BLOCK = 241055; //221055
 
     long TIME_UPDATING = 50;
-//    MyHost myhost = new MyHost("http://${server.address}:${server.port}", "founder server", "general");
-    MyHost myhost = new MyHost("http://194.87.236.238:82", "founder server", "general");
-//    MyHost myhost = new MyHost("http://localhost:8085", "foun/der server", "general");
+    MyHost myhost = new MyHost("http://${server.address}:${server.port}", "founder server", "general");
+//    MyHost myhost = new MyHost("http://194.87.236.238:82", "founder server", "general");
+int RANDOM_HOSTS = 10;
+//    MyHost myhost = new MyHost("http://localhost:8085", "founder server", "general");
 }
