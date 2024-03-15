@@ -22,19 +22,17 @@ public class UtilsCurrentLaw {
         List<String> signs = new ArrayList<>();
 
 
-
         System.out.println("calculate voting: index: " + block.getIndex());
         for (int j = 0; j < block.getDtoTransactions().size(); j++) {
 
             DtoTransaction transaction = block.getDtoTransactions().get(j);
 
 
-            if(signs.contains(transaction.getSign())){
+            if (signs.contains(transaction.getSign())) {
                 System.out.println("this transaction signature has already been used and is not valid: sender: "
-                + transaction.getSender() + " customer: " + transaction.getCustomer());
+                        + transaction.getSender() + " customer: " + transaction.getCustomer());
                 continue;
-            }
-            else {
+            } else {
                 signs.add(transaction.toSign());
 //                System.out.println("we added new sign transaction");
             }
@@ -66,8 +64,7 @@ public class UtilsCurrentLaw {
                         } else if (transaction.getVoteEnum().equals(VoteEnum.NO)) {
                             currentLawVotes.getNO().add(transaction.getSender());
                             currentLawVotes.getYES().remove(transaction.getSender());
-                        }
-                        else if(transaction.getVoteEnum().equals(VoteEnum.REMOVE_YOUR_VOICE)){
+                        } else if (transaction.getVoteEnum().equals(VoteEnum.REMOVE_YOUR_VOICE)) {
                             currentLawVotes.getNO().remove(transaction.getSender());
                             currentLawVotes.getYES().remove(transaction.getSender());
                         }
@@ -82,6 +79,7 @@ public class UtilsCurrentLaw {
         return votes;
 
     }
+
 
     //подсчет целиком баланса
     public static Map<String, CurrentLawVotes> calculateVotes(List<Account> governments, List<Block> blocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
@@ -133,7 +131,6 @@ public class UtilsCurrentLaw {
         }
         return voteAverage;
     }
-
 
 
 }

@@ -36,6 +36,7 @@ public interface Seting {
     //без необходимости правительства
     double ALL_STOCK_VOTE = 1.0;
 
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS =  57;
 
 
     //Минимальное значение чтобы Совет Корпоративных Верховных Судей могла избрать Верховного Судью

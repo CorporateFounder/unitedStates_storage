@@ -19,6 +19,7 @@ import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
 import International_Trade_Union.vote.VoteEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
