@@ -312,8 +312,8 @@ public interface Seting {
     int TIME_CHECK_BLOCK = 241055; //221055
 
     long TIME_UPDATING = 50;
-    MyHost myhost = new MyHost("http://${server.address}:${server.port}", "founder server", "general");
-//    MyHost myhost = new MyHost("http://194.87.236.238:82", "founder server", "general");
+//    MyHost myhost = new MyHost("http://${server.address}:${server.port}", "founder server", "general");
+    MyHost myhost = new MyHost("http://194.87.236.238:82", "founder server", "general");
 int RANDOM_HOSTS = 10;
 //    MyHost myhost = new MyHost("http://localhost:8085", "founder server", "general");
 }
