@@ -15,7 +15,7 @@ public interface Seting {
     // значение используется как константа года,
     // в данной системе отсутствует високосный год
     int YEAR = 360;
-    int FIFTEEN_DAYS =  15;
+    int FIFTEEN_DAYS = 15;
 
 
     Directors directors = new Directors();
@@ -38,7 +38,7 @@ public interface Seting {
 
 
     //Минимальное значение чтобы Совет Корпоративных Верховных Судей могла избрать Верховного Судью
-    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES =  0;
+    int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES = 0;
 
 
     //Минимальное количество остатка голосов чтобы Совет Акционеров
@@ -49,7 +49,7 @@ public interface Seting {
     int ORIGINAL_LIMIT_MIN_VOTE_GENERAL_EXECUTIVE_DIRECTOR = 1;
 
 
-    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS =  57;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS = 57;
 
     //голос Верховного Судьи
     int ORIGINAL_LIMIT_MIN_VOTE_HIGHT_JUDGE = 1;
@@ -93,7 +93,7 @@ public interface Seting {
     int HASH_COMPLEXITY_GENESIS = 1;
 
     //совет акционеров
-   int BOARD_OF_SHAREHOLDERS = 1500;
+    int BOARD_OF_SHAREHOLDERS = 1500;
 
     //ПОПРАВКА В УСТАВЕ
     //требования к поправкам
@@ -120,7 +120,7 @@ public interface Seting {
     int ORIGINAL_LIMIT_MIN_VOTE_CORPORATE_COUNCIL_OF_REFEREES_AMENDMENT = 5;// 5;
     //палата представителей 20% голосов
     int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS_AMENDMENT =
-           75;
+            75;
 
     //Совет стэйкеров минимум 35% голосов
     int ORIGINAL_LIMIT_MINT_VOTE_BOARD_OF_SHAREHOLDERS_AMENDMENT = BOARD_OF_SHAREHOLDERS * 35 / 100;
@@ -164,34 +164,34 @@ public interface Seting {
     //сколько блоков добывается в сутки
     double COUNT_BLOCK_IN_DAY = (DAY_SECOND / BLOCK_TIME);
 
-//    String testPath = IS_TEST? "D:/" :"";
-    String testPath = IS_TEST? "E:/" :"";
+    //    String testPath = IS_TEST? "D:/" :"";
+    String testPath = IS_TEST ? "E:/" : "";
 
-    String ORIGINAL_BLOCKCHAIN_FILE = testPath+"/resources/blockchain/";
-    String ORIGINAL_BALANCE_FILE = testPath+"/resources/balance/";
-    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = testPath+"/resources/federalGovernment/federalGovernment.txt";
-    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = testPath+"/resources/federalLaws/";
-    String ORIGINAL_ACCOUNT = testPath+"/resources/minerAccount/minerAccount.txt";
-    String ORIGINAL_CORPORATE_VOTE_FILE = testPath+"/resources/vote/";
+    String ORIGINAL_BLOCKCHAIN_FILE = testPath + "/resources/blockchain/";
+    String ORIGINAL_BALANCE_FILE = testPath + "/resources/balance/";
+    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = testPath + "/resources/federalGovernment/federalGovernment.txt";
+    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = testPath + "/resources/federalLaws/";
+    String ORIGINAL_ACCOUNT = testPath + "/resources/minerAccount/minerAccount.txt";
+    String ORIGINAL_CORPORATE_VOTE_FILE = testPath + "/resources/vote/";
 
-    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = testPath+"/resources/allLawsWithBalance/";
-    String ORGINAL_ALL_TRANSACTION_FILE = testPath+"/resources/transactions/";
+    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = testPath + "/resources/allLawsWithBalance/";
+    String ORGINAL_ALL_TRANSACTION_FILE = testPath + "/resources/transactions/";
 
-    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = testPath+"/resources/sendedTransaction/";
-    String ORIGINAL_POOL_URL_ADDRESS_FILE = testPath+"/resources/poolAddress/";
-    String ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE = testPath+"/resources/pooAddressBlocked/";
+    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = testPath + "/resources/sendedTransaction/";
+    String ORIGINAL_POOL_URL_ADDRESS_FILE = testPath + "/resources/poolAddress/";
+    String ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE = testPath + "/resources/pooAddressBlocked/";
 
-    String TEMPORARY_BLOCKCHAIN_FILE = testPath+"/resources/tempblockchain/shortBlockchain.txt";
+    String TEMPORARY_BLOCKCHAIN_FILE = testPath + "/resources/tempblockchain/shortBlockchain.txt";
 
     //отчет об уничтоженных монетах
-    String BALANCE_REPORT_ON_DESTROYED_COINS = testPath+"/resources/balanceReportOnDestroyedCoins/";
-    String CURRENT_BUDGET_END_EMISSION = testPath+"/resources/budgetEndEmission/";
-    String H2_DB = testPath+"/resources/h2DB/";
+    String BALANCE_REPORT_ON_DESTROYED_COINS = testPath + "/resources/balanceReportOnDestroyedCoins/";
+    String CURRENT_BUDGET_END_EMISSION = testPath + "/resources/budgetEndEmission/";
+    String H2_DB = testPath + "/resources/h2DB/";
 
 
     //адресса внешних сервисов
-    Set<String> ORIGINAL_ADDRESSES =  Set.of("http://194.87.236.238:82");
-//    Set<String> ORIGINAL_ADDRESSES = Set.of("http://localhost:8083");
+    Set<String> ORIGINAL_ADDRESSES = Set.of("http://194.87.236.238:82");
+    //    Set<String> ORIGINAL_ADDRESSES = Set.of("http://localhost:8083");
     Set<String> ORIGINAL_BLOCKED_ADDRESS = Set.of("http://154.40.38.130:80",
             "http://10.0.36.2:80");
 
@@ -262,7 +262,6 @@ public interface Seting {
     int COUNT_HASH_ZERO = 30446;
 
 
-
     //изменение алгоритма добычи
     int V28_CHANGE_ALGORITH_DIFF_INDEX = 133750;
     int V29_CHANGE_ALGO_DIFF_INDEX = 138488;
@@ -286,7 +285,7 @@ public interface Seting {
 
     int V34_NEW_ALGO = 187200;
     double V34_MINING_REWARD = 0.2;
-    int V34_MIN_DIFF = IS_TEST == true? 1: 17;
+    int V34_MIN_DIFF = IS_TEST == true ? 1 : 17;
 
     int TIME_TOURNAMENT_SECOND = 100;
     String MAX_TARGET_v30 = "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
@@ -296,9 +295,11 @@ public interface Seting {
 
     int TIME_CHECK_BLOCK = 241055; //221055
 
-    long TIME_UPDATING = 50;
-//    MyHost myhost = new MyHost("http://${server.address}:${server.port}", "founder server", "general");
-    MyHost myhost = new MyHost("http://194.87.236.238:82", "founder server", "general");
-int RANDOM_HOSTS = 10;
-//    MyHost myhost = new MyHost("http://localhost:8085", "founder server", "general");
+    long TIME_UPDATING = 10;
+
+    int RANDOM_HOSTS = 10;
+
+
+    String NAME_SERVER = "STANDART";
+    String PUBLIC_KEY = "STANDART";
 }

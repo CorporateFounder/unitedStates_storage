@@ -2,6 +2,7 @@ package International_Trade_Union.utils;
 
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.setings.Seting;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UtilsAllAddresses {
+    @Autowired
+    DomainConfiguration domainConfiguration;
+
     public static void saveAllAddresses(String adress, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
 
@@ -81,15 +85,16 @@ public class UtilsAllAddresses {
         return allAddresses;
     }
 
-    public static void sendAddress(Set<String> nodes) throws IOException {
+    public static void sendAddress(Set<String> nodes, MyHost myHost) throws IOException {
+
 
         for (String s : nodes) {
             try{
                 String hostStr = s;
                 if(s.contains("\""))
                     hostStr = s.replaceAll("\"", "");
-                System.out.println("send " + s +" my host: " + Seting.myhost);
-                UtilUrl.sendPost(UtilsJson.objToStringJson(Seting.myhost), hostStr + "/putNode");
+                System.out.println("send " + s +" my host: " + myHost);
+                UtilUrl.sendPost(UtilsJson.objToStringJson(myHost), hostStr + "/putNode");
             }catch (Exception e){
                 e.printStackTrace();
                 continue;

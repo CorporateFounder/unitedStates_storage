@@ -36,6 +36,8 @@ public class TournamentService {
     @Autowired
     BlockService blockService;
 
+    @Autowired
+    DomainConfiguration domainConfiguration;
 
     private List<Block> winnerDiff = new ArrayList<>();
     private List<Block> winnerCountTransaction = new ArrayList<>();
@@ -289,6 +291,8 @@ public class TournamentService {
 
     public void updatingNodeEndBlocks() throws InterruptedException {
         try {
+
+            MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
             long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
             if(timestamp % Seting.TIME_UPDATING == 0){
                 System.out.println("updating --------------------------------------------");
@@ -302,22 +306,22 @@ public class TournamentService {
                 System.out.println("updatingNodeEndBlocks: send my host");
                 Set<String> nodes = BasisController.getNodes();
 
-//                nodes.add("http://localhost:8085");
                 System.out.println("nodes: " + nodes);
-                System.out.println("my host: " + Seting.myhost);
-                UtilsAllAddresses.sendAddress(nodes);
+                System.out.println("my host: " + myHost);
+                System.out.println("domain configuration: " + domainConfiguration);
+                UtilsAllAddresses.sendAddress(nodes, myHost);
                 System.out.println("finish sending host --------------------------------------------");
                 //TODO отправка скачивание всех хостов
                 System.out.println("download host --------------------------------------------");
                 System.out.println("download host");
                 Set<String> node = BasisController.getNodes();
-                node.remove(Seting.myhost.getHost());
+                node.remove(myHost.getHost());
                 for (String s : node) {
                     try {
                         System.out.println("updating");
                         Set<String> tempNode = UtilsJson.jsonToSetAddresses( UtilUrl.readJsonFromUrl(s + "/getNodes"));
 
-                        if (BasisController.getExcludedAddresses().contains(s) || s.equals(Seting.myhost.getHost())) {
+                        if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
                             System.out.println(":its your address or excluded address: " + s);
                             continue;
                         }
