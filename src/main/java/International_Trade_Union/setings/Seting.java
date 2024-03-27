@@ -8,7 +8,7 @@ import International_Trade_Union.utils.UtilsUse;
 import java.util.Set;
 
 public interface Seting {
-    boolean IS_TEST = false;
+    boolean IS_TEST = true;
     boolean IS_SECURITY = true;
 
     int HUNDRED_PERCENT = 100;
@@ -188,6 +188,7 @@ public interface Seting {
     String CURRENT_BUDGET_END_EMISSION = testPath + "/resources/budgetEndEmission/";
     String H2_DB = testPath + "/resources/h2DB/";
 
+    String ERROR_FILE = testPath + "/resources/error/error.txt";
 
     //адресса внешних сервисов
     Set<String> ORIGINAL_ADDRESSES = IS_TEST ? Set.of("http://localhost:82"): Set.of("http://194.87.236.238:82");

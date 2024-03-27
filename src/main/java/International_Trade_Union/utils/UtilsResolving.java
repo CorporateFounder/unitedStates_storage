@@ -52,7 +52,7 @@ public class UtilsResolving {
     EntityBlockRepository entityBlockRepository;
 
 
-    public int resolve3() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public int resolve3()  {
         BasisController.setUpdating(true);
         int bigSize = 0;
         try {
@@ -416,6 +416,8 @@ public class UtilsResolving {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    UtilsFileSaveRead.save("---------------------------------", Seting.ERROR_FILE, true);
+                    UtilsFileSaveRead.save(e.toString(), Seting.ERROR_FILE, true);
                     continue;
                 }
             }
