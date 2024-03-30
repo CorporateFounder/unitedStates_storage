@@ -46,17 +46,11 @@ public class BlockService {
     @Autowired
     private EntityAccountRepository entityAccountRepository;
 
-
-
-
     public  void deletedAll(){
         entityBlockRepository.deleteAll();
         entityAccountRepository.deleteAll();
         entityLawsRepository.deleteAll();
         dtoTransactionRepository.deleteAll();
-
-
-
     }
 
     public  EntityLawsRepository getLawService() {
@@ -83,9 +77,7 @@ public class BlockService {
     }
 
 
-
-
-
+    @Transactional
     public  void deleteEntityBlocksAndRelatedData(Long threshold) {
         Session session = entityManager.unwrap(Session.class);
         session.setJdbcBatchSize(50);
@@ -93,6 +85,7 @@ public class BlockService {
         entityBlockRepository.flush();
         session.clear();
     }
+
 
 
 
@@ -141,6 +134,7 @@ public class BlockService {
 
 
 
+    @Transactional
 
     public void saveAccountAllF(List<EntityAccount> entityAccounts){
         Session session = entityManager.unwrap(Session.class);
