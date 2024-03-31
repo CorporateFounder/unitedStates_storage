@@ -109,13 +109,22 @@ public class TournamentService {
     @Transactional
     public void tournament() {
 
+
+
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
+
+        //TODO удаляет заблокированные хосты, каждые 500 секунд. Возможно
+        //TODO хост уже работает правильно
+        if(timestamp % Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND == 0){
+            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+        }
         try {
 
             if (timestamp % Seting.TIME_TOURNAMENT_SECOND == 0) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
+
 
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
@@ -138,7 +147,6 @@ public class TournamentService {
 //                Thread.sleep(100);
                 if (list.isEmpty() || list.size() == 0)
                     return;
-//                Thread.sleep(1000);
 
                 Map<String, Account> finalBalances = balances;
                 // Обеспечение наличия всех аккаунтов в finalBalances
@@ -187,6 +195,9 @@ public class TournamentService {
                 UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
 
                 System.out.println("save winner: " + winner.size() + " balances: " + balances.size());
+                //TODO прекратить давать блоки через sub block, если происходит запись
+                BasisController.setIsSaveFile(false);
+
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
                 utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 

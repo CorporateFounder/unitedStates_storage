@@ -54,6 +54,11 @@ public class UtilsResolving {
 
     public int resolve3() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         BasisController.setUpdating(true);
+
+        //удаляет файлы которые хранять заблокированные хосты
+        if(BasisController.getBlockcheinSize() % Seting.DELETED_FILE_BLOCKED_HOST == 0){
+            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+        }
         int bigSize = 0;
         try {
             System.out.println(" :start resolve");
@@ -82,6 +87,7 @@ public class UtilsResolving {
             }
 
 
+            hostContinue:
             for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
                 String s = hostEndDataShortB.getHost();
                 //if the local address matches the host address, it skips
@@ -149,7 +155,7 @@ public class UtilsResolving {
                                     System.out.println("Blocked host: " + subBlocks.size());
                                     //TODO записывать сюда заблокированные хосты
                                     UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                                    break stop;
+                                    continue hostContinue;
                                 }
 
                                 System.out.println("1. subBlocks: subBLock size - 1:"+(subBlocks.size()-1));
@@ -178,7 +184,8 @@ public class UtilsResolving {
                                     System.out.println("Blocked host: size block:" + subBlocks.size());
                                     //TODO записывать сюда заблокированные хосты
                                     UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                                    break stop;
+                                    continue hostContinue;
+
                                 }
                                 //класс мета данных блокчейна.
                                 DataShortBlockchainInformation temp = new DataShortBlockchainInformation();
@@ -214,7 +221,9 @@ public class UtilsResolving {
                                     System.out.println("prevBlock: " + BasisController.prevBlock().getIndex() + " shortDataBlockchain: " + BasisController.getShortDataBlockchain());
                                     String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                                     UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-                                    continue;
+//                                    continue;
+                                    continue hostContinue;
+
                                 }
 
 
@@ -309,7 +318,7 @@ public class UtilsResolving {
                                         UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                                         System.out.println("-------------------------------------------------");
 
-                                        break stop;
+                                        break hostContinue;
                                     }
 
                                     System.out.println("2: temp: " + temp);
@@ -381,7 +390,7 @@ public class UtilsResolving {
                                 System.out.println("-------------------------------------------------");
                                 UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
 
-                                continue;
+                                continue hostContinue;
                             }
                             System.out.println("3: temp: " + temp);
                             System.out.println("3: blockchainsize: " + BasisController.getBlockcheinSize());
@@ -420,12 +429,12 @@ public class UtilsResolving {
                         System.out.println("resolve: temporaryBlockchain: ");
                     } else {
                         System.out.println(":BasisController: resove: size less: " + size + " address: " + s);
-                        continue;
+                        continue hostContinue;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
 
-                    continue;
+                    continue hostContinue;
                 }
             }
 
@@ -470,18 +479,17 @@ public class UtilsResolving {
 
     public boolean isSmall(DataShortBlockchainInformation expected, DataShortBlockchainInformation actual) {
         if (
-                expected.getSize() < actual.getSize()
-                || expected.getBigRandomNumber() < actual.getBigRandomNumber()
-                || expected.getHashCount() < actual.getHashCount()
-                || expected.getStaking() < actual.getStaking()
-                || expected.getTransactions() < actual.getTransactions()
+                actual.getSize() < expected.getSize()
+                        || actual.getBigRandomNumber() < expected.getBigRandomNumber()
+                        || actual.getHashCount() < expected.getHashCount()
+                        || actual.getStaking() < expected.getStaking()
+                        || actual.getTransactions() < expected.getTransactions()
 
         ) {
             return true;
         }
         return false;
     }
-
     public DataShortBlockchainInformation helpResolve4(DataShortBlockchainInformation temp,
                                                        DataShortBlockchainInformation global,
                                                        String s,

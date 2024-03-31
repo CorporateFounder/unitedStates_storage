@@ -402,25 +402,18 @@ public class BasisController {
         nodes = new HashSet<>();
 
         Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        System.out.println("//getNodes temporary nodes: " + temporary);
-
 
         nodes.addAll(temporary);
 
-        System.out.println("//getNodes  nodes: " + nodes);
-//        nodes = nodes.stream()
-//                .filter(t -> !t.isBlank())
-////                .filter(t -> t.startsWith("\""))
-//                .collect(Collectors.toSet());
-        System.out.println("//getNodes after filter: " + nodes);
         nodes = nodes.stream()
                 .filter(t->!t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
 
-        System.out.println("//getNodes after filter: " + nodes);
         Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
         nodes.removeAll(bloked);
         nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
         nodes.addAll(Seting.ORIGINAL_ADDRESSES);
+
+        System.out.println("nodes: " + nodes);
 
         return nodes;
     }
@@ -431,22 +424,18 @@ public class BasisController {
         nodes = new HashSet<>();
 
         Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        System.out.println("//getNodes temporary nodes: " + temporary);
-
 
         nodes.addAll(temporary);
 
-        System.out.println("//getNodes  nodes: " + nodes);
-
-        System.out.println("//getNodes after filter: " + nodes);
         nodes = nodes.stream()
                 .filter(t->!t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
 
-        System.out.println("//getNodes after filter: " + nodes);
         Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
         nodes.removeAll(bloked);
         nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
         nodes.addAll(Seting.ORIGINAL_ADDRESSES);
+
+        System.out.println("nodes: " + nodes);
         return nodes;
     }
 
@@ -491,17 +480,6 @@ public class BasisController {
                         Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
             }
 
-//            balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-//            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
-//            if (balances.isEmpty()) {
-//                Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-////                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-//                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
-//            } else {
-////                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-//                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(BlockService.findAllAccounts());
-//
-//            }
 
 
         } catch (NoSuchAlgorithmException e) {
@@ -877,7 +855,7 @@ public class BasisController {
 
                 if(!Seting.IS_TEST){
                     if (
-                            result > 400 || result < -400
+                            result > 40 || result < -40
                     ) {
                         System.out.println("_____________________________________________");
                         System.out.println("wrong timestamp");
