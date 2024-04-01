@@ -121,11 +121,11 @@ public class TournamentService {
         try {
 
 
-            long prevTime = BasisController.prevBlock().getTimestamp().toInstant().toEpochMilli() /1000;
-            long timeDifference = timestamp - prevTime ;
-            System.out.println("different time: " + timeDifference);
+//            long prevTime = BasisController.prevBlock().getTimestamp().toInstant().toEpochMilli() /1000;
+//            long timeDifference = timestamp - prevTime ;
+//            System.out.println("different time: " + timeDifference);
 //            timestamp % Seting.TIME_TOURNAMENT_SECOND == 0  ||
-            if ( timeDifference > Seting.TIME_TOURNAMENT_SECOND) {
+            if ( timestamp % Seting.TIME_TOURNAMENT_SECOND == 0) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
