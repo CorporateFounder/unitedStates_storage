@@ -120,7 +120,10 @@ public class TournamentService {
         }
         try {
 
-            if (timestamp % Seting.TIME_TOURNAMENT_SECOND == 0) {
+
+            long prevTime = BasisController.prevBlock().getTimestamp().toInstant().toEpochMilli() /1000;
+            long timeDifference = timestamp - prevTime ;
+            if (timestamp % Seting.TIME_TOURNAMENT_SECOND == 0  || timeDifference > 100) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
