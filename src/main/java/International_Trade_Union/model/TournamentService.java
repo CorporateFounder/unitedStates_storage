@@ -44,7 +44,6 @@ public class TournamentService {
     private List<Block> winnerStaking = new ArrayList<>();
     private List<Block> winner = new ArrayList<>();
 
-    private long prevTime = 0;
 
     public static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list){
         //TODO start test ---------------------------------------------------------
@@ -122,9 +121,9 @@ public class TournamentService {
         try {
 
 
-
+            long prevTime = BasisController.prevBlock().getTimestamp().toInstant().toEpochMilli() /1000;
             long timeDifference = timestamp - prevTime ;
-            if (timeDifference > Seting.TIME_TOURNAMENT_SECOND) {
+            if (timestamp % Seting.TIME_TOURNAMENT_SECOND == 0  || timeDifference > 100) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
@@ -272,7 +271,6 @@ public class TournamentService {
                 System.out.println("finish time: " + UtilsTime.differentMillSecondTime(startTournament, finishTournament));
                 System.out.println("___________________________________________________");
                 BasisController.setIsSaveFile(true);
-                prevTime = UtilsTime.getUniversalTimestamp() /1000L;
             }
 
 
@@ -372,6 +370,5 @@ public class TournamentService {
         }
 
 
-        prevTime = UtilsTime.getUniversalTimestamp() /1000L;
     }
 }
