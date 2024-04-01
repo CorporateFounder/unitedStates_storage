@@ -853,22 +853,7 @@ public class BasisController {
                 Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MINUTES);
                 System.out.println("different time: " + result);
 
-                if(!Seting.IS_TEST){
-                    if (
-                            result > 40 || result < -40
-                    ) {
-                        System.out.println("_____________________________________________");
-                        System.out.println("wrong timestamp");
-                        System.out.println("new time 0 index: " + addlist.get(0).getTimestamp());
-                        System.out.println("new time last index: " + addlist.get(addlist.size() - 1).getTimestamp());
-                        System.out.println("actual time: " + actualTime);
-                        System.out.println("result: " + result);
-                        System.out.println("miner: " + addlist.get(addlist.size() - 1).getMinerAddress());
 
-                        System.out.println("_____________________________________________");
-                        return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
-                    }
-                }
 
 
                 if (prevBlock == null) {

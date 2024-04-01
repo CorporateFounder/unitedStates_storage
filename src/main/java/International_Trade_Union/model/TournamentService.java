@@ -123,8 +123,9 @@ public class TournamentService {
 
             long prevTime = BasisController.prevBlock().getTimestamp().toInstant().toEpochMilli() /1000;
             long timeDifference = timestamp - prevTime ;
+            System.out.println("different time: " + timeDifference);
 //            timestamp % Seting.TIME_TOURNAMENT_SECOND == 0  ||
-            if ( timeDifference > 100) {
+            if ( timeDifference > Seting.TIME_TOURNAMENT_SECOND) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
@@ -149,8 +150,12 @@ public class TournamentService {
 
 
 //                Thread.sleep(100);
-                if (list.isEmpty() || list.size() == 0)
+                if (list.isEmpty() || list.size() == 0){
+                    System.out.println("tournament size: zero: " + list);
+                    BasisController.setIsSaveFile(true);
                     return;
+                }
+
 
                 Map<String, Account> finalBalances = balances;
                 // Обеспечение наличия всех аккаунтов в finalBalances
@@ -210,11 +215,13 @@ public class TournamentService {
                 BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
                 BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
 
+
                 EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
                 System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
                 //берет последний блок, и добавляет его в статистическую переменную.
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
+                BasisController.setIsSaveFile(true);
 
                 BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
 
@@ -368,6 +375,9 @@ public class TournamentService {
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
             throw new RuntimeException(e);
+        }
+        finally {
+            BasisController.setIsSaveFile(true);
         }
 
 

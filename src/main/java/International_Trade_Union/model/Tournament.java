@@ -49,6 +49,7 @@ public class Tournament implements Runnable {
                 List<Block> list = BasisController.getWinnerList();
 
 //                System.out.println("before updating");
+                tournament.updatingNodeEndBlocks();
                 if(list.isEmpty() || list.size() == 0){
                     BasisController.setIsSaveFile(true);
 //                    try {
@@ -57,7 +58,6 @@ public class Tournament implements Runnable {
 //                        e.printStackTrace();
 //                        continue;
 //                    }
-                    tournament.updatingNodeEndBlocks();
                     continue;
 
                 }
@@ -69,6 +69,8 @@ public class Tournament implements Runnable {
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());
                 BasisController.setIsSaveFile(true);
                 continue;
+            }finally {
+                BasisController.setIsSaveFile(true);
             }
 
 
