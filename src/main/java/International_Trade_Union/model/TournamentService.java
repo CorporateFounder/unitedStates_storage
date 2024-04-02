@@ -324,7 +324,12 @@ public class TournamentService {
 
             MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
             long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
-            if(timestamp % Seting.TIME_UPDATING == 0){
+
+
+            long prevTime = BasisController.prevBlock().getTimestamp().getTime()/1000;
+            long timeDifference = timestamp - prevTime ;
+            //timestamp % Seting.TIME_UPDATING == 0
+            if(timeDifference > Seting.TIME_UPDATING){
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
                 //TODO здесь будет скачиваться обновление
