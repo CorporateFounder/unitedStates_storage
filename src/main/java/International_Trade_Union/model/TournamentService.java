@@ -120,7 +120,18 @@ public class TournamentService {
             Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
         }
         try {
+            List<Block> list = BasisController.getWinnerList();
+            list = list.stream()
+                    .filter(t->t.getIndex() == BasisController.getBlockcheinSize())
+                    .collect(Collectors.toList());
 
+
+//                Thread.sleep(100);
+            if (list.isEmpty() || list.size() == 0){
+                System.out.println("tournament size: zero: " + list);
+                BasisController.setIsSaveFile(true);
+                return;
+            }
 
 
 //            System.out.println("different time: " + timeDifference);
@@ -143,18 +154,7 @@ public class TournamentService {
 //                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                 BasisController.setIsSaveFile(false);
-                List<Block> list = BasisController.getWinnerList();
-                list = list.stream()
-                        .filter(t->t.getIndex() == BasisController.getBlockcheinSize())
-                        .collect(Collectors.toList());
 
-
-//                Thread.sleep(100);
-                if (list.isEmpty() || list.size() == 0){
-                    System.out.println("tournament size: zero: " + list);
-                    BasisController.setIsSaveFile(true);
-                    return;
-                }
 
 
                 Map<String, Account> finalBalances = balances;

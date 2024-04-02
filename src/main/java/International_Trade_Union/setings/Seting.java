@@ -297,7 +297,7 @@ public interface Seting {
 
     int TIME_CHECK_BLOCK = 230889; //221055
 
-    long TIME_UPDATING = 10;
+    long TIME_UPDATING = 110;
 
     int RANDOM_HOSTS = 10;
 
