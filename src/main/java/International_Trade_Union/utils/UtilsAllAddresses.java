@@ -96,7 +96,8 @@ public class UtilsAllAddresses {
                 System.out.println("send " + s +" my host: " + myHost);
                 UtilUrl.sendPost(UtilsJson.objToStringJson(myHost), hostStr + "/putNode");
             }catch (Exception e){
-                e.printStackTrace();
+//                e.printStackTrace();
+                System.out.println("error send to host: " + s);
                 continue;
             }
 

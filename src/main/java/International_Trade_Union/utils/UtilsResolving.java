@@ -413,7 +413,7 @@ public class UtilsResolving {
                                     System.out.println("-------------------------------------------------");
                                     UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
 
-                                    continue hostContinue;
+                                    continue ;
                                 }
                             }else if(BasisController.getBlockcheinSize() > 1 && different_value) {
 
@@ -434,7 +434,7 @@ public class UtilsResolving {
                                     System.out.println("-------------------------------------------------");
                                     UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
 
-                                    continue hostContinue;
+                                    continue ;
                                 }
                             }
                             System.out.println("3: temp: " + temp);
@@ -474,12 +474,12 @@ public class UtilsResolving {
                         System.out.println("resolve: temporaryBlockchain: ");
                     } else {
                         System.out.println(":BasisController: resove: size less: " + size + " address: " + s);
-                        continue hostContinue;
+                        continue ;
                     }
                 } catch (Exception e) {
                     System.out.println("error UtilsResolving resolve 3: " + e.getMessage() + " cause: " + e.getCause());
 
-                    continue hostContinue;
+                    continue ;
                 }
             }
 
