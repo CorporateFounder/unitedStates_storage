@@ -477,7 +477,7 @@ public class UtilsResolving {
                         continue hostContinue;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println("error UtilsResolving resolve 3: " + e.getMessage() + " cause: " + e.getCause());
 
                     continue hostContinue;
                 }

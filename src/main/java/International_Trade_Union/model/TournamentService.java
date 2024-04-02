@@ -112,7 +112,8 @@ public class TournamentService {
 
 
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
-
+            long prevTime = BasisController.prevBlock().getTimestamp().getTime()/1000;
+            long timeDifference = timestamp - prevTime ;
         //TODO удаляет заблокированные хосты, каждые 500 секунд. Возможно
         //TODO хост уже работает правильно
         if(timestamp % Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND == 0){
@@ -121,11 +122,10 @@ public class TournamentService {
         try {
 
 
-//            long prevTime = BasisController.prevBlock().getTimestamp().toInstant().toEpochMilli() /1000;
-//            long timeDifference = timestamp - prevTime ;
+
 //            System.out.println("different time: " + timeDifference);
-//            timestamp % Seting.TIME_TOURNAMENT_SECOND == 0  ||
-            if ( timestamp % Seting.TIME_TOURNAMENT_SECOND == 0) {
+
+            if ( timeDifference > Seting.TIME_TOURNAMENT_SECOND) {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
@@ -283,25 +283,33 @@ public class TournamentService {
 
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("TournamentService: IOException");
+//            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            System.out.println("TournamentService: NoSuchAlgorithmException");
+//            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
+            System.out.println("TournamentService: InvalidKeySpecException");
+
+//            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (SignatureException e) {
-            e.printStackTrace();
+            System.out.println("TournamentService: SignatureException");
+//            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (NoSuchProviderException e) {
-            e.printStackTrace();
+            System.out.println("TournamentService: NoSuchProviderException");
+//            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            System.out.println("TournamentService: InvalidKeyException");
+//            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            System.out.println("TournamentService: CloneNotSupportedException");
+//            e.printStackTrace();
             throw new RuntimeException(e);
         }  finally {
 
