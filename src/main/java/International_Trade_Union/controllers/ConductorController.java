@@ -216,8 +216,8 @@ public class ConductorController {
         if(index < 0 ){
             index = 0;
         }
-        if(index > BasisController.getBlockcheinSize() -1){
-            index = BasisController.getBlockcheinSize() - 1;
+        if(index > BasisController.getBlockchainSize() -1){
+            index = BasisController.getBlockchainSize() - 1;
         }
         return UtilsBlockToEntityBlock.entityBlockToBlock(
                 blockService.findBySpecialIndex(index)

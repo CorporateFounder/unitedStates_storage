@@ -44,8 +44,8 @@ public class TransactionController {
 
     public static Set<String> hashTransaction() throws JsonProcessingException {
         Set<String> strings = new HashSet<>();
-        transactionsAdded = Blockchain.subFromFile(BasisController.getBlockcheinSize() - Seting.TRANSACTIONS_COUNT_ADDED,
-                BasisController.getBlockcheinSize(), Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        transactionsAdded = Blockchain.subFromFile(BasisController.getBlockchainSize() - Seting.TRANSACTIONS_COUNT_ADDED,
+                BasisController.getBlockchainSize(), Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
         for (Block block : transactionsAdded) {
             for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {

@@ -8,7 +8,7 @@ import International_Trade_Union.utils.UtilsUse;
 import java.util.Set;
 
 public interface Seting {
-    boolean IS_TEST = false;
+    boolean IS_TEST = true;
     boolean IS_SECURITY = true;
 
     int HUNDRED_PERCENT = 100;
@@ -297,7 +297,7 @@ public interface Seting {
 
     int TIME_CHECK_BLOCK = 230889; //221055
 
-    long TIME_UPDATING = 105;
+    long TIME_UPDATING = 10;
 
     int RANDOM_HOSTS = 10;
 
@@ -307,5 +307,7 @@ public interface Seting {
 
     int DELETED_FILE_BLOCKED_HOST = 5;
     int DELETED_FILE_BLOCKED_HOST_TIME_SECOND = 1000;
+
+    int IS_BIG_DIFFERENT = 60;
 
 }

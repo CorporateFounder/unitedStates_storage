@@ -246,7 +246,7 @@ public class BasisController {
     public String status() throws JsonProcessingException {
 
         String strIsSave ="isSave: "+ isIsSave() + "\n";
-        String strBlockchainSize = "blockchainSize: " + getBlockcheinSize() + "\n";
+        String strBlockchainSize = "blockchainSize: " + getBlockchainSize() + "\n";
         String isSaveFile = "isSaveFile: "+ isSaveFile() + "\n";
         String blockFromDb =
                "blockFromDb: " +String.valueOf(blockService.findBySpecialIndex(blockcheinSize-1))
@@ -283,7 +283,7 @@ public class BasisController {
         return shortDataBlockchain;
     }
 
-    public static int getBlockcheinSize() {
+    public static int getBlockchainSize() {
         return blockcheinSize;
     }
 

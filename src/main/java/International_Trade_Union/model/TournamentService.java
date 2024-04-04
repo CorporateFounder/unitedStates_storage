@@ -8,8 +8,6 @@ import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -122,7 +120,7 @@ public class TournamentService {
         try {
             List<Block> list = BasisController.getWinnerList();
             list = list.stream()
-                    .filter(t->t.getIndex() == BasisController.getBlockcheinSize())
+                    .filter(t->t.getIndex() == BasisController.getBlockchainSize())
                     .collect(Collectors.toList());
 
 
