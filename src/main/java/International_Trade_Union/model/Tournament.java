@@ -26,8 +26,19 @@ import java.util.stream.Collectors;
 
 @Component
 public class Tournament implements Runnable {
+
     @Autowired
     TournamentService tournament;
+
+    private static long prevTime;
+
+    public static long getPrevTime() {
+        return prevTime;
+    }
+
+    public static void setPrevTime(long prevTime) {
+        Tournament.prevTime = prevTime;
+    }
 
     @PostConstruct
     public void init() {
@@ -47,13 +58,32 @@ public class Tournament implements Runnable {
         while (true) {
             try {
 
+                if(prevTime == 0){
+                    prevTime = BasisController.prevBlock().getTimestamp().getTime();
+                }
 
                 tournament.tournament();
                 tournament.updatingNodeEndBlocks();
+
+                long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
+                long prevTime = Tournament.getPrevTime() / 1000L;
+                long timeDifference = timestamp - prevTime;
+
+                if(timeDifference > Seting.TIME_UPDATING ){
+                    System.out.println("----------------------------------------------------");
+
+                    System.out.println("change time prev before: " + Tournament.getPrevTime());
+                    Tournament.setPrevTime(UtilsTime.getUniversalTimestamp());
+                    System.out.println("timeDifference: " + timeDifference);
+                    System.out.println("change time after before: " + Tournament.getPrevTime());
+                    System.out.println("----------------------------------------------------");
+                }
+
             }catch (Exception e){
                 e.printStackTrace();
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());
                 BasisController.setIsSaveFile(true);
+                System.out.println("exeption");
                 continue;
             }finally {
                 BasisController.setIsSaveFile(true);

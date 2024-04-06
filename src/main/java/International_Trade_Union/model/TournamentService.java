@@ -9,7 +9,9 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.ls.LSOutput;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -110,8 +112,9 @@ public class TournamentService {
 
 
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
-            long prevTime = BasisController.prevBlock().getTimestamp().getTime()/1000;
+            long prevTime = Tournament.getPrevTime() / 1000L;
             long timeDifference = timestamp - prevTime ;
+
         //TODO удаляет заблокированные хосты, каждые 500 секунд. Возможно
         //TODO хост уже работает правильно
         if(timestamp % Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND == 0){
@@ -126,7 +129,6 @@ public class TournamentService {
 
 //                Thread.sleep(100);
             if (list.isEmpty() || list.size() == 0){
-                System.out.println("tournament size: zero: " + list);
                 BasisController.setIsSaveFile(true);
                 return;
             }
@@ -138,6 +140,10 @@ public class TournamentService {
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
+                System.out.println("prevTime: " + prevTime);
+                System.out.println("prevTime /1000L: " + prevTime/1000L);
+                System.out.println("timestamp: " + timestamp);
+                System.out.println("timeDifferent: " + timeDifference);
 
 
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -176,6 +182,7 @@ public class TournamentService {
                     System.out.println("--------------------------------------------");
                     return;
                 }
+
 
                 List<Block> lastDiff = new ArrayList<>();
                 List<String> sign = new ArrayList<>();
@@ -324,15 +331,20 @@ public class TournamentService {
             long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
 
-            long prevTime = BasisController.prevBlock().getTimestamp().getTime()/1000;
+            long prevTime = Tournament.getPrevTime()/1000L;
             long timeDifference = timestamp - prevTime ;
             //timestamp % Seting.TIME_UPDATING == 0
             if(timeDifference > Seting.TIME_UPDATING){
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
+                System.out.println("prevTime: " + prevTime);
+                System.out.println("prevTime /1000L: " + prevTime/1000L);
+                System.out.println("timestamp: " + timestamp);
+                System.out.println("timeDifferent: " + timeDifference);
                 //TODO здесь будет скачиваться обновление
                 utilsResolving.resolve3();
                 System.out.println("finish updating --------------------------------------------");
+                System.out.println("time changing in update: " + timeDifference);
 
                 //TODO отправка своего хоста
                 System.out.println("sending host --------------------------------------------");
