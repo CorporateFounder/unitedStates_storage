@@ -44,6 +44,13 @@ public class TournamentService {
     private List<Block> winnerStaking = new ArrayList<>();
     private List<Block> winner = new ArrayList<>();
 
+    public List<Block> getWinnerDiff() {
+        return winnerDiff;
+    }
+
+    public void setWinnerDiff(List<Block> winnerDiff) {
+        this.winnerDiff = winnerDiff;
+    }
 
     public static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list){
         //TODO start test ---------------------------------------------------------
@@ -384,6 +391,14 @@ public class TournamentService {
                 }
                 System.out.println("finish download host");
                 System.out.println("download host --------------------------------------------");
+//                List<Block> winner = new ArrayList<>();
+//                List<Block> winnerList = BasisController.getAllWiners().a;
+//               Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+//
+//               BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+//                BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
+//                Block block = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(BasisController.getBlockchainSize()-1));
+//
 
             }
         } catch (IOException e) {

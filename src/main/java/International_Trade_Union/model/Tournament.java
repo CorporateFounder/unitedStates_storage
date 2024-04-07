@@ -65,6 +65,15 @@ public class Tournament implements Runnable {
                 tournament.tournament();
                 tournament.updatingNodeEndBlocks();
 
+                List<Block> winner = new ArrayList<>();
+                List<Block> winnerList = new ArrayList<>();
+
+                //TODO
+                //если после обновления победитель изменился
+                //то нужно в all winners добавить нового победителя
+                //и заменить победителя, на победителя из базы данных последнего
+
+
                 long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
                 long prevTime = Tournament.getPrevTime() / 1000L;
                 long timeDifference = timestamp - prevTime;
