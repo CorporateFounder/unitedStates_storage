@@ -167,28 +167,28 @@ public interface Seting {
     //    String testPath = IS_TEST? "D:/" :"";
     String testPath = IS_TEST ? "E:/" : "";
 
-    String ORIGINAL_BLOCKCHAIN_FILE = testPath + "/resources/blockchain/";
-    String ORIGINAL_BALANCE_FILE = testPath + "/resources/balance/";
-    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = testPath + "/resources/federalGovernment/federalGovernment.txt";
-    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = testPath + "/resources/federalLaws/";
-    String ORIGINAL_ACCOUNT = testPath + "/resources/minerAccount/minerAccount.txt";
-    String ORIGINAL_CORPORATE_VOTE_FILE = testPath + "/resources/vote/";
+    String ORIGINAL_BLOCKCHAIN_FILE = testPath + "/server/resources/blockchain/";
+    String ORIGINAL_BALANCE_FILE = testPath + "/server/resources/balance/";
+    String ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE = testPath + "/server/resources/federalGovernment/federalGovernment.txt";
+    String ORIGINAL_ALL_CORPORATION_LAWS_FILE = testPath + "/server/resources/federalLaws/";
+    String ORIGINAL_ACCOUNT = testPath + "/server/resources/minerAccount/minerAccount.txt";
+    String ORIGINAL_CORPORATE_VOTE_FILE = testPath + "/server/resources/vote/";
 
-    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = testPath + "/resources/allLawsWithBalance/";
-    String ORGINAL_ALL_TRANSACTION_FILE = testPath + "/resources/transactions/";
+    String ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE = testPath + "/server/resources/allLawsWithBalance/";
+    String ORGINAL_ALL_TRANSACTION_FILE = testPath + "/server/resources/transactions/";
 
-    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = testPath + "/resources/sendedTransaction/";
-    String ORIGINAL_POOL_URL_ADDRESS_FILE = testPath + "/resources/poolAddress/";
-    String ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE = testPath + "/resources/pooAddressBlocked/";
+    String ORIGINAL_ALL_SENDED_TRANSACTION_FILE = testPath + "/server/resources/sendedTransaction/";
+    String ORIGINAL_POOL_URL_ADDRESS_FILE = testPath + "/server/resources/poolAddress/";
+    String ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE = testPath + "/server/resources/pooAddressBlocked/";
 
-    String TEMPORARY_BLOCKCHAIN_FILE = testPath + "/resources/tempblockchain/shortBlockchain.txt";
+    String TEMPORARY_BLOCKCHAIN_FILE = testPath + "/server/resources/tempblockchain/shortBlockchain.txt";
 
     //отчет об уничтоженных монетах
-    String BALANCE_REPORT_ON_DESTROYED_COINS = testPath + "/resources/balanceReportOnDestroyedCoins/";
-    String CURRENT_BUDGET_END_EMISSION = testPath + "/resources/budgetEndEmission/";
-    String H2_DB = testPath + "/resources/h2DB/";
+    String BALANCE_REPORT_ON_DESTROYED_COINS = testPath + "/server/resources/balanceReportOnDestroyedCoins/";
+    String CURRENT_BUDGET_END_EMISSION = testPath + "/server/resources/budgetEndEmission/";
+    String H2_DB = testPath + "/server/resources/h2DB/";
 
-    String ERROR_FILE = testPath + "/resources/error/error.txt";
+    String ERROR_FILE = testPath + "/server/resources/error/error.txt";
 
     //адресса внешних сервисов
     Set<String> ORIGINAL_ADDRESSES = IS_TEST ? Set.of("http://localhost:82"): Set.of("http://194.87.236.238:82");

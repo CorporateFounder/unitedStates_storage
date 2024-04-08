@@ -173,7 +173,8 @@ public class UtilsResolving {
 
                                 //вычисляет сложность блока, для текущего блока, на основе предыдущих блоков.
                                 //select a block class for the current block, based on previous blocks.
-                                if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
+
+                                if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY && BasisController.getBlockchainSize() < Seting.V34_NEW_ALGO) {
                                     lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
                                             blockService.findBySpecialIndexBetween(
                                                     (BasisController.prevBlock().getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
@@ -390,7 +391,7 @@ public class UtilsResolving {
                             tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                             List<String> sign = new ArrayList<>();
 
-                            if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
+                            if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY && BasisController.getBlockchainSize() < Seting.V34_NEW_ALGO) {
                                 lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
                                         blockService.findBySpecialIndexBetween(
                                                 (BasisController.prevBlock().getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
@@ -406,6 +407,14 @@ public class UtilsResolving {
                                 jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
                                 System.out.println("3: jsonGlobalData: " + jsonGlobalData);
                                 global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
+                                System.out.println("++++++++++++++++++++++++++++++++++++++=");
+                                System.out.println("blocks_current_size < size");
+                                System.out.println("expected host: " + hostEndDataShortB.getDataShortBlockchainInformation());
+                                System.out.println("actual host: " + temp);
+                                System.out.println("host: " + hostEndDataShortB.getHost());
+                                System.out.println("prev block: " + BasisController.prevBlock().getIndex());
+                                System.out.println("prev block: " + BasisController.prevBlock().hashForTransaction());
+                                System.out.println("++++++++++++++++++++++++++++++++++++++=");
                                 if (Seting.IS_SECURITY == true && isSmall(global, temp)) {
                                     //TODO добавить хост в заблокированный файл
                                     System.out.println("-------------------------------------------------");
