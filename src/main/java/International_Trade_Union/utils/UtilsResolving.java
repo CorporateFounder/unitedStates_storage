@@ -491,6 +491,7 @@ public class UtilsResolving {
                                 System.out.println("local_size_upper: " + local_size_upper);
                                 System.out.println("===========================");
                                 temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
+                                System.out.println("local_size_upper: temp: " + temp);
 
                             }
 
@@ -681,7 +682,7 @@ public class UtilsResolving {
 
             //TODO тестовая версия, мы проверяем если блокчейн ценее, но при этом меньше
             if (global.getSize() < BasisController.getBlockchainSize()) {
-                List<EntityBlock> entityBlocks = blockService.findBySpecialIndexBetween(global.getSize(), BasisController.getBlockchainSize());
+                List<EntityBlock> entityBlocks = blockService.findBySpecialIndexBetween(global.getSize()+1, BasisController.getBlockchainSize());
                 different.addAll(UtilsBlockToEntityBlock.entityBlocksToBlocks(entityBlocks));
 
             }
