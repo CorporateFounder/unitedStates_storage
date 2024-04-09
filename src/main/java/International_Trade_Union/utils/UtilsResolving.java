@@ -449,6 +449,8 @@ public class UtilsResolving {
                                     continue;
                                 }
                             } else if (BasisController.getBlockchainSize() > 1 && local_size_upper) {
+                                UtilsFileSaveRead.save("************************************: " , Seting.ERROR_FILE, false);
+
                                 temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
                                 anotherCheck = check2(temp, global, s, lastDiff, tempBalances, sign);
                                 System.out.println("if size end curent size equals: " + anotherCheck);
@@ -457,6 +459,7 @@ public class UtilsResolving {
                                 System.out.println("3: jsonGlobalData: " + jsonGlobalData);
                                 global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                                 if (Seting.IS_SECURITY == true && isSmall(global, anotherCheck)) {
+                                    UtilsFileSaveRead.save("-----------------------------------------------: " , Seting.ERROR_FILE, false);
                                     //TODO добавить хост в заблокированный файл
                                     System.out.println("-------------------------------------------------");
                                     System.out.println("Blocked host: ");
@@ -465,6 +468,9 @@ public class UtilsResolving {
                                     System.out.println("host: " + hostEndDataShortB.getHost());
                                     System.out.println("-------------------------------------------------");
                                     UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                                    UtilsFileSaveRead.save("aanotherCheck: " + anotherCheck, Seting.ERROR_FILE, false);
+                                    UtilsFileSaveRead.save("temp: " + anotherCheck, Seting.ERROR_FILE, false);
+                                    UtilsFileSaveRead.save("-----------------------------------------------: " , Seting.ERROR_FILE, false);
 
                                     continue;
                                 }
@@ -680,6 +686,9 @@ public class UtilsResolving {
             int lastBlockIndex = (int) (global.getSize() - 1);
             int currentIndex = lastBlockIndex;
 
+            UtilsFileSaveRead.save("lastBlockIndex: " + lastBlockIndex, Seting.ERROR_FILE, false);
+            UtilsFileSaveRead.save("currentIndex: " + currentIndex, Seting.ERROR_FILE, false);
+
             //TODO тестовая версия, мы проверяем если блокчейн ценее, но при этом меньше
             if (global.getSize() < BasisController.getBlockchainSize()) {
                 List<EntityBlock> entityBlocks = blockService.findBySpecialIndexBetween(global.getSize(), BasisController.getBlockchainSize()-1);
@@ -687,6 +696,7 @@ public class UtilsResolving {
 
             }
 
+            UtilsFileSaveRead.save("different: 1: " + different, Seting.ERROR_FILE, false);
             stop:
             while (currentIndex >= 0) {
 
@@ -723,15 +733,19 @@ public class UtilsResolving {
                 // Обновляем индекс для следующей итерации
                 currentIndex = startIndex - 1;
             }
-            System.out.println("different: ");
+
+
 
             System.out.println("shortDataBlockchain: " + BasisController.getShortDataBlockchain());
             temp = Blockchain.rollBackShortCheck(BasisController.prevBlock(), different, BasisController.getShortDataBlockchain(), lastDiff, tempBalance, sign);
             System.out.println("check 2: rollback temp: " + temp);
+
+
             different = different.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-
-
             emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+
+            UtilsFileSaveRead.save("different: 2: " + different, Seting.ERROR_FILE, false);
+            UtilsFileSaveRead.save("emptyList: 2: " + different, Seting.ERROR_FILE, false);
 
             if (!emptyList.isEmpty()) {
                 Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
