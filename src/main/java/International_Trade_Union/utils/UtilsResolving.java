@@ -777,6 +777,7 @@ public class UtilsResolving {
 
             }
 
+
             stop:
             while (currentIndex >= 0) {
 
