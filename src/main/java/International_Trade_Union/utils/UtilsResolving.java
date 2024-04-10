@@ -591,11 +591,6 @@ public class UtilsResolving {
                         || actual.getTransactions() < expected.getTransactions()
 
         ) {
-            UtilsFileSaveRead.save("=====================================\n", Seting.ERROR_FILE, true);
-            UtilsFileSaveRead.save("actual: " + actual + "\n", Seting.ERROR_FILE, true);
-            UtilsFileSaveRead.save("expected: " + expected + "\n", Seting.ERROR_FILE, true);
-            UtilsFileSaveRead.save("=====================================\n", Seting.ERROR_FILE, true);
-
             return true;
         }
         return false;
@@ -970,10 +965,11 @@ public class UtilsResolving {
             System.out.println("shortDataBlockchain: " + BasisController.getShortDataBlockchain());
             temp = Blockchain.rollBackShortCheck(BasisController.prevBlock(), different, BasisController.getShortDataBlockchain(), lastDiff, tempBalance, sign);
             System.out.println("rollback temp: " + temp);
-            Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
+
 
             different = different.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+            Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
 
             for (Block block : emptyList) {
                 List<Block> tempList = new ArrayList<>();
