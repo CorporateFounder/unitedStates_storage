@@ -591,6 +591,11 @@ public class UtilsResolving {
                         || actual.getTransactions() < expected.getTransactions()
 
         ) {
+            UtilsFileSaveRead.save("=====================================\n", Seting.ERROR_FILE, true);
+            UtilsFileSaveRead.save("actual: " + actual + "\n", Seting.ERROR_FILE, true);
+            UtilsFileSaveRead.save("expected: " + expected + "\n", Seting.ERROR_FILE, true);
+            UtilsFileSaveRead.save("=====================================\n", Seting.ERROR_FILE, true);
+
             return true;
         }
         return false;
