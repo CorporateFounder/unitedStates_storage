@@ -84,7 +84,7 @@ public interface Seting {
     //каждые сколько месяцев снимать
     int HALF_YEAR = 2;
 
-    //стоимость создания закона 0
+    //стоимость создания закона 3
     double COST_LAW = 0;
     //с чего начинается адрес пакета закона
     //сокращенно корпорация
@@ -165,7 +165,7 @@ public interface Seting {
     double COUNT_BLOCK_IN_DAY = (DAY_SECOND / BLOCK_TIME);
 
     //    String testPath = IS_TEST? "D:/" :"";
-    String testPath = IS_TEST ? "E:/" : "";
+    String testPath = IS_TEST ? "" : "";
 
     String ORIGINAL_BLOCKCHAIN_FILE = testPath + "/server/resources/blockchain/";
     String ORIGINAL_BALANCE_FILE = testPath + "/server/resources/balance/";
@@ -282,9 +282,8 @@ public interface Seting {
     int V30_INDEX_DIFF = 142425;
     int V30_1_FIXED_DIFF = 143182;
     int V31_DIFF_END_MINING = 150974;
-    int V32_FIX_DIFF = 167343;
     int V31_FIX_DIFF = 151940;
-
+    int V32_FIX_DIFF = 167343;
     int V34_NEW_ALGO = 187200;
     double V34_MINING_REWARD = 0.2;
     int V34_MIN_DIFF = IS_TEST == true ? 1 : 17;
