@@ -779,7 +779,7 @@ public class UtilsResolving {
                 actual.getSize() < expected.getSize()
                         || actual.getBigRandomNumber() < expected.getBigRandomNumber()
                         || actual.getHashCount() < expected.getHashCount()
-                        || actual.getStaking() < expected.getStaking()
+//                        || actual.getStaking() < expected.getStaking()
                         || actual.getTransactions() < expected.getTransactions()
 
         ) {
@@ -787,7 +787,6 @@ public class UtilsResolving {
         }
         return false;
     }
-
     public DataShortBlockchainInformation check(DataShortBlockchainInformation temp,
                                                 DataShortBlockchainInformation global,
                                                 String s,
