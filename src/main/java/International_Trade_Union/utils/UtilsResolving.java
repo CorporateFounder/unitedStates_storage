@@ -83,6 +83,7 @@ public class UtilsResolving {
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
             Set<String> newAddress = newHostsLoop(sortPriorityHost.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
             newAddress.remove(nodesAll);
+
             for (String s : newAddress) {
                 UtilsAllAddresses.putHost(s);
             }
@@ -91,6 +92,7 @@ public class UtilsResolving {
             hostContinue:
             for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
                 String s = hostEndDataShortB.getHost();
+
                 //if the local address matches the host address, it skips
                 //если локальный адрес совпадает с адресом хоста, он пропускает
                 if (BasisController.getExcludedAddresses().contains(s)) {
@@ -129,7 +131,9 @@ public class UtilsResolving {
 //                        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
                         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 //                        Map<String, Account> tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
+//                        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
+                        Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+
 
                         //if the local one lags behind the global one by more than PORTION_DOWNLOAD (500 blocks), then you need to download in portions from the storage
                         //если локальный отстает от глобального больше чем PORTION_DOWNLOAD (500 блоков), то нужно скачивать порциями из хранилища
@@ -184,6 +188,7 @@ public class UtilsResolving {
 
 //                                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
                                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
                                 //вычисляет сложность блока, для текущего блока, на основе предыдущих блоков.
                                 //select a block class for the current block, based on previous blocks.
@@ -335,6 +340,8 @@ public class UtilsResolving {
 
                                 temp = new DataShortBlockchainInformation();
                                 temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
+                                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
                                 if (!local_size_upper){
                                     System.out.println("===========================");
@@ -414,7 +421,6 @@ public class UtilsResolving {
                                     System.out.println("2: host: " + s);
 
 //                                    balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                                    balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                                     if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY && BasisController.getBlockchainSize() < Seting.V34_NEW_ALGO) {
                                         lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
                                                 blockService.findBySpecialIndexBetween(
@@ -433,6 +439,7 @@ public class UtilsResolving {
                                     global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                                     temp = new DataShortBlockchainInformation();
                                     temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
+                                    tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
                                     if (BasisController.getBlockchainSize() > 1 && blocks_current_size < size) {
                                         anotherCheck = check(temp, global, s, lastDiff, tempBalances, sign);
@@ -517,6 +524,8 @@ public class UtilsResolving {
 //                                    temp = helpResolve3(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
                                     temp = new DataShortBlockchainInformation();
                                     temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
+                                    balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                                    tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
                                     if (!local_size_upper){
                                         System.out.println("===========================");
@@ -594,6 +603,7 @@ public class UtilsResolving {
                             System.out.println("3: jsonGlobalData: " + jsonGlobalData);
                             global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                             DataShortBlockchainInformation anotherCheck = null;
+
                             if (BasisController.getBlockchainSize() > 1 && blocks_current_size < size) {
                                 System.out.println("===============================================");
                                 System.out.println("global: " + global);
@@ -684,6 +694,8 @@ public class UtilsResolving {
 //                            temp = helpResolve3(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
                             temp = new DataShortBlockchainInformation();
                             temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
+                            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
                             if (!local_size_upper){
                                 System.out.println("===========================");
@@ -787,6 +799,7 @@ public class UtilsResolving {
         }
         return false;
     }
+
     public DataShortBlockchainInformation check(DataShortBlockchainInformation temp,
                                                 DataShortBlockchainInformation global,
                                                 String s,
@@ -1343,7 +1356,11 @@ public class UtilsResolving {
             tempBlock.add(block);
         }
         //потом удаляем из этого списка блоки, которые не должны быть в файле.
-        tempBlock = tempBlock.stream().filter(t -> t.getIndex() < deleteBlocks.get(0).getIndex()).collect(Collectors.toList());
+        tempBlock = tempBlock.stream()
+                .filter(t -> t.getIndex() < deleteBlocks.get(0)
+                        .getIndex())
+                .sorted(Comparator.comparing(Block::getIndex))
+                .collect(Collectors.toList());
 
         //TODO здесь мы должны удалить все файлы идущие после этого файла,
 
@@ -1449,7 +1466,8 @@ public class UtilsResolving {
             tempBlock.add(block);
         }
         //потом удаляем из этого списка блоки, которые не должны быть в файле.
-        tempBlock = tempBlock.stream().filter(t -> t.getIndex() < deleteBlocks.get(0).getIndex()).collect(Collectors.toList());
+        tempBlock = tempBlock.stream()
+                .filter(t -> t.getIndex() < deleteBlocks.get(0).getIndex()).collect(Collectors.toList());
 
         //TODO здесь мы должны удалить все файлы идущие после этого файла,
 
