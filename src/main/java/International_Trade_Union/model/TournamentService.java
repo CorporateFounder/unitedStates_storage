@@ -393,14 +393,12 @@ public class TournamentService {
                 }
                 System.out.println("finish download host");
                 System.out.println("download host --------------------------------------------");
-//                List<Block> winner = new ArrayList<>();
-//                List<Block> winnerList = BasisController.getAllWiners().a;
-//               Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-//
-//               BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
-//                BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
-//                Block block = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(BasisController.getBlockchainSize()-1));
-//
+                winnerDiff = new ArrayList<>();
+                winnerCountTransaction = new ArrayList<>();
+                winnerStaking = new ArrayList<>();
+                winner = new ArrayList<>();
+                //обнуляет победителей, для нового раунда.
+                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
 
             }
         } catch (IOException e) {
