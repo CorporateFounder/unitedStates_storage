@@ -218,6 +218,7 @@ public class TournamentService {
                 System.out.println("save winner: " + winner.size() + " balances: " + balances.size());
                 //TODO прекратить давать блоки через sub block, если происходит запись
                 BasisController.setIsSaveFile(false);
+                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
                 utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);

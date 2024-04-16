@@ -712,13 +712,13 @@ public class UtilsResolving {
                                 temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
                             }
 
-                            if (temp.getSize() > 1 && !temp.isValidation()) {
-                                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++");
-                                System.out.println("error resolve 2 in portion upper < 500");
-                                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++");
-
-                                return -10;
-                            }
+//                            if (temp.getSize() > 1 && !temp.isValidation()) {
+//                                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++");
+//                                System.out.println("error resolve 2 in portion upper < 500");
+//                                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++");
+//
+//                                return -10;
+//                            }
 
 
                             BasisController.setShortDataBlockchain(temp);
