@@ -362,10 +362,6 @@ public class UtilsResolving {
 
                                 System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++");
                                 //если скачанный блокчейн не валидный, то не добавляет в блокчейн, возвращает -10
-                                if (BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
-                                    System.out.println("error resolve 2 in portion upper > 500");
-                                    return -10;
-                                }
 
 
                                 //добавляет мета данные блокчейна в static переменную, как так
