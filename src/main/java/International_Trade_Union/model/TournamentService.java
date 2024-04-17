@@ -131,6 +131,7 @@ public class TournamentService {
             List<Block> list = BasisController.getWinnerList();
             list = list.stream()
                     .filter(t->t.getIndex() == BasisController.getBlockchainSize())
+                    .filter(UtilsUse.distinctByKey(Block::getHashBlock))
                     .collect(Collectors.toList());
 
 
@@ -174,15 +175,18 @@ public class TournamentService {
 
                List<Block> winnerList = new ArrayList<>();
 
+               if(list.isEmpty()){
+                   return;
+               }
+
+
                 winnerList = sortWinner(finalBalances, list);
-
-
 
 
                 Block prevBlock = BasisController.prevBlock();
 
                 winner.add(winnerList.get(0));
-                if(winner.size() == 0 || winner == null){
+                if(winner == null || winner.size() == 0){
                     System.out.println("--------------------------------------------");
 
                     System.out.println("winner: " + winner);
@@ -207,7 +211,7 @@ public class TournamentService {
                 //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
 
-                if (!temp.isValidation()) {
+                if (temp == null || !temp.isValidation()) {
                     System.out.println("wrong validation short: " + temp);
                     return;
                 }
@@ -298,32 +302,32 @@ public class TournamentService {
 
         } catch (IOException e) {
             System.out.println("TournamentService: IOException");
-//            e.printStackTrace();
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (NoSuchAlgorithmException e) {
             System.out.println("TournamentService: NoSuchAlgorithmException");
-//            e.printStackTrace();
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
             System.out.println("TournamentService: InvalidKeySpecException");
 
-//            e.printStackTrace();
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (SignatureException e) {
             System.out.println("TournamentService: SignatureException");
-//            e.printStackTrace();
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (NoSuchProviderException e) {
             System.out.println("TournamentService: NoSuchProviderException");
-//            e.printStackTrace();
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
             System.out.println("TournamentService: InvalidKeyException");
-//            e.printStackTrace();
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (CloneNotSupportedException e) {
             System.out.println("TournamentService: CloneNotSupportedException");
-//            e.printStackTrace();
+            e.printStackTrace();
             throw new RuntimeException(e);
         }  finally {
 
@@ -372,6 +376,9 @@ public class TournamentService {
                 node.remove(myHost.getHost());
                 for (String s : node) {
                     try {
+                        if(s == null || s.isBlank())
+                            continue;
+
                         System.out.println("updating");
                         Set<String> tempNode = UtilsJson.jsonToSetAddresses( UtilUrl.readJsonFromUrl(s + "/getNodes"));
 
@@ -385,7 +392,7 @@ public class TournamentService {
                         }
                     }
                    catch (Exception e){
-//                        e.printStackTrace();
+                        e.printStackTrace();
                        System.out.println("updatingNodeEndBlocks: host not worked: " + s);
                         continue;
                    }
@@ -402,16 +409,22 @@ public class TournamentService {
 
             }
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (SignatureException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (NoSuchProviderException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
         finally {
