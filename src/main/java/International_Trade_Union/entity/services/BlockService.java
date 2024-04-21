@@ -10,6 +10,8 @@ import International_Trade_Union.entity.repository.EntityDtoTransactionRepositor
 import International_Trade_Union.entity.repository.EntityLawsRepository;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.utils.UtilsBlockToEntityBlock;
+import International_Trade_Union.utils.base.Base;
+import International_Trade_Union.utils.base.Base58;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -46,11 +51,17 @@ public class BlockService {
     @Autowired
     private EntityAccountRepository entityAccountRepository;
 
+
+
+
     public  void deletedAll(){
         entityBlockRepository.deleteAll();
         entityAccountRepository.deleteAll();
         entityLawsRepository.deleteAll();
         dtoTransactionRepository.deleteAll();
+
+
+
     }
 
     public  EntityLawsRepository getLawService() {
@@ -201,12 +212,13 @@ public class BlockService {
     }
 
     public  EntityDtoTransaction findBySign(String sign){
-        Base64.Decoder decoder = Base64.getDecoder();
+        return dtoTransactionRepository.findBySign(sign);
 
-// декодируем строку обратно в массив байтов
-        byte[] decoded = decoder.decode(sign);
-        return dtoTransactionRepository.findBySign(decoded);
+    }
 
+    public boolean existsBySign(byte[] sign){
+        Base base = new Base58();
+        return dtoTransactionRepository.existsBySign(base.encode(sign));
     }
     @javax.transaction.Transactional
     public  List<EntityDtoTransaction> findAllDto(){

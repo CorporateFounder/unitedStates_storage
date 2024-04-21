@@ -6,8 +6,11 @@ import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.utils.base.Base;
+import International_Trade_Union.utils.base.Base58;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.File;
@@ -22,9 +25,21 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static International_Trade_Union.setings.Seting.*;
+import static International_Trade_Union.setings.Seting.IS_SECURITY;
+import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 
 public class UtilsBlock {
+
+
+    private static BlockService blockService;
+
+    public static BlockService getBlockService() {
+        return blockService;
+    }
+
+    public static void setBlockService(BlockService blockService) {
+        UtilsBlock.blockService = blockService;
+    }
     //wallet
 
     //this need olny find cheater
@@ -363,6 +378,7 @@ public class UtilsBlock {
             int difficultyAdjustmentInterval,
             List<Block> lastBlock) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 
+        Base base = new Base58();
         if (!addressFounder.equals(thisBlock.getFounderAddress())) {
             System.out.println("genesis address not equals block founder: ");
             System.out.println("genesis address: " + addressFounder);
@@ -402,6 +418,8 @@ public class UtilsBlock {
         int countBasisSendAll = 0;
         finished:
         for (DtoTransaction transaction : thisBlock.getDtoTransactions()) {
+
+
             if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                 double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
                 double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
@@ -526,6 +544,18 @@ public class UtilsBlock {
                 break finished;
             }
 
+            if(thisBlock.getIndex() > Seting.DUPLICATE_INDEX ){
+                if(blockService != null){
+                    if(blockService.existsBySign(transaction.getSign())){
+                        System.out.println("=====================================");
+                        System.out.println("has duplicate transaction");
+                        System.out.println("=====================================");
+                        validated = false;
+                        break finished;
+                    }
+                }
+            }
+
         }
 
         String target = BlockchainDifficulty.calculateTarget(thisBlock.getHashCompexity());
@@ -599,10 +629,11 @@ public class UtilsBlock {
                 return false;
             }
         }
-
+        // Проверяем условия
 
         return validated;
     }
+
 
     public static void deleteFiles() {
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BLOCKCHAIN_FILE);

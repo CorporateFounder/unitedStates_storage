@@ -1163,6 +1163,15 @@ public class BasisController {
     ){
         return blockService.countCustomerTransaction(address);
     }
+
+
+    @GetMapping("/addresses")
+    @ResponseBody
+    public Map<String, Account> addresses(){
+        Map<String, Account> accountMap = UtilsAccountToEntityAccount
+                .entityAccountsToMapAccounts(blockService.findAllAccounts());
+        return accountMap;
+    }
 }
 
 

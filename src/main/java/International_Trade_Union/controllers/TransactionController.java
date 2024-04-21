@@ -4,11 +4,13 @@ package International_Trade_Union.controllers;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 
 @RestController
 public class TransactionController {
+    @Autowired
+    BlockService blockService;
     //транзакции которые попали в блокчейн.
     private static List<Block> transactionsAdded = new ArrayList<>();
 
@@ -60,6 +64,9 @@ public class TransactionController {
     public List<DtoTransaction> getTransaction() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
        List<DtoTransaction> transactions= AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
        transactions = getTransactions(transactions);
+       transactions = transactions.stream()
+               .filter(t->!blockService.existsBySign(t.getSign()))
+               .collect(Collectors.toList());
        transactions = balanceTransaction(transactions);
        return transactions;
     }

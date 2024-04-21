@@ -54,6 +54,9 @@ public class UtilsResolving {
 
     public int resolve3() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         BasisController.setUpdating(true);
+        UtilsBalance.setBlockService(blockService);
+        Blockchain.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
 
         //удаляет файлы которые хранять заблокированные хосты
         if (BasisController.getBlockchainSize() % Seting.DELETED_FILE_BLOCKED_HOST == 0) {
@@ -357,11 +360,13 @@ public class UtilsResolving {
                                     System.out.println("===========================");
                                     temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
                                 }
-//                                temp = helpResolve3(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
-//                                temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
 
                                 System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++");
                                 //если скачанный блокчейн не валидный, то не добавляет в блокчейн, возвращает -10
+                                if (BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
+                                    System.out.println("error resolve 2 in portion upper > 500");
+                                    return -10;
+                                }
 
 
                                 //добавляет мета данные блокчейна в static переменную, как так
@@ -538,9 +543,9 @@ public class UtilsResolving {
                                         temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
                                     }
 
-//                                    if (Seting.IS_SECURITY && BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
-//                                        return -10;
-//                                    }
+                                    if (Seting.IS_SECURITY && BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
+                                        return -10;
+                                    }
 
                                     BasisController.setShortDataBlockchain(temp);
                                     BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
@@ -707,7 +712,6 @@ public class UtilsResolving {
                                 System.out.println("===========================");
                                 temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
                             }
-
 
 
 
@@ -1209,7 +1213,8 @@ public class UtilsResolving {
             }
 
 
-        } else if (BasisController.getShortDataBlockchain().getSize() > 1 && temp.isValidation()) {
+        }
+        else if (BasisController.getShortDataBlockchain().getSize() > 1 && temp.isValidation()) {
             //вызывает методы, для сохранения списка блоков в текущий блокчейн,
             //так же записывает в базу h2, делает перерасчет всех балансов,
             //и так же их записывает, а так же записывает другие данные.
@@ -1800,6 +1805,7 @@ public class UtilsResolving {
 
                                 return -10;
                             }
+
                             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                             if (!temp.isValidation()) {
                                 System.out.println("check all file");
@@ -1861,7 +1867,9 @@ public class UtilsResolving {
     @Transactional
     public void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-
+        UtilsBalance.setBlockService(blockService);
+        Blockchain.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
         List<EntityBlock> list = new ArrayList<>();
         List<String> signs = new ArrayList<>();
         //пакет законов.

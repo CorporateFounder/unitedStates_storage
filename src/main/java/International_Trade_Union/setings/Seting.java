@@ -165,8 +165,8 @@ public interface Seting {
     double COUNT_BLOCK_IN_DAY = (DAY_SECOND / BLOCK_TIME);
 
     //    String testPath = IS_TEST? "D:/" :"";
-    String testPath = IS_TEST ? "C:/" : "";
-//    String testPath = IS_TEST ? "" : "";
+//    String testPath = IS_TEST ? "C:/" : "";
+    String testPath = IS_TEST ? "" : "";
 
     String ORIGINAL_BLOCKCHAIN_FILE = testPath + "/server/resources/blockchain/";
     String ORIGINAL_BALANCE_FILE = testPath + "/server/resources/balance/";
@@ -309,5 +309,6 @@ public interface Seting {
     int DELETED_FILE_BLOCKED_HOST_TIME_SECOND = 1000;
 
     int IS_BIG_DIFFERENT = 300;
+    int DUPLICATE_INDEX = 243927;
 
 }
