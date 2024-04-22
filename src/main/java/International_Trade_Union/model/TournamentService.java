@@ -140,7 +140,9 @@ public class TournamentService {
                 BasisController.setIsSaveFile(true);
                 return;
             }
-
+            UtilsBalance.setBlockService(blockService);
+            Blockchain.setBlockService(blockService);
+            UtilsBlock.setBlockService(blockService);
 
 //            System.out.println("different time: " + timeDifference);
 

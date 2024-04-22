@@ -1,20 +1,27 @@
 package International_Trade_Union.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
 
 public class UtilUrl {
+    ////модифицированный ими код
+    public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
+        InputStream is = new URL(url).openStream();
+        try {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+            String jsonText = readAll(rd);
+            ObjectMapper mapper = new ObjectMapper();
+            return jsonText;
+        } finally {
+//             System.out.println("UtilUrl: readJsonFromUrl: " + url );
+            is.close();
+        }
+    }
     public static String readJsonFromUrl(String url) throws IOException, JSONException {
         InputStream is = new URL(url).openStream();
         try {
@@ -27,7 +34,6 @@ public class UtilUrl {
             is.close();
         }
     }
-
 
 
     private static String readAll(Reader rd) throws IOException {
@@ -76,6 +82,7 @@ public class UtilUrl {
 
     public static int sendPost(String jsonObject, String requestStr) throws IOException {
         int response;
+
         URL url = new URL(requestStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 //        conn.connect();

@@ -812,6 +812,9 @@ public class BasisController {
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
             }
+            UtilsBalance.setBlockService(blockService);
+            Blockchain.setBlockService(blockService);
+            UtilsBlock.setBlockService(blockService);
 
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
             System.out.println("isSave: " + isSaveFile);
