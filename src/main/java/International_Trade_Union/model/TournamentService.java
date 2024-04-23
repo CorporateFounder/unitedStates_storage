@@ -402,12 +402,12 @@ public class TournamentService {
                 }
                 System.out.println("finish download host");
                 System.out.println("download host --------------------------------------------");
-                winnerDiff = new ArrayList<>();
-                winnerCountTransaction = new ArrayList<>();
-                winnerStaking = new ArrayList<>();
-                winner = new ArrayList<>();
-                //обнуляет победителей, для нового раунда.
-                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+//                winnerDiff = new ArrayList<>();
+//                winnerCountTransaction = new ArrayList<>();
+//                winnerStaking = new ArrayList<>();
+//                winner = new ArrayList<>();
+//                //обнуляет победителей, для нового раунда.
+//                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
 
             }
         } catch (IOException e) {
