@@ -124,7 +124,8 @@ public class UtilsResolving {
                     //if the size from the storage is larger than on the local server, start checking
                     //если размер с хранилища больше чем на локальном сервере, начать проверку
                     System.out.println("resolve3 size: " + size + " blocks_current_size: " + blocks_current_size);
-                    if (isBig(BasisController.getShortDataBlockchain(), global)) {
+                    Block prevGlobal = UtilsJson.jsonToBLock(UtilUrl.readJsonFromUrl(s+"/prevBlock"));
+                    if (isBig(BasisController.getShortDataBlockchain(), global, prevGlobal)) {
                         System.out.println(":size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
                         //Test start algorithm
                         //600 последних блоков, для подсчета сложности, для последнего блока.
@@ -763,8 +764,9 @@ public class UtilsResolving {
     //TODO тестовая версия
     public boolean isBig(
             DataShortBlockchainInformation actual,
-            DataShortBlockchainInformation global) {
-        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber() + Seting.CRITICAL_DIFFERENCE) {
+            DataShortBlockchainInformation global,
+            Block prevBlock) {
+        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber() + (prevBlock.getHashCompexity() * 9)) {
             return true;
         } else if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() == actual.getBigRandomNumber()) {
             if (global.getHashCount() > actual.getHashCount()) {
@@ -1603,7 +1605,8 @@ public class UtilsResolving {
                     String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
                     System.out.println("jsonGlobalData: " + jsonGlobalData);
                     DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
-                    if (isBig(BasisController.getShortDataBlockchain(), global)) {
+                    Block prevGlobal = UtilsJson.jsonToBLock(UtilUrl.readJsonFromUrl(s+"/prevBlock"));
+                    if (isBig(BasisController.getShortDataBlockchain(), global, prevGlobal)) {
                         System.out.println(":size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
                         //Test start algorithm
                         //600 последних блоков, для подсчета сложности, для последнего блока.
