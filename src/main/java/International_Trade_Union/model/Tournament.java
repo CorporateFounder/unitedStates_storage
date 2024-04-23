@@ -62,6 +62,7 @@ public class Tournament implements Runnable {
                     prevTime = BasisController.prevBlock().getTimestamp().getTime();
                 }
 
+                tournament.updatingNodeEndBlocks();
                 tournament.tournament();
                 tournament.updatingNodeEndBlocks();
 
