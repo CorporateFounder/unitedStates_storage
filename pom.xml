@@ -8,9 +8,10 @@
 		<version>2.7.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.UNITED_STATES_CORPORATION_OF_HUMANITY</groupId>
 	<artifactId>unitedStates</artifactId>
-	<version>0.0.44-SNAPSHOT</version>
+	<version>0.0.46-SNAPSHOT</version>
 	<name>unitedStates</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
