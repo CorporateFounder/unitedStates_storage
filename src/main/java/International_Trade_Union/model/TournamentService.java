@@ -339,7 +339,7 @@ public class TournamentService {
     }
 
 
-    public void updatingNodeEndBlocks() throws InterruptedException {
+    public void updatingNodeEndBlocks()  {
         try {
 
             MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);

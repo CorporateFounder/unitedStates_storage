@@ -79,7 +79,7 @@ public class Tournament implements Runnable {
                 long prevTime = Tournament.getPrevTime() / 1000L;
                 long timeDifference = timestamp - prevTime;
 
-                if(timeDifference > Seting.TIME_UPDATING ){
+                if(timeDifference > Seting.TIME_TOURNAMENT_SECOND ){
                     System.out.println("----------------------------------------------------");
 
                     System.out.println("change time prev before: " + Tournament.getPrevTime());
