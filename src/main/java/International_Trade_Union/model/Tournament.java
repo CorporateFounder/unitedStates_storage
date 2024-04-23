@@ -62,12 +62,10 @@ public class Tournament implements Runnable {
                     prevTime = BasisController.prevBlock().getTimestamp().getTime();
                 }
 
-                tournament.updatingNodeEndBlocks();
+
                 tournament.tournament();
                 tournament.updatingNodeEndBlocks();
 
-                List<Block> winner = new ArrayList<>();
-                List<Block> winnerList = new ArrayList<>();
 
                 //TODO
                 //если после обновления победитель изменился
@@ -79,7 +77,7 @@ public class Tournament implements Runnable {
                 long prevTime = Tournament.getPrevTime() / 1000L;
                 long timeDifference = timestamp - prevTime;
 
-                if(timeDifference > Seting.TIME_TOURNAMENT_SECOND ){
+                if(timeDifference > Seting.TIME_TOURNAMENT_SECOND + 10){
                     System.out.println("----------------------------------------------------");
 
                     System.out.println("change time prev before: " + Tournament.getPrevTime());
