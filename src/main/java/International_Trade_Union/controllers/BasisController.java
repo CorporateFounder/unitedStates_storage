@@ -555,10 +555,11 @@ public class BasisController {
                 blockcheinSize = (int) shortDataBlockchain.getSize();
                 blockchainValid = shortDataBlockchain.isValidation();
             }
-            while (!isSaveFile) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return new ArrayList<>();
-            }
+            //TODO если что можно это включить
+//            while (!isSaveFile) {
+//            System.out.println("saving file: resolve_from_to_block: sub block");
+//            return new ArrayList<>();
+//            }
 
             int start = entity.getStart() >= 1 ? entity.getStart() : 0;
             int finish = entity.getFinish() > start ? entity.getFinish() : blockcheinSize - 1;
