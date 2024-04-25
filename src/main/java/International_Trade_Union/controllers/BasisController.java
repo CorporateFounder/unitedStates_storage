@@ -556,10 +556,10 @@ public class BasisController {
                 blockchainValid = shortDataBlockchain.isValidation();
             }
             //TODO если что можно это включить
-//            while (!isSaveFile) {
-//            System.out.println("saving file: resolve_from_to_block: sub block");
-//            return new ArrayList<>();
-//            }
+            while (!isSaveFile) {
+            System.out.println("saving file: resolve_from_to_block: sub block");
+            return new ArrayList<>();
+            }
 
             int start = entity.getStart() >= 1 ? entity.getStart() : 0;
             int finish = entity.getFinish() > start ? entity.getFinish() : blockcheinSize - 1;
@@ -1002,6 +1002,7 @@ public class BasisController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            UtilsFileSaveRead.save(e.toString(), Seting.ERROR_FILE, true);
 //            prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            resolve_conflicts();
             EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
