@@ -31,6 +31,7 @@ public class Tournament implements Runnable {
     TournamentService tournament;
 
     private static long prevTime;
+    private static long prevUpdateTime;
 
     public static long getPrevTime() {
         return prevTime;
@@ -38,6 +39,14 @@ public class Tournament implements Runnable {
 
     public static void setPrevTime(long prevTime) {
         Tournament.prevTime = prevTime;
+    }
+
+    public static long getPrevUpdateTime() {
+        return prevUpdateTime;
+    }
+
+    public static void setPrevUpdateTime(long prevUpdateTime) {
+        Tournament.prevUpdateTime = prevUpdateTime;
     }
 
     @PostConstruct
@@ -49,9 +58,7 @@ public class Tournament implements Runnable {
     }
     @Override
     public void run() {
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println("tournament:");
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
 
 
 
@@ -89,6 +96,22 @@ public class Tournament implements Runnable {
                     System.out.println("change time after before: " + Tournament.getPrevTime());
                     System.out.println("----------------------------------------------------");
                 }
+
+                long timestamp2 = UtilsTime.getUniversalTimestamp() / 1000;
+                long prevTime2 = Tournament.getPrevUpdateTime() / 1000L;
+                long timeDifference2 = timestamp2 - prevTime2;
+
+                if(timeDifference2 > Seting.TIME_UPDATING + 10){
+                    System.out.println("----------------------------------------------------");
+
+                    System.out.println("change time prev before: " + Tournament.getPrevTime());
+                    Tournament.setPrevUpdateTime(UtilsTime.getUniversalTimestamp());
+                    System.out.println("timeDifference: " + timeDifference);
+                    System.out.println("change time after before: " + Tournament.getPrevTime());
+                    System.out.println("----------------------------------------------------");
+                }
+
+
 
             }catch (Exception e){
                 e.printStackTrace();

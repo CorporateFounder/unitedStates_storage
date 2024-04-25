@@ -80,8 +80,6 @@ public class UtilsResolving {
             //goes through all hosts (repositories) in search of the most up-to-date blockchain
             //проходит по всем хостам(хранилищам) в поисках самого актуального блокчейна
             Set<String> nodesAll = getNodes();
-            //сортирует по приоритетности блокчейны
-            Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
 
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
             Set<String> newAddress = newHostsLoop(sortPriorityHost.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
@@ -699,11 +697,6 @@ public class UtilsResolving {
                             System.out.println("3: blockchainsize: " + BasisController.getBlockchainSize());
                             System.out.println("3: sublocks: " + subBlocks.size());
 
-
-//                            jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
-//                            System.out.println("3: jsonGlobalData: " + jsonGlobalData);
-//                            global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
-//                            temp = helpResolve3(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
 
                             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                             tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());

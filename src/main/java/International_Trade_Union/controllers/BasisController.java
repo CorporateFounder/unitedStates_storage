@@ -527,8 +527,9 @@ public class BasisController {
 
 
         if (blockchainValid == false) {
-            System.out.println("/size blockchain not valid: " + blockchainValid);
-            UtilsBlock.deleteFiles();
+            System.out.println("blockchain broken: " + blockchainValid);
+            System.exit(0);
+//            UtilsBlock.deleteFiles();
             return 1;
         }
 //        System.out.println("finish /size");
@@ -918,7 +919,8 @@ public class BasisController {
 
                 if (!shortDataBlockchain.isValidation()) {
                     System.out.println("wrong block chain, delete blocks: from to block:");
-                    UtilsBlock.deleteFiles();
+                    System.exit(0);
+//                    UtilsBlock.deleteFiles();
 //                blockchain.setBlockchainList(new ArrayList<>());
                     return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
                 }

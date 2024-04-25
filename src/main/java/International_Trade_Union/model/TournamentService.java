@@ -115,7 +115,7 @@ public class TournamentService {
 
     @Transactional
     public void tournament() {
-        System.out.println("tournament start:");
+
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
             long prevTime = Tournament.getPrevTime() / 1000L;
             long timeDifference = timestamp - prevTime ;
@@ -330,7 +330,7 @@ public class TournamentService {
             e.printStackTrace();
             throw new RuntimeException(e);
         }  finally {
-            System.out.println("finish tournament");
+
             BasisController.setIsSaveFile(true);
         }
 
@@ -346,7 +346,7 @@ public class TournamentService {
 
 
 
-            long prevTime = Tournament.getPrevTime()/1000L;
+            long prevTime = Tournament.getPrevUpdateTime()/1000L;
             long timeDifference = timestamp - prevTime ;
             //timestamp % Seting.TIME_UPDATING == 0
             if(timeDifference > Seting.TIME_UPDATING){
@@ -430,11 +430,6 @@ public class TournamentService {
             throw new RuntimeException(e);
         }
         finally {
-            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
-            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
-            System.out.println("update result: " +result );
-            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
-            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
             BasisController.setIsSaveFile(true);
         }
 

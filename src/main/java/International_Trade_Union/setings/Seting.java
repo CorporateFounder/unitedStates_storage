@@ -198,7 +198,7 @@ public interface Seting {
     Set<String> ORIGINAL_BLOCKED_ADDRESS = Set.of("http://154.40.38.130:80",
             "http://10.0.36.2:80");
 
-    int SIZE_FILE_LIMIT = 10;
+    int SIZE_FILE_LIMIT = 2;
 
     //папки файла для тестирования с сохранениям файла
 
@@ -297,7 +297,7 @@ public interface Seting {
 
     int TIME_CHECK_BLOCK = 233682; //221055
 
-    long TIME_UPDATING = 105;
+    long TIME_UPDATING = 210;
 
     int RANDOM_HOSTS = 10;
 
