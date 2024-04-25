@@ -63,12 +63,12 @@ public class Tournament implements Runnable {
                 }
 
 
+                tournament.updatingNodeEndBlocks();
                 tournament.tournament();
 
                 tournament.updatingNodeEndBlocks();
 
-                List<Block> winner = new ArrayList<>();
-                List<Block> winnerList = new ArrayList<>();
+
 
                 //TODO
                 //если после обновления победитель изменился

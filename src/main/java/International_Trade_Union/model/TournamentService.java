@@ -115,9 +115,7 @@ public class TournamentService {
 
     @Transactional
     public void tournament() {
-
-
-
+        System.out.println("tournament start:");
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
             long prevTime = Tournament.getPrevTime() / 1000L;
             long timeDifference = timestamp - prevTime ;
@@ -332,7 +330,7 @@ public class TournamentService {
             e.printStackTrace();
             throw new RuntimeException(e);
         }  finally {
-
+            System.out.println("finish tournament");
             BasisController.setIsSaveFile(true);
         }
 
@@ -340,10 +338,12 @@ public class TournamentService {
 
 
     public void updatingNodeEndBlocks()  {
+        int result = -10;
         try {
 
             MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
             long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
+
 
 
             long prevTime = Tournament.getPrevTime()/1000L;
@@ -357,7 +357,7 @@ public class TournamentService {
                 System.out.println("timestamp: " + timestamp);
                 System.out.println("timeDifferent: " + timeDifference);
                 //TODO здесь будет скачиваться обновление
-                utilsResolving.resolve3();
+                result = utilsResolving.resolve3();
                 System.out.println("finish updating --------------------------------------------");
                 System.out.println("time changing in update: " + timeDifference);
 
@@ -430,6 +430,11 @@ public class TournamentService {
             throw new RuntimeException(e);
         }
         finally {
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("update result: " +result );
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
             BasisController.setIsSaveFile(true);
         }
 
