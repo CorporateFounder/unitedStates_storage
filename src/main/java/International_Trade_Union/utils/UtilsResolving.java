@@ -239,9 +239,11 @@ public class UtilsResolving {
                                     if (!temp.isValidation()) {
                                         System.out.println("error validation: " + temp);
                                     }
+
                                     BasisController.setShortDataBlockchain(temp);
-                                    BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                                    BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
+                                    BasisController.setBlockcheinSize((int) temp.getSize());
+                                    BasisController.setBlockchainValid(temp.isValidation());
+
                                     EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
                                     BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
                                     System.out.println("prevBlock: " + BasisController.prevBlock().getIndex() + " shortDataBlockchain: " + BasisController.getShortDataBlockchain());
@@ -373,18 +375,19 @@ public class UtilsResolving {
                                 }
 
 
+                                if (Seting.IS_SECURITY && BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
+                                    return -10;
+                                }
+
                                 //добавляет мета данные блокчейна в static переменную, как так
                                 //уже эти мета данные являются актуальными.
                                 //adds capacitor metadata to a static variable like so
                                 //this metadata is already relevant.
                                 BasisController.setShortDataBlockchain(temp);
-                                //размер блокчейна в кошельке.
-                                //the size of the blockchain in the wallet.
+                                BasisController.setBlockcheinSize((int) temp.getSize());
+                                BasisController.setBlockchainValid(temp.isValidation());
 
-                                BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                                //валидность блокчейна в кошельке.
-                                //validity of the blockchain in the wallet.
-                                BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
+
                                 //получить последний блок из базы данных.
                                 //get the last block from the database.
                                 EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
@@ -558,9 +561,9 @@ public class UtilsResolving {
                                     }
 
                                     BasisController.setShortDataBlockchain(temp);
-                                    BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                                    BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
-//
+                                    BasisController.setBlockcheinSize((int) temp.getSize());
+                                    BasisController.setBlockchainValid(temp.isValidation());
+
                                     tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
                                     BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
 
@@ -723,13 +726,15 @@ public class UtilsResolving {
                                 temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
                             }
 
+                            if (Seting.IS_SECURITY && BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
+                                return -10;
+                            }
 
 
                             BasisController.setShortDataBlockchain(temp);
-                            BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                            BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
+                            BasisController.setBlockcheinSize((int) temp.getSize());
+                            BasisController.setBlockchainValid(temp.isValidation());
 
-//                            prevBlock = Blockchain.indexFromFile(blockchainSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                             EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
                             BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
 
