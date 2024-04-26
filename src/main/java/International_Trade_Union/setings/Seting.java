@@ -305,7 +305,7 @@ public interface Seting {
     String NAME_SERVER = "STANDART";
     String PUBLIC_KEY = "STANDART";
 
-    int DELETED_FILE_BLOCKED_HOST = 5;
+    int DELETED_FILE_BLOCKED_HOST = 600;
     int DELETED_FILE_BLOCKED_HOST_TIME_SECOND = 1000;
 
     int IS_BIG_DIFFERENT = 300;
