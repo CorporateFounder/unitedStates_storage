@@ -527,10 +527,11 @@ public class BasisController {
 
 
         if (blockchainValid == false) {
-            System.out.println("blockchain broken: " + blockchainValid);
-            System.exit(0);
+            System.out.println("/size blockchain not valid: " + blockchainValid);
+
 //            UtilsBlock.deleteFiles();
-            return 1;
+//            return 1;
+            System.exit(0);
         }
 //        System.out.println("finish /size");
         return blockcheinSize; //blockchain.sizeBlockhain();

@@ -80,6 +80,8 @@ public class UtilsResolving {
             //goes through all hosts (repositories) in search of the most up-to-date blockchain
             //проходит по всем хостам(хранилищам) в поисках самого актуального блокчейна
             Set<String> nodesAll = getNodes();
+            //сортирует по приоритетности блокчейны
+            Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
 
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
             Set<String> newAddress = newHostsLoop(sortPriorityHost.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
