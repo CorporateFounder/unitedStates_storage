@@ -285,7 +285,7 @@ public class UtilsResolving {
                                     System.out.println("===========================");
                                     System.out.println("!local_size_upper: " + !local_size_upper);
                                     System.out.println("===========================");
-                                    temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
+                                    temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, false);
 
                                 }
 
@@ -293,7 +293,7 @@ public class UtilsResolving {
                                     System.out.println("===========================");
                                     System.out.println("local_size_upper: " + local_size_upper);
                                     System.out.println("===========================");
-                                    temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
+                                    temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, false);
                                 }
 
                                 System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -401,7 +401,7 @@ public class UtilsResolving {
                                         System.out.println("===========================");
                                         System.out.println("!local_size_upper: " + !local_size_upper);
                                         System.out.println("===========================");
-                                        temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
+                                        temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
 
                                     }
 
@@ -409,7 +409,7 @@ public class UtilsResolving {
                                         System.out.println("===========================");
                                         System.out.println("local_size_upper: " + local_size_upper);
                                         System.out.println("===========================");
-                                        temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
+                                        temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
                                     }
 
                                     if (Seting.IS_SECURITY && BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
@@ -501,7 +501,7 @@ public class UtilsResolving {
                                 System.out.println("===========================");
                                 System.out.println("!local_size_upper: " + !local_size_upper);
                                 System.out.println("===========================");
-                                temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
+                                temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
 
                             }
 
@@ -509,7 +509,7 @@ public class UtilsResolving {
                                 System.out.println("===========================");
                                 System.out.println("local_size_upper: " + local_size_upper);
                                 System.out.println("===========================");
-                                temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks);
+                                temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
                             }
 
 
@@ -789,7 +789,8 @@ public class UtilsResolving {
                                                        Map<String, Account> tempBalances,
                                                        List<String> sign,
                                                        Map<String, Account> balances,
-                                                       List<Block> subBlocks)
+                                                       List<Block> subBlocks,
+                                                       boolean checking)
             throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException,
             InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //TODO сначала найти блок откуда начинается ответление и докуда
@@ -873,7 +874,7 @@ public class UtilsResolving {
             }
 
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
-            if (Seting.IS_SECURITY == true && isSmall(global, temp)){
+            if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)){
                 temp.setValidation(false);
                 return temp;
             }
@@ -912,7 +913,7 @@ public class UtilsResolving {
             //и так же их записывает, а так же записывает другие данные.
 
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
-            if (Seting.IS_SECURITY == true && isSmall(global, temp)){
+            if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)){
                 temp.setValidation(false);
                 return temp;
             }
@@ -931,7 +932,8 @@ public class UtilsResolving {
                                                        Map<String, Account> tempBalances,
                                                        List<String> sign,
                                                        Map<String, Account> balances,
-                                                       List<Block> subBlocks)
+                                                       List<Block> subBlocks,
+                                                       boolean checking)
             throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException,
             InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //TODO сначала найти блок откуда начинается ответление и докуда
@@ -1010,7 +1012,7 @@ public class UtilsResolving {
             }
 
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
-            if (Seting.IS_SECURITY == true && isSmall(global, temp)){
+            if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)){
                 temp.setValidation(false);
                 return temp;
             }
@@ -1048,12 +1050,10 @@ public class UtilsResolving {
             //и так же их записывает, а так же записывает другие данные.
 
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
-            if (Seting.IS_SECURITY == true && isSmall(global, temp)){
+            if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)){
                 temp.setValidation(false);
-
                 return temp;
             }
-
             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         }
 
