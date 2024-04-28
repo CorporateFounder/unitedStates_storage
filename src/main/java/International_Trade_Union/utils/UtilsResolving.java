@@ -576,7 +576,7 @@ public class UtilsResolving {
     public boolean isBig(
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
-        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber()+ (BasisController.prevBlock().getHashCompexity() * 9)) {
+        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber()+ (BasisController.prevBlock().getHashCompexity() * 30)) {
             return true;
         }
         return false;
