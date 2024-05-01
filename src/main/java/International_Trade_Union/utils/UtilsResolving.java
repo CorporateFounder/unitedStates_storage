@@ -584,6 +584,7 @@ public class UtilsResolving {
     }
 
 
+
     public boolean isSmall(DataShortBlockchainInformation expected, DataShortBlockchainInformation actual) {
         if (
                 actual.getSize() < expected.getSize()
