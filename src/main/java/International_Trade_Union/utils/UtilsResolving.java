@@ -576,7 +576,7 @@ public class UtilsResolving {
     public boolean isBig(
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
-        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber()+ (BasisController.prevBlock().getHashCompexity() * 35)) {
+        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber()+ (BasisController.prevBlock().getHashCompexity() * 70)) {
             return true;
         }
         return false;
@@ -861,9 +861,6 @@ public class UtilsResolving {
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
             temp = Blockchain.rollBackShortCheck( different, BasisController.getShortDataBlockchain(), tempBalance, sign);
 
-            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
-            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
-            tempBalances.putAll(balances);
             if (!emptyList.isEmpty()) {
 
 
@@ -1012,9 +1009,6 @@ public class UtilsResolving {
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
             temp = Blockchain.rollBackShortCheck( different, BasisController.getShortDataBlockchain(),  tempBalance, sign);
 
-            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
-            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
-            tempBalances.putAll(balances);
             //TODO проверить если данные совпадают с ожидаемыми global, то произвести запись
 
 
