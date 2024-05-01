@@ -513,7 +513,7 @@ public class UtilsResolving {
                             }
 
 
-                            if (Seting.IS_SECURITY && BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
+                            if (  !temp.isValidation()) {
                                 UtilsFileSaveRead.save("-----------------------------------------------: " , Seting.ERROR_FILE, true);
                                 //TODO добавить хост в заблокированный файл
                                 System.out.println("-------------------------------------------------");
@@ -576,7 +576,7 @@ public class UtilsResolving {
     public boolean isBig(
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
-        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber()+ (BasisController.prevBlock().getHashCompexity() * 30)) {
+        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT && global.getBigRandomNumber() > actual.getBigRandomNumber()+ (BasisController.prevBlock().getHashCompexity() * 35)) {
             return true;
         }
         return false;
@@ -588,8 +588,6 @@ public class UtilsResolving {
         if (
                 actual.getSize() < expected.getSize()
                         || actual.getBigRandomNumber() < expected.getBigRandomNumber()
-                        || actual.getHashCount() < expected.getHashCount()
-//                        || actual.getStaking() < expected.getStaking()
                         || actual.getTransactions() < expected.getTransactions()
 
         ) {
@@ -862,6 +860,9 @@ public class UtilsResolving {
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
             temp = Blockchain.rollBackShortCheck( different, BasisController.getShortDataBlockchain(), tempBalance, sign);
 
+            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
+            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
+            tempBalances.putAll(balances);
             if (!emptyList.isEmpty()) {
 
 
@@ -878,6 +879,11 @@ public class UtilsResolving {
                 temp.setValidation(false);
                 return temp;
             }
+            if(!temp.isValidation()){
+                return temp;
+            }
+
+
 
             System.out.println("after rollback: " + temp);
             if (temp.isValidation()) {
@@ -917,6 +923,10 @@ public class UtilsResolving {
                 temp.setValidation(false);
                 return temp;
             }
+            if(!temp.isValidation()){
+                return temp;
+            }
+
             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         }
 
@@ -1001,6 +1011,9 @@ public class UtilsResolving {
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
             temp = Blockchain.rollBackShortCheck( different, BasisController.getShortDataBlockchain(),  tempBalance, sign);
 
+            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
+            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
+            tempBalances.putAll(balances);
             //TODO проверить если данные совпадают с ожидаемыми global, то произвести запись
 
 
@@ -1016,6 +1029,10 @@ public class UtilsResolving {
                 temp.setValidation(false);
                 return temp;
             }
+            if(!temp.isValidation()){
+                return temp;
+            }
+
             System.out.println("after rollback: " + temp);
             if (temp.isValidation()) {
                 System.out.println("------------------------------------------");
@@ -1054,6 +1071,10 @@ public class UtilsResolving {
                 temp.setValidation(false);
                 return temp;
             }
+            if(!temp.isValidation()){
+                return temp;
+            }
+
             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         }
 
