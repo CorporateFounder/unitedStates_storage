@@ -19,6 +19,7 @@ import java.util.Set;
 public class NodesController {
 
 
+    /**добавить адрес узла*/
     @PostMapping("/putNode")
 
     public void addNode(@RequestBody MyHost host) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException, JSONException {

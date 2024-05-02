@@ -33,6 +33,8 @@ public class TransactionController {
     public TransactionController() {
     }
 
+    /**Добавить транзакцию в список транзакций, ожидающих добавления в блокчейн*/
+
     @RequestMapping(method = RequestMethod.POST, value = "/addTransaction", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void add(@RequestBody DtoTransaction data) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 //        System.out.println("add transaction: " + data);
@@ -46,6 +48,7 @@ public class TransactionController {
         System.out.println("TransactionController: add: " + AllTransactions.getInstance().size());
     }
 
+    /**Возвращает хэш транзакций*/
     public static Set<String> hashTransaction() throws JsonProcessingException {
         Set<String> strings = new HashSet<>();
         transactionsAdded = Blockchain.subFromFile(BasisController.getBlockchainSize() - Seting.TRANSACTIONS_COUNT_ADDED,
@@ -60,6 +63,8 @@ public class TransactionController {
         return strings;
     }
 
+    /**Возвращает список транзакций ожидающих добавления в блокчейн. В список не попадают транзакции,
+     * если они были уже добавлены в блокчейн или их баланс не соответствует сумме которую они хотят отправить*/
     @GetMapping("/getTransactions")
     public List<DtoTransaction> getTransaction() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
        List<DtoTransaction> transactions= AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
@@ -71,6 +76,7 @@ public class TransactionController {
        return transactions;
     }
 
+    /**Возвращает транзакции, которые имеют достаточно денег на счетах*/
     public static List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions){
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = BasisController.getBalances();

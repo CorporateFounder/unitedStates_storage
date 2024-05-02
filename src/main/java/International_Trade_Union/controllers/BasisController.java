@@ -47,26 +47,39 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 
 @RestController
 public class BasisController {
+
+    //Сервис для работы с базой данных h2
     @Autowired
     BlockService blockService;
 
 
+    /**список кандидатов с данного сервера в качестве победителей*/
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
+
     private static   boolean updating;
-    //список всех победителей
+    /**список всех победителей, данные могут не отражать реального победителя
+    если победитель был получен из другого сервера*/
     private static List<LiteVersionWiner> allWiners = new ArrayList<>();
+    /**на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется*/
     private static List<LiteVersionWiner> powerWiners = new ArrayList<>();
+    /**на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется*/
+
     private static List<LiteVersionWiner> countTransactionsWiner = new ArrayList<>();
+    /**на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется*/
     private static List<LiteVersionWiner> stakingWiners = new ArrayList<>();
+    /**окончательный победитель по показателю big random,
+    но может не учитывать реального победителя, если он получен из другого сервера.*/
     private static List<LiteVersionWiner> bigRandomWiner = new ArrayList<>();
 
     public static void setTotalTransactionsDays(int totalTransactionsDays) {
         BasisController.totalTransactionsDays = totalTransactionsDays;
     }
+    /**общее количество транзакций в сутки*/
     public static long totalTransactionsDays(){
         return BasisController.totalTransactionsDays;
     }
+    /**общее сумма долларов переведенных в сутки*/
     public static double totalTransactionsSumDollar(){
         return BasisController.totalTransactionsSumDllar;
     }
@@ -93,6 +106,7 @@ public class BasisController {
         return updating;
     }
 
+    /**Список кандидатов из которых был выбран победитель в данном сервере*/
     @GetMapping("/allwinners")
     @ResponseBody
     public String allWinners() throws IOException {
@@ -100,6 +114,7 @@ public class BasisController {
         return json;
     }
 
+    /**Устарел и не используется*/
     @GetMapping("/powerWiners")
     @ResponseBody
     public String powerWiners() throws IOException {
@@ -107,6 +122,7 @@ public class BasisController {
         return json;
     }
 
+    /**Устарел и не используется*/
     @GetMapping("/countTransactionsWiner")
     @ResponseBody
     public String countTransactionsWiner() throws IOException {
@@ -114,6 +130,7 @@ public class BasisController {
         return json;
     }
 
+    /**Устарел и не используется*/
     @GetMapping("/stakingWiners")
     @ResponseBody
     public String stakingWiners() throws IOException {
@@ -121,6 +138,12 @@ public class BasisController {
         return json;
     }
 
+    /**Параметр который определяет победителя, складывается из трех параметров.
+     * 1. Хэш блока является семенем для генерации случайного числа от нуля до 135.
+     * 2. сложность блока умноженая на число на данный момент 35, но может быть изменен
+     * 3. Стэйкинг, где спомощью логарифма вычисляется баллы, которые указаны в таблице.
+     * Все эти числа суммируется и получается результат, тот который получил наибольшее
+     * значение, становиться победителем.*/
     @GetMapping("/bigRandomWiner")
     @ResponseBody
     public String bigRandomWiner() throws IOException {
@@ -171,25 +194,42 @@ public class BasisController {
     private static int totalTransactionsDays = 0;
     private static double totalTransactionsSumDllar =0.0;
 
+    /**Каждые 100 секунд происходить турнир для отбора победителя.*/
     @Autowired
     Tournament tournament;
 
 
-
-    @Autowired
-    UtilsAddBlock utilsAddBlock;
+    /**Все акаунты*/
     private static Map<String, Account> balances = new HashMap<>();
+
+    /**Общее сумма долларов, не находящиеся в стэйкинге*/
     private static double totalDollars = 0;
     private static long dificultyOneBlock;
+
+    /**Если происходит запись, то не дает доступа к базе данных*/
     private volatile static boolean isSaveFile = true;
+
+    /**Последний блок в базе данных*/
     private static Block prevBlock = null;
+
+    /**Определяет в ценость блокчейна за счет мета данных, некоторые части уже не используется
+     * на данный момент используется только big random, size и количество транзакций. Оставшиеся
+     * параметры могут быть искажены. Если кошелек настроен на сервер и на сервере и на кошельке отличается
+     * параметр staking при одинаковой высоте, это может быть что поврежден файл resources либо
+     * на кошельке или сервере. Решение скачать с нуля папку ресурсы.*/
     private static DataShortBlockchainInformation shortDataBlockchain = null;
+
+    /**Высота блокчейна*/
     private static int blockcheinSize = 0;
+    /**целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
+     * удаляется, а сервер автоматически выключается System.exit(0)*/
     private static boolean blockchainValid = false;
     //    private static Blockchain blockchain;
     private static Set<String> excludedAddresses = new HashSet<>();
     private static boolean isSave = true;
 
+    /**целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
+     * удаляется, а сервер автоматически выключается System.exit(0)*/
     public static void setBlockchainValid(boolean blockchainValid) {
         BasisController.blockchainValid = blockchainValid;
     }
@@ -197,13 +237,18 @@ public class BasisController {
     public static void setShortDataBlockchain(DataShortBlockchainInformation shortDataBlockchain) {
         BasisController.shortDataBlockchain = shortDataBlockchain;
     }
+    /**Последний блок в базе данных*/
     public static Block prevBlock(){
         return prevBlock;
     }
     public static void changePrevBlock(Block block){
         prevBlock = block;
     }
-
+    /**Определяет в ценость блокчейна за счет мета данных, некоторые части уже не используется
+     * на данный момент используется только big random, size и количество транзакций. Оставшиеся
+     * параметры могут быть искажены. Если кошелек настроен на сервер и на сервере и на кошельке отличается
+     * параметр staking при одинаковой высоте, это может быть что поврежден файл resources либо
+     * на кошельке или сервере. Решение скачать с нуля папку ресурсы.*/
     @GetMapping("/datashort")
     public DataShortBlockchainInformation dataShortBlockchainInformation(){
 //        System.out.println("get /datashort");
@@ -216,6 +261,10 @@ public class BasisController {
         BasisController.prevBlock = prevBlock;
     }
 
+
+    /**Список потенциальных кандидатов на сервере за блок, но еще результат не предрешён
+     *и сюда будут добавляться блоки в течение 100 секунд, но блоки, если их время
+     * больше по времени от предыдущего блока на 100 секунд или больше*/
     public static CopyOnWriteArrayList<Block> getWinnerList() {
         return winnerList;
     }
@@ -241,6 +290,9 @@ public class BasisController {
         }
         return result;
     }
+
+    /**Если блок до и после ********* одинаковый, то файл последний на сервере не поврежден.
+     * Так как первый блок отбирается из базы данных h2, а второй тот же блок из уже файла. */
     @GetMapping("/status")
     @ResponseBody
     public String status() throws JsonProcessingException {
@@ -283,6 +335,7 @@ public class BasisController {
         return shortDataBlockchain;
     }
 
+    /**Высота локального блокчейна*/
     public static int getBlockchainSize() {
         return blockcheinSize;
     }
@@ -302,6 +355,7 @@ public class BasisController {
         return servletRequest;
     }
 
+    /**Возвращает список балансов*/
     public static Map<String, Account> getBalances() {
         return balances;
     }
@@ -314,10 +368,14 @@ public class BasisController {
     public int v28Start(){
         return Seting.V28_CHANGE_ALGORITH_DIFF_INDEX;
     }
+
+    /**Общее количество всех балансов. */
     @GetMapping("/allAccounts")
     public long accounts(){
         return balances.size();
     }
+
+    /**Общее количество долларов в обороте, не находящиеся в стэйкинге.*/
     @GetMapping("/totalDollars")
     public double getTotalDollars(){
         if(totalDollars == 0){
@@ -329,16 +387,21 @@ public class BasisController {
         return totalDollars;
     }
 
+    /**Общее количество транзакций совершенных в день*/
     @GetMapping("/totalTransactionsDay")
     public int getTotalTransactionsDays(){
         return totalTransactionsDays;
     }
 
+    /**Общее количество денег переведенных в день.*/
     @GetMapping("/totalTransactionsSum")
     public double getTotalTransactionsSumDllar(){
         return totalTransactionsSumDllar;
     }
-    
+
+    /**Мультипликатор, который определяет какой максимальный доход может быть добыт в этом году,
+     * каждый год он уменьшается, но не будет ниже единицы. Аналог халвинга для биткоина, но более
+     * плавный. В первый год начал работать с 29*/
     @GetMapping("/multiplier")
     public long multiplier(){
         long money = Seting.MULTIPLIER;
@@ -353,6 +416,8 @@ public class BasisController {
 
 
 
+    /**Обратный отсчет для снижения мультипликатора, вычисляет сколько дней осталось до
+     * следующего снижения*/
     @GetMapping("/dayReduce")
     public long daysReduce(){
         long reduceDays = 0;
@@ -506,6 +571,7 @@ public class BasisController {
     //TODO otherwise there will be a discrepancy in the balance file
 
 
+
     /**
      * возвращяет размер локального блокчейна
      */
@@ -600,15 +666,17 @@ public class BasisController {
 
     }
 
-    /**
-     * Возвращяет блок по индексу
-     */
 
     @GetMapping("/version")
     @ResponseBody
     public double version() {
         return Seting.VERSION;
     }
+
+
+    /**
+     * Возвращяет блок по индексу
+     */
 
     @PostMapping("/block")
     @ResponseBody
@@ -637,6 +705,7 @@ public class BasisController {
     }
 
 
+    /**устаревший метод*/
     public  void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         System.out.println("start addBLock");
         isSave = false;
@@ -687,6 +756,7 @@ public class BasisController {
         return isSaveFile;
     }
 
+    /**возвращает баланс аккаунта*/
     @GetMapping("/balance")
     @ResponseBody
     public Account getBalance(@RequestParam String address) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
@@ -752,6 +822,8 @@ public class BasisController {
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
 
     }
+
+    /**устаревший метод*/
     public  void getBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         int size = 0;
 
@@ -808,6 +880,8 @@ public class BasisController {
         return prevBlock;
     }
 
+
+    /**метод добавляет блоки в список ожидания, после чего их них уже формируется кандидаты и победитель*/
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         try {
@@ -1127,6 +1201,7 @@ public class BasisController {
         }
     }
 
+    /**возвращает информацию о сложности текущей в блокчейне и суммарном*/
     @GetMapping("/difficultyBlockchain")
     public InfoDificultyBlockchain dificultyBlockchain() {
         InfoDificultyBlockchain dificultyBlockchain = new InfoDificultyBlockchain();
@@ -1136,6 +1211,7 @@ public class BasisController {
     }
 
 
+    /**Получить список транзакций для адреса отправителя, от определенного блока до определенного блока*/
     @GetMapping("/senderTransactions")
     @ResponseBody
     public List<DtoTransaction> senderTransactions(
@@ -1146,6 +1222,7 @@ public class BasisController {
         return blockService.findBySender(address, from, to);
     }
 
+    /**Получить список транзакций для адреса получателя, от определенного блока до определенного блока*/
 
     @GetMapping("/customerTransactions")
     @ResponseBody
@@ -1157,6 +1234,7 @@ public class BasisController {
         return blockService.findByCustomer(address, from, to);
     }
 
+    /**количество отправленных транзакций от данного адреса*/
     @GetMapping("/senderCountDto")
     @ResponseBody
     public long countSenderTransaction(
@@ -1164,6 +1242,7 @@ public class BasisController {
     ){
         return blockService.countSenderTransaction(address);
     }
+    /**количество полученных транзакций от данного адреса*/
 
     @GetMapping("/customerCountDto")
     @ResponseBody
@@ -1174,6 +1253,7 @@ public class BasisController {
     }
 
 
+    /**Получить все балансы данного адреса*/
     @GetMapping("/addresses")
     @ResponseBody
     public Map<String, Account> addresses(){

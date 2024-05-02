@@ -186,7 +186,7 @@ public class TournamentService {
                 Block prevBlock = BasisController.prevBlock();
 
                 winner.add(winnerList.get(0));
-                if(winner == null || winner.size() == 0){
+                if(winner == null || winner.size() == 0 || winner.get(0) == null){
                     System.out.println("--------------------------------------------");
 
                     System.out.println("winner: " + winner);
@@ -211,7 +211,7 @@ public class TournamentService {
                 //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
 
-                if (temp == null || !temp.isValidation()) {
+                if (temp == null || !temp.isValidation()  ) {
                     System.out.println("wrong validation short: " + temp);
                     return;
                 }
