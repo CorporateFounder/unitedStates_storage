@@ -997,7 +997,8 @@ public class BasisController {
             } finally {
 //                prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
-                prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
+                if(tempBlock != null && tempBlock.getDtoTransactions() != null)
+                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
 //            resolve_conflicts();
                 isSaveFile = true;
                 System.out.println("finish resolve_from_to_block");
