@@ -744,6 +744,7 @@ public class UtilsResolving {
                 System.out.println("check2 subBlockchainEntity: " + subBlockchainEntity);
                 blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex).reversed()).collect(Collectors.toList());
 
+
                 for (Block block : blockList) {
                     System.out.println("check2: block index: " + block.getIndex());
 
