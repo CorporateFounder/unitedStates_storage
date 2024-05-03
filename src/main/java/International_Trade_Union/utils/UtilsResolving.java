@@ -769,6 +769,7 @@ public class UtilsResolving {
                 currentIndex = startIndex - 1;
             }
 
+
             if(different.isEmpty() && emptyList.isEmpty()){
                 return temp;
             }
