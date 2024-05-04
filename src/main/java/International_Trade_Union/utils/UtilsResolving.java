@@ -1685,6 +1685,7 @@ public class UtilsResolving {
                                 System.out.println("-------------------------------------");
                                 System.out.println("sublocks: " + subBlocks.size());
                                 System.out.println("-------------------------------------");
+                                continue;
                             }
                             System.out.println("3:download sub block: " + subBlocks.size());
 //                            tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
