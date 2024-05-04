@@ -134,9 +134,11 @@ public class UtilsResolving {
                         String subBlockchainJson = null;
 //                        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
 //                        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                        Map<String, Account> balances = new HashMap<>();
 //                        Map<String, Account> tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
 //                        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
 //                        Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                        Map<String, Account> tempBalances = new HashMap<>();
 
 
                         //if the local one lags behind the global one by more than PORTION_DOWNLOAD (500 blocks), then you need to download in portions from the storage
@@ -191,8 +193,10 @@ public class UtilsResolving {
 
 
 //                                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                                Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
-                                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
+//                                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
+//                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
 
                                 //вычисляет сложность блока, для текущего блока, на основе предыдущих блоков.
                                 //select a block class for the current block, based on previous blocks.
@@ -276,7 +280,7 @@ public class UtilsResolving {
 //                                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
 //                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks,blockService));
+                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                                 sign = new ArrayList<>();
                                 temp = new DataShortBlockchainInformation();
                                 temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
@@ -473,8 +477,7 @@ public class UtilsResolving {
                             List<Block> subBlocks = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                             System.out.println("3:download sub block: " + subBlocks.size());
 //                            tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-//                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                            Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
+                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                             List<String> sign = new ArrayList<>();
 
                             if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY && BasisController.getBlockchainSize() < Seting.V34_NEW_ALGO) {
@@ -502,8 +505,7 @@ public class UtilsResolving {
 
 
 //                            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-//                            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
+                            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
 //                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                             tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                             sign = new ArrayList<>();
@@ -770,10 +772,12 @@ public class UtilsResolving {
                 currentIndex = startIndex - 1;
             }
 
-
             if(different.isEmpty() && emptyList.isEmpty()){
                 return temp;
             }
+
+
+
             System.out.println("shortDataBlockchain: " + BasisController.getShortDataBlockchain());
             System.out.println("check 2: rollback temp: " + temp);
 
@@ -829,6 +833,8 @@ public class UtilsResolving {
                 different.addAll(UtilsBlockToEntityBlock.entityBlocksToBlocks(entityBlocks));
             }
 
+            try {
+
 
             stop:
             while (currentIndex >= 0) {
@@ -863,18 +869,27 @@ public class UtilsResolving {
                     }
                 }
 
-                // Обновляем индекс для следующей итерации
-                currentIndex = startIndex - 1;
+                    // Обновляем индекс для следующей итерации
+                    currentIndex = startIndex - 1;
+                }
+
+            }catch (Exception e){
+                System.out.println("******************************");
+                System.out.println("connecting exeption helpresolve5: address: " + s);
+                System.out.println("******************************");
+                return temp;
             }
             if(different.isEmpty() && emptyList.isEmpty()){
                 return temp;
             }
 
-
-            tempBalances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
-            tempBalances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
             balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
             balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
+            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
+            tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
+            tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
+            tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
+
 
             System.out.println("shortDataBlockchain: " + BasisController.getShortDataBlockchain());
             System.out.println("rollback temp: " + temp);
@@ -979,6 +994,7 @@ public class UtilsResolving {
             int lastBlockIndex = (int) (global.getSize() - 1);
             int currentIndex = lastBlockIndex;
 
+            try {
 
             stop:
             while (currentIndex >= 0) {
@@ -1015,19 +1031,26 @@ public class UtilsResolving {
                     }
                 }
 
-                // Обновляем индекс для следующей итерации
-                currentIndex = startIndex - 1;
+                    // Обновляем индекс для следующей итерации
+                    currentIndex = startIndex - 1;
+                }
+            }catch (Exception e){
+                System.out.println("******************************");
+                System.out.println("connecting exeption helpresolve4: address: " + s);
+                System.out.println("******************************");
+                return temp;
             }
             System.out.println("different: ");
             if(different.isEmpty() && emptyList.isEmpty()) {
                 return temp;
             }
 
-            tempBalances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
-            tempBalances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
             balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
             balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
-
+            balances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
+            tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
+            tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
+            tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
 
             System.out.println("shortDataBlockchain: " + BasisController.getShortDataBlockchain());
             System.out.println("rollback temp: " + temp);

@@ -294,7 +294,7 @@ public interface Seting {
 
     double ONE_HUNDRED_THOUSAND = 100000;
     int WAIGHT_MINING = 9;
-    int WAIGHT_MINING_2 = 35;
+    int WAIGHT_MINING_2 = 55;
     int WAIGHT_MINING_INDEX =247867;
     int TIME_CHECK_BLOCK = 233682; //221055
 
