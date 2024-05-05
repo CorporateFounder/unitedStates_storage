@@ -119,6 +119,12 @@ public class UtilsResolving {
 
                     String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
                     System.out.println("jsonGlobalData: " + jsonGlobalData);
+                    if(jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank() ){
+                        System.out.println("*********************************************************");
+                        System.out.println("jsonGlobalData: error: " + jsonGlobalData);
+                        System.out.println("*********************************************************");
+                        continue;
+                    }
                     DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
 //
                     //if the size from the storage is larger than on the local server, start checking
@@ -284,6 +290,12 @@ public class UtilsResolving {
 
 
                                 jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
+                                if(jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank() ){
+                                    System.out.println("*********************************************************");
+                                    System.out.println(" 2 jsonGlobalData: error: " + jsonGlobalData);
+                                    System.out.println("*********************************************************");
+                                    continue;
+                                }
                                 System.out.println("2: jsonGlobalData: " + jsonGlobalData);
                                 global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                                 temp = new DataShortBlockchainInformation();
@@ -407,6 +419,12 @@ public class UtilsResolving {
 //                                    }
 
                                     jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
+                                    if(jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank() ){
+                                        System.out.println("*********************************************************");
+                                        System.out.println(" 2 jsonGlobalData: error: " + jsonGlobalData);
+                                        System.out.println("*********************************************************");
+                                        continue;
+                                    }
                                     System.out.println("2: jsonGlobalData: " + jsonGlobalData);
                                     global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
 //                                    balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
@@ -533,6 +551,12 @@ public class UtilsResolving {
                             temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
 
                             jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
+                            if(jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank() ){
+                                System.out.println("*********************************************************");
+                                System.out.println("jsonGlobalData: error: " + jsonGlobalData);
+                                System.out.println("*********************************************************");
+                                continue;
+                            }
                             System.out.println("3: jsonGlobalData: " + jsonGlobalData);
                             global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                             DataShortBlockchainInformation anotherCheck = null;
@@ -1534,6 +1558,7 @@ public class UtilsResolving {
                     System.out.println("resolve2 size: " + size + " blocks_current_size: " + blocks_current_size);
                     String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
                     System.out.println("jsonGlobalData: " + jsonGlobalData);
+
                     DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                     if (isBig(BasisController.getShortDataBlockchain(), global)) {
                         System.out.println(":size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);

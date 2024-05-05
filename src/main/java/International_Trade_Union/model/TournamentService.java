@@ -233,8 +233,8 @@ public class TournamentService {
 
                 //Добавляет мета данные в статическую переменную.
                 BasisController.setShortDataBlockchain(temp);
-                BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
+                BasisController.setBlockcheinSize((int) temp.getSize());
+                BasisController.setBlockchainValid(temp.isValidation());
 
 
                 EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
