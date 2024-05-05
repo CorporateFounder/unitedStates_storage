@@ -869,6 +869,7 @@ public class BasisController {
         }
 
 
+
         shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
         blockcheinSize = (int) shortDataBlockchain.getSize();
         blockchainValid = shortDataBlockchain.isValidation();
@@ -934,10 +935,7 @@ public class BasisController {
                 System.out.println("different time: " + result);
 
 
-
-
                 if (prevBlock == null) {
-//                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                     EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize - 1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                 }
@@ -947,13 +945,6 @@ public class BasisController {
                     shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 }
                 List<Block> lastDiff = new ArrayList<>();
-
-//                    lastDiff = Blockchain.subFromFile(
-//                        (int) (prevBlock.getIndex() - Seting.PORTION_BLOCK_TO_COMPLEXCITY),
-//                        (int) (prevBlock.getIndex() + 1),
-//                        Seting.ORIGINAL_BLOCKCHAIN_FILE
-//                );
-
 
                 if(prevBlock().getIndex() < Seting.V34_NEW_ALGO){
                     lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
@@ -1067,8 +1058,7 @@ public class BasisController {
         } catch (Exception e) {
             e.printStackTrace();
             UtilsFileSaveRead.save(e.toString(), Seting.ERROR_FILE, true);
-//            prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//            resolve_conflicts();
+
             EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
             try {
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
@@ -1084,9 +1074,6 @@ public class BasisController {
             }catch (Exception e){
                 e.printStackTrace();
             }
-//            resolve_conflicts();
-//            EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
-//                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
             isSaveFile = true;
             System.out.println("finish resolve_from_to_block");
         }
