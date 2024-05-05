@@ -954,6 +954,7 @@ public class BasisController {
 //                        Seting.ORIGINAL_BLOCKCHAIN_FILE
 //                );
 
+
                 if(prevBlock().getIndex() < Seting.V34_NEW_ALGO){
                     lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
                             blockService.findBySpecialIndexBetween(
