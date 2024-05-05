@@ -624,7 +624,7 @@ public class BasisController {
                 blockchainValid = shortDataBlockchain.isValidation();
             }
             //TODO если что можно это включить
-            while (!isSaveFile) {
+            if (!isSaveFile) {
             System.out.println("saving file: resolve_from_to_block: sub block");
             return new ArrayList<>();
             }
@@ -883,7 +883,7 @@ public class BasisController {
 
     /**метод добавляет блоки в список ожидания, после чего их них уже формируется кандидаты и победитель*/
     @PostMapping("/nodes/resolve_from_to_block")
-    public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) throws JSONException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo)  {
         try {
             if(balances == null || balances.isEmpty()){
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
@@ -1069,11 +1069,20 @@ public class BasisController {
 //            prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 //            resolve_conflicts();
             EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
-            prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
+            try {
+                prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
+            }catch (IOException ioException){
+                ioException.printStackTrace();
+            }
+
             isSaveFile = true;
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {
-            prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            try {
+                prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 //            resolve_conflicts();
 //            EntityBlock tempBlock = BlockService.findBySpecialIndex(blockcheinSize-1);
 //                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
