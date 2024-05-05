@@ -52,7 +52,7 @@ public class UtilsResolving {
     EntityBlockRepository entityBlockRepository;
 
 
-    public int resolve3() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public int resolve3() {
         BasisController.setUpdating(true);
         UtilsBalance.setBlockService(blockService);
         Blockchain.setBlockService(blockService);
@@ -533,9 +533,14 @@ public class UtilsResolving {
                                 System.out.println("sublocks: " + subBlocks.size());
                                 System.out.println("-------------------------------------");
                                 continue;
-                            }                            System.out.println("3:download sub block: " + subBlocks.size());
+                            }
+                            System.out.println("3:download sub block: " + subBlocks.size());
 //                            tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                            List<EntityAccount> accounts = blockService.findAllAccounts();
+                            if(accounts == null || accounts.isEmpty()){
+                                continue;
+                            }
+                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(accounts);
                             List<String> sign = new ArrayList<>();
 
                             if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY && BasisController.getBlockchainSize() < Seting.V34_NEW_ALGO) {

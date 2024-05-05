@@ -55,13 +55,13 @@ public class BlockService {
 
 
     public  void deletedAll(){
+        Session session = entityManager.unwrap(Session.class);
         entityBlockRepository.deleteAll();
         entityAccountRepository.deleteAll();
         entityLawsRepository.deleteAll();
         dtoTransactionRepository.deleteAll();
 
-
-
+        session.clear();
     }
 
     public  EntityLawsRepository getLawService() {
@@ -81,10 +81,10 @@ public class BlockService {
     }
 
     public  void saveBlock(EntityBlock entityBlock) {
-
+        Session session = entityManager.unwrap(Session.class);
         entityBlockRepository.save(entityBlock);
         entityBlockRepository.flush();
-
+        session.clear();
     }
 
 
@@ -101,28 +101,43 @@ public class BlockService {
 
 
     public List<EntityAccount> findByAccountIn(Map<String, Account> map){
+        Session session = entityManager.unwrap(Session.class);
         List<String> accounts = map.entrySet().stream().map(t->t.getValue().getAccount()).collect(Collectors.toList());
-        return entityAccountRepository.findByAccountIn(accounts);
+        List<EntityAccount> entityAccounts = entityAccountRepository.findByAccountIn(accounts);
+        session.clear();
+        return entityAccounts;
+
     }
     public List<EntityAccount> findBYAccountString(List<String> accounts){
-        return entityAccountRepository.findByAccountIn(accounts);
+        Session session = entityManager.unwrap(Session.class);
+        List<EntityAccount> entityAccounts = entityAccountRepository.findByAccountIn(accounts);
+        session.clear();
+        return entityAccounts;
     }
 
 
 
     public  List<EntityAccount> findAllAccounts(){
-        return entityAccountRepository.findAll();
-
+        Session session = entityManager.unwrap(Session.class);
+        List<EntityAccount> entityAccounts = entityAccountRepository.findAll();
+        session.clear();
+        return entityAccounts;
     }
 
 
 
 
     public  long sizeBlock(){
-        return  entityBlockRepository.count();
+        Session session = entityManager.unwrap(Session.class);
+        long size = entityBlockRepository.count();
+        session.clear();
+        return size;
     }
     public  EntityBlock lastBlock(){
-        return entityBlockRepository.findBySpecialIndex(entityBlockRepository.count()-1);
+        Session session = entityManager.unwrap(Session.class);
+        EntityBlock entityBlock = entityBlockRepository.findBySpecialIndex(entityBlockRepository.count()-1);
+        session.clear();
+        return entityBlock;
     }
 
     @Transactional
@@ -134,17 +149,22 @@ public class BlockService {
         session.clear();
     }
     public  void saveAllBlock(List<EntityBlock> entityBlocks) {
+        Session session = entityManager.unwrap(Session.class);
         entityBlockRepository.saveAll(entityBlocks);
         entityBlockRepository.flush();
+        session.clear();
     }
     public  void removeAllBlock(List<EntityBlock> entityBlocks){
+        Session session = entityManager.unwrap(Session.class);
         entityBlockRepository.deleteAll(entityBlocks);
         entityBlockRepository.flush();
+        session.clear();
     }
     public  void saveAccount(EntityAccount entityAccount){
-
+        Session session = entityManager.unwrap(Session.class);
         entityAccountRepository.save(entityAccount);
         entityAccountRepository.flush();
+        session.clear();
     }
 
 
@@ -171,7 +191,7 @@ public class BlockService {
         session.clear();
     }
     public  void saveAccountAll(List<EntityAccount> entityAccounts){
-
+        Session session = entityManager.unwrap(Session.class);
 
         // Кэш для результатов findByAccount
         Map<String, EntityAccount> cache = new HashMap<>();
@@ -199,6 +219,7 @@ public class BlockService {
 
             // Сохранить в кэш для потенциального обновления
             cache.put(entityAccount.getAccount(), entityAccount);
+
         }
 
         // Пакетное обновление
@@ -208,6 +229,7 @@ public class BlockService {
         for (EntityAccount entityAccount : entityAccounts) {
             cache.put(entityAccount.getAccount(), entityAccount);
         }
+        session.clear();
 
     }
 
@@ -216,13 +238,18 @@ public class BlockService {
     }
 
     public  EntityDtoTransaction findBySign(String sign){
-        return dtoTransactionRepository.findBySign(sign);
-
+        Session session = entityManager.unwrap(Session.class);
+        EntityDtoTransaction entityDtoTransaction = dtoTransactionRepository.findBySign(sign);
+        session.clear();
+        return entityDtoTransaction;
     }
 
     public boolean existsBySign(byte[] sign){
+        Session session = entityManager.unwrap(Session.class);
         Base base = new Base58();
-        return dtoTransactionRepository.existsBySign(base.encode(sign));
+        boolean result = dtoTransactionRepository.existsBySign(base.encode(sign));
+        session.clear();
+        return result;
     }
     @javax.transaction.Transactional
     public  List<EntityDtoTransaction> findAllDto(){
@@ -241,7 +268,10 @@ public class BlockService {
 
     @Transactional
     public  EntityBlock findBySpecialIndex(long specialIndex){
-        return entityBlockRepository.findBySpecialIndex(specialIndex);
+        Session session = entityManager.unwrap(Session.class);
+        EntityBlock entityBlock = entityBlockRepository.findBySpecialIndex(specialIndex);
+        session.clear();
+        return entityBlock;
     }
 
     public  List<EntityBlock> findAllByIdBetween(long from, long to){
@@ -250,7 +280,11 @@ public class BlockService {
 
     @Transactional
     public  List<EntityBlock> findBySpecialIndexBetween(long from, long to){
-        return entityBlockRepository.findBySpecialIndexBetween(from, to);
+        Session session = entityManager.unwrap(Session.class);
+        List<EntityBlock> entityBlocks = entityBlockRepository.findBySpecialIndexBetween(from, to);
+        session.clear();
+        return entityBlocks;
+
     }
 
     public  List<EntityBlock> findAll() {
@@ -270,37 +304,53 @@ public class BlockService {
     }
 
     public  boolean isEmpty() {
+        Session session = entityManager.unwrap(Session.class);
         boolean exists = entityBlockRepository.existsById(1L);
+        session.clear();
         return exists;
     }
 
 
     public  List<DtoTransaction> findBySender(String sender, int from, int to) throws IOException {
+        Session session = entityManager.unwrap(Session.class);
+
         Pageable firstPageWithTenElements = (Pageable) PageRequest.of(from, to);
         List<EntityDtoTransaction> list =
                  dtoTransactionRepository.findBySender(sender, firstPageWithTenElements)
                         .getContent();
         List<DtoTransaction> dtoTransactions =
                 UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
+        session.clear();
         return dtoTransactions;
     }
 
     public  List<DtoTransaction> findByCustomer(String customer, int from, int to) throws IOException {
+
+        Session session = entityManager.unwrap(Session.class);
         Pageable firstPageWithTenElements = (Pageable) PageRequest.of(from, to);
         List<EntityDtoTransaction> list =
                  dtoTransactionRepository.findByCustomer(customer,firstPageWithTenElements)
                         .getContent();
         List<DtoTransaction> dtoTransactions =
                 UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
+        session.clear();
         return dtoTransactions;
     }
 
     public  long countSenderTransaction(String sender){
-        return dtoTransactionRepository.countBySender(sender);
+        Session session = entityManager.unwrap(Session.class);
+        long size = dtoTransactionRepository.countBySender(sender);
+        session.clear();
+        return size;
+
     }
 
     public  long countCustomerTransaction(String customer){
-        return dtoTransactionRepository.countByCustomer(customer);
+        Session session = entityManager.unwrap(Session.class);
+        long size = dtoTransactionRepository.countByCustomer(customer);
+        session.clear();
+        return size;
+
     }
 
 }
