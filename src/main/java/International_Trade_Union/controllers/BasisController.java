@@ -954,12 +954,15 @@ public class BasisController {
 //                        Seting.ORIGINAL_BLOCKCHAIN_FILE
 //                );
 
-                lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                        blockService.findBySpecialIndexBetween(
-                                (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
-                                prevBlock.getIndex() + 1
-                        )
-                );
+                if(prevBlock().getIndex() < Seting.V34_NEW_ALGO){
+                    lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
+                            blockService.findBySpecialIndexBetween(
+                                    (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
+                                    prevBlock.getIndex() + 1
+                            )
+                    );
+                }
+
 
 
                 //удаление транзакций
@@ -995,8 +998,6 @@ public class BasisController {
                 if (!shortDataBlockchain.isValidation()) {
                     System.out.println("wrong block chain, delete blocks: from to block:");
                     System.exit(0);
-//                    UtilsBlock.deleteFiles();
-//                blockchain.setBlockchainList(new ArrayList<>());
                     return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
                 }
 
@@ -1017,27 +1018,14 @@ public class BasisController {
                 if (temp.getSize() > shortDataBlockchain.getSize()
                         && temp.getHashCount() >= shortDataBlockchain.getHashCount()) {
 
-                    while (!isSaveFile) {
-//            System.out.println("saving file: resolve_from_to_block");
-                    }
-                    isSaveFile = false;
+
                     System.out.println("*************************************");
                     System.out.println("before original: " + shortDataBlockchain);
                     System.out.println("before temp: " + temp);
-//                    addBlock2(addlist, balances);
 
-//                    utilsAddBlock.addBlock2(addlist, balances);
-//                    String json = UtilsJson.objToStringJson(shortDataBlockchain);
-//                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
 
                     winnerList.addAll(addlist);
                     //прибавить к общей сумме денег
-
-
-//                    balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-//                    shortDataBlockchain = temp;
-//                    blockcheinSize = (int) shortDataBlockchain.getSize();
-//                    blockchainValid = shortDataBlockchain.isValidation();
 
                     dificultyOneBlock = prevBlock().getHashCompexity();
 
@@ -1050,9 +1038,7 @@ public class BasisController {
                     System.out.println("*************************************");
 
                     System.out.println("*************************************");
-////                    //задержка чтобы другие участники смогли скачать более актуальный блокчейн
-//                    if(diff >= 9)
-//                        Thread.sleep(30000);
+
 
                     return new ResponseEntity<>("OK", HttpStatus.OK);
                 } else {
@@ -1062,8 +1048,7 @@ public class BasisController {
 
             } catch (Exception e) {
 
-//                prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//            resolve_conflicts();
+
                 EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                 isSaveFile = true;
@@ -1073,7 +1058,7 @@ public class BasisController {
                 EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
                 if(tempBlock != null && tempBlock.getDtoTransactions() != null)
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
-//            resolve_conflicts();
+
                 isSaveFile = true;
                 System.out.println("finish resolve_from_to_block");
             }

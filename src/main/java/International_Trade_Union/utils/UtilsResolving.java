@@ -1480,11 +1480,6 @@ public class UtilsResolving {
 
         System.out.println("balances size: " + balances.size());
 
-//        for (int start = 0; start < saveBlocks.size(); start += Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
-//            int end = Math.min(saveBlocks.size(), start + Seting.PORTION_BLOCK_TO_COMPLEXCITY);
-//            List<Block> batch = saveBlocks.subList(start, end);
-//            addBlock3(batch, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//        }
 
         addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
