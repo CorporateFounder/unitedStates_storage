@@ -307,6 +307,12 @@ public class BasisController {
                 + "\n";
 
         String result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
+        System.out.println("getAllWiners: "+BasisController.getAllWiners().size());
+        System.out.println("getBigRandomWiner: "+BasisController.getBigRandomWiner().size());
+        System.out.println("getCountTransactionsWiner: "+BasisController.getCountTransactionsWiner().size());
+        System.out.println("getWinnerList: "+BasisController.getWinnerList().size());
+        System.out.println("getStakingWiners: "+BasisController.getStakingWiners().size());
+        System.out.println("prevBlock: "+BasisController.prevBlock());
 
         return result;
     }
@@ -1023,14 +1029,6 @@ public class BasisController {
 
                     System.out.println("after original: " + shortDataBlockchain);
                     System.out.println("after temp: " + temp);
-//                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
-                    EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
-                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
-                    System.out.println("*************************************");
-
-                    System.out.println("*************************************");
-
 
                     return new ResponseEntity<>("OK", HttpStatus.OK);
                 } else {
@@ -1039,19 +1037,9 @@ public class BasisController {
 
 
             } catch (Exception e) {
-
-
-                EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
-                prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
-                isSaveFile = true;
                 throw new RuntimeException(e);
             } finally {
-//                prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
-                if(tempBlock != null && tempBlock.getDtoTransactions() != null)
-                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
 
-                isSaveFile = true;
                 System.out.println("finish resolve_from_to_block");
             }
 
@@ -1059,22 +1047,10 @@ public class BasisController {
             e.printStackTrace();
             UtilsFileSaveRead.save(e.toString(), Seting.ERROR_FILE, true);
 
-            EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
-            try {
-                prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
-            }catch (IOException ioException){
-                ioException.printStackTrace();
-            }
-
             isSaveFile = true;
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {
-            try {
-                prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            isSaveFile = true;
+
             System.out.println("finish resolve_from_to_block");
         }
     }
