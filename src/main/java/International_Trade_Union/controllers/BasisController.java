@@ -307,12 +307,13 @@ public class BasisController {
                 + "\n";
 
         String result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
-        System.out.println("getAllWiners: "+BasisController.getAllWiners().size());
-        System.out.println("getBigRandomWiner: "+BasisController.getBigRandomWiner().size());
-        System.out.println("getCountTransactionsWiner: "+BasisController.getCountTransactionsWiner().size());
-        System.out.println("getWinnerList: "+BasisController.getWinnerList().size());
-        System.out.println("getStakingWiners: "+BasisController.getStakingWiners().size());
-        System.out.println("prevBlock: "+BasisController.prevBlock());
+        result += "getAllWiners: " + BasisController.getAllWiners().size() + "\n";
+        result += "getBigRandomWiner: " + BasisController.getBigRandomWiner().size() + "\n";
+        result += "getCountTransactionsWiner: " + BasisController.getCountTransactionsWiner().size() + "\n";
+        result += "getWinnerList: " + BasisController.getWinnerList().size() + "\n";
+        result += "getStakingWiners: " + BasisController.getStakingWiners().size() + "\n";
+        result += "prevBlock: " + BasisController.prevBlock() + "\n";
+
 
         return result;
     }
