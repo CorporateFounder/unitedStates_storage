@@ -338,30 +338,6 @@ public class UtilsResolving {
                                 }
 
 
-//                                if (Seting.IS_SECURITY && BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
-//                                    return -10;
-//                                }
-
-                                //добавляет мета данные блокчейна в static переменную, как так
-                                //уже эти мета данные являются актуальными.
-                                //adds capacitor metadata to a static variable like so
-                                //this metadata is already relevant.
-//                                BasisController.setShortDataBlockchain(temp);
-//                                BasisController.setBlockcheinSize((int) temp.getSize());
-//                                BasisController.setBlockchainValid(temp.isValidation());
-//
-//
-//                                //получить последний блок из базы данных.
-//                                //get the last block from the database.
-//                                EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-//                                //последний блок в локальном сервере.
-//                                //last block in the local server.
-//                                BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-//                                System.out.println("prevBlock: " + BasisController.prevBlock().getIndex() + " shortDataBlockchain: " + BasisController.getShortDataBlockchain());
-//                                String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-//                                //сохранить мета данные блокчейна.
-//                                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-
                                 //если количество новых блоков, относительно локального блокчейна меньше 500,
                                 //то скачать эти блоки и прекратить попытки скачивания с данного узла.
                                 //if the number of new blocks relative to the local blockchain is less than 500,
