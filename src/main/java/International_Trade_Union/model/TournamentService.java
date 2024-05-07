@@ -418,25 +418,8 @@ public class TournamentService {
 
             }
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (SignatureException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-        finally {
+        } finally {
             BasisController.setIsSaveFile(true);
         }
 

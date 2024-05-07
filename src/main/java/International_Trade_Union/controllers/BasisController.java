@@ -53,34 +53,52 @@ public class BasisController {
     BlockService blockService;
 
 
-    /**список кандидатов с данного сервера в качестве победителей*/
+    /**
+     * список кандидатов с данного сервера в качестве победителей
+     */
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
 
-    private static   boolean updating;
-    /**список всех победителей, данные могут не отражать реального победителя
-    если победитель был получен из другого сервера*/
+    private static boolean updating;
+    /**
+     * список всех победителей, данные могут не отражать реального победителя
+     * если победитель был получен из другого сервера
+     */
     private static List<LiteVersionWiner> allWiners = new ArrayList<>();
-    /**на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется*/
+    /**
+     * на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется
+     */
     private static List<LiteVersionWiner> powerWiners = new ArrayList<>();
-    /**на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется*/
+    /**
+     * на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется
+     */
 
     private static List<LiteVersionWiner> countTransactionsWiner = new ArrayList<>();
-    /**на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется*/
+    /**
+     * на данный момент присутствуетЮ в качестве анализа сложности блока, но особо не используется
+     */
     private static List<LiteVersionWiner> stakingWiners = new ArrayList<>();
-    /**окончательный победитель по показателю big random,
-    но может не учитывать реального победителя, если он получен из другого сервера.*/
+    /**
+     * окончательный победитель по показателю big random,
+     * но может не учитывать реального победителя, если он получен из другого сервера.
+     */
     private static List<LiteVersionWiner> bigRandomWiner = new ArrayList<>();
 
     public static void setTotalTransactionsDays(int totalTransactionsDays) {
         BasisController.totalTransactionsDays = totalTransactionsDays;
     }
-    /**общее количество транзакций в сутки*/
-    public static long totalTransactionsDays(){
+
+    /**
+     * общее количество транзакций в сутки
+     */
+    public static long totalTransactionsDays() {
         return BasisController.totalTransactionsDays;
     }
-    /**общее сумма долларов переведенных в сутки*/
-    public static double totalTransactionsSumDollar(){
+
+    /**
+     * общее сумма долларов переведенных в сутки
+     */
+    public static double totalTransactionsSumDollar() {
         return BasisController.totalTransactionsSumDllar;
     }
 
@@ -95,59 +113,98 @@ public class BasisController {
     public static boolean isBlockchainValid() {
         return blockchainValid;
     }
-    public static double totalDollars(){
+
+    public static double totalDollars() {
         return totalDollars;
     }
 
     public static void setUpdating(boolean b) {
         updating = b;
     }
-    public static boolean getUpdating(){
+
+    public static boolean getUpdating() {
         return updating;
     }
 
-    /**Список кандидатов из которых был выбран победитель в данном сервере*/
+    /**
+     * Список кандидатов из которых был выбран победитель в данном сервере
+     */
     @GetMapping("/allwinners")
     @ResponseBody
-    public String allWinners() throws IOException {
-        String json = UtilsJson.objToStringJson(allWiners);
+    public String allWinners()  {
+        String json = "";
+        try {
+            json = UtilsJson.objToStringJson(allWiners);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return json;
     }
 
-    /**Устарел и не используется*/
+    /**
+     * Устарел и не используется
+     */
     @GetMapping("/powerWiners")
     @ResponseBody
-    public String powerWiners() throws IOException {
-        String json = UtilsJson.objToStringJson(powerWiners);
+    public String powerWiners() {
+        String json = "";
+        try {
+            json = UtilsJson.objToStringJson(powerWiners);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
         return json;
     }
 
-    /**Устарел и не используется*/
+    /**
+     * Устарел и не используется
+     */
     @GetMapping("/countTransactionsWiner")
     @ResponseBody
-    public String countTransactionsWiner() throws IOException {
-        String json = UtilsJson.objToStringJson(countTransactionsWiner);
+    public String countTransactionsWiner() {
+        String json = "";
+        try {
+            json = UtilsJson.objToStringJson(countTransactionsWiner);
+        } catch (Exception e) {
+
+        }
         return json;
     }
 
-    /**Устарел и не используется*/
+    /**
+     * Устарел и не используется
+     */
     @GetMapping("/stakingWiners")
     @ResponseBody
-    public String stakingWiners() throws IOException {
-        String json = UtilsJson.objToStringJson(stakingWiners);
+    public String stakingWiners() {
+        String json = "";
+        try {
+            json = UtilsJson.objToStringJson(stakingWiners);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return json;
     }
 
-    /**Параметр который определяет победителя, складывается из трех параметров.
+    /**
+     * Параметр который определяет победителя, складывается из трех параметров.
      * 1. Хэш блока является семенем для генерации случайного числа от нуля до 135.
      * 2. сложность блока умноженая на число на данный момент 35, но может быть изменен
      * 3. Стэйкинг, где спомощью логарифма вычисляется баллы, которые указаны в таблице.
      * Все эти числа суммируется и получается результат, тот который получил наибольшее
-     * значение, становиться победителем.*/
+     * значение, становиться победителем.
+     */
     @GetMapping("/bigRandomWiner")
     @ResponseBody
-    public String bigRandomWiner() throws IOException {
-        String json = UtilsJson.objToStringJson(bigRandomWiner);
+    public String bigRandomWiner() {
+        String json = "";
+        try {
+
+            json = UtilsJson.objToStringJson(bigRandomWiner);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return json;
     }
 
@@ -192,44 +249,62 @@ public class BasisController {
     }
 
     private static int totalTransactionsDays = 0;
-    private static double totalTransactionsSumDllar =0.0;
+    private static double totalTransactionsSumDllar = 0.0;
 
-    /**Каждые 100 секунд происходить турнир для отбора победителя.*/
+    /**
+     * Каждые 100 секунд происходить турнир для отбора победителя.
+     */
     @Autowired
     Tournament tournament;
 
 
-    /**Все акаунты*/
+    /**
+     * Все акаунты
+     */
     private static Map<String, Account> balances = new HashMap<>();
 
-    /**Общее сумма долларов, не находящиеся в стэйкинге*/
+    /**
+     * Общее сумма долларов, не находящиеся в стэйкинге
+     */
     private static double totalDollars = 0;
     private static long dificultyOneBlock;
 
-    /**Если происходит запись, то не дает доступа к базе данных*/
+    /**
+     * Если происходит запись, то не дает доступа к базе данных
+     */
     private volatile static boolean isSaveFile = true;
 
-    /**Последний блок в базе данных*/
+    /**
+     * Последний блок в базе данных
+     */
     private static Block prevBlock = null;
 
-    /**Определяет в ценость блокчейна за счет мета данных, некоторые части уже не используется
+    /**
+     * Определяет в ценость блокчейна за счет мета данных, некоторые части уже не используется
      * на данный момент используется только big random, size и количество транзакций. Оставшиеся
      * параметры могут быть искажены. Если кошелек настроен на сервер и на сервере и на кошельке отличается
      * параметр staking при одинаковой высоте, это может быть что поврежден файл resources либо
-     * на кошельке или сервере. Решение скачать с нуля папку ресурсы.*/
+     * на кошельке или сервере. Решение скачать с нуля папку ресурсы.
+     */
     private static DataShortBlockchainInformation shortDataBlockchain = null;
 
-    /**Высота блокчейна*/
+    /**
+     * Высота блокчейна
+     */
     private static int blockcheinSize = 0;
-    /**целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
-     * удаляется, а сервер автоматически выключается System.exit(0)*/
+    /**
+     * целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
+     * удаляется, а сервер автоматически выключается System.exit(0)
+     */
     private static boolean blockchainValid = false;
     //    private static Blockchain blockchain;
     private static Set<String> excludedAddresses = new HashSet<>();
     private static boolean isSave = true;
 
-    /**целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
-     * удаляется, а сервер автоматически выключается System.exit(0)*/
+    /**
+     * целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
+     * удаляется, а сервер автоматически выключается System.exit(0)
+     */
     public static void setBlockchainValid(boolean blockchainValid) {
         BasisController.blockchainValid = blockchainValid;
     }
@@ -237,20 +312,27 @@ public class BasisController {
     public static void setShortDataBlockchain(DataShortBlockchainInformation shortDataBlockchain) {
         BasisController.shortDataBlockchain = shortDataBlockchain;
     }
-    /**Последний блок в базе данных*/
-    public static Block prevBlock(){
+
+    /**
+     * Последний блок в базе данных
+     */
+    public static Block prevBlock() {
         return prevBlock;
     }
-    public static void changePrevBlock(Block block){
+
+    public static void changePrevBlock(Block block) {
         prevBlock = block;
     }
-    /**Определяет в ценость блокчейна за счет мета данных, некоторые части уже не используется
+
+    /**
+     * Определяет в ценость блокчейна за счет мета данных, некоторые части уже не используется
      * на данный момент используется только big random, size и количество транзакций. Оставшиеся
      * параметры могут быть искажены. Если кошелек настроен на сервер и на сервере и на кошельке отличается
      * параметр staking при одинаковой высоте, это может быть что поврежден файл resources либо
-     * на кошельке или сервере. Решение скачать с нуля папку ресурсы.*/
+     * на кошельке или сервере. Решение скачать с нуля папку ресурсы.
+     */
     @GetMapping("/datashort")
-    public DataShortBlockchainInformation dataShortBlockchainInformation(){
+    public DataShortBlockchainInformation dataShortBlockchainInformation() {
 //        System.out.println("get /datashort");
         DataShortBlockchainInformation temp = shortDataBlockchain;
 //        System.out.println("/datashort: " + temp);
@@ -262,9 +344,11 @@ public class BasisController {
     }
 
 
-    /**Список потенциальных кандидатов на сервере за блок, но еще результат не предрешён
-     *и сюда будут добавляться блоки в течение 100 секунд, но блоки, если их время
-     * больше по времени от предыдущего блока на 100 секунд или больше*/
+    /**
+     * Список потенциальных кандидатов на сервере за блок, но еще результат не предрешён
+     * и сюда будут добавляться блоки в течение 100 секунд, но блоки, если их время
+     * больше по времени от предыдущего блока на 100 секунд или больше
+     */
     public static CopyOnWriteArrayList<Block> getWinnerList() {
         return winnerList;
     }
@@ -291,19 +375,21 @@ public class BasisController {
         return result;
     }
 
-    /**Если блок до и после ********* одинаковый, то файл последний на сервере не поврежден.
-     * Так как первый блок отбирается из базы данных h2, а второй тот же блок из уже файла. */
+    /**
+     * Если блок до и после ********* одинаковый, то файл последний на сервере не поврежден.
+     * Так как первый блок отбирается из базы данных h2, а второй тот же блок из уже файла.
+     */
     @GetMapping("/status")
     @ResponseBody
     public String status() throws JsonProcessingException {
 
-        String strIsSave ="isSave: "+ isIsSave() + "\n";
+        String strIsSave = "isSave: " + isIsSave() + "\n";
         String strBlockchainSize = "blockchainSize: " + getBlockchainSize() + "\n";
-        String isSaveFile = "isSaveFile: "+ isSaveFile() + "\n";
+        String isSaveFile = "isSaveFile: " + isSaveFile() + "\n";
         String blockFromDb =
-               "blockFromDb: " +String.valueOf(blockService.findBySpecialIndex(blockcheinSize-1))
-                + "\n";
-        String blockFromFile = "*********************************\nblockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize-1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
+                "blockFromDb: " + String.valueOf(blockService.findBySpecialIndex(blockcheinSize - 1))
+                        + "\n";
+        String blockFromFile = "*********************************\nblockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
                 + "\n";
 
         String result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
@@ -342,7 +428,9 @@ public class BasisController {
         return shortDataBlockchain;
     }
 
-    /**Высота локального блокчейна*/
+    /**
+     * Высота локального блокчейна
+     */
     public static int getBlockchainSize() {
         return blockcheinSize;
     }
@@ -362,24 +450,30 @@ public class BasisController {
         return servletRequest;
     }
 
-    /**Возвращает список балансов*/
+    /**
+     * Возвращает список балансов
+     */
 
     @GetMapping("/v28Index")
-    public int v28Start(){
+    public int v28Start() {
         return Seting.V28_CHANGE_ALGORITH_DIFF_INDEX;
     }
 
-    /**Общее количество всех балансов. */
+    /**
+     * Общее количество всех балансов.
+     */
     @GetMapping("/allAccounts")
-    public long accounts(){
+    public long accounts() {
         return blockService.countAccount();
     }
 
-    /**Общее количество долларов в обороте, не находящиеся в стэйкинге.*/
+    /**
+     * Общее количество долларов в обороте, не находящиеся в стэйкинге.
+     */
     @GetMapping("/totalDollars")
-    public double getTotalDollars(){
+    public double getTotalDollars() {
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-        if(totalDollars == 0){
+        if (totalDollars == 0) {
             for (Map.Entry<String, Account> account : balances.entrySet()) {
                 totalDollars += account.getValue().getDigitalDollarBalance();
             }
@@ -388,44 +482,51 @@ public class BasisController {
         return totalDollars;
     }
 
-    /**Общее количество транзакций совершенных в день*/
+    /**
+     * Общее количество транзакций совершенных в день
+     */
     @GetMapping("/totalTransactionsDay")
-    public int getTotalTransactionsDays(){
+    public int getTotalTransactionsDays() {
         return totalTransactionsDays;
     }
 
-    /**Общее количество денег переведенных в день.*/
+    /**
+     * Общее количество денег переведенных в день.
+     */
     @GetMapping("/totalTransactionsSum")
-    public double getTotalTransactionsSumDllar(){
+    public double getTotalTransactionsSumDllar() {
         return totalTransactionsSumDllar;
     }
 
-    /**Мультипликатор, который определяет какой максимальный доход может быть добыт в этом году,
+    /**
+     * Мультипликатор, который определяет какой максимальный доход может быть добыт в этом году,
      * каждый год он уменьшается, но не будет ниже единицы. Аналог халвинга для биткоина, но более
-     * плавный. В первый год начал работать с 29*/
+     * плавный. В первый год начал работать с 29
+     */
     @GetMapping("/multiplier")
-    public long multiplier(){
+    public long multiplier() {
         long money = Seting.MULTIPLIER;
-        if(prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
-             money = (prevBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+        if (prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
+            money = (prevBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
                     / (576 * Seting.YEAR);
             money = (long) (Seting.MULTIPLIER - money);
-            money = money < 1 ? 1: money;
+            money = money < 1 ? 1 : money;
         }
         return money;
     }
 
 
-
-    /**Обратный отсчет для снижения мультипликатора, вычисляет сколько дней осталось до
-     * следующего снижения*/
+    /**
+     * Обратный отсчет для снижения мультипликатора, вычисляет сколько дней осталось до
+     * следующего снижения
+     */
     @GetMapping("/dayReduce")
-    public long daysReduce(){
+    public long daysReduce() {
         long reduceDays = 0;
-        if(prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+        if (prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
             int blocksPerDay = 576;
             int blocksSinceReduction = (int) ((prevBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                                % (blocksPerDay * Seting.YEAR));
+                    % (blocksPerDay * Seting.YEAR));
 
             // Оставшиеся блоки до следующего снижения
             reduceDays = (blocksPerDay * Seting.YEAR) - blocksSinceReduction;
@@ -433,6 +534,7 @@ public class BasisController {
         }
         return reduceDays;
     }
+
     public static Set<String> getExcludedAddresses() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null)
@@ -463,48 +565,53 @@ public class BasisController {
     /**
      * Возвращает список хостов
      */
-    public static Set<String> getNodes() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public static Set<String> getNodes() {
 
         nodes = new HashSet<>();
+        try {
 
-        Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+            Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
-        nodes.addAll(temporary);
+            nodes.addAll(temporary);
 
-        nodes = nodes.stream()
-                .filter(t->!t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+            nodes = nodes.stream()
+                    .filter(t -> !t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
 
-        Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-        nodes.removeAll(bloked);
-        nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
-        nodes.addAll(Seting.ORIGINAL_ADDRESSES);
+            Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+            nodes.removeAll(bloked);
+            nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
+            nodes.addAll(Seting.ORIGINAL_ADDRESSES);
 
-        System.out.println("standard nodes: " + nodes);
-
+            System.out.println("standard nodes: " + nodes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return nodes;
     }
 
     @GetMapping("/getNodes")
     @ResponseBody
-    public Set<String> getAllNodes() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public Set<String> getAllNodes() {
         nodes = new HashSet<>();
+        try {
+            Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
-        Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+            nodes.addAll(temporary);
 
-        nodes.addAll(temporary);
+            nodes = nodes.stream()
+                    .filter(t -> !t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
 
-        nodes = nodes.stream()
-                .filter(t->!t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+            Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+            nodes.removeAll(bloked);
+            nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
+            nodes.addAll(Seting.ORIGINAL_ADDRESSES);
 
-        Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-        nodes.removeAll(bloked);
-        nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
-        nodes.addAll(Seting.ORIGINAL_ADDRESSES);
-
-        System.out.println("nodes: " + nodes);
+            System.out.println("nodes: " + nodes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return nodes;
     }
-
 
 
     static {
@@ -516,10 +623,10 @@ public class BasisController {
 //                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
 //                    BlockchainFactoryEnum.ORIGINAL);
             String json = UtilsFileSaveRead.read(Seting.TEMPORARY_BLOCKCHAIN_FILE);
-            if(!json.isEmpty() || !json.isBlank()){
+            if (!json.isEmpty() || !json.isBlank()) {
                 shortDataBlockchain = UtilsJson.jsonToDataShortBlockchainInformation(json);
 
-            }else {
+            } else {
                 shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
 //            prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(BlockService.findById((long) blockchainSize+1));
@@ -533,7 +640,6 @@ public class BasisController {
             prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
 
-
             if (blockcheinSize > 600) {
                 dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
                                 blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
@@ -545,7 +651,6 @@ public class BasisController {
                         Seting.BLOCK_GENERATION_INTERVAL,
                         Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
             }
-
 
 
         } catch (NoSuchAlgorithmException e) {
@@ -570,7 +675,6 @@ public class BasisController {
     //TODO if you interrupted mine, restart the server before next call and call /addBlock before mine
     //TODO иначе будет расождение в файле балансов
     //TODO otherwise there will be a discrepancy in the balance file
-
 
 
     /**
@@ -626,8 +730,8 @@ public class BasisController {
             }
             //TODO если что можно это включить
             if (!isSaveFile) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return new ArrayList<>();
+                System.out.println("saving file: resolve_from_to_block: sub block");
+                return new ArrayList<>();
             }
 
             int start = entity.getStart() >= 1 ? entity.getStart() : 0;
@@ -648,7 +752,6 @@ public class BasisController {
             }
 
 
-
             List<EntityBlock> entityBlocks =
                     blockService.findBySpecialIndexBetween(start, finish);
             blocksDb = UtilsBlockToEntityBlock.entityBlocksToBlocks(entityBlocks);
@@ -656,12 +759,12 @@ public class BasisController {
 //        return Blockchain.subFromFileBing(start,finish, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             System.out.println("finish sub: " + finish);
             System.out.println("******************************************************");
-        }catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
-                NoSuchProviderException | InvalidKeyException e){
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
+                 NoSuchProviderException | InvalidKeyException e) {
             System.out.println("exception sub");
             return new ArrayList<>();
 
-        }finally {
+        } finally {
             return blocksDb;
         }
 
@@ -681,28 +784,33 @@ public class BasisController {
 
     @PostMapping("/block")
     @ResponseBody
-    public Block getBlock(@RequestBody Integer index) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public Block getBlock(@RequestBody Integer index)  {
+        try {
 //        System.out.println("start getBlock");
-        if (blockchainValid == false || blockcheinSize == 0) {
+            if (blockchainValid == false || blockcheinSize == 0) {
 //            blockchain = Mining.getBlockchain(
 //                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
 //                    BlockchainFactoryEnum.ORIGINAL);
-            shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            blockcheinSize = (int) shortDataBlockchain.getSize();
-            blockchainValid = shortDataBlockchain.isValidation();
-        }
+                shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                blockcheinSize = (int) shortDataBlockchain.getSize();
+                blockchainValid = shortDataBlockchain.isValidation();
+            }
 //        System.out.println("finish getBlock");
 //        return Blockchain.indexFromFileBing(index, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-        if(index < 0 ){
-            index = 0;
+            if (index < 0) {
+                index = 0;
+            }
+            if (index > blockcheinSize - 1) {
+                index = blockcheinSize - 1;
+            }
+            return UtilsBlockToEntityBlock.entityBlockToBlock(
+                    blockService.findBySpecialIndex(index)
+            );
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        if(index > blockcheinSize -1){
-            index = blockcheinSize - 1;
-        }
-        return UtilsBlockToEntityBlock.entityBlockToBlock(
-                blockService.findBySpecialIndex(index)
-        );
+        return null;
     }
 
 
@@ -712,16 +820,24 @@ public class BasisController {
         return isSaveFile;
     }
 
-    /**возвращает баланс аккаунта*/
+    /**
+     * возвращает баланс аккаунта
+     */
     @GetMapping("/balance")
     @ResponseBody
-    public Account getBalance(@RequestParam String address) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        return UtilsAccountToEntityAccount.entityAccountToAccount(blockService.findByAccount(address));
+    public Account getBalance(@RequestParam String address)  {
+        try {
+            return UtilsAccountToEntityAccount.entityAccountToAccount(blockService.findByAccount(address));
+
+        }catch (Exception e ){
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public  void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-        if(balances == null || balances.isEmpty()){
+        if (balances == null || balances.isEmpty()) {
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         }
@@ -773,8 +889,10 @@ public class BasisController {
 
     }
 
-    /**устаревший метод*/
-    public  void getBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    /**
+     * устаревший метод
+     */
+    public void getBlock() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         int size = 0;
 
 
@@ -801,23 +919,22 @@ public class BasisController {
         Map<String, Account> balances = new HashMap<>();
 
 
-        while (true){
-            if(size > Seting.PORTION_DOWNLOAD){
+        while (true) {
+            if (size > Seting.PORTION_DOWNLOAD) {
                 list = blockchain.subBlock(size, Seting.PORTION_DOWNLOAD);
                 list = list.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                 addBlock3(list, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-            }else {
+            } else {
                 list = blockchain.subBlock(size, blockchain.sizeBlockhain());
                 list = list.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                 addBlock3(list, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 break;
             }
-            Block block = list.get(list.size()-1);
+            Block block = list.get(list.size() - 1);
             size = (int) (block.getIndex());
 
         }
-
 
 
         shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -827,14 +944,16 @@ public class BasisController {
 
     @GetMapping("/prevBlock")
     @ResponseBody
-    public Block getPrevBlock(){
+    public Block getPrevBlock() {
         return prevBlock;
     }
 
 
-    /**метод добавляет блоки в список ожидания, после чего их них уже формируется кандидаты и победитель*/
+    /**
+     * метод добавляет блоки в список ожидания, после чего их них уже формируется кандидаты и победитель
+     */
     @PostMapping("/nodes/resolve_from_to_block")
-    public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo)  {
+    public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
         try {
 
             UtilsBalance.setBlockService(blockService);
@@ -895,7 +1014,7 @@ public class BasisController {
                 }
                 List<Block> lastDiff = new ArrayList<>();
 
-                if(prevBlock().getIndex() < Seting.V34_NEW_ALGO){
+                if (prevBlock().getIndex() < Seting.V34_NEW_ALGO) {
                     lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
                             blockService.findBySpecialIndexBetween(
                                     (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
@@ -903,7 +1022,6 @@ public class BasisController {
                             )
                     );
                 }
-
 
 
                 //удаление транзакций
@@ -930,7 +1048,7 @@ public class BasisController {
                     blockcheinSize = (int) shortDataBlockchain.getSize();
                     blockchainValid = shortDataBlockchain.isValidation();
 //                    prevBlock = Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize-1);
+                    EntityBlock tempBlock = blockService.findBySpecialIndex(blockcheinSize - 1);
                     prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock);
                     String json = UtilsJson.objToStringJson(shortDataBlockchain);
                     UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
@@ -1000,57 +1118,60 @@ public class BasisController {
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public synchronized void register_node(@RequestBody AddressUrl urlAddrress) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public synchronized void register_node(@RequestBody AddressUrl urlAddrress)  {
+        try {
+
+            for (String s : BasisController.getNodes()) {
+                String original = s;
+                String url = s + "/nodes/register";
+
+                try {
+                    UtilUrl.sendPost(urlAddrress.getAddress(), url);
+                    sendAddress();
 
 
-        for (String s : BasisController.getNodes()) {
-            String original = s;
-            String url = s + "/nodes/register";
-
-            try {
-                UtilUrl.sendPost(urlAddrress.getAddress(), url);
-                sendAddress();
-
-
-            } catch (Exception e) {
-                System.out.println("BasisController: register node: wrong node: " + original);
-                BasisController.getNodes().remove(original);
-                continue;
+                } catch (Exception e) {
+                    System.out.println("BasisController: register node: wrong node: " + original);
+                    BasisController.getNodes().remove(original);
+                    continue;
+                }
             }
+
+            Set<String> nodes = BasisController.getNodes();
+            nodes = nodes.stream()
+                    .map(t -> t.replaceAll("\"", ""))
+                    .map(t -> t.replaceAll("\\\\", ""))
+                    .collect(Collectors.toSet());
+            nodes.add(urlAddrress.getAddress());
+            BasisController.setNodes(nodes);
+
+            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+            nodes.stream().forEach(t -> {
+                try {
+                    UtilsAllAddresses.saveAllAddresses(t, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                } catch (SignatureException e) {
+                    throw new RuntimeException(e);
+                } catch (InvalidKeySpecException e) {
+                    throw new RuntimeException(e);
+                } catch (NoSuchProviderException e) {
+                    throw new RuntimeException(e);
+                } catch (InvalidKeyException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
         }
-
-        Set<String> nodes = BasisController.getNodes();
-        nodes = nodes.stream()
-                .map(t -> t.replaceAll("\"", ""))
-                .map(t -> t.replaceAll("\\\\", ""))
-                .collect(Collectors.toSet());
-        nodes.add(urlAddrress.getAddress());
-        BasisController.setNodes(nodes);
-
-        Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        nodes.stream().forEach(t -> {
-            try {
-                UtilsAllAddresses.saveAllAddresses(t, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            } catch (SignatureException e) {
-                throw new RuntimeException(e);
-            } catch (InvalidKeySpecException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchProviderException e) {
-                throw new RuntimeException(e);
-            } catch (InvalidKeyException e) {
-                throw new RuntimeException(e);
-            }
-        });
 
     }
 
 
     @GetMapping("/findAddresses")
-    public void findAddresses() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public void findAddresses()  {
         for (String s : Seting.ORIGINAL_ADDRESSES) {
             Set<String> addressesSet = new HashSet<>();
             try {
@@ -1072,7 +1193,7 @@ public class BasisController {
 
     }
 
-    public static void sendAddress() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public static void sendAddress() {
         //лист временный для отправки аддресов
 
         for (String s : Seting.ORIGINAL_ADDRESSES) {
@@ -1102,7 +1223,9 @@ public class BasisController {
         }
     }
 
-    /**возвращает информацию о сложности текущей в блокчейне и суммарном*/
+    /**
+     * возвращает информацию о сложности текущей в блокчейне и суммарном
+     */
     @GetMapping("/difficultyBlockchain")
     public InfoDificultyBlockchain dificultyBlockchain() {
         InfoDificultyBlockchain dificultyBlockchain = new InfoDificultyBlockchain();
@@ -1112,18 +1235,27 @@ public class BasisController {
     }
 
 
-    /**Получить список транзакций для адреса отправителя, от определенного блока до определенного блока*/
+    /**
+     * Получить список транзакций для адреса отправителя, от определенного блока до определенного блока
+     */
     @GetMapping("/senderTransactions")
     @ResponseBody
     public List<DtoTransaction> senderTransactions(
             @RequestParam String address,
             @RequestParam int from,
             @RequestParam int to
-    ) throws IOException {
-        return blockService.findBySender(address, from, to);
+    )  {
+        try {
+            return blockService.findBySender(address, from, to);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    /**Получить список транзакций для адреса получателя, от определенного блока до определенного блока*/
+    /**
+     * Получить список транзакций для адреса получателя, от определенного блока до определенного блока
+     */
 
     @GetMapping("/customerTransactions")
     @ResponseBody
@@ -1131,33 +1263,45 @@ public class BasisController {
             @RequestParam String address,
             @RequestParam int from,
             @RequestParam int to
-    ) throws IOException {
-        return blockService.findByCustomer(address, from, to);
+    )  {
+        try {
+            return blockService.findByCustomer(address, from, to);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    /**количество отправленных транзакций от данного адреса*/
+    /**
+     * количество отправленных транзакций от данного адреса
+     */
     @GetMapping("/senderCountDto")
     @ResponseBody
     public long countSenderTransaction(
             @RequestParam String address
-    ){
+    ) {
         return blockService.countSenderTransaction(address);
     }
-    /**количество полученных транзакций от данного адреса*/
+
+    /**
+     * количество полученных транзакций от данного адреса
+     */
 
     @GetMapping("/customerCountDto")
     @ResponseBody
     public long countCustomerTransaction(
             @RequestParam String address
-    ){
+    ) {
         return blockService.countCustomerTransaction(address);
     }
 
 
-    /**Получить все балансы данного адреса*/
+    /**
+     * Получить все балансы данного адреса
+     */
     @GetMapping("/addresses")
     @ResponseBody
-    public Map<String, Account> addresses(){
+    public Map<String, Account> addresses() {
         Map<String, Account> accountMap = UtilsAccountToEntityAccount
                 .entityAccountsToMapAccounts(blockService.findAllAccounts());
         return accountMap;

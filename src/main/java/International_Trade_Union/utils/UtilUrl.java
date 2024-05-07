@@ -79,8 +79,8 @@ public class UtilUrl {
         try {
 
 
-            conn.setReadTimeout(25000);
-            conn.setConnectTimeout(25000);
+            conn.setReadTimeout(35000);
+            conn.setConnectTimeout(35000);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
