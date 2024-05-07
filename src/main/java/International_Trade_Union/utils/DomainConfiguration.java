@@ -1,6 +1,7 @@
 package International_Trade_Union.utils;
 
 import lombok.Data;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Data
+@Scope("singleton")
 public class DomainConfiguration {
     public DomainConfiguration() {
     }

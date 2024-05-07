@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 public class TransactionController {
     @Autowired
     BlockService blockService;
-    //транзакции которые попали в блокчейн.
-    private static List<Block> transactionsAdded = new ArrayList<>();
 
     public TransactionController() {
     }
@@ -42,7 +40,7 @@ public class TransactionController {
 
         AllTransactions.getInstance();
         if (!AllTransactions.getInstance().contains(data)) {
-            if (!hashTransaction().contains(data.toSign()))
+            if (!blockService.existsBySign(data.getSign()))
                 AllTransactions.addTransaction(data);
         }
 
@@ -50,19 +48,7 @@ public class TransactionController {
     }
 
     /**Возвращает хэш транзакций*/
-    public static Set<String> hashTransaction() throws JsonProcessingException {
-        Set<String> strings = new HashSet<>();
-        transactionsAdded = Blockchain.subFromFile(BasisController.getBlockchainSize() - Seting.TRANSACTIONS_COUNT_ADDED,
-                BasisController.getBlockchainSize(), Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-        for (Block block : transactionsAdded) {
-            for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {
-                strings.add(dtoTransaction.toSign());
-            }
-
-        }
-        return strings;
-    }
 
     /**Возвращает список транзакций ожидающих добавления в блокчейн. В список не попадают транзакции,
      * если они были уже добавлены в блокчейн или их баланс не соответствует сумме которую они хотят отправить*/
@@ -103,11 +89,11 @@ public class TransactionController {
         return transactions;
     }
     //вычисляет транзакции которые были добавлены в блок, и их снова не добавляет
-    public static List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws JsonProcessingException {
+    public  List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws JsonProcessingException {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
-        Set<String> strings = hashTransaction();
+
         for (DtoTransaction dtoTransaction : transactions) {
-            if(!strings.contains(dtoTransaction.toSign())){
+            if(!blockService.existsBySign(dtoTransaction.getSign())){
                 dtoTransactions.add(dtoTransaction);
             }
         }
@@ -115,12 +101,12 @@ public class TransactionController {
         return dtoTransactions;
     }
 
-    public static boolean check(Block block) throws JsonProcessingException {
+    public  boolean check(Block block) throws JsonProcessingException {
         boolean result = true;
 
-        Set<String> strings = hashTransaction();
+
         for (DtoTransaction transaction : block.getDtoTransactions()) {
-            if(!strings.contains(transaction.toSign())){
+            if(!blockService.existsBySign(transaction.getSign())){
                 result = false;
             }
         }
@@ -128,9 +114,9 @@ public class TransactionController {
     }
     public Set<String> getTransactions() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         List<DtoTransaction> transactions = AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
-        Set<String> strings = hashTransaction();
+        Set<String> strings = new HashSet<>();
         for (DtoTransaction dtoTransaction : transactions) {
-            if(!strings.contains(dtoTransaction.toSign())){
+            if(!blockService.existsBySign(dtoTransaction.getSign())){
                 strings.add(dtoTransaction.toSign());
             }
         }

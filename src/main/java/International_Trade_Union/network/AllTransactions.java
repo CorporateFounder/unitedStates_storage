@@ -33,24 +33,6 @@ public class AllTransactions {
         }
         instance = new ArrayList<>();
 
-        //считываем с пула транзакции из дисковери.
-//        for (String s : Seting.ORIGINAL_ADDRESSES) {
-//            try {
-//                System.out.println("get transactions from server: " + s + "its time 45 seconds");
-//                String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
-//                List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
-//
-//                instance.addAll(list);
-//
-//
-//            } catch (IOException | JSONException e) {
-//
-//                System.out.println("AllTransaction: getInstance: Error");
-//                continue;
-//            }
-//
-//
-//        }
 
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
         instance = instance.stream().distinct().collect(Collectors.toList());

@@ -38,6 +38,7 @@ public class UtilUrl {
         } finally {
             System.out.println("UtilUrl: readJsonFromUrl: " + url );
             is.close();
+
         }
     }
 
@@ -68,10 +69,18 @@ public class UtilUrl {
             byte[] input = jsonObject.getBytes("utf-8");
             outputStream.write(input, 0, input.length);
             conn.getResponseCode();
+        }catch (IOException e) {
+            // Обработка исключения при записи данных
+            throw e;
+        } finally {
+            // Закрытие соединения в блоке finally
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
 
 
-        conn.connect();
+
         try(BufferedReader br = new BufferedReader(
                 new InputStreamReader(conn.getInputStream(), "utf-8"))) {
             StringBuilder response = new StringBuilder();
@@ -99,21 +108,21 @@ public class UtilUrl {
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
 
-
-
-        try(OutputStream outputStream = conn.getOutputStream()) {
-            byte[] input = jsonObject.getBytes("utf-8");
-            outputStream.write(input, 0, input.length);
-             response = conn.getResponseCode();
-
-        }
-
-
-        conn.connect();
-        return response;
+    try (OutputStream outputStream = conn.getOutputStream()) {
+        byte[] input = jsonObject.getBytes("utf-8");
+        outputStream.write(input, 0, input.length);
+        response = conn.getResponseCode();
+    } catch (IOException e) {
+        // Обработка исключения при записи данных
+        e.printStackTrace();
+        // Можно добавить логирование или другую обработку
+        throw e; // Перебросить исключение выше
+    } finally {
+        conn.disconnect(); // Закрыть соединение независимо от исключения
     }
 
-
+    return response;
+}
 
 
 }

@@ -93,7 +93,7 @@ public class UtilsAllAddresses {
                 String hostStr = s;
                 if(s.contains("\""))
                     hostStr = s.replaceAll("\"", "");
-                System.out.println("send " + s +" my host: " + myHost);
+                System.out.println("send " + s +" my host: " + myHost + "nodes: " + nodes.size());
                 UtilUrl.sendPost(UtilsJson.objToStringJson(myHost), hostStr + "/putNode");
             }catch (Exception e){
 //                e.printStackTrace();

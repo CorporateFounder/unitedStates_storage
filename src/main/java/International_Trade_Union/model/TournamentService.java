@@ -371,7 +371,7 @@ public class TournamentService {
                 System.out.println("updatingNodeEndBlocks: send my host");
                 Set<String> nodes = BasisController.getNodes();
 
-                System.out.println("nodes: " + nodes);
+                System.out.println("tournament nodes: " + nodes);
                 System.out.println("my host: " + myHost);
                 System.out.println("domain configuration: " + domainConfiguration);
                 UtilsAllAddresses.sendAddress(nodes, myHost);
