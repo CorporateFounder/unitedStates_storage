@@ -22,7 +22,7 @@ public class NodesController {
     /**добавить адрес узла*/
     @PostMapping("/putNode")
 
-    public void addNode(@RequestBody MyHost host) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException, JSONException {
+    public void addNode(@RequestBody MyHost host)  {
         System.out.println("add node: host: " + host);
         UtilsAllAddresses.putNode(host);
     }

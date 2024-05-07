@@ -21,14 +21,18 @@ public class UtilUrl {
             String jsonText = readAll(rd);
             ObjectMapper mapper = new ObjectMapper();
             return jsonText;
+        } finally {
+            if (conn instanceof HttpURLConnection) {
+                ((HttpURLConnection) conn).disconnect();
+            }
         }
     }
 
     public static String readJsonFromUrl(String url) throws IOException, JSONException {
         URL url1 = new URL(url);
         URLConnection conn = url1.openConnection();
-        conn.setConnectTimeout(3000); // Устанавливаем таймаут соединения в 5 секунд
-        conn.setReadTimeout(3000); // Устанавливаем таймаут чтения в 5 секунд
+        conn.setConnectTimeout(25000); // Устанавливаем таймаут соединения в 5 секунд
+        conn.setReadTimeout(25000); // Устанавливаем таймаут чтения в 5 секунд
         InputStream is = conn.getInputStream();
         BufferedReader rd = null;
         try {
@@ -37,9 +41,23 @@ public class UtilUrl {
             ObjectMapper mapper = new ObjectMapper();
             return jsonText;
         } finally {
-            System.out.println("UtilUrl: readJsonFromUrl: " + url );
-            is.close();
-            rd.close();
+            if (rd != null) {
+                try {
+                    rd.close();
+                } catch (IOException e) {
+                    e.printStackTrace(); // Логируем исключение
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace(); // Логируем исключение
+                }
+            }
+            if (conn instanceof HttpURLConnection) {
+                ((HttpURLConnection) conn).disconnect();
+            }
 
         }
     }
@@ -87,7 +105,7 @@ public class UtilUrl {
                 return response.toString();
 
             }
-        }finally {
+        } finally {
             conn.disconnect();
         }
 
@@ -107,21 +125,21 @@ public class UtilUrl {
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
 
-    try (OutputStream outputStream = conn.getOutputStream()) {
-        byte[] input = jsonObject.getBytes("utf-8");
-        outputStream.write(input, 0, input.length);
-        response = conn.getResponseCode();
-    } catch (IOException e) {
-        // Обработка исключения при записи данных
-        e.printStackTrace();
-        // Можно добавить логирование или другую обработку
-        throw e; // Перебросить исключение выше
-    } finally {
-        conn.disconnect(); // Закрыть соединение независимо от исключения
-    }
+        try (OutputStream outputStream = conn.getOutputStream()) {
+            byte[] input = jsonObject.getBytes("utf-8");
+            outputStream.write(input, 0, input.length);
+            response = conn.getResponseCode();
+        } catch (IOException e) {
+            // Обработка исключения при записи данных
+            e.printStackTrace();
+            // Можно добавить логирование или другую обработку
+            throw e; // Перебросить исключение выше
+        } finally {
+            conn.disconnect(); // Закрыть соединение независимо от исключения
+        }
 
-    return response;
-}
+        return response;
+    }
 
 
 }

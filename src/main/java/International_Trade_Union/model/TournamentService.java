@@ -9,6 +9,7 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.ls.LSOutput;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 
 @Component
+@Scope("singleton")
 public class TournamentService {
 
     @Autowired
