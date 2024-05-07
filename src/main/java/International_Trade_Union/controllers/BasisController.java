@@ -479,7 +479,7 @@ public class BasisController {
         nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
         nodes.addAll(Seting.ORIGINAL_ADDRESSES);
 
-        System.out.println("nodes: " + nodes);
+        System.out.println("standard nodes: " + nodes);
 
         return nodes;
     }
