@@ -56,40 +56,37 @@ public class UtilUrl {
         URL url = new URL(requstStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 //        conn.connect();
-        conn.setReadTimeout(25000);
-        conn.setConnectTimeout(25000);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json; utf-8");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setDoOutput(true);
+        try {
 
 
+            conn.setReadTimeout(25000);
+            conn.setConnectTimeout(25000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
 
-        try(OutputStream outputStream = conn.getOutputStream()) {
-            byte[] input = jsonObject.getBytes("utf-8");
-            outputStream.write(input, 0, input.length);
-            conn.getResponseCode();
-        }catch (IOException e) {
-            // Обработка исключения при записи данных
-            throw e;
-        } finally {
-            // Закрытие соединения в блоке finally
-            if (conn != null) {
-                conn.disconnect();
+
+            try (OutputStream outputStream = conn.getOutputStream()) {
+                byte[] input = jsonObject.getBytes("utf-8");
+                outputStream.write(input, 0, input.length);
+                conn.getResponseCode();
             }
-        }
 
 
+            conn.connect();
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine = null;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                return response.toString();
 
-        try(BufferedReader br = new BufferedReader(
-                new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
             }
-            return response.toString();
-
+        }finally {
+            conn.disconnect();
         }
 
     }
