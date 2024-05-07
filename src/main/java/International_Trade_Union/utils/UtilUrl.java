@@ -13,14 +13,16 @@ public class UtilUrl {
     ////модифицированный ими код
     public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
         InputStream is = new URL(url).openStream();
+        BufferedReader rd = null;
         try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+             rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
             ObjectMapper mapper = new ObjectMapper();
             return jsonText;
         } finally {
 //             System.out.println("UtilUrl: readJsonFromUrl: " + url );
             is.close();
+            rd.close();
         }
     }
     public static String readJsonFromUrl(String url) throws IOException, JSONException {
@@ -29,15 +31,16 @@ public class UtilUrl {
         conn.setConnectTimeout(3000); // Устанавливаем таймаут соединения в 5 секунд
         conn.setReadTimeout(3000); // Устанавливаем таймаут чтения в 5 секунд
         InputStream is = conn.getInputStream();
-
+        BufferedReader rd = null;
         try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+            rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
             ObjectMapper mapper = new ObjectMapper();
             return jsonText;
         } finally {
             System.out.println("UtilUrl: readJsonFromUrl: " + url );
             is.close();
+            rd.close();
 
         }
     }
