@@ -14,6 +14,7 @@ import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+@Scope("singleton")
 public class BlockService {
     @PersistenceContext
     EntityManager entityManager;
@@ -253,7 +255,10 @@ public class BlockService {
     }
     @javax.transaction.Transactional
     public  List<EntityDtoTransaction> findAllDto(){
-        return dtoTransactionRepository.findAll();
+        Session session = entityManager.unwrap(Session.class);
+        List<EntityDtoTransaction> dtoTransactions = dtoTransactionRepository.findAll();
+        session.clear();
+        return dtoTransactions;
     }
 
     @Transactional

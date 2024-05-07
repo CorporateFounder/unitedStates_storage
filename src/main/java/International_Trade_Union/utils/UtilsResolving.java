@@ -21,6 +21,7 @@ import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +44,7 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 import static International_Trade_Union.utils.UtilsBalance.rollbackCalculateBalance;
 
 @Component
+@Scope("singleton")
 public class UtilsResolving {
     @Autowired
     BlockService blockService;
@@ -920,7 +922,8 @@ public class UtilsResolving {
 
             }catch (Exception e){
                 System.out.println("******************************");
-                System.out.println("connecting exeption helpresolve5: address: " + s);
+                System.out.println("helpresolve5 1: address: " + s);
+                e.printStackTrace();
                 System.out.println("******************************");
                 return temp;
             }
@@ -992,7 +995,10 @@ public class UtilsResolving {
                     System.out.println("different finish index: " + different.get(different.size() - 1).getIndex());
                     System.out.println("------------------------------------------");
                 } catch (Exception e) {
+                    System.out.println("******************************");
+                    System.out.println("helpresolve5: address: " + s);
                     e.printStackTrace();
+                    System.out.println("******************************");
                 }
                 System.out.println("------------------------------------------");
                 System.out.println("helpResolve5: temp: " + temp);
@@ -1098,8 +1104,10 @@ public class UtilsResolving {
                     currentIndex = startIndex - 1;
                 }
             }catch (Exception e){
+
                 System.out.println("******************************");
-                System.out.println("connecting exeption helpresolve4: address: " + s);
+                System.out.println("helpresolve4 1: address: " + s);
+                e.printStackTrace();
                 System.out.println("******************************");
                 return temp;
             }
@@ -1167,7 +1175,10 @@ public class UtilsResolving {
                     System.out.println("different finish index: " + different.get(different.size() - 1).getIndex());
                     System.out.println("------------------------------------------");
                 } catch (Exception e) {
+                    System.out.println("******************************");
+                    System.out.println("elpresolve4: address: " + s);
                     e.printStackTrace();
+                    System.out.println("******************************");
                 }
                 System.out.println("------------------------------------------");
                 System.out.println("helpResolve4: temp: " + temp);

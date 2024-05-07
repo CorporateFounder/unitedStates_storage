@@ -188,9 +188,9 @@ public class Blockchain implements Cloneable {
             Map<String, Account> balances,
             List<String> sign) {
         int size = (int) data.getSize();
-        //TODO если что нужно вернуть на место
-        //size >= blocks.get(0).getIndex() + 1 ||
-        if ( prevBlock == null) {
+
+        //TODO возможно стоит убрать size >= blocks.get(0).getIndex() + 1
+        if (size >= blocks.get(0).getIndex() + 1 || prevBlock == null) {
             System.out.println("size: " + size + "index: " +  blocks.get(0).getIndex());
             System.out.println(" shortCheck: " + prevBlock);
             return new DataShortBlockchainInformation(size, false, 0, 0, 0, 0);
