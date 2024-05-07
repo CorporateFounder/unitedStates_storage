@@ -8,6 +8,7 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.utils.UtilsAccountToEntityAccount;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,9 +78,9 @@ public class TransactionController {
     }
 
     /**Возвращает транзакции, которые имеют достаточно денег на счетах*/
-    public static List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions){
+    public  List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions){
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
-        Map<String, Account> balances = BasisController.getBalances();
+        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts( blockService.findByDtoAccounts(transactions));
         for (DtoTransaction transaction : transactions) {
             if(balances.containsKey(transaction.getSender())){
                 Account account = balances.get(transaction.getSender());

@@ -110,6 +110,13 @@ public class BlockService {
         return entityAccounts;
 
     }
+
+    public EntityAccount findByAccount(String account){
+        Session session = entityManager.unwrap(Session.class);
+        EntityAccount entityAccounts = entityAccountRepository.findByAccount(account);
+        session.clear();
+        return entityAccounts;
+    }
     public List<EntityAccount> findBYAccountString(List<String> accounts){
         Session session = entityManager.unwrap(Session.class);
         List<EntityAccount> entityAccounts = entityAccountRepository.findByAccountIn(accounts);
@@ -117,6 +124,17 @@ public class BlockService {
         return entityAccounts;
     }
 
+    public List<EntityAccount> findByDtoAccounts(List<DtoTransaction> transactions){
+        List<String> accounts = new ArrayList<>();
+        for (DtoTransaction transaction : transactions) {
+            accounts.add(transaction.getSender());
+            accounts.add(transaction.getCustomer());
+        }
+        Session session = entityManager.unwrap(Session.class);
+        List<EntityAccount> entityAccounts = entityAccountRepository.findByAccountIn(accounts);
+        session.clear();
+        return entityAccounts;
+    }
 
 
     public  List<EntityAccount> findAllAccounts(){

@@ -363,13 +363,6 @@ public class BasisController {
     }
 
     /**Возвращает список балансов*/
-    public static Map<String, Account> getBalances() {
-        return balances;
-    }
-
-    public static void setBalances(Map<String, Account> balances) {
-        BasisController.balances = balances;
-    }
 
     @GetMapping("/v28Index")
     public int v28Start(){
@@ -379,12 +372,13 @@ public class BasisController {
     /**Общее количество всех балансов. */
     @GetMapping("/allAccounts")
     public long accounts(){
-        return balances.size();
+        return blockService.countAccount();
     }
 
     /**Общее количество долларов в обороте, не находящиеся в стэйкинге.*/
     @GetMapping("/totalDollars")
     public double getTotalDollars(){
+        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
         if(totalDollars == 0){
             for (Map.Entry<String, Account> account : balances.entrySet()) {
                 totalDollars += account.getValue().getDigitalDollarBalance();
@@ -712,51 +706,6 @@ public class BasisController {
     }
 
 
-    /**устаревший метод*/
-    public  void addBlock(List<Block> orignalBlocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        System.out.println("start addBLock");
-        isSave = false;
-        System.out.println("start  save in addBlock");
-        List<String> signs = new ArrayList<>();
-
-        if(balances == null || balances.isEmpty()){
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-
-        }
-
-        List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
-        List<EntityBlock> entityBlocks = new ArrayList<>();
-        for (Block block : orignalBlocks) {
-            UtilsBlock.saveBLock(block, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            calculateBalance(balances, block, signs);
-
-            EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
-            entityBlocks.add(entityBlock);
-
-
-        }
-
-        blockService.saveAllBlock(entityBlocks);
-        List<EntityAccount> entityBalances = UtilsAccountToEntityAccount
-                .accountsToEntityAccounts(balances);
-        blockService.saveAccountAll(entityBalances);
-        System.out.println("finish save in addBlock");
-        System.out.println("BasisController: addBlock: finish");
-
-
-        Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
-        SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
-
-        //возвращает все законы с балансом
-        //rewriting all existing laws
-        //перезапись всех действующих законов
-        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-
-        isSave = true;
-    }
-
-
     @GetMapping("/isSaveFile")
     @ResponseBody
     public boolean isSaveFile() {
@@ -767,13 +716,7 @@ public class BasisController {
     @GetMapping("/balance")
     @ResponseBody
     public Account getBalance(@RequestParam String address) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        if (balances == null ||balances.isEmpty()) {
-//            Blockchain.saveBalanceFromfile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//            balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-            balances  = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-        }
-
-        return balances.get(address);
+        return UtilsAccountToEntityAccount.entityAccountToAccount(blockService.findByAccount(address));
     }
 
     public  void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
@@ -893,10 +836,7 @@ public class BasisController {
     @PostMapping("/nodes/resolve_from_to_block")
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo)  {
         try {
-            if(balances == null || balances.isEmpty()){
-                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
-            }
             UtilsBalance.setBlockService(blockService);
             Blockchain.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
@@ -909,7 +849,9 @@ public class BasisController {
                 System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
                 return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
             }
+
             List<Block> blocks = sendBlocksEndInfo.getList();
+            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(blocks, blockService));
 
             ///последовательность временных меток
             if (prevBlock.getTimestamp().getTime() > blocks.get(blocks.size() - 1).getTimestamp().getTime()) {
