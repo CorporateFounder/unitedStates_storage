@@ -12,19 +12,18 @@ import java.nio.charset.Charset;
 public class UtilUrl {
     ////модифицированный ими код
     public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
-        InputStream is = new URL(url).openStream();
-        BufferedReader rd = null;
-        try {
-             rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+        URLConnection conn = new URL(url).openConnection();
+        conn.setConnectTimeout(25000); // Таймаут соединения в миллисекундах
+        conn.setReadTimeout(25000); // Таймаут чтения в миллисекундах
+
+        try (InputStream is = conn.getInputStream();
+             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
             String jsonText = readAll(rd);
             ObjectMapper mapper = new ObjectMapper();
             return jsonText;
-        } finally {
-//             System.out.println("UtilUrl: readJsonFromUrl: " + url );
-            is.close();
-            rd.close();
         }
     }
+
     public static String readJsonFromUrl(String url) throws IOException, JSONException {
         URL url1 = new URL(url);
         URLConnection conn = url1.openConnection();
