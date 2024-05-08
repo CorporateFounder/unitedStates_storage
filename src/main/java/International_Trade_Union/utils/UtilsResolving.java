@@ -1329,11 +1329,15 @@ public class UtilsResolving {
         //сначала узнаем название файла, где есть первый блок для удаления из файла
         System.out.println("str 876: deleteBlocks: " + deleteBlocks);
         File file = Blockchain.indexNameFileBlock((int) deleteBlocks.get(0).getIndex(), filename);
+        if(file == null){
+            System.out.println("rollBackAddBlock4:" + file);
+            return;
+        }
         //потом берем список блоков из этого файл
         System.out.println("rollBackAddBlock3: file: " + file);
         List<String> tempList = new ArrayList<>();
-        if (file != null)
-            tempList = UtilsFileSaveRead.reads(file.getAbsolutePath());
+
+        tempList = UtilsFileSaveRead.reads(file.getAbsolutePath());
 
         List<Block> tempBlock = new ArrayList<>();
         for (String s : tempList) {
@@ -1351,8 +1355,8 @@ public class UtilsResolving {
         //TODO здесь мы должны удалить все файлы идущие после этого файла,
 
         System.out.println("rollBackAddBlock4: delete: " + file);
-        if (file != null)
-            Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+        Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         System.out.println("rollBackAddBlock4: delete finish: " + file);
 
         long threshold = deleteBlocks.get(0).getIndex();
@@ -1434,6 +1438,7 @@ public class UtilsResolving {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
 
 
+
         List<String> signs = new ArrayList<>();
         //пакет законов.
         Map<String, Laws> allLaws = new HashMap<>();
@@ -1442,11 +1447,16 @@ public class UtilsResolving {
         //сначала узнаем название файла, где есть первый блок для удаления из файла
         File file = Blockchain.indexNameFileBlock((int) deleteBlocks.get(0).getIndex(), filename);
         //потом берем список блоков из этого файл
+        if(file == null){
+            System.out.println("rollBackAddBlock3:" + file);
+            return;
+        }
+
 
         System.out.println("rollBackAddBlock3: file: " + file);
         List<String> tempList = new ArrayList<>();
-        if (file != null)
-            tempList = UtilsFileSaveRead.reads(file.getAbsolutePath());
+
+        tempList = UtilsFileSaveRead.reads(file.getAbsolutePath());
 
         List<Block> tempBlock = new ArrayList<>();
         for (String s : tempList) {
@@ -1461,8 +1471,8 @@ public class UtilsResolving {
         //TODO здесь мы должны удалить все файлы идущие после этого файла,
 
         System.out.println("rollBackAddBlock3: delete: " + file);
-        if (file != null)
-            Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+        Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         System.out.println("rollBackAddBlock3: delete finish: " + file);
 
         long threshold = deleteBlocks.get(0).getIndex();
