@@ -182,10 +182,6 @@ public class TournamentService {
                 List<Block> winnerList = new ArrayList<>();
 
                 if (list.isEmpty()) {
-                    System.out.println("-------------------------");
-                    System.out.println("list: empty");
-                    System.out.println("-------------------------");
-
                     return;
                 }
 
