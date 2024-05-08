@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@Scope("request")
+@Scope("singleton")
 public class BlockService {
     @PersistenceContext
     EntityManager entityManager;
