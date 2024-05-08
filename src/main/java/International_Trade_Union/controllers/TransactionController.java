@@ -53,18 +53,32 @@ public class TransactionController {
     /**Возвращает список транзакций ожидающих добавления в блокчейн. В список не попадают транзакции,
      * если они были уже добавлены в блокчейн или их баланс не соответствует сумме которую они хотят отправить*/
     @GetMapping("/getTransactions")
-    public List<DtoTransaction> getTransaction() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-       List<DtoTransaction> transactions= AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
-       transactions = getTransactions(transactions);
-       transactions = transactions.stream()
-               .filter(t->!blockService.existsBySign(t.getSign()))
-               .collect(Collectors.toList());
-       transactions = balanceTransaction(transactions);
+    public List<DtoTransaction> getTransaction() {
+
+        List<DtoTransaction> transactions  = new ArrayList<>();
+        try {
+
+            transactions = AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
+            transactions = getTransactions(transactions);
+            transactions = transactions.stream()
+                    .filter(t -> {
+                        try {
+                            return !blockService.existsBySign(t.getSign());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            transactions = balanceTransaction(transactions);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
        return transactions;
     }
 
     /**Возвращает транзакции, которые имеют достаточно денег на счетах*/
-    public  List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions){
+    public  List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts( blockService.findByDtoAccounts(transactions));
         for (DtoTransaction transaction : transactions) {
@@ -89,7 +103,7 @@ public class TransactionController {
         return transactions;
     }
     //вычисляет транзакции которые были добавлены в блок, и их снова не добавляет
-    public  List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws JsonProcessingException {
+    public  List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws IOException {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
 
         for (DtoTransaction dtoTransaction : transactions) {
@@ -101,7 +115,7 @@ public class TransactionController {
         return dtoTransactions;
     }
 
-    public  boolean check(Block block) throws JsonProcessingException {
+    public  boolean check(Block block) throws IOException {
         boolean result = true;
 
 

@@ -441,7 +441,7 @@ public class UtilsUse {
 
         return db;
     }
-    public static List<EntityAccount> accounts (List<Block> blocks, BlockService blockService){
+    public static List<EntityAccount> accounts (List<Block> blocks, BlockService blockService) throws IOException {
         List<String> accounts = new ArrayList<>();
         for (Block block : blocks) {
             for (DtoTransaction transaction : block.getDtoTransactions()) {

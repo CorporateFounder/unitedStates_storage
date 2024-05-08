@@ -13,8 +13,8 @@ public class UtilUrl {
     ////модифицированный ими код
     public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
         URLConnection conn = new URL(url).openConnection();
-        conn.setConnectTimeout(35000); // Таймаут соединения в миллисекундах
-        conn.setReadTimeout(20000); // Таймаут чтения в миллисекундах
+        conn.setConnectTimeout(25000); // Таймаут соединения в миллисекундах
+        conn.setReadTimeout(25000); // Таймаут чтения в миллисекундах
 
         try (InputStream is = conn.getInputStream();
              BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {

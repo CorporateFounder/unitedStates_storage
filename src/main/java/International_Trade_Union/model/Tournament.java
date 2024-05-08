@@ -68,9 +68,15 @@ public class Tournament implements Runnable {
             try {
 
                 if(prevTime == 0){
+                    if(BasisController.prevBlock() == null ){
+                        prevTime = UtilsTime.getUniversalTimestamp() / 1000;
+                    }
                     prevTime = BasisController.prevBlock().getTimestamp().getTime();
                 }
                 if(prevUpdateTime == 0){
+                    if(BasisController.prevBlock() == null ){
+                        prevUpdateTime = UtilsTime.getUniversalTimestamp() / 1000;
+                    }
                     prevUpdateTime = BasisController.prevBlock().getTimestamp().getTime();
                 }
 
@@ -120,6 +126,8 @@ public class Tournament implements Runnable {
 
             }catch (Exception e){
                 e.printStackTrace();
+                BasisController.setWinnerList(null);
+                BasisController.getWinnerList().clear();
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());
                 BasisController.setIsSaveFile(true);
                 System.out.println("exeption");

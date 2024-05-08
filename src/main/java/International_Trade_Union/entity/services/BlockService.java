@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@Scope("singleton")
+@Scope("prototype")
 public class BlockService {
     @PersistenceContext
     EntityManager entityManager;
@@ -51,7 +51,7 @@ public class BlockService {
 
 
     @Transactional
-    public void deletedAll() {
+    public void deletedAll() throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             entityBlockRepository.deleteAll();
             entityAccountRepository.deleteAll();
@@ -59,6 +59,8 @@ public class BlockService {
             dtoTransactionRepository.deleteAll();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("deletedAll: error: save: ");
+
         }
 
     }
@@ -81,12 +83,14 @@ public class BlockService {
         return entityAccountRepository;
     }
 
-    public void saveBlock(EntityBlock entityBlock) {
+    public void saveBlock(EntityBlock entityBlock) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             entityBlockRepository.save(entityBlock);
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("saveBlock: error: save: ");
+
         }
 
 
@@ -94,19 +98,21 @@ public class BlockService {
 
 
     @Transactional
-    public void deleteEntityBlocksAndRelatedData(Long threshold) {
+    public void deleteEntityBlocksAndRelatedData(Long threshold) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             session.setJdbcBatchSize(50);
             entityBlockRepository.deleteAllBySpecialIndexGreaterThanEqual(threshold);
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("deleteEntityBlocksAndRelatedData: error: save: ");
+
         }
     }
 
 
     @Transactional
-    public List<EntityAccount> findByAccountIn(Map<String, Account> map) {
+    public List<EntityAccount> findByAccountIn(Map<String, Account> map) throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
             List<String> accounts = map.entrySet().stream().map(t -> t.getValue().getAccount()).collect(Collectors.toList());
@@ -114,6 +120,8 @@ public class BlockService {
 
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findByAccountIn: error: save: ");
+
         }
 
         return entityAccounts;
@@ -121,31 +129,35 @@ public class BlockService {
     }
 
     @Transactional
-    public EntityAccount findByAccount(String account) {
+    public EntityAccount findByAccount(String account) throws IOException {
         EntityAccount entityAccounts = null;
         try(Session session = entityManager.unwrap(Session.class)){
             entityAccounts = entityAccountRepository.findByAccount(account);
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findByAccount: error: save: ");
+
         }
         return entityAccounts;
     }
 
     @Transactional
-    public List<EntityAccount> findBYAccountString(List<String> accounts) {
+    public List<EntityAccount> findBYAccountString(List<String> accounts) throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
             entityAccounts  = entityAccountRepository.findByAccountIn(accounts);
 
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findBYAccountString: error: save: ");
+
         }
 
         return entityAccounts;
     }
 
     @Transactional
-    public List<EntityAccount> findByDtoAccounts(List<DtoTransaction> transactions) {
+    public List<EntityAccount> findByDtoAccounts(List<DtoTransaction> transactions) throws IOException {
         List<String> accounts = new ArrayList<>();
         for (DtoTransaction transaction : transactions) {
             accounts.add(transaction.getSender());
@@ -156,6 +168,8 @@ public class BlockService {
             entityAccounts = entityAccountRepository.findByAccountIn(accounts);
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findByDtoAccounts: error: save: ");
+
         }
 
         return entityAccounts;
@@ -163,12 +177,14 @@ public class BlockService {
 
 
     @Transactional
-    public List<EntityAccount> findAllAccounts() {
+    public List<EntityAccount> findAllAccounts() throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
            entityAccounts = entityAccountRepository.findAll();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findAllAccounts: error: save: ");
+
         }
 
         return entityAccounts;
@@ -176,67 +192,75 @@ public class BlockService {
 
 
     @Transactional
-    public long sizeBlock() {
+    public long sizeBlock() throws IOException {
         long size = 0;
         try(Session session = entityManager.unwrap(Session.class)){
              size = entityBlockRepository.count();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("sizeBlock: error: save: ");
         }
 
         return size;
     }
 
     @Transactional
-    public EntityBlock lastBlock() {
+    public EntityBlock lastBlock() throws IOException {
         EntityBlock entityBlock = null;
         try( Session session = entityManager.unwrap(Session.class)){
             entityBlock = entityBlockRepository.findBySpecialIndex(entityBlockRepository.count() - 1);
 
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("lastBlock: error: save: ");
         }
         return entityBlock;
     }
 
     @Transactional
-    public void saveAllBLockF(List<EntityBlock> entityBlocks) {
+    public void saveAllBLockF(List<EntityBlock> entityBlocks) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             session.setJdbcBatchSize(50);
             entityBlockRepository.saveAll(entityBlocks);
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
+           throw new IOException("saveAllBLockF: error: save: ");
         }
 
     }
 
     @Transactional
-    public void saveAllBlock(List<EntityBlock> entityBlocks) {
+    public void saveAllBlock(List<EntityBlock> entityBlocks) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             entityBlockRepository.saveAll(entityBlocks);
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("saveAllBlock: error: save: ");
         }
 
     }
 
-    public void removeAllBlock(List<EntityBlock> entityBlocks) {
+    public void removeAllBlock(List<EntityBlock> entityBlocks) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             entityBlockRepository.deleteAll(entityBlocks);
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("removeAllBlock: error: save: ");
+
         }
     }
 
-    public void saveAccount(EntityAccount entityAccount) {
+    public void saveAccount(EntityAccount entityAccount) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             entityAccountRepository.save(entityAccount);
             entityAccountRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("saveAccount: error: save: ");
+
         }
 
     }
@@ -244,7 +268,7 @@ public class BlockService {
 
     @Transactional
 
-    public void saveAccountAllF(List<EntityAccount> entityAccounts) {
+    public void saveAccountAllF(List<EntityAccount> entityAccounts) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             session.setJdbcBatchSize(50);
             List<EntityAccount> entityResult = new ArrayList<>();
@@ -263,13 +287,15 @@ public class BlockService {
             entityAccountRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("saveAccountAllF: error: save: ");
+
         }
 
 
     }
 
     @Transactional
-    public void saveAccountAll(List<EntityAccount> entityAccounts) {
+    public void saveAccountAll(List<EntityAccount> entityAccounts) throws IOException {
         try(Session session = entityManager.unwrap(Session.class)){
             // Кэш для результатов findByAccount
             Map<String, EntityAccount> cache = new HashMap<>();
@@ -309,6 +335,8 @@ public class BlockService {
             }
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("saveAccountAll: error: save: ");
+
         }
 
     }
@@ -318,35 +346,44 @@ public class BlockService {
     }
 
     @Transactional
-    public EntityDtoTransaction findBySign(String sign) {
+    public EntityDtoTransaction findBySign(String sign) throws IOException {
         EntityDtoTransaction entityDtoTransaction = null;
         try( Session session = entityManager.unwrap(Session.class)){
             entityDtoTransaction = dtoTransactionRepository.findBySign(sign);
 
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findBySign: error: save: ");
+
         }
         return entityDtoTransaction;
     }
 
     @Transactional
-    public boolean existsBySign(byte[] sign) {
+    public boolean existsBySign(byte[] sign) throws IOException {
         boolean result = false;
         try(Session session = entityManager.unwrap(Session.class)){
             Base base = new Base58();
             result = dtoTransactionRepository.existsBySign(base.encode(sign));
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new IOException("existsBySign: error: save: ");
+
         }
 
         return result;
     }
 
     @Transactional
-    public List<EntityDtoTransaction> findAllDto() {
+    public List<EntityDtoTransaction> findAllDto() throws IOException {
         List<EntityDtoTransaction> dtoTransactions = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
            dtoTransactions = dtoTransactionRepository.findAll();
-        }
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new IOException("findAllDto: error: save: ");
 
+        }
         return dtoTransactions;
     }
 
@@ -361,10 +398,14 @@ public class BlockService {
     }
 
     @Transactional
-    public EntityBlock findBySpecialIndex(long specialIndex) {
+    public EntityBlock findBySpecialIndex(long specialIndex) throws IOException {
         EntityBlock entityBlock = null;
         try(Session session = entityManager.unwrap(Session.class)){
             entityBlock = entityBlockRepository.findBySpecialIndex(specialIndex);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new IOException("findBySpecialIndex: error: save: ");
+
         }
 
         return entityBlock;
@@ -375,10 +416,14 @@ public class BlockService {
     }
 
     @Transactional
-    public List<EntityBlock> findBySpecialIndexBetween(long from, long to) {
+    public List<EntityBlock> findBySpecialIndexBetween(long from, long to) throws IOException {
         List<EntityBlock> entityBlocks = null;
         try(Session session = entityManager.unwrap(Session.class)){
             entityBlocks = entityBlockRepository.findBySpecialIndexBetween(from, to);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new IOException("findBySpecialIndexBetween: error: save: ");
+
         }
         return entityBlocks;
 
@@ -402,10 +447,14 @@ public class BlockService {
     }
 
     @Transactional
-    public boolean isEmpty() {
+    public boolean isEmpty() throws IOException {
         boolean exists = false;
         try(Session session = entityManager.unwrap(Session.class)){
             exists = entityBlockRepository.existsById(1L);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new IOException("isEmpty: error: save: ");
+
         }
 
         return exists;
@@ -424,6 +473,8 @@ public class BlockService {
                     UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findBySender: error: save: ");
+
         }
         return dtoTransactions;
     }
@@ -440,6 +491,8 @@ public class BlockService {
                     UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("findByCustomer: error: save: ");
+
         }
 
 
@@ -447,12 +500,14 @@ public class BlockService {
     }
 
     @Transactional
-    public long countSenderTransaction(String sender) {
+    public long countSenderTransaction(String sender) throws IOException {
         long size = 0;
         try(Session session = entityManager.unwrap(Session.class)){
             size = dtoTransactionRepository.countBySender(sender);
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("countSenderTransaction: error: save: ");
+
         }
 
         return size;
@@ -460,12 +515,14 @@ public class BlockService {
     }
 
     @Transactional
-    public long countCustomerTransaction(String customer) {
+    public long countCustomerTransaction(String customer) throws IOException {
         long size = 0;
         try(Session session = entityManager.unwrap(Session.class)){
             size = dtoTransactionRepository.countByCustomer(customer);
         }catch (Exception e){
             e.printStackTrace();
+            throw new IOException("countCustomerTransaction: error: save: ");
+
         }
 
         return size;

@@ -381,24 +381,29 @@ public class BasisController {
      */
     @GetMapping("/status")
     @ResponseBody
-    public String status() throws JsonProcessingException {
+    public String status()  {
+        String result = "";
+        try {
+            String strIsSave = "isSave: " + isIsSave() + "\n";
+            String strBlockchainSize = "blockchainSize: " + getBlockchainSize() + "\n";
+            String isSaveFile = "isSaveFile: " + isSaveFile() + "\n";
+            String blockFromDb =
+                    "blockFromDb: " + String.valueOf(blockService.findBySpecialIndex(blockcheinSize - 1))
+                            + "\n";
+            String blockFromFile = "*********************************\nblockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
+                    + "\n";
 
-        String strIsSave = "isSave: " + isIsSave() + "\n";
-        String strBlockchainSize = "blockchainSize: " + getBlockchainSize() + "\n";
-        String isSaveFile = "isSaveFile: " + isSaveFile() + "\n";
-        String blockFromDb =
-                "blockFromDb: " + String.valueOf(blockService.findBySpecialIndex(blockcheinSize - 1))
-                        + "\n";
-        String blockFromFile = "*********************************\nblockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
-                + "\n";
-
-        String result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
-        result += "getAllWiners: " + BasisController.getAllWiners().size() + "\n";
-        result += "getBigRandomWiner: " + BasisController.getBigRandomWiner().size() + "\n";
-        result += "getCountTransactionsWiner: " + BasisController.getCountTransactionsWiner().size() + "\n";
-        result += "getWinnerList: " + BasisController.getWinnerList().size() + "\n";
-        result += "getStakingWiners: " + BasisController.getStakingWiners().size() + "\n";
-        result += "prevBlock: " + BasisController.prevBlock() + "\n";
+            result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
+            result += "getAllWiners: " + BasisController.getAllWiners().size() + "\n";
+            result += "getBigRandomWiner: " + BasisController.getBigRandomWiner().size() + "\n";
+            result += "getCountTransactionsWiner: " + BasisController.getCountTransactionsWiner().size() + "\n";
+            result += "getWinnerList: " + BasisController.getWinnerList().size() + "\n";
+            result += "getStakingWiners: " + BasisController.getStakingWiners().size() + "\n";
+            result += "prevBlock: " + BasisController.prevBlock() + "\n";
+        }catch (Exception e){
+            e.printStackTrace();
+            return "";
+        }
 
 
         return result;
@@ -472,13 +477,18 @@ public class BasisController {
      */
     @GetMapping("/totalDollars")
     public double getTotalDollars() {
-        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-        if (totalDollars == 0) {
-            for (Map.Entry<String, Account> account : balances.entrySet()) {
-                totalDollars += account.getValue().getDigitalDollarBalance();
-            }
+        try {
+            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+            if (totalDollars == 0) {
+                for (Map.Entry<String, Account> account : balances.entrySet()) {
+                    totalDollars += account.getValue().getDigitalDollarBalance();
+                }
 
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
         return totalDollars;
     }
 
@@ -1280,7 +1290,13 @@ public class BasisController {
     public long countSenderTransaction(
             @RequestParam String address
     ) {
-        return blockService.countSenderTransaction(address);
+        try {
+            return blockService.countSenderTransaction(address);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     /**
@@ -1292,7 +1308,13 @@ public class BasisController {
     public long countCustomerTransaction(
             @RequestParam String address
     ) {
-        return blockService.countCustomerTransaction(address);
+        try{
+            return blockService.countCustomerTransaction(address);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
     }
 
 
@@ -1302,8 +1324,13 @@ public class BasisController {
     @GetMapping("/addresses")
     @ResponseBody
     public Map<String, Account> addresses() {
-        Map<String, Account> accountMap = UtilsAccountToEntityAccount
-                .entityAccountsToMapAccounts(blockService.findAllAccounts());
+        Map<String, Account> accountMap = new HashMap<>();
+        try {
+           accountMap = UtilsAccountToEntityAccount
+                    .entityAccountsToMapAccounts(blockService.findAllAccounts());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return accountMap;
     }
 }
