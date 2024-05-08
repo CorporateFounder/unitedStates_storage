@@ -37,11 +37,8 @@ public class BlockService {
     @Autowired
     private EntityLawsRepository entityLawsRepository;
 
-
-
     @Autowired
     private EntityBlockRepository entityBlockRepository;
-
 
     @Autowired
     private EntityDtoTransactionRepository dtoTransactionRepository;

@@ -140,7 +140,7 @@ public class TournamentService {
             if (list == null || list.isEmpty() || list.size() == 0) {
                 BasisController.setIsSaveFile(true);
                 System.out.println("-----------------------");
-                System.out.println("list: " + list.size());
+                System.out.println("you can safely shut down the server.: " + list.size());
                 System.out.println("-----------------------");
                 return;
             }
@@ -162,10 +162,30 @@ public class TournamentService {
 
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-                winnerDiff = new ArrayList<>();
-                winnerCountTransaction = new ArrayList<>();
-                winnerStaking = new ArrayList<>();
-                winner = new ArrayList<>();
+                if(winner == null){
+                    winner = new ArrayList<>();
+                }else {
+                    winner.clear();
+                }
+                if(winnerDiff == null){
+                    winnerDiff = new ArrayList<>();
+                }else {
+                    winnerDiff.clear();
+                }
+                if(winnerCountTransaction == null){
+                    winnerCountTransaction = new ArrayList<>();
+                }else {
+                    winnerCountTransaction.clear();
+                }
+                if(winnerStaking == null){
+                    winnerStaking = new ArrayList<>();
+                }else {
+                    winnerStaking.clear();
+                }
+
+
+
+
                 System.out.println("tournament: winner: " + winner.size());
                 Map<String, Account> balances = new HashMap<>();
 
@@ -214,7 +234,7 @@ public class TournamentService {
                 }
 
 
-                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
                 sign = new ArrayList<>();
                 //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
@@ -308,25 +328,31 @@ public class TournamentService {
                 );
 
 
-                // Очистка старой ссылки
-                winnerDiff.clear();
-                winnerCountTransaction.clear();
-                winnerStaking.clear();
-                winner.clear();
-                BasisController.getStakingWiners().clear();
-
-                winnerDiff = null;
-                winnerCountTransaction = null;
-                winnerStaking = null;
-                winner = null;
-                BasisController.setWinnerList(null);
-
-                winnerDiff = new ArrayList<>();
-                winnerCountTransaction = new ArrayList<>();
-                winnerStaking = new ArrayList<>();
-                winner = new ArrayList<>();
-                //обнуляет победителей, для нового раунда.
-                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+                if(winner == null){
+                    winner = new ArrayList<>();
+                }else {
+                    winner.clear();
+                }
+                if(winnerDiff == null){
+                    winnerDiff = new ArrayList<>();
+                }else {
+                    winnerDiff.clear();
+                }
+                if(winnerCountTransaction == null){
+                    winnerCountTransaction = new ArrayList<>();
+                }else {
+                    winnerCountTransaction.clear();
+                }
+                if(winnerStaking == null){
+                    winnerStaking = new ArrayList<>();
+                }else {
+                    winnerStaking.clear();
+                }
+                if(BasisController.getWinnerList() == null){
+                    BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+                }else {
+                    BasisController.getWinnerList().clear();
+                }
 
 
                 System.out.println("___________________________________________________");
@@ -334,6 +360,9 @@ public class TournamentService {
                 System.out.println("finish time: " + UtilsTime.differentMillSecondTime(startTournament, finishTournament));
                 System.out.println("___________________________________________________");
                 BasisController.setIsSaveFile(true);
+            }else {
+                System.out.println("you can safely shut down the server. tournament method");
+
             }
 
 
@@ -436,29 +465,34 @@ public class TournamentService {
 
                 }
 
-                // Очистка старой ссылки
-                winnerDiff.clear();
-                winnerCountTransaction.clear();
-                winnerStaking.clear();
-                winner.clear();
-                BasisController.getWinnerList().clear();
+                if(winner == null){
+                    winner = new ArrayList<>();
+                }else {
+                    winner.clear();
+                }
+                if(winnerDiff == null){
+                    winnerDiff = new ArrayList<>();
+                }else {
+                    winnerDiff.clear();
+                }
+                if(winnerCountTransaction == null){
+                    winnerCountTransaction = new ArrayList<>();
+                }else {
+                    winnerCountTransaction.clear();
+                }
+                if(winnerStaking == null){
+                    winnerStaking = new ArrayList<>();
+                }else {
+                    winnerStaking.clear();
+                }
+                if(BasisController.getWinnerList() == null){
+                    BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+                }else {
+                    BasisController.getWinnerList().clear();
+                }
 
-                winnerDiff = null;
-                winnerCountTransaction = null;
-                winnerStaking = null;
-                winner = null;
-                winnerDiff = null;
-                BasisController.setWinnerList(null);
-
-                System.out.println("finish download host");
-                System.out.println("download host --------------------------------------------");
-                winnerDiff = new ArrayList<>();
-                winnerCountTransaction = new ArrayList<>();
-                winnerStaking = new ArrayList<>();
-                winner = new ArrayList<>();
-                //обнуляет победителей, для нового раунда.
-                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-
+            }else {
+                System.out.println("you can safely shut down the server. Update method");
             }
         } catch (IOException e) {
            e.printStackTrace();
