@@ -44,7 +44,7 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 import static International_Trade_Union.utils.UtilsBalance.rollbackCalculateBalance;
 
 @Component
-@Scope("singleton")
+@Scope("request")
 public class UtilsResolving {
     @Autowired
     BlockService blockService;
@@ -52,6 +52,8 @@ public class UtilsResolving {
     EntityAccountRepository entityAccountRepository;
     @Autowired
     EntityBlockRepository entityBlockRepository;
+
+
 
 
     public int resolve3() {
@@ -846,6 +848,9 @@ public class UtilsResolving {
         return temp;
     }
 
+
+
+    @Transactional
     public DataShortBlockchainInformation helpResolve5(DataShortBlockchainInformation temp,
                                                        DataShortBlockchainInformation global,
                                                        String s,
@@ -969,16 +974,20 @@ public class UtilsResolving {
                 System.out.println("rollback 5");
                 try {
                     System.out.println("before roll back emptyList: " + emptyList);
-                    rollBackAddBlock4(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    BasisController.setShortDataBlockchain(temp);
-                    BasisController.setBlockcheinSize((int) temp.getSize());
-                    BasisController.setBlockchainValid(temp.isValidation());
+                    boolean result = rollBackAddBlock4(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                    if (result) {
+                        BasisController.setShortDataBlockchain(temp);
+                        BasisController.setBlockcheinSize((int) temp.getSize());
+                        BasisController.setBlockchainValid(temp.isValidation());
 
-                    EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                    BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
+                        EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
+                        BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
 
-                    String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+                        String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
+                        UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+                    }
+
 
 
                     System.out.println("------------------------------------------");
@@ -1034,6 +1043,7 @@ public class UtilsResolving {
         return temp;
     }
 
+    @Transactional
     public DataShortBlockchainInformation helpResolve4(DataShortBlockchainInformation temp,
                                                        DataShortBlockchainInformation global,
                                                        String s,
@@ -1149,16 +1159,20 @@ public class UtilsResolving {
                 System.out.println("------------------------------------------");
                 System.out.println("rollback");
                 try {
-                    rollBackAddBlock3(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    BasisController.setShortDataBlockchain(temp);
-                    BasisController.setBlockcheinSize((int) temp.getSize());
-                    BasisController.setBlockchainValid(temp.isValidation());
+                   boolean result = rollBackAddBlock3(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-                    EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                    BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-                    System.out.println("prevBlock: " + BasisController.prevBlock().getIndex() + " shortDataBlockchain: " + BasisController.getShortDataBlockchain());
-                    String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+                    if(result){
+                        BasisController.setShortDataBlockchain(temp);
+                        BasisController.setBlockcheinSize((int) temp.getSize());
+                        BasisController.setBlockchainValid(temp.isValidation());
+
+                        EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
+                        BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
+                        System.out.println("prevBlock: " + BasisController.prevBlock().getIndex() + " shortDataBlockchain: " + BasisController.getShortDataBlockchain());
+                        String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
+                        UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+                    }
 
 
                     System.out.println("------------------------------------------");
@@ -1317,7 +1331,7 @@ public class UtilsResolving {
     }
 
     @Transactional
-    public void rollBackAddBlock4(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public boolean rollBackAddBlock4(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
 
 
@@ -1331,7 +1345,7 @@ public class UtilsResolving {
         File file = Blockchain.indexNameFileBlock((int) deleteBlocks.get(0).getIndex(), filename);
         if(file == null){
             System.out.println("rollBackAddBlock4:" + file);
-            return;
+            return false;
         }
         //потом берем список блоков из этого файл
         System.out.println("rollBackAddBlock3: file: " + file);
@@ -1430,11 +1444,12 @@ public class UtilsResolving {
         if (!saveBlocks.isEmpty())
             addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
+        return true;
     }
 
 
     @Transactional
-    public void rollBackAddBlock3(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public boolean rollBackAddBlock3(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
 
 
@@ -1449,7 +1464,7 @@ public class UtilsResolving {
         //потом берем список блоков из этого файл
         if(file == null){
             System.out.println("rollBackAddBlock3:" + file);
-            return;
+            return false;
         }
 
 
@@ -1544,7 +1559,7 @@ public class UtilsResolving {
 
 
         addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
+        return true;
     }
 
 

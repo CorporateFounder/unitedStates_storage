@@ -251,6 +251,13 @@ public class TournamentService {
                 BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
 
 
+                BasisController.getCountTransactionsWiner().clear();
+                BasisController.getStakingWiners().clear();
+                BasisController.getBigRandomWiner().clear();
+                BasisController.setCountTransactionsWiner(null);
+                BasisController.setStakingWiners(null);
+                BasisController.setBigRandomWiner(null);
+
                 BasisController.setCountTransactionsWiner(blockToLiteVersion(new ArrayList<>(), balances));
                 BasisController.setStakingWiners(blockToLiteVersion(new ArrayList<>(), balances));
                 BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
@@ -290,12 +297,28 @@ public class TournamentService {
                                         .sum()
                 );
 
+
+                // Очистка старой ссылки
+                winnerDiff.clear();
+                winnerCountTransaction.clear();
+                winnerStaking.clear();
+                winner.clear();
+                BasisController.getStakingWiners().clear();
+
+                winnerDiff = null;
+                winnerCountTransaction = null;
+                winnerStaking = null;
+                winner = null;
+                winnerDiff = null;
+                BasisController.setWinnerList(null);
+
                 winnerDiff = new ArrayList<>();
                 winnerCountTransaction = new ArrayList<>();
                 winnerStaking = new ArrayList<>();
                 winner = new ArrayList<>();
                 //обнуляет победителей, для нового раунда.
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+
 
 
 
@@ -342,6 +365,7 @@ public class TournamentService {
         }
 
     }
+
 
 
     public void updatingNodeEndBlocks()  {
@@ -407,6 +431,21 @@ public class TournamentService {
                    }
 
                 }
+
+                // Очистка старой ссылки
+                winnerDiff.clear();
+                winnerCountTransaction.clear();
+                winnerStaking.clear();
+                winner.clear();
+                BasisController.getWinnerList().clear();
+
+                winnerDiff = null;
+                winnerCountTransaction = null;
+                winnerStaking = null;
+                winner = null;
+                winnerDiff = null;
+                BasisController.setWinnerList(null);
+
                 System.out.println("finish download host");
                 System.out.println("download host --------------------------------------------");
                 winnerDiff = new ArrayList<>();
