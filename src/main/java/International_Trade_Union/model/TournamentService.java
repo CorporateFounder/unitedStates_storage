@@ -429,7 +429,7 @@ public class TournamentService {
             long timeDifference = timestamp - prevTime;
             //timestamp % Seting.TIME_UPDATING == 0
             if (timeDifference > Seting.TIME_UPDATING) {
-                MyLogger.saveLog("start: updatingNodeEndBlocks");
+//                MyLogger.saveLog("start: updatingNodeEndBlocks");
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
                 System.out.println("prevTime: " + prevTime);
@@ -437,35 +437,35 @@ public class TournamentService {
                 System.out.println("timestamp: " + timestamp);
                 System.out.println("timeDifferent: " + timeDifference);
                 //TODO здесь будет скачиваться обновление
-                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
+//                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
                 result = utilsResolving.resolve3();
-                long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory after: resolve3" + afterMemory);
-                MyLogger.saveLog("memory result resolve3: " + (afterMemory - beforeMemory));
+//                long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory after: resolve3" + afterMemory);
+//                MyLogger.saveLog("memory result resolve3: " + (afterMemory - beforeMemory));
                 System.out.println("finish updating --------------------------------------------");
                 System.out.println("time changing in update: " + timeDifference);
 
                 //TODO отправка своего хоста
                 System.out.println("sending host --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: send my host");
-                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory before: getNodes: " + beforeMemory);
+//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory before: getNodes: " + beforeMemory);
                 Set<String> nodes = BasisController.getNodes();
-                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory after: getNodes: " + afterMemory);
-                MyLogger.saveLog("memory result getNodes: " + (afterMemory - beforeMemory));
+//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory after: getNodes: " + afterMemory);
+//                MyLogger.saveLog("memory result getNodes: " + (afterMemory - beforeMemory));
 
                 System.out.println("tournament nodes: " + nodes);
                 System.out.println("my host: " + myHost);
                 System.out.println("domain configuration: " + domainConfiguration);
-
-                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory before: sendAddress: " + beforeMemory);
+//
+//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory before: sendAddress: " + beforeMemory);
                 UtilsAllAddresses.sendAddress(nodes, myHost);
-                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory after: sendAddress: " + afterMemory);
-                MyLogger.saveLog("memory result sendAddress: " + (afterMemory - beforeMemory));
+//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory after: sendAddress: " + afterMemory);
+//                MyLogger.saveLog("memory result sendAddress: " + (afterMemory - beforeMemory));
 
                 System.out.println("finish sending host --------------------------------------------");
                 //TODO отправка скачивание всех хостов
@@ -473,9 +473,9 @@ public class TournamentService {
                 System.out.println("download host");
                 Set<String> node = BasisController.getNodes();
                 node.remove(myHost.getHost());
-
-                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory before: for (String s : node): " + beforeMemory);
+//
+//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory before: for (String s : node): " + beforeMemory);
                 for (String s : node) {
                     try {
                         if (s == null || s.isBlank())
@@ -499,13 +499,13 @@ public class TournamentService {
                     }
 
                 }
-                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory after: for (String s : node) " + afterMemory);
-                MyLogger.saveLog("memory result for (String s : node) " + (afterMemory - beforeMemory));
+//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory after: for (String s : node) " + afterMemory);
+//                MyLogger.saveLog("memory result for (String s : node) " + (afterMemory - beforeMemory));
 
 
-                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory before: clear: " + beforeMemory);
+//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory before: clear: " + beforeMemory);
                 if(winner == null){
                     winner = new ArrayList<>();
                 }else {
@@ -532,9 +532,9 @@ public class TournamentService {
                     BasisController.getWinnerList().clear();
                 }
 
-                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                MyLogger.saveLog("memory after: clear " + afterMemory);
-                MyLogger.saveLog("memory result clear " + (afterMemory - beforeMemory));
+//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+//                MyLogger.saveLog("memory after: clear " + afterMemory);
+//                MyLogger.saveLog("memory result clear " + (afterMemory - beforeMemory));
 
             }else {
                 System.out.println("you can safely shut down the server. Update method");
