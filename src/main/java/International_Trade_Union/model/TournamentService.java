@@ -6,6 +6,7 @@ import International_Trade_Union.entity.blockchain.DataShortBlockchainInformatio
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -253,25 +254,31 @@ public class TournamentService {
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
                 if (winner != null && balances != null)
                     utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                String json = UtilsJson.objToStringJson(temp);
+                MyLogger.saveLog("tournament: 257 addBlock3: ");
+
                 //делает запись мета данных блокчейна.
-                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
                 //Добавляет мета данные в статическую переменную.
                 BasisController.setShortDataBlockchain(temp);
                 BasisController.setBlockcheinSize((int) temp.getSize());
                 BasisController.setBlockchainValid(temp.isValidation());
+                String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
+                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+                MyLogger.saveLog("tournament: 267 temp: " + temp);
 
 
                 EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
                 System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
                 //берет последний блок, и добавляет его в статистическую переменную.
+                MyLogger.saveLog("tournament: 273 temp: " + temp);
+
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
                 if (prevBlock == null) {
                     System.out.println("----------");
                     System.out.println("prevBlock: " + prevBlock);
                     System.out.println("----------");
-                    UtilsFileSaveRead.save("prevBlock: = null", Seting.ERROR_FILE, true);
+                    MyLogger.saveLog("TournamentService: 281: error prevBlock: " + prevBlock);
                     System.exit(1);
                 }
                 BasisController.setIsSaveFile(true);
@@ -369,31 +376,38 @@ public class TournamentService {
         } catch (IOException e) {
             System.out.println("TournamentService: IOException");
             e.printStackTrace();
+            MyLogger.saveLog("TournamentService: ", e);
 
         } catch (NoSuchAlgorithmException e) {
             System.out.println("TournamentService: NoSuchAlgorithmException");
             e.printStackTrace();
+            MyLogger.saveLog("TournamentService: ", e);
 
         } catch (InvalidKeySpecException e) {
             System.out.println("TournamentService: InvalidKeySpecException");
 
             e.printStackTrace();
+            MyLogger.saveLog("TournamentService: ", e);
 
         } catch (SignatureException e) {
             System.out.println("TournamentService: SignatureException");
             e.printStackTrace();
+            MyLogger.saveLog("TournamentService: ", e);
 
         } catch (NoSuchProviderException e) {
             System.out.println("TournamentService: NoSuchProviderException");
             e.printStackTrace();
+            MyLogger.saveLog("TournamentService: ", e);
 
         } catch (InvalidKeyException e) {
             System.out.println("TournamentService: InvalidKeyException");
             e.printStackTrace();
+            MyLogger.saveLog("TournamentService: ", e);
 
         } catch (CloneNotSupportedException e) {
             System.out.println("TournamentService: CloneNotSupportedException");
             e.printStackTrace();
+            MyLogger.saveLog("TournamentService: ", e);
 
         } finally {
 
@@ -415,6 +429,7 @@ public class TournamentService {
             long timeDifference = timestamp - prevTime;
             //timestamp % Seting.TIME_UPDATING == 0
             if (timeDifference > Seting.TIME_UPDATING) {
+                MyLogger.saveLog("start: updatingNodeEndBlocks");
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
                 System.out.println("prevTime: " + prevTime);
@@ -422,25 +437,45 @@ public class TournamentService {
                 System.out.println("timestamp: " + timestamp);
                 System.out.println("timeDifferent: " + timeDifference);
                 //TODO здесь будет скачиваться обновление
+                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
                 result = utilsResolving.resolve3();
+                long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory after: resolve3" + afterMemory);
+                MyLogger.saveLog("memory result resolve3: " + (afterMemory - beforeMemory));
                 System.out.println("finish updating --------------------------------------------");
                 System.out.println("time changing in update: " + timeDifference);
 
                 //TODO отправка своего хоста
                 System.out.println("sending host --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: send my host");
+                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory before: getNodes: " + beforeMemory);
                 Set<String> nodes = BasisController.getNodes();
+                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory after: getNodes: " + afterMemory);
+                MyLogger.saveLog("memory result getNodes: " + (afterMemory - beforeMemory));
 
                 System.out.println("tournament nodes: " + nodes);
                 System.out.println("my host: " + myHost);
                 System.out.println("domain configuration: " + domainConfiguration);
+
+                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory before: sendAddress: " + beforeMemory);
                 UtilsAllAddresses.sendAddress(nodes, myHost);
+                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory after: sendAddress: " + afterMemory);
+                MyLogger.saveLog("memory result sendAddress: " + (afterMemory - beforeMemory));
+
                 System.out.println("finish sending host --------------------------------------------");
                 //TODO отправка скачивание всех хостов
                 System.out.println("download host --------------------------------------------");
                 System.out.println("download host");
                 Set<String> node = BasisController.getNodes();
                 node.remove(myHost.getHost());
+
+                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory before: for (String s : node): " + beforeMemory);
                 for (String s : node) {
                     try {
                         if (s == null || s.isBlank())
@@ -464,7 +499,13 @@ public class TournamentService {
                     }
 
                 }
+                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory after: for (String s : node) " + afterMemory);
+                MyLogger.saveLog("memory result for (String s : node) " + (afterMemory - beforeMemory));
 
+
+                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory before: clear: " + beforeMemory);
                 if(winner == null){
                     winner = new ArrayList<>();
                 }else {
@@ -491,11 +532,16 @@ public class TournamentService {
                     BasisController.getWinnerList().clear();
                 }
 
+                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                MyLogger.saveLog("memory after: clear " + afterMemory);
+                MyLogger.saveLog("memory result clear " + (afterMemory - beforeMemory));
+
             }else {
                 System.out.println("you can safely shut down the server. Update method");
             }
         } catch (IOException e) {
            e.printStackTrace();
+            MyLogger.saveLog("TournamentService updating: ", e);
         } finally {
             BasisController.setIsSaveFile(true);
         }

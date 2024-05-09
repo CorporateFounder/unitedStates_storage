@@ -3,6 +3,7 @@ package International_Trade_Union.entity.blockchain;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
@@ -689,6 +690,7 @@ public class Blockchain implements Cloneable {
      * удалить файлы блокчейна
      */
     public static void deleteFileBlockchain(int deleteFrom, String directoryPath) {
+        MyLogger.saveLog("start deleteFileBlockchain: deleteFrom" + deleteFrom + " directoryPath: " + directoryPath );
         File folder = new File(directoryPath);
 
         File[] files = folder.listFiles();
@@ -698,16 +700,21 @@ public class Blockchain implements Cloneable {
                 try {
                     int fileNumber = Integer.parseInt(f.getName().replace(".txt", ""));
                     if (fileNumber >= deleteFrom) {
+                        if(f == null){
+                            System.err.println("Не удалось удалить файл: " + f);
+                        }
                         boolean deleted = f.delete();
                         if (!deleted) {
-                            System.err.println("Не удалось удалить файл: " + f.getName());
+                            System.err.println("Не удалось удалить файл: " + f);
                         }
                     }
                 } catch (NumberFormatException e) {
                     System.err.println("Неверный формат файла: " + f.getName());
+                    MyLogger.saveLog("deleteFileBlockchain: error:"  + e);
                 }
             }
         }
+        MyLogger.saveLog("finish deleteFileBlockchain: deleteFrom" + deleteFrom + " directoryPath: " + directoryPath );
     }
 
     public static Block indexFromFileBing(int index, String filename) throws JsonProcessingException {

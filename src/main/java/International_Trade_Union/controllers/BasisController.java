@@ -7,6 +7,7 @@ import International_Trade_Union.entity.blockchain.DataShortBlockchainInformatio
 import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.model.LiteVersionWiner;
 import International_Trade_Union.model.Tournament;
@@ -1116,8 +1117,7 @@ public class BasisController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            UtilsFileSaveRead.save(e.toString(), Seting.ERROR_FILE, true);
-
+            MyLogger.saveLog("resolve_conflict: ", e);
             isSaveFile = true;
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {

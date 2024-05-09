@@ -128,7 +128,11 @@ public class Tournament implements Runnable {
                 e.printStackTrace();
                 BasisController.setWinnerList(null);
                 BasisController.getWinnerList().clear();
-                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+                if(BasisController.getWinnerList() == null){
+                    BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+                }else {
+                    BasisController.getWinnerList().clear();
+                }
                 BasisController.setIsSaveFile(true);
                 System.out.println("exeption");
                 continue;

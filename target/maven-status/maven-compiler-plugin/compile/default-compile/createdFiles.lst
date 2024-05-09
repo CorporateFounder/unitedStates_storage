@@ -4,6 +4,7 @@ International_Trade_Union\CorporateCharterDraft\ArticleThreeJudiciaryDraft.class
 International_Trade_Union\entity\blockchain\block\Block.class
 International_Trade_Union\utils\UtilAccounts.class
 International_Trade_Union\controllers\config\BLockchainFactory$1.class
+International_Trade_Union\logger\MyLogger.class
 International_Trade_Union\vote\LawEligibleForParliamentaryApproval.class
 International_Trade_Union\utils\UtilsAllAddresses.class
 International_Trade_Union\entity\EntityChain.class
