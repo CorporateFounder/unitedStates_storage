@@ -19,7 +19,7 @@ public class UtilUrl {
         try (InputStream is = conn.getInputStream();
              BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
             String jsonText = readAll(rd);
-            ObjectMapper mapper = new ObjectMapper();
+
             return jsonText;
         } finally {
             if (conn instanceof HttpURLConnection) {
@@ -38,7 +38,6 @@ public class UtilUrl {
         try {
             rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
-            ObjectMapper mapper = new ObjectMapper();
             return jsonText;
         } finally {
             if (rd != null) {
@@ -75,7 +74,6 @@ public class UtilUrl {
     public static String getObject(String jsonObject, String requstStr) throws IOException {
         URL url = new URL(requstStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.connect();
         try {
 
 

@@ -59,24 +59,30 @@ public class UtilsFileSaveRead {
 
         BufferedReader reader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-        int innerIndex = 0;
+        try {
 
-        String currentLine;
 
-        while((currentLine = reader.readLine()) != null) {
+            int innerIndex = 0;
 
-            if(innerIndex == index){
-                System.out.println("deleted: " + index);
-                deleted = true;
-                return deleted;
+            String currentLine;
+
+            while ((currentLine = reader.readLine()) != null) {
+
+                if (innerIndex == index) {
+                    System.out.println("deleted: " + index);
+                    deleted = true;
+                    return deleted;
+                }
+                writer.write(currentLine + System.getProperty("line.separator"));
+                innerIndex++;
             }
-            writer.write(currentLine + System.getProperty("line.separator"));
-            innerIndex++;
+
+            deleteFile(fileName);
+            boolean successful = tempFile.renameTo(inputFile);
+        }finally {
+            writer.close();
+            reader.close();
         }
-        writer.close();
-        reader.close();
-        deleteFile(fileName);
-        boolean successful = tempFile.renameTo(inputFile);
         return deleted;
     }
     public static void save(String object, String fileName) throws IOException {

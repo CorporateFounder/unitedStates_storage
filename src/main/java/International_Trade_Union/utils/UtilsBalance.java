@@ -41,8 +41,7 @@ public class UtilsBalance {
     /**Возвращает баланс обратно, нужно когда есть множество веток.*/
     public static Map<String, Account> rollbackCalculateBalance(
             Map<String, Account> balances,
-            Block block,
-            List<String> sign
+            Block block
     ) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         Base base = new Base58();
         System.out.println("start rollbackCalculateBalance: index: " + block.getIndex());
@@ -54,13 +53,7 @@ public class UtilsBalance {
 
 
             DtoTransaction transaction = block.getDtoTransactions().get(j);
-//            if (sign.contains(base.encode(transaction.getSign()))) {
-//                System.out.println("this transaction signature has already been used and is not valid");
-//                continue;
-//            } else {
-////                    System.out.println("we added new sign transaction");
-//                sign.add(base.encode(transaction.getSign()));
-//            }
+
 
             if (transaction.getSender().startsWith(Seting.NAME_LAW_ADDRESS_START)) {
                 System.out.println("law balance cannot be sender");
@@ -152,8 +145,7 @@ public class UtilsBalance {
         int i = (int) block.getIndex();
 
         int BasisSendCount = 0;
-        for (int j = 0; j < block.getDtoTransactions().size(); j++) {
-
+        for (int j = 0; j < block.getDtoTransactions().size(); j++) {;
 
 
             DtoTransaction transaction = block.getDtoTransactions().get(j);

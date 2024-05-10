@@ -168,7 +168,7 @@ public class BasisController {
         try {
             json = UtilsJson.objToStringJson(countTransactionsWiner);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
         return json;
     }
@@ -394,13 +394,16 @@ public class BasisController {
             String blockFromFile = "*********************************\nblockFromFile: " + Blockchain.indexFromFileBing(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE)
                     + "\n";
 
+
             result = strIsSave + strBlockchainSize + isSaveFile + blockFromDb + blockFromFile;
+            result += "prevBlock: " + BasisController.prevBlock() + "\n";
+            result += "**********************************************\n";
             result += "getAllWiners: " + BasisController.getAllWiners().size() + "\n";
             result += "getBigRandomWiner: " + BasisController.getBigRandomWiner().size() + "\n";
             result += "getCountTransactionsWiner: " + BasisController.getCountTransactionsWiner().size() + "\n";
             result += "getWinnerList: " + BasisController.getWinnerList().size() + "\n";
             result += "getStakingWiners: " + BasisController.getStakingWiners().size() + "\n";
-            result += "prevBlock: " + BasisController.prevBlock() + "\n";
+            result += "**********************************************\n";
         }catch (Exception e){
             e.printStackTrace();
             return "";
@@ -559,6 +562,7 @@ public class BasisController {
         String localaddress = scheme + "://" + serverName + ":" + serverPort;
 
         excludedAddresses.add(localaddress);
+        MyLogger.saveLog("BasisController: getExcludedAddresses: excludedAddresses: " + excludedAddresses.size());
         return excludedAddresses;
     }
 
@@ -597,12 +601,16 @@ public class BasisController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+
         return nodes;
     }
 
     @GetMapping("/getNodes")
     @ResponseBody
     public Set<String> getAllNodes() {
+
         nodes = new HashSet<>();
         try {
             Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
@@ -621,6 +629,8 @@ public class BasisController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
         return nodes;
     }
 
@@ -1129,6 +1139,7 @@ public class BasisController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public synchronized void register_node(@RequestBody AddressUrl urlAddrress)  {
+
         try {
 
             for (String s : BasisController.getNodes()) {
@@ -1175,6 +1186,8 @@ public class BasisController {
             });
         }catch (Exception e){
             e.printStackTrace();
+        }finally {
+
         }
 
     }

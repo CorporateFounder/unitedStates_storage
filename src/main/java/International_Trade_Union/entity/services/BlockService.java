@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@Scope("prototype")
+@Scope("singleton")
 public class BlockService {
     @PersistenceContext
     EntityManager entityManager;
@@ -60,13 +60,14 @@ public class BlockService {
 
         }
 
+
     }
 
     public EntityLawsRepository getLawService() {
         return entityLawsRepository;
     }
 
-    @Transactional
+
     public EntityBlockRepository getEntityBlockRepository() {
         return entityBlockRepository;
     }
@@ -75,7 +76,7 @@ public class BlockService {
         return entityLawsRepository;
     }
 
-    @Transactional
+
     public EntityAccountRepository getEntityAccountRepository() {
         return entityAccountRepository;
     }
@@ -108,7 +109,7 @@ public class BlockService {
     }
 
 
-    @Transactional
+
     public List<EntityAccount> findByAccountIn(Map<String, Account> map) throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
@@ -125,7 +126,7 @@ public class BlockService {
 
     }
 
-    @Transactional
+
     public EntityAccount findByAccount(String account) throws IOException {
         EntityAccount entityAccounts = null;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -138,7 +139,6 @@ public class BlockService {
         return entityAccounts;
     }
 
-    @Transactional
     public List<EntityAccount> findBYAccountString(List<String> accounts) throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
@@ -153,7 +153,7 @@ public class BlockService {
         return entityAccounts;
     }
 
-    @Transactional
+
     public List<EntityAccount> findByDtoAccounts(List<DtoTransaction> transactions) throws IOException {
         List<String> accounts = new ArrayList<>();
         for (DtoTransaction transaction : transactions) {
@@ -173,7 +173,7 @@ public class BlockService {
     }
 
 
-    @Transactional
+
     public List<EntityAccount> findAllAccounts() throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
@@ -188,7 +188,7 @@ public class BlockService {
     }
 
 
-    @Transactional
+
     public long sizeBlock() throws IOException {
         long size = 0;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -201,7 +201,7 @@ public class BlockService {
         return size;
     }
 
-    @Transactional
+
     public EntityBlock lastBlock() throws IOException {
         EntityBlock entityBlock = null;
         try( Session session = entityManager.unwrap(Session.class)){
@@ -342,7 +342,7 @@ public class BlockService {
         return entityBlockRepository.findByHashBlock(hashBlock);
     }
 
-    @Transactional
+
     public EntityDtoTransaction findBySign(String sign) throws IOException {
         EntityDtoTransaction entityDtoTransaction = null;
         try( Session session = entityManager.unwrap(Session.class)){
@@ -356,7 +356,7 @@ public class BlockService {
         return entityDtoTransaction;
     }
 
-    @Transactional
+
     public boolean existsBySign(byte[] sign) throws IOException {
         boolean result = false;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -371,7 +371,7 @@ public class BlockService {
         return result;
     }
 
-    @Transactional
+
     public List<EntityDtoTransaction> findAllDto() throws IOException {
         List<EntityDtoTransaction> dtoTransactions = new ArrayList<>();
         try(Session session = entityManager.unwrap(Session.class)){
@@ -384,17 +384,17 @@ public class BlockService {
         return dtoTransactions;
     }
 
-    @Transactional
+
     public EntityDtoTransaction findByIdDto(long id) {
         return dtoTransactionRepository.findById(id);
     }
 
-    @Transactional
+
     public EntityBlock findById(long id) {
         return entityBlockRepository.findById(id);
     }
 
-    @Transactional
+
     public EntityBlock findBySpecialIndex(long specialIndex) throws IOException {
         EntityBlock entityBlock = null;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -412,7 +412,7 @@ public class BlockService {
         return entityBlockRepository.findAllByIdBetween(from, to);
     }
 
-    @Transactional
+
     public List<EntityBlock> findBySpecialIndexBetween(long from, long to) throws IOException {
         List<EntityBlock> entityBlocks = null;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -438,12 +438,12 @@ public class BlockService {
         return entityBlockRepository.count();
     }
 
-    @Transactional
+
     public long countAccount() {
         return entityAccountRepository.count();
     }
 
-    @Transactional
+
     public boolean isEmpty() throws IOException {
         boolean exists = false;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -458,7 +458,7 @@ public class BlockService {
     }
 
 
-    @Transactional
+
     public List<DtoTransaction> findBySender(String sender, int from, int to) throws IOException {
         List<DtoTransaction> dtoTransactions = null;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -476,7 +476,7 @@ public class BlockService {
         return dtoTransactions;
     }
 
-    @Transactional
+
     public List<DtoTransaction> findByCustomer(String customer, int from, int to) throws IOException {
         List<DtoTransaction> dtoTransactions = null;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -496,7 +496,7 @@ public class BlockService {
         return dtoTransactions;
     }
 
-    @Transactional
+
     public long countSenderTransaction(String sender) throws IOException {
         long size = 0;
         try(Session session = entityManager.unwrap(Session.class)){
@@ -511,7 +511,7 @@ public class BlockService {
 
     }
 
-    @Transactional
+
     public long countCustomerTransaction(String customer) throws IOException {
         long size = 0;
         try(Session session = entityManager.unwrap(Session.class)){

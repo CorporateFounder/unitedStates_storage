@@ -15,6 +15,7 @@ import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.support.SimpleTriggerContext;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @JsonAutoDetect
 @Data
 public class Blockchain implements Cloneable {
+
 
     private static BlockService blockService;
 
@@ -937,7 +939,7 @@ public class Blockchain implements Cloneable {
 
             tranasactions -= blocks.get(i).getDtoTransactions().size();
             bigRandomNumber -= UtilsUse.bigRandomWinner(blocks.get(i), balances.get(blocks.get(i).getMinerAddress()));
-            balances = UtilsBalance.rollbackCalculateBalance(balances, blocks.get(i), sign);
+            balances = UtilsBalance.rollbackCalculateBalance(balances, blocks.get(i));
 
 
         }
