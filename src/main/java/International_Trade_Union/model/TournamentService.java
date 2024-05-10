@@ -254,7 +254,6 @@ public class TournamentService {
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
                 if (winner != null && balances != null)
                     utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                MyLogger.saveLog("tournament: 257 addBlock3: ");
 
                 //делает запись мета данных блокчейна.
 
@@ -264,13 +263,11 @@ public class TournamentService {
                 BasisController.setBlockchainValid(temp.isValidation());
                 String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                 UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-                MyLogger.saveLog("tournament: 267 temp: " + temp);
 
 
                 EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
                 System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
                 //берет последний блок, и добавляет его в статистическую переменную.
-                MyLogger.saveLog("tournament: 273 temp: " + temp);
 
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
@@ -278,7 +275,6 @@ public class TournamentService {
                     System.out.println("----------");
                     System.out.println("prevBlock: " + prevBlock);
                     System.out.println("----------");
-                    MyLogger.saveLog("TournamentService: 281: error prevBlock: " + prevBlock);
                     System.exit(1);
                 }
                 BasisController.setIsSaveFile(true);

@@ -26,6 +26,8 @@ import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestAttributes;
@@ -52,6 +54,9 @@ public class BasisController {
     //Сервис для работы с базой данных h2
     @Autowired
     BlockService blockService;
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
 
 
     /**
@@ -132,6 +137,7 @@ public class BasisController {
      */
     @GetMapping("/allwinners")
     @ResponseBody
+
     public String allWinners()  {
         String json = "";
         try {
@@ -609,6 +615,7 @@ public class BasisController {
 
     @GetMapping("/getNodes")
     @ResponseBody
+    @Async("threadPoolTaskExecutor")
     public Set<String> getAllNodes() {
 
         nodes = new HashSet<>();
@@ -734,6 +741,7 @@ public class BasisController {
      */
     @PostMapping("/sub-blocks")
     @ResponseBody
+    @Async("threadPoolTaskExecutor")
     public List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) {
         List<Block> blocksDb = new ArrayList<>();
         try {
@@ -805,6 +813,7 @@ public class BasisController {
 
     @PostMapping("/block")
     @ResponseBody
+    @Async("threadPoolTaskExecutor")
     public Block getBlock(@RequestBody Integer index)  {
         try {
 //        System.out.println("start getBlock");

@@ -692,7 +692,6 @@ public class Blockchain implements Cloneable {
      * удалить файлы блокчейна
      */
     public static void deleteFileBlockchain(int deleteFrom, String directoryPath) {
-        MyLogger.saveLog("start deleteFileBlockchain: deleteFrom" + deleteFrom + " directoryPath: " + directoryPath );
         File folder = new File(directoryPath);
 
         File[] files = folder.listFiles();
@@ -712,11 +711,9 @@ public class Blockchain implements Cloneable {
                     }
                 } catch (NumberFormatException e) {
                     System.err.println("Неверный формат файла: " + f.getName());
-                    MyLogger.saveLog("deleteFileBlockchain: error:"  + e);
                 }
             }
         }
-        MyLogger.saveLog("finish deleteFileBlockchain: deleteFrom" + deleteFrom + " directoryPath: " + directoryPath );
     }
 
     public static Block indexFromFileBing(int index, String filename) throws JsonProcessingException {
