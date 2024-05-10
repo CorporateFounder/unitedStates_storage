@@ -21,7 +21,7 @@ public class MemoryMonitoringAspect {
         Object result = joinPoint.proceed(); // Выполнение целевого метода
         long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + (beforeMemory - afterMemory));
+        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
 
         return result;
     }
@@ -32,7 +32,7 @@ public class MemoryMonitoringAspect {
         Object result = joinPoint.proceed(); // Выполнение целевого метода
         long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + (beforeMemory - afterMemory));
+        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
 
         return result;
     }
@@ -43,7 +43,7 @@ public class MemoryMonitoringAspect {
         Object result = joinPoint.proceed(); // Выполнение целевого метода
         long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + (beforeMemory - afterMemory));
+        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
 
         return result;
     }
@@ -55,7 +55,7 @@ public class MemoryMonitoringAspect {
         Object result = joinPoint.proceed(); // Выполнение целевого метода
         long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + (beforeMemory - afterMemory));
+        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
 
         return result;
     }
