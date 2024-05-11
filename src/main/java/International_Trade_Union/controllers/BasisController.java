@@ -610,7 +610,6 @@ public class BasisController {
 
     @GetMapping("/getNodes")
     @ResponseBody
-    @Async("threadPoolTaskExecutor")
     public Set<String> getAllNodes() {
 
 
@@ -738,7 +737,6 @@ public class BasisController {
      */
     @PostMapping("/sub-blocks")
     @ResponseBody
-    @Async("threadPoolTaskExecutor")
     public List<Block> subBlocks(@RequestBody SubBlockchainEntity entity) {
         List<Block> blocksDb = new ArrayList<>();
         try {
