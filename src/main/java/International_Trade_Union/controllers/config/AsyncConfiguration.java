@@ -12,7 +12,7 @@ public class AsyncConfiguration {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5); // Количество потоков в пуле по умолчанию
         executor.setMaxPoolSize(20); // Максимальное количество потоков в пуле
-        executor.setQueueCapacity(100); // Размер очереди для задач, ожидающих выполнения
+        executor.setQueueCapacity(200); // Размер очереди для задач, ожидающих выполнения
         return executor;
     }
 }

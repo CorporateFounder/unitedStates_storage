@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@Scope("singleton")
 public class BlockService {
     @PersistenceContext
     EntityManager entityManager;

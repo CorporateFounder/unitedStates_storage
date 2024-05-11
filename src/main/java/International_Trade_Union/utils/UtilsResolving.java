@@ -45,7 +45,6 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 import static International_Trade_Union.utils.UtilsBalance.rollbackCalculateBalance;
 
 @Component
-@Scope("singleton")
 public class UtilsResolving {
     @Autowired
     BlockService blockService;
@@ -864,7 +863,6 @@ public class UtilsResolving {
             }
             try {
 
-
                 stop:
                 while (currentIndex >= 0) {
 
@@ -956,15 +954,7 @@ public class UtilsResolving {
                 System.out.println("rollback 5");
                 try {
                     System.out.println("before roll back emptyList: " + emptyList.size());
-                    if(different == null || different.isEmpty()){
-                        return temp;
-                    }
-                    if(emptyList == null || emptyList.isEmpty()){
-                        return temp;
-                    }
-                    if(balances == null || balances.isEmpty()){
-                        return temp;
-                    }
+
                     boolean result = rollBackAddBlock4(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                     if (result) {
                         BasisController.setShortDataBlockchain(temp);
@@ -1016,9 +1006,7 @@ public class UtilsResolving {
                 temp.setValidation(false);
                 return temp;
             }
-            if (!temp.isValidation()) {
-                return temp;
-            }
+
 
             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             BasisController.setShortDataBlockchain(temp);
@@ -1035,8 +1023,7 @@ public class UtilsResolving {
             UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
         }
 
-
-        System.out.println("__________________________________________________________");
+        temp.setValidation(false);
         return temp;
     }
 
@@ -1157,15 +1144,7 @@ public class UtilsResolving {
                 System.out.println("------------------------------------------");
                 System.out.println("rollback");
                 try {
-                    if(different == null || different.isEmpty()){
-                        return temp;
-                    }
-                    if(emptyList == null || emptyList.isEmpty()){
-                        return temp;
-                    }
-                    if(balances == null || balances.isEmpty()){
-                        return temp;
-                    }
+
                     boolean result = rollBackAddBlock3(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
                     if (result) {
@@ -1361,7 +1340,8 @@ public class UtilsResolving {
         //сначала узнаем название файла, где есть первый блок для удаления из файла
         File file = Blockchain.indexNameFileBlock((int) deleteBlocks.get(0).getIndex(), filename);
         if (file == null) {
-            System.out.println("rollBackAddBlock4:" + file.getAbsolutePath());
+            System.out.println("rollBackAddBlock4 file:" + file.getAbsolutePath());
+            MyLogger.saveLog("rollBackAddBlock4 file is null:");
             existM = false;
             return existM;
         }
@@ -1483,6 +1463,7 @@ public class UtilsResolving {
 //        потом берем список блоков из этого файл
         if (file == null) {
             System.out.println("rollBackAddBlock3: file: " + file);
+            MyLogger.saveLog("rollBackAddBlock3 file is null:");
             existM = false;
             return existM;
         }
