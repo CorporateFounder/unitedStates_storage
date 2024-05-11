@@ -38,6 +38,7 @@ public class UtilsBlock {
     }
 
     public static void setBlockService(BlockService blockService) {
+        UtilsBlock.blockService = null;
         UtilsBlock.blockService = blockService;
     }
     //wallet

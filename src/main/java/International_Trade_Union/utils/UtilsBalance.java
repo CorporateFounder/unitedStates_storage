@@ -35,6 +35,7 @@ public class UtilsBalance {
     }
 
     public static void setBlockService(BlockService blockService) {
+        UtilsBalance.blockService = null;
         UtilsBalance.blockService = blockService;
     }
 

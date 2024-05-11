@@ -38,6 +38,7 @@ public class Blockchain implements Cloneable {
     }
 
     public static void setBlockService(BlockService blockService) {
+        Blockchain.blockService = null;
         Blockchain.blockService = blockService;
     }
 

@@ -25,6 +25,7 @@ public class UtilsJson {
     public static DataShortBlockchainInformation jsonToDataShortBlockchainInformation(String json) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, DataShortBlockchainInformation.class);
+
     }
     public static String objToStringJson(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
