@@ -56,7 +56,6 @@ public class BasisController {
     BlockService blockService;
 
 
-
     /**
      * список кандидатов с данного сервера в качестве победителей
      */
