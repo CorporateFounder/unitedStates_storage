@@ -54,8 +54,7 @@ public class BasisController {
     //Сервис для работы с базой данных h2
     @Autowired
     BlockService blockService;
-    @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
 
 
     /**
