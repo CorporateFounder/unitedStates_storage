@@ -58,7 +58,6 @@ public class BasisController {
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
 
-
     /**
      * список кандидатов с данного сервера в качестве победителей
      */
@@ -138,11 +137,11 @@ public class BasisController {
     @GetMapping("/allwinners")
     @ResponseBody
 
-    public String allWinners()  {
+    public String allWinners() {
         String json = "";
         try {
             json = UtilsJson.objToStringJson(allWiners);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return json;
@@ -157,7 +156,7 @@ public class BasisController {
         String json = "";
         try {
             json = UtilsJson.objToStringJson(powerWiners);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -388,7 +387,7 @@ public class BasisController {
      */
     @GetMapping("/status")
     @ResponseBody
-    public String status()  {
+    public String status() {
         String result = "";
         try {
             String strIsSave = "isSave: " + isIsSave() + "\n";
@@ -410,7 +409,7 @@ public class BasisController {
             result += "getWinnerList: " + BasisController.getWinnerList().size() + "\n";
             result += "getStakingWiners: " + BasisController.getStakingWiners().size() + "\n";
             result += "**********************************************\n";
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return "";
         }
@@ -495,7 +494,7 @@ public class BasisController {
                 }
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -576,19 +575,16 @@ public class BasisController {
         BasisController.excludedAddresses = excludedAddresses;
     }
 
-    private static Set<String> nodes = new HashSet<>();
-//    private static Nodes nodes = new Nodes();
-
-    public static void setNodes(Set<String> nodes) {
-        BasisController.nodes = nodes;
-    }
 
     /**
      * Возвращает список хостов
      */
     public static Set<String> getNodes() {
 
-        nodes = new HashSet<>();
+
+        Set<String> nodes = new HashSet<>();
+
+
         try {
 
             Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
@@ -607,7 +603,6 @@ public class BasisController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
 
         return nodes;
@@ -618,7 +613,9 @@ public class BasisController {
     @Async("threadPoolTaskExecutor")
     public Set<String> getAllNodes() {
 
-        nodes = new HashSet<>();
+
+        Set<String> nodes = new HashSet<>();
+
         try {
             Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
@@ -814,7 +811,7 @@ public class BasisController {
     @PostMapping("/block")
     @ResponseBody
     @Async("threadPoolTaskExecutor")
-    public Block getBlock(@RequestBody Integer index)  {
+    public Block getBlock(@RequestBody Integer index) {
         try {
 //        System.out.println("start getBlock");
             if (blockchainValid == false || blockcheinSize == 0) {
@@ -837,7 +834,7 @@ public class BasisController {
             return UtilsBlockToEntityBlock.entityBlockToBlock(
                     blockService.findBySpecialIndex(index)
             );
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -855,11 +852,11 @@ public class BasisController {
      */
     @GetMapping("/balance")
     @ResponseBody
-    public Account getBalance(@RequestParam String address)  {
+    public Account getBalance(@RequestParam String address) {
         try {
             return UtilsAccountToEntityAccount.entityAccountToAccount(blockService.findByAccount(address));
 
-        }catch (Exception e ){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -1147,7 +1144,7 @@ public class BasisController {
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/nodes/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public synchronized void register_node(@RequestBody AddressUrl urlAddrress)  {
+    public synchronized void register_node(@RequestBody AddressUrl urlAddrress) {
 
         try {
 
@@ -1173,7 +1170,7 @@ public class BasisController {
                     .map(t -> t.replaceAll("\\\\", ""))
                     .collect(Collectors.toSet());
             nodes.add(urlAddrress.getAddress());
-            BasisController.setNodes(nodes);
+//            BasisController.setNodes(nodes);
 
             Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
             nodes.stream().forEach(t -> {
@@ -1193,9 +1190,9 @@ public class BasisController {
                     throw new RuntimeException(e);
                 }
             });
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
 
         }
 
@@ -1203,7 +1200,7 @@ public class BasisController {
 
 
     @GetMapping("/findAddresses")
-    public void findAddresses()  {
+    public void findAddresses() {
         for (String s : Seting.ORIGINAL_ADDRESSES) {
             Set<String> addressesSet = new HashSet<>();
             try {
@@ -1276,10 +1273,10 @@ public class BasisController {
             @RequestParam String address,
             @RequestParam int from,
             @RequestParam int to
-    )  {
+    ) {
         try {
             return blockService.findBySender(address, from, to);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -1295,10 +1292,10 @@ public class BasisController {
             @RequestParam String address,
             @RequestParam int from,
             @RequestParam int to
-    )  {
+    ) {
         try {
             return blockService.findByCustomer(address, from, to);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -1315,7 +1312,7 @@ public class BasisController {
         try {
             return blockService.countSenderTransaction(address);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return -1;
         }
@@ -1330,10 +1327,10 @@ public class BasisController {
     public long countCustomerTransaction(
             @RequestParam String address
     ) {
-        try{
+        try {
             return blockService.countCustomerTransaction(address);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return -1;
         }
@@ -1348,9 +1345,9 @@ public class BasisController {
     public Map<String, Account> addresses() {
         Map<String, Account> accountMap = new HashMap<>();
         try {
-           accountMap = UtilsAccountToEntityAccount
+            accountMap = UtilsAccountToEntityAccount
                     .entityAccountsToMapAccounts(blockService.findAllAccounts());
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return accountMap;
