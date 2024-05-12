@@ -18,10 +18,16 @@ public class MemoryMonitoringAspect {
     public Object monitorMemoryUsage(ProceedingJoinPoint joinPoint) throws Throwable {
         long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         MyLogger.saveLog("start method: " + joinPoint.getSignature().getName());
-        Object result = joinPoint.proceed(); // Выполнение целевого метода
-        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
+        Object result = null;
+        try {
+            result = joinPoint.proceed(); // Выполнение целевого метода
+        }catch (Throwable ex) {
+            MyLogger.saveLog("exception in method: " + joinPoint.getSignature().getName() + " with message: " + ex.getMessage());
+            throw ex; // Переброс исключения, если необходимо обработать его на более высоком уровне
+        } finally {
+            long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " memory difference: " + (afterMemory - beforeMemory));
+        }
 
         return result;
     }
@@ -29,10 +35,16 @@ public class MemoryMonitoringAspect {
     public Object monitorMemoryBasisController(ProceedingJoinPoint joinPoint) throws Throwable {
         long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         MyLogger.saveLog("start method: " + joinPoint.getSignature().getName());
-        Object result = joinPoint.proceed(); // Выполнение целевого метода
-        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
+        Object result = null;
+        try {
+            result = joinPoint.proceed(); // Выполнение целевого метода
+        }catch (Throwable ex) {
+            MyLogger.saveLog("exception in method: " + joinPoint.getSignature().getName() + " with message: " + ex.getMessage());
+            throw ex; // Переброс исключения, если необходимо обработать его на более высоком уровне
+        } finally {
+            long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " memory difference: " + (afterMemory - beforeMemory));
+        }
 
         return result;
     }
@@ -40,10 +52,16 @@ public class MemoryMonitoringAspect {
     public Object monitorMemoryUtilsBalanse(ProceedingJoinPoint joinPoint) throws Throwable {
         long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         MyLogger.saveLog("start method: " + joinPoint.getSignature().getName());
-        Object result = joinPoint.proceed(); // Выполнение целевого метода
-        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
+        Object result = null;
+        try {
+            result = joinPoint.proceed(); // Выполнение целевого метода
+        }catch (Throwable ex) {
+            MyLogger.saveLog("exception in method: " + joinPoint.getSignature().getName() + " with message: " + ex.getMessage());
+            throw ex; // Переброс исключения, если необходимо обработать его на более высоком уровне
+        } finally {
+            long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " memory difference: " + (afterMemory - beforeMemory));
+        }
 
         return result;
     }
@@ -52,10 +70,16 @@ public class MemoryMonitoringAspect {
     public Object monitorMemoryUtilUrl(ProceedingJoinPoint joinPoint) throws Throwable {
         long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         MyLogger.saveLog("start method: " + joinPoint.getSignature().getName());
-        Object result = joinPoint.proceed(); // Выполнение целевого метода
-        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
-        MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
+        Object result = null;
+        try {
+            result = joinPoint.proceed(); // Выполнение целевого метода
+        }catch (Throwable ex) {
+            MyLogger.saveLog("exception in method: " + joinPoint.getSignature().getName() + " with message: " + ex.getMessage());
+            throw ex; // Переброс исключения, если необходимо обработать его на более высоком уровне
+        } finally {
+            long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " memory difference: " + (afterMemory - beforeMemory));
+        }
 
         return result;
     }
