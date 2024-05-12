@@ -57,7 +57,6 @@ public class MemoryMonitoringAspect {
 
         MyLogger.saveLog("finish " + joinPoint.getSignature().getName() + ": afterMemory: " + afterMemory + " result: " + ( afterMemory - beforeMemory));
 
-
         return result;
     }
 }

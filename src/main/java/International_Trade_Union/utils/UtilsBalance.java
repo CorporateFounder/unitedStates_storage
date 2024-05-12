@@ -35,9 +35,9 @@ public class UtilsBalance {
     }
 
     public static void setBlockService(BlockService blockService) {
-        UtilsBalance.blockService = null;
         UtilsBalance.blockService = blockService;
     }
+
     /**Возвращает баланс обратно, нужно когда есть множество веток.*/
     public static Map<String, Account> rollbackCalculateBalance(
             Map<String, Account> balances,

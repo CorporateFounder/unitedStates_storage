@@ -45,6 +45,7 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 import static International_Trade_Union.utils.UtilsBalance.rollbackCalculateBalance;
 
 @Component
+@Scope("singleton")
 public class UtilsResolving {
     @Autowired
     BlockService blockService;
