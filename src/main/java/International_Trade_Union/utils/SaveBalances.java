@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SaveBalances {
-
     public static void saveBalances(Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
 

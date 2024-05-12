@@ -282,28 +282,10 @@ public class TournamentService {
                 BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
 
 
-                if(BasisController.getCountTransactionsWiner() == null){
-                    BasisController.setCountTransactionsWiner(new ArrayList<>());
-                }else {
-                    BasisController.getCountTransactionsWiner().clear();
-                }
-                if(BasisController.getStakingWiners() == null){
-                    BasisController.setStakingWiners(new ArrayList<>());
-                }else {
-                    BasisController.getStakingWiners().clear();
-                }
-                 if(BasisController.getBigRandomWiner() == null){
-                    BasisController.setPowerWiners(new ArrayList<>());
-                }else {
-                    BasisController.getBigRandomWiner().clear();
-                }
-                 if(BasisController.getPowerWiners() == null){
-                    BasisController.setPowerWiners(new ArrayList<>());
-                }else {
-                    BasisController.getPowerWiners().clear();
-                }
-
-
+                BasisController.getCountTransactionsWiner().clear();
+                BasisController.getStakingWiners().clear();
+                BasisController.getBigRandomWiner().clear();
+                BasisController.getPowerWiners().clear();
                 BasisController.setCountTransactionsWiner(null);
                 BasisController.setStakingWiners(null);
                 BasisController.setBigRandomWiner(null);

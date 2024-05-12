@@ -36,7 +36,6 @@ public class UtilAccounts {
 
             return accounts;
     }
-
 //    подсчитывает общий баланс всех участников
     public static double getAllBalance( List<Account> accountList){
         double allBalance = 0.0;
