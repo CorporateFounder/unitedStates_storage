@@ -51,6 +51,7 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 @RestController
 public class BasisController {
 
+
     //Сервис для работы с базой данных h2
     @Autowired
     BlockService blockService;
