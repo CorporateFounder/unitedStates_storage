@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -76,5 +77,18 @@ public class EntityBlock {
                 ", index=" + index +
                 ", hashBlock='" + hashBlock + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EntityBlock)) return false;
+        EntityBlock that = (EntityBlock) o;
+        return getRandomNumberProof() == that.getRandomNumberProof() && Double.compare(that.getMinerRewards(), getMinerRewards()) == 0 && getHashCompexity() == that.getHashCompexity() && getTimestamp() == that.getTimestamp() && getIndex() == that.getIndex() && getSpecialIndex() == that.getSpecialIndex() && Objects.equals(getDtoTransactions(), that.getDtoTransactions()) && Objects.equals(getPreviousHash(), that.getPreviousHash()) && Objects.equals(getMinerAddress(), that.getMinerAddress()) && Objects.equals(getFounderAddress(), that.getFounderAddress()) && Objects.equals(getHashBlock(), that.getHashBlock());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDtoTransactions(), getPreviousHash(), getMinerAddress(), getFounderAddress(), getRandomNumberProof(), getMinerRewards(), getHashCompexity(), getTimestamp(), getIndex(), getHashBlock(), getSpecialIndex());
     }
 }
