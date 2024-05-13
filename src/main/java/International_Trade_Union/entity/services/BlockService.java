@@ -34,8 +34,7 @@ import java.util.stream.Collectors;
 @Component
 @Scope("singleton")
 public class BlockService {
-    @PersistenceContext
-    EntityManager entityManager;
+
     @Autowired
     private EntityLawsRepository entityLawsRepository;
 
@@ -241,7 +240,7 @@ public class BlockService {
     }
 
     public void removeAllBlock(List<EntityBlock> entityBlocks) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityBlockRepository.deleteAll(entityBlocks);
             entityBlockRepository.flush();
         }catch (Exception e){
@@ -252,7 +251,7 @@ public class BlockService {
     }
 
     public void saveAccount(EntityAccount entityAccount) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityAccountRepository.save(entityAccount);
             entityAccountRepository.flush();
         }catch (Exception e){
@@ -514,7 +513,7 @@ public class BlockService {
 
     public long countCustomerTransaction(String customer) throws IOException {
         long size = 0;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             size = dtoTransactionRepository.countByCustomer(customer);
         }catch (Exception e){
             e.printStackTrace();
