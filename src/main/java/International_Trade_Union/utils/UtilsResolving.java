@@ -1905,6 +1905,7 @@ public class UtilsResolving {
 
 
 public void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
     try {
         UtilsBalance.setBlockService(blockService);
@@ -1967,6 +1968,10 @@ public void addBlock3(List<Block> originalBlocks, Map<String, Account> balances,
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
     } finally {
         // Perform any necessary cleanup operations here.
+        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        MyLogger.saveLog("*********************************");
+        MyLogger.saveLog("addBlock3 memoryResult " + (afterMemory-beforeMemory));
+        MyLogger.saveLog("*********************************");
     }
 }
 
