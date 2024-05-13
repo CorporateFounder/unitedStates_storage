@@ -42,6 +42,7 @@ public class UtilsFileSaveRead {
         }
         Mining.deleteFiles(src);
     }
+
     public static void write(MultipartFile file, Path dir) {
         Path filepath = Paths.get(dir.toString(), file.getOriginalFilename());
 
@@ -51,19 +52,17 @@ public class UtilsFileSaveRead {
             throw new RuntimeException(e);
         }
     }
+
     public static boolean deleted( String fileName, int index) throws IOException {
         File inputFile = new File(fileName);
 
         File tempFile = new File(Seting.ORIGINAL_BLOCKCHAIN_FILE +"myTempFile.txt");
         boolean deleted = false;
 
-        BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-        try {
-
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
 
             int innerIndex = 0;
-
             String currentLine;
 
             while ((currentLine = reader.readLine()) != null) {
@@ -79,15 +78,15 @@ public class UtilsFileSaveRead {
 
             deleteFile(fileName);
             boolean successful = tempFile.renameTo(inputFile);
-        }finally {
-            writer.close();
-            reader.close();
         }
+
         return deleted;
     }
+
     public static void save(String object, String fileName) throws IOException {
        save(object, fileName, true);
     }
+
     public static void save(String object, String fileName, boolean save){
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, save))) {
             writer.write(object);
@@ -96,14 +95,10 @@ public class UtilsFileSaveRead {
         }catch (IOException e){
             e.printStackTrace();
         }
-
-
     }
 
     public static void saves(List<String> objects, String fileName, boolean save){
-
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, save))) {
-
             for (String s : objects) {
                 writer.write(s + "\n");
             }
@@ -115,21 +110,23 @@ public class UtilsFileSaveRead {
     }
 
     public static String read(String file) throws FileNotFoundException {
-        String text = "";
+        StringBuilder text = new StringBuilder();
         File file1 = new File(file);
         if(!file1.exists()){
-            System.out.println("file dosn't have");
-            return text;
+            System.out.println("file doesn't exist");
+            return text.toString();
         }
         try( BufferedReader reader = new BufferedReader(new FileReader(file))){
-            while (reader.ready()){
-                text += reader.readLine();
+            String line;
+            while ((line = reader.readLine()) != null){
+                text.append(line);
             }
         }catch (IOException e){
             e.printStackTrace();
         }
-        return text;
+        return text.toString();
     }
+
     public static Set<String> readSet(String file){
         Set<String> list = new HashSet<>();
 
@@ -142,6 +139,7 @@ public class UtilsFileSaveRead {
         }
         return list;
     }
+
     public static List<String> reads(String file){
         List<String> list = new ArrayList<>();
 
@@ -154,7 +152,7 @@ public class UtilsFileSaveRead {
         }
         return list;
     }
-   
+
     public static void deleteAllFiles(String path){
         File folder = new File(path);
         for (File file : folder.listFiles()) {
@@ -162,12 +160,10 @@ public class UtilsFileSaveRead {
                 file.delete();
             }
         }
-
     }
 
     public static void deleteFile(String path){
         File file = new File(path);
         file.delete();
     }
-
 }

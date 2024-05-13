@@ -26,6 +26,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -36,6 +38,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.controllers.BasisController.getNodes;
@@ -1565,6 +1570,7 @@ public class UtilsResolving {
 
         addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
+
         return existM;
     }
 
@@ -1898,17 +1904,15 @@ public class UtilsResolving {
      */
 
 
+public void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
 
-    public void addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-        java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-        long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
+    try {
         UtilsBalance.setBlockService(blockService);
         Blockchain.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
         List<EntityBlock> list = new ArrayList<>();
         List<String> signs = new ArrayList<>();
-        //пакет законов.
+        // Package of laws.
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
@@ -1917,29 +1921,27 @@ public class UtilsResolving {
         long start = UtilsTime.getUniversalTimestamp();
         for (Block block : originalBlocks) {
             System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
-            //записывает блок в файл.
+            // Write block to file.
             UtilsBlock.saveBLock(block, filename);
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
 
-            //вычисляет баланс исходя из блока.
+            // Calculate balance based on the block.
             calculateBalance(balances, block, signs);
 
-            //сохраняет новые законы в файл
+            // Save new laws to file.
             allLaws = UtilsLaws.getLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
         }
 
         long finish = UtilsTime.getUniversalTimestamp();
         System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
 
-        //записывает в базу h2,
-//        BlockService.saveAllBlock(list);
+        // Write to the H2 database.
         blockService.saveAllBLockF(list);
 
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
         List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
         accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
-
 
         start = UtilsTime.getUniversalTimestamp();
         blockService.saveAccountAllF(accountList);
@@ -1949,17 +1951,10 @@ public class UtilsResolving {
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
         System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
 
-//        //удаляет старый файл балансов
-//        Mining.deleteFiles(Seting.ORIGINAL_BALANCE_FILE);
-//        //записывает актуальный файл балансов.
-//        SaveBalances.saveBalances(balances, Seting.ORIGINAL_BALANCE_FILE);
+        // Retrieve all laws with balance.
+        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-
-        //возвращает все законы с балансом,
-        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
-                Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-        //removal of obsolete laws
-        //удаление устаревших законов
+        // Remove obsolete laws.
         Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         //rewriting all existing laws
         //перезапись всех действующих законов
@@ -1967,11 +1962,13 @@ public class UtilsResolving {
 
         java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
 
-        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
-        System.out.println("addBlock 3: time: result: " + result);
+
+
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
-        long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+    } finally {
+        // Perform any necessary cleanup operations here.
     }
+}
 
     public List<HostEndDataShortB> sortPriorityHostOriginal(Set<String> hosts) throws IOException, JSONException {
         List<HostEndDataShortB> list = new ArrayList<>();
@@ -2015,8 +2012,9 @@ public class UtilsResolving {
         return result;
     }
 
-    public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) {
+    private  final ExecutorService customThreadPool = Executors.newFixedThreadPool(10);
 
+    public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) {
         // Добавляем ORIGINAL_ADDRESSES к входящему набору хостов
         Set<String> modifiedHosts = new HashSet<>(hosts);
         modifiedHosts.addAll(Seting.ORIGINAL_ADDRESSES);
@@ -2031,15 +2029,12 @@ public class UtilsResolving {
                         }
                 ));
 
-
-        List<CompletableFuture<HostEndDataShortB>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
+        List<CompletableFuture<HostEndDataShortB>> futures = new ArrayList<>();
 
         // Вывод информации о начале метода
         System.out.println("start: sortPriorityHost: " + selectedHosts);
 
-        // Перебираем все хосты
         for (String host : selectedHosts) {
-            // Создаем CompletableFuture для каждого хоста
             CompletableFuture<HostEndDataShortB> future = CompletableFuture.supplyAsync(() -> {
                 try {
                     // Вызов метода для получения данных из источника
@@ -2053,37 +2048,45 @@ public class UtilsResolving {
                     logError("Error while retrieving data for host: " + host, e);
                 }
                 return null;
-            });
+            }, customThreadPool);
 
-            // Добавление CompletableFuture в список
             futures.add(future);
         }
 
-        // Получение CompletableFuture, которые будут завершены
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
-        // Создание CompletableFuture для обработки завершенных результатов
         CompletableFuture<List<HostEndDataShortB>> allComplete = allFutures.thenApplyAsync(result -> {
-            // Получение результатов из CompletableFuture, фильтрация недействительных результатов и сборка в список
             return futures.stream()
                     .map(CompletableFuture::join)
-                    .filter(result1 -> result1 != null)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-        });
+        }, customThreadPool);
 
-        // Получение итогового списка
         List<HostEndDataShortB> resultList = allComplete.join();
 
         // Сортировка списка по приоритету
-        Collections.sort(resultList, new HostEndDataShortBComparator());
+        resultList.sort(new HostEndDataShortBComparator());
 
         // Вывод информации о завершении метода
         System.out.println("finish: sortPriorityHost: " + resultList);
 
-        // Возвращение итогового списка
+
+
         return resultList;
     }
 
+    // Метод для корректного закрытия пула потоков
+    @PreDestroy
+    public void destroy() {
+        customThreadPool.shutdown();
+        try {
+            if (!customThreadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                customThreadPool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            customThreadPool.shutdownNow();
+        }
+    }
     // Метод для получения данных из источника
     private DataShortBlockchainInformation fetchDataShortBlockchainInformation(String host) throws IOException, JSONException {
         // Загрузка JSON данных с URL
