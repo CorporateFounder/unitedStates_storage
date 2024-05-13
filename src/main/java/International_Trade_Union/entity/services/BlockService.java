@@ -51,7 +51,7 @@ public class BlockService {
 
     @Transactional
     public void deletedAll() throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityBlockRepository.deleteAll();
             entityAccountRepository.deleteAll();
             entityLawsRepository.deleteAll();
@@ -84,7 +84,7 @@ public class BlockService {
     }
 
     public void saveBlock(EntityBlock entityBlock) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityBlockRepository.save(entityBlock);
             entityBlockRepository.flush();
         }catch (Exception e){
@@ -99,8 +99,8 @@ public class BlockService {
 
     @Transactional
     public void deleteEntityBlocksAndRelatedData(Long threshold) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
-            session.setJdbcBatchSize(50);
+        try{
+
             entityBlockRepository.deleteAllBySpecialIndexGreaterThanEqual(threshold);
             entityBlockRepository.flush();
         }catch (Exception e){
@@ -114,7 +114,7 @@ public class BlockService {
 
     public List<EntityAccount> findByAccountIn(Map<String, Account> map) throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             List<String> accounts = map.entrySet().stream().map(t -> t.getValue().getAccount()).collect(Collectors.toList());
             entityAccounts = entityAccountRepository.findByAccountIn(accounts);
 
@@ -131,7 +131,7 @@ public class BlockService {
 
     public EntityAccount findByAccount(String account) throws IOException {
         EntityAccount entityAccounts = null;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityAccounts = entityAccountRepository.findByAccount(account);
         }catch (Exception e){
             e.printStackTrace();
@@ -143,7 +143,7 @@ public class BlockService {
 
     public List<EntityAccount> findBYAccountString(List<String> accounts) throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityAccounts  = entityAccountRepository.findByAccountIn(accounts);
 
         }catch (Exception e){
@@ -163,7 +163,7 @@ public class BlockService {
             accounts.add(transaction.getCustomer());
         }
         List<EntityAccount> entityAccounts = new ArrayList<>();
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityAccounts = entityAccountRepository.findByAccountIn(accounts);
         }catch (Exception e){
             e.printStackTrace();
@@ -178,7 +178,7 @@ public class BlockService {
 
     public List<EntityAccount> findAllAccounts() throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
            entityAccounts = entityAccountRepository.findAll();
         }catch (Exception e){
             e.printStackTrace();
@@ -193,7 +193,7 @@ public class BlockService {
 
     public long sizeBlock() throws IOException {
         long size = 0;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
              size = entityBlockRepository.count();
         }catch (Exception e){
             e.printStackTrace();
@@ -206,7 +206,7 @@ public class BlockService {
 
     public EntityBlock lastBlock() throws IOException {
         EntityBlock entityBlock = null;
-        try( Session session = entityManager.unwrap(Session.class)){
+        try{
             entityBlock = entityBlockRepository.findBySpecialIndex(entityBlockRepository.count() - 1);
 
         }catch (Exception e){
@@ -218,8 +218,7 @@ public class BlockService {
 
     @Transactional
     public void saveAllBLockF(List<EntityBlock> entityBlocks) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
-            session.setJdbcBatchSize(50);
+        try{
             entityBlockRepository.saveAll(entityBlocks);
             entityBlockRepository.flush();
         }catch (Exception e){
@@ -231,7 +230,7 @@ public class BlockService {
 
     @Transactional
     public void saveAllBlock(List<EntityBlock> entityBlocks) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityBlockRepository.saveAll(entityBlocks);
             entityBlockRepository.flush();
         }catch (Exception e){
@@ -266,10 +265,9 @@ public class BlockService {
 
 
     @Transactional
-
     public void saveAccountAllF(List<EntityAccount> entityAccounts) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
-            session.setJdbcBatchSize(50);
+        try{
+
             List<EntityAccount> entityResult = new ArrayList<>();
             for (EntityAccount entityAccount : entityAccounts) {
                 if (entityAccountRepository.findByAccount(entityAccount.getAccount()) != null) {
@@ -295,7 +293,7 @@ public class BlockService {
 
     @Transactional
     public void saveAccountAll(List<EntityAccount> entityAccounts) throws IOException {
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             // Кэш для результатов findByAccount
             Map<String, EntityAccount> cache = new HashMap<>();
 
@@ -347,7 +345,7 @@ public class BlockService {
 
     public EntityDtoTransaction findBySign(String sign) throws IOException {
         EntityDtoTransaction entityDtoTransaction = null;
-        try( Session session = entityManager.unwrap(Session.class)){
+        try{
             entityDtoTransaction = dtoTransactionRepository.findBySign(sign);
 
         }catch (Exception e){
@@ -361,7 +359,7 @@ public class BlockService {
 
     public boolean existsBySign(byte[] sign) throws IOException {
         boolean result = false;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             Base base = new Base58();
             result = dtoTransactionRepository.existsBySign(base.encode(sign));
         }catch (Exception e){
@@ -376,7 +374,7 @@ public class BlockService {
 
     public List<EntityDtoTransaction> findAllDto() throws IOException {
         List<EntityDtoTransaction> dtoTransactions = new ArrayList<>();
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
            dtoTransactions = dtoTransactionRepository.findAll();
         }catch (Exception e){
             e.printStackTrace();
@@ -399,7 +397,7 @@ public class BlockService {
 
     public EntityBlock findBySpecialIndex(long specialIndex) throws IOException {
         EntityBlock entityBlock = null;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityBlock = entityBlockRepository.findBySpecialIndex(specialIndex);
         }catch (Exception e){
             e.printStackTrace();
@@ -417,7 +415,7 @@ public class BlockService {
 
     public List<EntityBlock> findBySpecialIndexBetween(long from, long to) throws IOException {
         List<EntityBlock> entityBlocks = null;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             entityBlocks = entityBlockRepository.findBySpecialIndexBetween(from, to);
         }catch (Exception e){
             e.printStackTrace();
@@ -448,7 +446,7 @@ public class BlockService {
 
     public boolean isEmpty() throws IOException {
         boolean exists = false;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             exists = entityBlockRepository.existsById(1L);
         }catch (Exception e){
             e.printStackTrace();
@@ -463,7 +461,7 @@ public class BlockService {
 
     public List<DtoTransaction> findBySender(String sender, int from, int to) throws IOException {
         List<DtoTransaction> dtoTransactions = null;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             Pageable firstPageWithTenElements = (Pageable) PageRequest.of(from, to);
             List<EntityDtoTransaction> list =
                     dtoTransactionRepository.findBySender(sender, firstPageWithTenElements)
@@ -481,7 +479,7 @@ public class BlockService {
 
     public List<DtoTransaction> findByCustomer(String customer, int from, int to) throws IOException {
         List<DtoTransaction> dtoTransactions = null;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             Pageable firstPageWithTenElements = (Pageable) PageRequest.of(from, to);
             List<EntityDtoTransaction> list =
                     dtoTransactionRepository.findByCustomer(customer, firstPageWithTenElements)
@@ -501,7 +499,7 @@ public class BlockService {
 
     public long countSenderTransaction(String sender) throws IOException {
         long size = 0;
-        try(Session session = entityManager.unwrap(Session.class)){
+        try{
             size = dtoTransactionRepository.countBySender(sender);
         }catch (Exception e){
             e.printStackTrace();

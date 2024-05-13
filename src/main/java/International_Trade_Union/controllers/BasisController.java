@@ -618,15 +618,15 @@ public class BasisController {
         try {
             Set<String> temporary = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
-            nodes.addAll(temporary);
+            nodes.addAll((new HashSet<>(temporary)));
 
             nodes = nodes.stream()
                     .filter(t -> !t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
 
             Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-            nodes.removeAll(bloked);
+            nodes.removeAll((new HashSet<>(bloked)));
             nodes.removeAll(Seting.ORIGINAL_BLOCKED_ADDRESS);
-            nodes.addAll(Seting.ORIGINAL_ADDRESSES);
+            nodes.addAll((new HashSet<>(Seting.ORIGINAL_ADDRESSES)));
 
             System.out.println("nodes: " + nodes);
         } catch (Exception e) {
