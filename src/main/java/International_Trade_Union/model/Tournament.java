@@ -6,6 +6,7 @@ import International_Trade_Union.entity.blockchain.DataShortBlockchainInformatio
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +121,8 @@ public class Tournament implements Runnable {
                     System.out.println("timeDifference: " + timeDifference);
                     System.out.println("change time after before: " + Tournament.getPrevTime());
                     System.out.println("----------------------------------------------------");
+
+
                 }
 
 

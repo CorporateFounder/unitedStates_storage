@@ -532,6 +532,20 @@ public class TournamentService {
 //                MyLogger.saveLog("memory after: clear " + afterMemory);
 //                MyLogger.saveLog("memory result clear " + (afterMemory - beforeMemory));
 
+                MyLogger.saveLog("*******************[tournamentService-updating-start]*****************");
+                MyLogger.saveLog("winner.size: " + winner.size());
+                MyLogger.saveLog("winnerDiff.size: " + winnerDiff.size());
+                MyLogger.saveLog("winnerCountTransaction.size: " + winnerCountTransaction.size());
+                MyLogger.saveLog("winnerStaking.size: " + winnerStaking.size());
+                MyLogger.saveLog("BasisController.getAllWiners.size: " + BasisController.getAllWiners().size());
+                MyLogger.saveLog("BasisController.getStakingWiners.size: " + BasisController.getStakingWiners().size());
+                MyLogger.saveLog("BasisController.getPowerWiners.size: " + BasisController.getPowerWiners().size());
+                MyLogger.saveLog("BasisController.getWinnerList.size: " + BasisController.getWinnerList().size());
+                MyLogger.saveLog("BasisController.getCountTransactionsWiner.size: " + BasisController.getCountTransactionsWiner().size());
+                MyLogger.saveLog("BasisController.getBigRandomWiner.size: " + BasisController.getBigRandomWiner().size());
+                MyLogger.saveLog("BasisController.getNodes.size: " + BasisController.getNodes().size());
+                MyLogger.saveLog("*******************[tournamentService-updating-finish]****************");
+
             }else {
                 System.out.println("you can safely shut down the server. Update method");
             }
