@@ -64,7 +64,7 @@ public class TransactionController {
                     .filter(t -> {
                         try {
                             return !blockService.existsBySign(t.getSign());
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                     })

@@ -363,18 +363,9 @@ public class BlockService {
     }
 
 
-    public boolean existsBySign(byte[] sign) throws IOException {
-        boolean result = false;
-        try{
-            Base base = new Base58();
-            result = dtoTransactionRepository.existsBySign(base.encode(sign));
-        }catch (Exception e){
-            e.printStackTrace();
-            throw new IOException("existsBySign: error: save: ");
-
-        }
-
-        return result;
+    public boolean existsBySign(byte[] sign){
+        Base base = new Base58();
+        return dtoTransactionRepository.existsBySign(base.encode(sign));
     }
 
 
