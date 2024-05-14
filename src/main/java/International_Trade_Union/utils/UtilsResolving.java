@@ -837,8 +837,6 @@ public class UtilsResolving {
         return temp;
     }
 
-
-
     public DataShortBlockchainInformation helpResolve5(DataShortBlockchainInformation temp,
                                                        DataShortBlockchainInformation global,
                                                        String s,
@@ -926,8 +924,11 @@ public class UtilsResolving {
             tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
             tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
             tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
+
+
             System.out.println("shortDataBlockchain: " + BasisController.getShortDataBlockchain());
             System.out.println("rollback temp: " + temp);
+
             different = different.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
@@ -954,6 +955,7 @@ public class UtilsResolving {
             }
 
 
+
             System.out.println("after rollback: " + temp);
             if (temp.isValidation()) {
                 System.out.println("------------------------------------------");
@@ -968,10 +970,6 @@ public class UtilsResolving {
                         BasisController.setBlockchainValid(temp.isValidation());
 
                         EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                        while (tempBlock == null) {
-                            System.out.println("helpResolve5: tempBlock null: need update: ");
-                            tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                        }
 
                         BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
                         String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
@@ -1012,7 +1010,9 @@ public class UtilsResolving {
                 temp.setValidation(false);
                 return temp;
             }
-
+            if(!temp.isValidation()){
+                return temp;
+            }
 
             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             BasisController.setShortDataBlockchain(temp);
@@ -1020,12 +1020,9 @@ public class UtilsResolving {
             BasisController.setBlockchainValid(temp.isValidation());
 
             EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-            while (tempBlock == null) {
-                System.out.println("helpResolve5: tempBlock: null system updating: ");
-                tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-            }
             BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-            String json = UtilsJson.objToStringJson(temp);
+
+            String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
             UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
         }
 
@@ -1144,8 +1141,6 @@ public class UtilsResolving {
                 return temp;
             }
 
-
-
             System.out.println("after rollback: " + temp);
             if (temp.isValidation()) {
                 System.out.println("------------------------------------------");
@@ -1216,13 +1211,9 @@ public class UtilsResolving {
             BasisController.setBlockchainValid(temp.isValidation());
 
             EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-            while (tempBlock == null) {
-                System.out.println("helpResolve4: tempBlock: null system updating: ");
-                tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-            }
             BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
             System.out.println("prevBlock: " + BasisController.prevBlock().getIndex() + " shortDataBlockchain: " + BasisController.getShortDataBlockchain());
-            String json = UtilsJson.objToStringJson(temp);
+            String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
             UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
         }
 
@@ -1394,13 +1385,12 @@ public class UtilsResolving {
         }
 
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-
         List<EntityAccount> accountList = blockService.findByAccountIn(balances);
         accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
+
         long startTime = UtilsTime.getUniversalTimestamp();
         blockService.saveAccountAllF(accountList);
-
         long finishTime = UtilsTime.getUniversalTimestamp();
 
         System.out.println("UtilsResolving: rollBackAddBlock4: time save accounts: " + UtilsTime.differentMillSecondTime(startTime, finishTime));
@@ -1530,14 +1520,12 @@ public class UtilsResolving {
 
         //Удаляет блоки из неправильной ветки.
 //        BlockService.removeAllBlock(list);
-        if (threshold > 0)
-            blockService.deleteEntityBlocksAndRelatedData(threshold);
+        blockService.deleteEntityBlocksAndRelatedData(threshold);
 
 
-  //возвращает все законы с балансом,
+        //возвращает все законы с балансом,
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
                 Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
 
         //removal of obsolete laws
         //удаление устаревших законов
