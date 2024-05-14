@@ -32,7 +32,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-@Scope("singleton")
 public class BlockService {
 
     @Autowired
@@ -154,7 +153,15 @@ public class BlockService {
         return entityAccounts;
     }
 
-
+    @Transactional
+    public void saveAllBlocksAndAccounts(List<EntityBlock> entityBlocks, List<EntityAccount> entityAccounts) throws IOException {
+        try {
+            saveAllBLockF(entityBlocks);
+            saveAccountAllF(entityAccounts);
+        } catch (Exception e) {
+            throw new IOException("saveAllBlocksAndAccounts: error: ", e);
+        }
+    }
     public List<EntityAccount> findByDtoAccounts(List<DtoTransaction> transactions) throws IOException {
         List<String> accounts = new ArrayList<>();
         for (DtoTransaction transaction : transactions) {

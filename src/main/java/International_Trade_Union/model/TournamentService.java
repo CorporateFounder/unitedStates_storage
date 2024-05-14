@@ -30,8 +30,7 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 @Scope("singleton")
 public class TournamentService {
 
-    @Autowired
-    UtilsAddBlock utilsAddBlock;
+
 
     @Autowired
     UtilsResolving utilsResolving;
@@ -251,35 +250,41 @@ public class TournamentService {
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
 
+
+                boolean save = false;
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-                if (winner != null && balances != null)
-                    utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
-                //делает запись мета данных блокчейна.
-
-                //Добавляет мета данные в статическую переменную.
-                BasisController.setShortDataBlockchain(temp);
-                BasisController.setBlockcheinSize((int) temp.getSize());
-                BasisController.setBlockchainValid(temp.isValidation());
-                String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-
-
-                EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
-                System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
-                //берет последний блок, и добавляет его в статистическую переменную.
-
-                prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
-                BasisController.setPrevBlock(prevBlock);
-                if (prevBlock == null) {
-                    System.out.println("----------");
-                    System.out.println("prevBlock: " + prevBlock);
-                    System.out.println("----------");
-                    System.exit(1);
+                if (winner != null && balances != null){
+                   save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 }
-                BasisController.setIsSaveFile(true);
 
-                BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+
+               if(save){
+                   //делает запись мета данных блокчейна.
+
+                   //Добавляет мета данные в статическую переменную.
+                   BasisController.setShortDataBlockchain(temp);
+                   BasisController.setBlockcheinSize((int) temp.getSize());
+                   BasisController.setBlockchainValid(temp.isValidation());
+                   String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
+                   UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+
+                   EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
+                   System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
+                   //берет последний блок, и добавляет его в статистическую переменную.
+
+                   prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
+                   BasisController.setPrevBlock(prevBlock);
+                   if (prevBlock == null) {
+                       System.out.println("----------");
+                       System.out.println("prevBlock: " + prevBlock);
+                       System.out.println("----------");
+                       System.exit(1);
+                   }
+                   BasisController.setIsSaveFile(true);
+
+                   BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+               }
 
 
                 BasisController.getCountTransactionsWiner().clear();
