@@ -229,33 +229,29 @@ public class UtilsLaws {
 
 
     /**возвращает список всех законов, как действующих, так и не действующих, если закон новый то автоматически сохраняет его*/
-    public static Map<String, Laws> getLaws(Block block, String fileLaws, Map<String, Laws> lawsMap) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public static Map<String, Laws> getLaws(List<Block> blocks, String fileLaws, Map<String, Laws> lawsMap) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         List<Laws> lawsForSave = new ArrayList<>();
-//        Map<String, Laws> lawsMap = new HashMap<>();
         File file = new File(fileLaws);
         List<Laws> lawsList = new ArrayList<>();
+
         if (file.exists()) {
             lawsList = readLineLaws(fileLaws);
         }
 
-        Map<String, Laws> laws = new HashMap<>();
-//        lawsMap = getPackageLaws(block, laws);
-        lawsMap.putAll(getPackageLaws(block, laws));
+        for (Block block : blocks) {
+            Map<String, Laws> laws = new HashMap<>();
+            lawsMap.putAll(getPackageLaws(block, laws));
+        }
 
         for (Map.Entry<String, Laws> map : lawsMap.entrySet()) {
-            if (!lawsList.contains(map.getValue())) {
-                if( map.getValue() != null &&
-                        map.getValue().packetLawName != null&&
-                        map.getValue().getLaws() != null
-                        && !map.getValue().getHashLaw().isEmpty()
-                        && (map.getValue().getLaws().size() > 0)){
-
-                        lawsForSave.add(map.getValue());
+            Laws law = map.getValue();
+            if (law != null && law.packetLawName != null && law.getLaws() != null && !law.getHashLaw().isEmpty() && !lawsList.contains(law)) {
+                if (!law.getLaws().isEmpty()) {
+                    lawsForSave.add(law);
                 }
-
             }
-
         }
+
         saveLaws(lawsForSave, fileLaws);
 
         return lawsMap;

@@ -972,6 +972,8 @@ public class UtilsResolving {
                         BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
                         String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                         UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+                        return temp;
                     }
 
 
@@ -1023,11 +1025,13 @@ public class UtilsResolving {
 
                 String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                 UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+                return temp;
             }
         }
 
 
         System.out.println("__________________________________________________________");
+        temp.setValidation(false);
         return temp;
     }
 
@@ -1099,9 +1103,7 @@ public class UtilsResolving {
 
             } catch (Exception e) {
                 System.out.println("******************************");
-                System.out.println("helpresolve4 1: address: " + s);
-                e.printStackTrace();
-                MyLogger.saveLog("helpResolve4:  1157:: error", e);
+                System.out.println("connecting exeption helpresolve4: address: " + s);
                 System.out.println("******************************");
                 return temp;
             }
@@ -1156,15 +1158,12 @@ public class UtilsResolving {
                         BasisController.setBlockchainValid(temp.isValidation());
 
                         EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                        while (tempBlock == null) {
-                            System.out.println("helpResolve5: tempBlock null: need update: ");
-                            tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                        }
+
 
                         BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
                         String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                         UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-
+                        return temp;
                     }
 
 
@@ -1217,11 +1216,13 @@ public class UtilsResolving {
 
                 String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                 UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+                return temp;
             }
         }
 
 
         System.out.println("__________________________________________________________");
+        temp.setValidation(false);
         return temp;
     }
 
@@ -1913,79 +1914,58 @@ public class UtilsResolving {
 
     @Transactional
     public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-        long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        boolean result = false;
-        try {
-            UtilsBalance.setBlockService(blockService);
-            Blockchain.setBlockService(blockService);
-            UtilsBlock.setBlockService(blockService);
-            List<EntityBlock> list = new ArrayList<>();
-            List<String> signs = new ArrayList<>();
-            // Package of laws.
-            Map<String, Laws> allLaws = new HashMap<>();
-            List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
+        java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        UtilsBalance.setBlockService(blockService);
+        Blockchain.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
+        List<EntityBlock> list = new ArrayList<>();
+        List<String> signs = new ArrayList<>();
+        Map<String, Laws> allLaws = new HashMap<>();
+        List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
+        originalBlocks = originalBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
 
-            originalBlocks = originalBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
+        long start = UtilsTime.getUniversalTimestamp();
+        for (Block block : originalBlocks) {
+            System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
+            UtilsBlock.saveBLock(block, filename);
 
-            for (Block block : originalBlocks) {
-                EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
-                list.add(entityBlock);
-                calculateBalance(balances, block, signs);
-                // Save new laws to file.
-                allLaws = UtilsLaws.getLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+            EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
+            list.add(entityBlock);
 
-            }
-            try {
-                // Write to the H2 database.
-                blockService.saveAllBLockF(list);
-            } catch (Exception e) {
-                MyLogger.saveLog("addBlock3: error saveAllBlockF: ", e);
-                return false;
-            }
-            Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
-
-            UtilsBlock.saveBlocks(originalBlocks, filename);
-            long start = UtilsTime.getUniversalTimestamp();
-
-
-            long finish = UtilsTime.getUniversalTimestamp();
-            System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
-
-
-            tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-            List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
-            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
-
-            start = UtilsTime.getUniversalTimestamp();
-            blockService.saveAccountAllF(accountList);
-            finish = UtilsTime.getUniversalTimestamp();
-
-            System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
-            System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
-            System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
-
-            // Retrieve all laws with balance.
-            allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-            // Remove obsolete laws.
-            Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-            //rewriting all existing laws
-            //перезапись всех действующих законов
-            UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-            java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-
-
-        } finally {
-            // Perform any necessary cleanup operations here.
-            long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            MyLogger.saveLog("*********************************");
-            MyLogger.saveLog("addBlock3 memoryResult " + (afterMemory - beforeMemory));
-            MyLogger.saveLog("addBLock3: originalBlocks.size: " + originalBlocks.size());
-            MyLogger.saveLog("addBLock3: balances.size: " + balances.size());
-            MyLogger.saveLog("*********************************");
+            calculateBalance(balances, block, signs);
         }
+
+        // Вызов getLaws один раз для всех блоков
+        allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+
+        long finish = UtilsTime.getUniversalTimestamp();
+        System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
+
+        blockService.saveAllBLockF(list);
+
+        tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+        List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
+        accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+
+        start = UtilsTime.getUniversalTimestamp();
+        blockService.saveAccountAllF(accountList);
+        finish = UtilsTime.getUniversalTimestamp();
+
+        System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
+        System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
+        System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
+
+        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+
+        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+
+        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
+        System.out.println("addBlock 3: time: result: " + result);
+        System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
         return true;
     }
 
@@ -2031,9 +2011,8 @@ public class UtilsResolving {
         return result;
     }
 
-    private final ExecutorService customThreadPool = Executors.newFixedThreadPool(10);
-
     public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) {
+
         // Добавляем ORIGINAL_ADDRESSES к входящему набору хостов
         Set<String> modifiedHosts = new HashSet<>(hosts);
         modifiedHosts.addAll(Seting.ORIGINAL_ADDRESSES);
@@ -2048,12 +2027,15 @@ public class UtilsResolving {
                         }
                 ));
 
-        List<CompletableFuture<HostEndDataShortB>> futures = new ArrayList<>();
+
+        List<CompletableFuture<HostEndDataShortB>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
 
         // Вывод информации о начале метода
         System.out.println("start: sortPriorityHost: " + selectedHosts);
 
+        // Перебираем все хосты
         for (String host : selectedHosts) {
+            // Создаем CompletableFuture для каждого хоста
             CompletableFuture<HostEndDataShortB> future = CompletableFuture.supplyAsync(() -> {
                 try {
                     // Вызов метода для получения данных из источника
@@ -2065,45 +2047,38 @@ public class UtilsResolving {
                 } catch (IOException | JSONException e) {
                     // Перехват и логирование ошибки
                     logError("Error while retrieving data for host: " + host, e);
+
                 }
                 return null;
-            }, customThreadPool);
+            });
 
+            // Добавление CompletableFuture в список
             futures.add(future);
         }
 
+        // Получение CompletableFuture, которые будут завершены
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
+        // Создание CompletableFuture для обработки завершенных результатов
         CompletableFuture<List<HostEndDataShortB>> allComplete = allFutures.thenApplyAsync(result -> {
+            // Получение результатов из CompletableFuture, фильтрация недействительных результатов и сборка в список
             return futures.stream()
                     .map(CompletableFuture::join)
-                    .filter(Objects::nonNull)
+                    .filter(result1 -> result1 != null)
                     .collect(Collectors.toList());
-        }, customThreadPool);
+        });
 
+        // Получение итогового списка
         List<HostEndDataShortB> resultList = allComplete.join();
 
         // Сортировка списка по приоритету
-        resultList.sort(new HostEndDataShortBComparator());
+        Collections.sort(resultList, new HostEndDataShortBComparator());
 
         // Вывод информации о завершении метода
         System.out.println("finish: sortPriorityHost: " + resultList);
 
-
+        // Возвращение итогового списка
         return resultList;
-    }
-
-    // Метод для корректного закрытия пула потоков
-    @PreDestroy
-    public void destroy() {
-        customThreadPool.shutdown();
-        try {
-            if (!customThreadPool.awaitTermination(60, TimeUnit.SECONDS)) {
-                customThreadPool.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            customThreadPool.shutdownNow();
-        }
     }
 
     // Метод для получения данных из источника
