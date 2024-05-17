@@ -68,11 +68,7 @@ public class BasisController {
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
 
-    @GetMapping("/acutual-list")
-    @ResponseBody
-    public List<Block> actualList(){
-        return winnerList;
-    }
+
 
     private static boolean updating;
     /**
