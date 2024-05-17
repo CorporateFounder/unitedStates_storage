@@ -430,7 +430,7 @@ public class TournamentService {
             long timeDifference = timestamp - prevTime;
             //timestamp % Seting.TIME_UPDATING == 0
             if (timeDifference > Seting.TIME_UPDATING) {
-//                MyLogger.saveLog("start: updatingNodeEndBlocks");
+
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
                 System.out.println("prevTime: " + prevTime);
@@ -441,6 +441,7 @@ public class TournamentService {
 //                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
                 result = utilsResolving.resolve3();
+                MyLogger.saveLog("start: updatingNodeEndBlocks: result: " + result);
 //                long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory after: resolve3" + afterMemory);
 //                MyLogger.saveLog("memory result resolve3: " + (afterMemory - beforeMemory));
