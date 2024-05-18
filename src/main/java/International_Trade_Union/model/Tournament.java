@@ -69,18 +69,20 @@ public class Tournament implements Runnable {
             try {
 
                 if(prevTime == 0){
+                    tournament.updatingNodeEndBlocks(true);
                     if(BasisController.prevBlock() == null ){
                         prevTime = UtilsTime.getUniversalTimestamp() / 1000;
                     }
                     prevTime = BasisController.prevBlock().getTimestamp().getTime();
-                    tournament.updatingNodeEndBlocks(true);
+
                 }
                 if(prevUpdateTime == 0){
+                    tournament.updatingNodeEndBlocks(true);
                     if(BasisController.prevBlock() == null ){
                         prevUpdateTime = UtilsTime.getUniversalTimestamp() / 1000;
                     }
                     prevUpdateTime = BasisController.prevBlock().getTimestamp().getTime();
-                    tournament.updatingNodeEndBlocks(true);
+
                 }
 
 
@@ -140,7 +142,7 @@ public class Tournament implements Runnable {
                     BasisController.getWinnerList().clear();
                 }
                 BasisController.setIsSaveFile(true);
-                System.out.println("exeption");
+                MyLogger.saveLog("tournament exeption: ", e);
                 continue;
             }finally {
                 BasisController.setIsSaveFile(true);
