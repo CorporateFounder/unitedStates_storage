@@ -32,7 +32,6 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 public class TournamentService {
 
 
-
     @Autowired
     UtilsResolving utilsResolving;
 
@@ -117,6 +116,41 @@ public class TournamentService {
         return list1;
     }
 
+    public void getAllWinner() {
+
+        long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
+        long prevTime = Tournament.getPrevTime() / 1000L;
+        long timeDifference = timestamp - prevTime;
+        if (timeDifference > Seting.GET_WINNER_SECOND) {
+            Set<String> nodesAll = getNodes();
+            List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+            for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
+                String s = hostEndDataShortB.getHost();
+
+                try {
+                    String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
+                    List<Block> blocks = UtilsJson.jsonToListBLock(json);
+                    for (Block block : blocks) {
+                        List<String> sign = new ArrayList<>();
+                        List<Block> tempBlock = new ArrayList<>();
+                        tempBlock.add(block);
+                        Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
+
+                        DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(), new ArrayList<>(), tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+                        if (temp.isValidation()) {
+                            if (!BasisController.getWinnerList().contains(block))
+                                BasisController.getWinnerList().add(block);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("cannot connect");
+                    continue;
+                }
+            }
+
+        }
+    }
+
     @Transactional
     public void tournament() {
 
@@ -136,30 +170,6 @@ public class TournamentService {
                     .filter(UtilsUse.distinctByKey(Block::getHashBlock))
                     .collect(Collectors.toList());
 
-            Set<String> nodesAll = getNodes();
-            List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
-            for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
-                String s = hostEndDataShortB.getHost();
-                try {
-                    String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
-                    List<Block> blocks = UtilsJson.jsonToListBLock(json);
-                    for (Block block : blocks) {
-                        List<String> sign = new ArrayList<>();
-                        List<Block> tempBlock = new ArrayList<>();
-                        tempBlock.add(block);
-                        Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
-
-                        DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(),tempBlock, BasisController.getShortDataBlockchain(), new ArrayList<>(), tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-                        if(temp.isValidation()){
-                            list.add(block);
-                        }
-                    }
-                }
-                catch (Exception e){
-                    System.out.println("cannot connect");
-                    continue;
-                }
-            }
 
             if (list == null || list.isEmpty() || list.size() == 0) {
                 BasisController.setIsSaveFile(true);
@@ -186,28 +196,26 @@ public class TournamentService {
 
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-                if(winner == null){
+                if (winner == null) {
                     winner = new ArrayList<>();
-                }else {
+                } else {
                     winner.clear();
                 }
-                if(winnerDiff == null){
+                if (winnerDiff == null) {
                     winnerDiff = new ArrayList<>();
-                }else {
+                } else {
                     winnerDiff.clear();
                 }
-                if(winnerCountTransaction == null){
+                if (winnerCountTransaction == null) {
                     winnerCountTransaction = new ArrayList<>();
-                }else {
+                } else {
                     winnerCountTransaction.clear();
                 }
-                if(winnerStaking == null){
+                if (winnerStaking == null) {
                     winnerStaking = new ArrayList<>();
-                }else {
+                } else {
                     winnerStaking.clear();
                 }
-
-
 
 
                 System.out.println("tournament: winner: " + winner.size());
@@ -277,38 +285,38 @@ public class TournamentService {
 
                 boolean save = false;
                 //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-                if (winner != null && balances != null){
-                   save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                if (winner != null && balances != null) {
+                    save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
                 }
 
 
-               if(save){
-                   //делает запись мета данных блокчейна.
+                if (save) {
+                    //делает запись мета данных блокчейна.
 
-                   //Добавляет мета данные в статическую переменную.
-                   BasisController.setShortDataBlockchain(temp);
-                   BasisController.setBlockcheinSize((int) temp.getSize());
-                   BasisController.setBlockchainValid(temp.isValidation());
-                   String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                   UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+                    //Добавляет мета данные в статическую переменную.
+                    BasisController.setShortDataBlockchain(temp);
+                    BasisController.setBlockcheinSize((int) temp.getSize());
+                    BasisController.setBlockchainValid(temp.isValidation());
+                    String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
+                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
 
 
-                   EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
-                   System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
-                   //берет последний блок, и добавляет его в статистическую переменную.
+                    EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
+                    System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
+                    //берет последний блок, и добавляет его в статистическую переменную.
 
-                   prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
-                   BasisController.setPrevBlock(prevBlock);
-                   if (prevBlock == null) {
-                       System.out.println("----------");
-                       System.out.println("prevBlock: " + prevBlock);
-                       System.out.println("----------");
-                       System.exit(1);
-                   }
-                   BasisController.setIsSaveFile(true);
+                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
+                    BasisController.setPrevBlock(prevBlock);
+                    if (prevBlock == null) {
+                        System.out.println("----------");
+                        System.out.println("prevBlock: " + prevBlock);
+                        System.out.println("----------");
+                        System.exit(1);
+                    }
+                    BasisController.setIsSaveFile(true);
 
-                   BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
-               }
+                    BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+                }
 
 
                 BasisController.getCountTransactionsWiner().clear();
@@ -360,29 +368,29 @@ public class TournamentService {
                 );
 
 
-                if(winner == null){
+                if (winner == null) {
                     winner = new ArrayList<>();
-                }else {
+                } else {
                     winner.clear();
                 }
-                if(winnerDiff == null){
+                if (winnerDiff == null) {
                     winnerDiff = new ArrayList<>();
-                }else {
+                } else {
                     winnerDiff.clear();
                 }
-                if(winnerCountTransaction == null){
+                if (winnerCountTransaction == null) {
                     winnerCountTransaction = new ArrayList<>();
-                }else {
+                } else {
                     winnerCountTransaction.clear();
                 }
-                if(winnerStaking == null){
+                if (winnerStaking == null) {
                     winnerStaking = new ArrayList<>();
-                }else {
+                } else {
                     winnerStaking.clear();
                 }
-                if(BasisController.getWinnerList() == null){
+                if (BasisController.getWinnerList() == null) {
                     BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-                }else {
+                } else {
                     BasisController.getWinnerList().clear();
                 }
 
@@ -392,7 +400,7 @@ public class TournamentService {
                 System.out.println("finish time: " + UtilsTime.differentMillSecondTime(startTournament, finishTournament));
                 System.out.println("___________________________________________________");
                 BasisController.setIsSaveFile(true);
-            }else {
+            } else {
                 System.out.println("you can safely shut down the server. tournament method");
 
             }
@@ -532,29 +540,29 @@ public class TournamentService {
 
 //                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: clear: " + beforeMemory);
-                if(winner == null){
+                if (winner == null) {
                     winner = new ArrayList<>();
-                }else {
+                } else {
                     winner.clear();
                 }
-                if(winnerDiff == null){
+                if (winnerDiff == null) {
                     winnerDiff = new ArrayList<>();
-                }else {
+                } else {
                     winnerDiff.clear();
                 }
-                if(winnerCountTransaction == null){
+                if (winnerCountTransaction == null) {
                     winnerCountTransaction = new ArrayList<>();
-                }else {
+                } else {
                     winnerCountTransaction.clear();
                 }
-                if(winnerStaking == null){
+                if (winnerStaking == null) {
                     winnerStaking = new ArrayList<>();
-                }else {
+                } else {
                     winnerStaking.clear();
                 }
-                if(BasisController.getWinnerList() == null){
+                if (BasisController.getWinnerList() == null) {
                     BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-                }else {
+                } else {
                     BasisController.getWinnerList().clear();
                 }
 
@@ -576,11 +584,11 @@ public class TournamentService {
                 MyLogger.saveLog("BasisController.getNodes.size: " + BasisController.getNodes().size());
                 MyLogger.saveLog("*******************[tournamentService-updating-finish]****************");
 
-            }else {
+            } else {
                 System.out.println("you can safely shut down the server. Update method");
             }
         } catch (IOException e) {
-           e.printStackTrace();
+            e.printStackTrace();
             MyLogger.saveLog("TournamentService updating: ", e);
         } finally {
             BasisController.setIsSaveFile(true);

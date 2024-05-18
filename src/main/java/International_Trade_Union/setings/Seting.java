@@ -312,6 +312,7 @@ public interface Seting {
     int IS_BIG_DIFFERENT = 20;
     int DUPLICATE_INDEX = 243927;
 
+    int GET_WINNER_SECOND = 10;
     int CRITICAL_DIFFERENCE = 40;
 
 }

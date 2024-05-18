@@ -85,6 +85,7 @@ public class Tournament implements Runnable {
 
 
                 tournament.updatingNodeEndBlocks(false);
+                tournament.getAllWinner();
                 tournament.tournament();
 
                 tournament.updatingNodeEndBlocks(false);
