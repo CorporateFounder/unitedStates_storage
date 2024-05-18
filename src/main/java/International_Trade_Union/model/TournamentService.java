@@ -24,6 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.controllers.BasisController.getNodes;
 import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 
 @Component
@@ -135,8 +136,10 @@ public class TournamentService {
                     .filter(UtilsUse.distinctByKey(Block::getHashBlock))
                     .collect(Collectors.toList());
 
-
-            for (String s : BasisController.getNodes()) {
+            Set<String> nodesAll = getNodes();
+            List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+            for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
+                String s = hostEndDataShortB.getHost();
                 try {
                     String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                     List<Block> blocks = UtilsJson.jsonToListBLock(json);
