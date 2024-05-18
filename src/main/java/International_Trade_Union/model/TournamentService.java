@@ -136,7 +136,28 @@ public class TournamentService {
                     .collect(Collectors.toList());
 
 
-//                Thread.sleep(100);
+            for (String s : BasisController.getNodes()) {
+                try {
+                    String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
+                    List<Block> blocks = UtilsJson.jsonToListBLock(json);
+                    for (Block block : blocks) {
+                        List<String> sign = new ArrayList<>();
+                        List<Block> tempBlock = new ArrayList<>();
+                        tempBlock.add(block);
+                        Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
+
+                        DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(),tempBlock, BasisController.getShortDataBlockchain(), new ArrayList<>(), tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+                        if(temp.isValidation()){
+                            list.add(block);
+                        }
+                    }
+                }
+                catch (Exception e){
+                    System.out.println("cannot connect");
+                    continue;
+                }
+            }
+
             if (list == null || list.isEmpty() || list.size() == 0) {
                 BasisController.setIsSaveFile(true);
                 System.out.println("-----------------------");
@@ -418,7 +439,7 @@ public class TournamentService {
     }
 
 
-    public void updatingNodeEndBlocks() {
+    public void updatingNodeEndBlocks(boolean fastUpdating) {
         int result = -10;
         try {
 
@@ -429,7 +450,7 @@ public class TournamentService {
             long prevTime = Tournament.getPrevUpdateTime() / 1000L;
             long timeDifference = timestamp - prevTime;
             //timestamp % Seting.TIME_UPDATING == 0
-            if (timeDifference > Seting.TIME_UPDATING) {
+            if (timeDifference > Seting.TIME_UPDATING || fastUpdating) {
 
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");

@@ -13,8 +13,8 @@ public class UtilUrl {
     ////модифицированный ими код
     public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
         URLConnection conn = new URL(url).openConnection();
-        conn.setConnectTimeout(25000); // Таймаут соединения в миллисекундах
-        conn.setReadTimeout(25000); // Таймаут чтения в миллисекундах
+        conn.setConnectTimeout(5000); // Таймаут соединения в миллисекундах
+        conn.setReadTimeout(5000); // Таймаут чтения в миллисекундах
 
         try (InputStream is = conn.getInputStream();
              BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
@@ -77,8 +77,8 @@ public class UtilUrl {
         try {
 
 
-            conn.setReadTimeout(35000);
-            conn.setConnectTimeout(35000);
+            conn.setReadTimeout(5000);
+            conn.setConnectTimeout(5000);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
@@ -116,8 +116,8 @@ public class UtilUrl {
         URL url = new URL(requestStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 //        conn.connect();
-        conn.setReadTimeout(25000);
-        conn.setConnectTimeout(25000);
+        conn.setReadTimeout(5000);
+        conn.setConnectTimeout(5000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");

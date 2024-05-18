@@ -67,7 +67,17 @@ public class BasisController {
      */
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
 
-
+    @GetMapping("/winnerList")
+    @ResponseBody
+    public String winnerList() {
+        String json = "";
+        try {
+            json = UtilsJson.objToStringJson(winnerList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
 
 
     private static boolean updating;
@@ -953,7 +963,8 @@ public class BasisController {
                     Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
 
                 List<String> sign = new ArrayList<>();
-                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(addlist, blockService));
+                tempBalances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");

@@ -300,7 +300,7 @@ public interface Seting {
 
     long TIME_UPDATING = 105;
 
-    int RANDOM_HOSTS = 10;
+    int RANDOM_HOSTS = 20;
 
 
     String NAME_SERVER = "STANDART";
