@@ -1925,14 +1925,25 @@ public class UtilsResolving {
 
         originalBlocks = originalBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
 
+        for (Block block : originalBlocks) {
+            EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
+            list.add(entityBlock);
+        }
+
+        try {
+            blockService.saveAllBLockF(list);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
         long start = UtilsTime.getUniversalTimestamp();
         for (Block block : originalBlocks) {
             System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
             UtilsBlock.saveBLock(block, filename);
 
-            EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
-            list.add(entityBlock);
+
+
 
             calculateBalance(balances, block, signs);
         }
@@ -1943,7 +1954,7 @@ public class UtilsResolving {
         long finish = UtilsTime.getUniversalTimestamp();
         System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
 
-        blockService.saveAllBLockF(list);
+
 
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
         List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
