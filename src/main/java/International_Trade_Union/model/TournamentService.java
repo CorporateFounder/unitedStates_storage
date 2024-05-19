@@ -116,41 +116,39 @@ public class TournamentService {
         return list1;
     }
 
-    public void getAllWinner() {
-
-        long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
-        long prevTime = Tournament.getPrevTime() / 1000L;
-        long timeDifference = timestamp - prevTime;
-        if (timeDifference > Seting.GET_WINNER_SECOND) {
-            Set<String> nodesAll = getNodes();
-            List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
-            for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
-                String s = hostEndDataShortB.getHost();
-
-                try {
-                    String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
-                    List<Block> blocks = UtilsJson.jsonToListBLock(json);
-                    for (Block block : blocks) {
-                        List<String> sign = new ArrayList<>();
-                        List<Block> tempBlock = new ArrayList<>();
-                        tempBlock.add(block);
-                        Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
-
-                        DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(), new ArrayList<>(), tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
-                        if (temp.isValidation()) {
-                            if (!BasisController.getWinnerList().contains(block))
-                                BasisController.getWinnerList().add(block);
-                        }
+   public void getAllWinner() {
+    long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
+    long prevTime = Tournament.getPrevTime() / 1000L;
+    long timeDifference = timestamp - prevTime;
+    if (timeDifference > Seting.GET_WINNER_SECOND) {
+        Set<String> nodesAll = getNodes();
+        List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+        for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
+            String s = hostEndDataShortB.getHost();
+            try {
+                String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
+                List<Block> blocks = UtilsJson.jsonToListBLock(json);
+                for (Block block : blocks) {
+                    List<String> sign = new ArrayList<>();
+                    List<Block> tempBlock = new ArrayList<>();
+                    tempBlock.add(block);
+                    Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
+                    DataShortBlockchainInformation temp = Blockchain.shortCheck(
+                        BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
+                        new ArrayList<>(), tempBalances, sign
+                    );
+                    if (temp.isValidation()) {
+                        if (!BasisController.getWinnerList().contains(block))
+                            BasisController.getWinnerList().add(block);
                     }
-                } catch (Exception e) {
-                    System.out.println("cannot connect");
-                    continue;
                 }
+            } catch (Exception e) {
+                System.out.println("cannot connect");
+                continue;
             }
-
         }
     }
-
+}
     @Transactional
     public void tournament() {
 

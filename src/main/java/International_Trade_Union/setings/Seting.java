@@ -289,7 +289,7 @@ public interface Seting {
     double V34_MINING_REWARD = 0.2;
     int V34_MIN_DIFF = IS_TEST == true ? 1 : 17;
 
-    int TIME_TOURNAMENT_SECOND = 100;
+
     String MAX_TARGET_v30 = "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 
     double ONE_HUNDRED_THOUSAND = 100000;
@@ -298,7 +298,7 @@ public interface Seting {
     int WAIGHT_MINING_INDEX =247867;
     int TIME_CHECK_BLOCK = 233682; //221055
 
-    long TIME_UPDATING = 105;
+
 
     int RANDOM_HOSTS = 20;
 
@@ -312,7 +312,9 @@ public interface Seting {
     int IS_BIG_DIFFERENT = 20;
     int DUPLICATE_INDEX = 243927;
 
-    int GET_WINNER_SECOND = 10;
+    int GET_WINNER_SECOND = 50;
+    int TIME_TOURNAMENT_SECOND = 100;
+    long TIME_UPDATING = 100;
     int CRITICAL_DIFFERENCE = 40;
 
 }

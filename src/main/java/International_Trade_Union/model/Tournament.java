@@ -68,28 +68,20 @@ public class Tournament implements Runnable {
         while (true) {
             try {
 
-                if(prevTime == 0){
-                    tournament.updatingNodeEndBlocks(true);
-                    if(BasisController.prevBlock() == null ){
-                        prevTime = UtilsTime.getUniversalTimestamp() / 1000;
+                if (prevTime == 0 || prevUpdateTime == 0) {
+                    synchronized (Tournament.class) {
+                        if (prevTime == 0) {
+                            prevTime = UtilsTime.getUniversalTimestamp() / 1000;
+                        }
+                        if (prevUpdateTime == 0) {
+                            prevUpdateTime = UtilsTime.getUniversalTimestamp() / 1000;
+                        }
                     }
-                    prevTime = BasisController.prevBlock().getTimestamp().getTime();
-
-                }
-                if(prevUpdateTime == 0){
-                    tournament.updatingNodeEndBlocks(true);
-                    if(BasisController.prevBlock() == null ){
-                        prevUpdateTime = UtilsTime.getUniversalTimestamp() / 1000;
-                    }
-                    prevUpdateTime = BasisController.prevBlock().getTimestamp().getTime();
-
                 }
 
 
-                tournament.updatingNodeEndBlocks(false);
                 tournament.getAllWinner();
                 tournament.tournament();
-
                 tournament.updatingNodeEndBlocks(false);
 
 
@@ -104,7 +96,7 @@ public class Tournament implements Runnable {
                 long prevTime = Tournament.getPrevTime() / 1000L;
                 long timeDifference = timestamp - prevTime;
 
-                if(timeDifference > Seting.TIME_TOURNAMENT_SECOND + 10){
+                if(timeDifference > Seting.TIME_TOURNAMENT_SECOND ){
                     System.out.println("----------------------------------------------------");
 
                     System.out.println("change time prev before: " + Tournament.getPrevTime());
@@ -118,7 +110,7 @@ public class Tournament implements Runnable {
                 long prevTime2 = Tournament.getPrevUpdateTime() / 1000L;
                 long timeDifference2 = timestamp2 - prevTime2;
 
-                if(timeDifference2 > Seting.TIME_UPDATING + 10){
+                if(timeDifference2 > Seting.TIME_UPDATING ){
                     System.out.println("----------------------------------------------------");
 
                     System.out.println("change time prev before: " + Tournament.getPrevTime());
