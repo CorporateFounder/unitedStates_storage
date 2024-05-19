@@ -311,12 +311,12 @@ public class TournamentService {
                         System.out.println("----------");
                         System.exit(1);
                     }
-                    BasisController.setIsSaveFile(true);
 
-                    BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
                 }
 
+                BasisController.setIsSaveFile(true);
 
+                BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
                 BasisController.getCountTransactionsWiner().clear();
                 BasisController.getStakingWiners().clear();
                 BasisController.getBigRandomWiner().clear();
