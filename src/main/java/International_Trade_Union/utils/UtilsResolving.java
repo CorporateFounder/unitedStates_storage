@@ -1028,6 +1028,7 @@ public class UtilsResolving {
                 UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
                 return temp;
             }
+
         }
 
 
@@ -1404,9 +1405,9 @@ public class UtilsResolving {
         List<EntityAccount> accountList = blockService.findByAccountIn(balances);
         accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
-
         long startTime = UtilsTime.getUniversalTimestamp();
         blockService.saveAccountAllF(accountList);
+
         long finishTime = UtilsTime.getUniversalTimestamp();
 
         System.out.println("UtilsResolving: rollBackAddBlock4: time save accounts: " + UtilsTime.differentMillSecondTime(startTime, finishTime));
@@ -1969,6 +1970,7 @@ public class UtilsResolving {
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
         return true;
     }
+
 
     public List<HostEndDataShortB> sortPriorityHostOriginal(Set<String> hosts) throws IOException, JSONException {
         List<HostEndDataShortB> list = new ArrayList<>();

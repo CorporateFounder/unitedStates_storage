@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -24,47 +25,36 @@ import java.util.stream.Collectors;
 public class UtilsLaws {
     public static void saveLaws(List<Laws> laws, String filename) throws IOException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
-
-        //папка чтобы проверить есть ли
         File folder = new File(filename);
         List<String> files = new ArrayList<>();
+
         for (File file : folder.listFiles()) {
-            if(!file.isDirectory()){
+            if (!file.isDirectory()) {
                 files.add(file.getAbsolutePath());
             }
         }
 
-        int count = 0;
         files = files.stream().sorted().collect(Collectors.toList());
-        String nextFile = "";
+        int count = 0;
+        String nextFile = files.isEmpty() ? filename + "0.txt" : files.get(files.size() - 1);
 
-        if (files.size() > 0) {
-            nextFile = files.get(files.size()-1);
-
-            count = Integer.parseInt(nextFile.replaceAll("[^\\d]", ""));
-
-
+        if (new File(nextFile).length() >= fileLimit) {
+            count = Integer.parseInt(nextFile.replaceAll("[^\\d]", "")) + 1;
+            nextFile = filename + count + ".txt";
         }
 
-        File file = new File(nextFile);
+        // Обработка IOException внутри лямбды
+        List<String> jsons = laws.stream().map(law -> {
+            try {
+                return UtilsJson.objToStringJson(law);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }).collect(Collectors.toList());
 
-        if(file.length() >= fileLimit){
-            count++;
-
-        }
-
-        nextFile = filename + count + ".txt";
-
-        List<String> jsons = new ArrayList<>();
-        for (Laws laws1: laws) {
-            String json = UtilsJson.objToStringJson(laws1);
-            jsons.add(json);
-        }
-
-//        String json = UtilsJson.objToStringJson(minerAccount);
-//        UtilsFileSaveRead.save(json + "\n", nextFile);
         UtilsFileSaveRead.saves(jsons, nextFile, true);
     }
+
     public static void saveCurrentsLaws(List<LawEligibleForParliamentaryApproval> lawEligibleForParliamentaryApprovals, String filename) throws IOException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
 
@@ -109,30 +99,22 @@ public class UtilsLaws {
         UtilsFileSaveRead.saves(jsons, nextFile, true);
     }
 
-    public static List<Laws> readLineLaws(String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        List<Laws> laws = new ArrayList<>();
-        File folder = new File(filename);
-        for (final File fileEntry : folder.listFiles()) {
-            if (fileEntry.isDirectory()) {
-                System.out.println("is directory " + fileEntry.getAbsolutePath());
-            } else {
-                List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
-                for (String s : list) {
+   public static List<Laws> readLineLaws(String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    List<Laws> laws = new ArrayList<>();
+    File folder = new File(filename);
 
-                    Laws laws1 = UtilsJson.jsonToLaw(s);
-                    laws.add(laws1);
-                }
-
+    for (File fileEntry : folder.listFiles()) {
+        if (!fileEntry.isDirectory()) {
+            List<String> list = UtilsFileSaveRead.reads(fileEntry.getAbsolutePath());
+            for (String s : list) {
+                laws.add(UtilsJson.jsonToLaw(s));
             }
         }
-        laws = laws
-                .stream()
-                .sorted(Comparator.comparing(Laws::getPacketLawName))
-                .collect(Collectors.toList());
-
-        return laws;
     }
 
+    // Sort laws once after reading
+    return laws.stream().sorted(Comparator.comparing(Laws::getPacketLawName)).collect(Collectors.toList());
+}
     public static List<LawEligibleForParliamentaryApproval> readLineCurrentLaws(String filename) throws JsonProcessingException {
         List<LawEligibleForParliamentaryApproval> laws = new ArrayList<>();
         File folder = new File(filename);
