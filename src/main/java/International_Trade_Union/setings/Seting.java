@@ -313,9 +313,9 @@ public interface Seting {
     int IS_BIG_DIFFERENT = 20;
     int DUPLICATE_INDEX = 243927;
 
-    int GET_WINNER_SECOND = 50;
+    int GET_WINNER_SECOND = 10;
     int TIME_TOURNAMENT_SECOND = 100;
     long TIME_UPDATING = 100;
-    int CRITICAL_DIFFERENCE = 40;
+
 
 }

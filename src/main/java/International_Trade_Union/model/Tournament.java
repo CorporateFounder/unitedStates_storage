@@ -31,10 +31,11 @@ import java.util.stream.Collectors;
 public class Tournament implements Runnable {
 
     @Autowired
-    TournamentService tournament;
+    private TournamentService tournament;
 
     private static long prevTime;
     private static long prevUpdateTime;
+    private static long prevAllwinnersUpdateTime;
 
     public static long getPrevTime() {
         return prevTime;
@@ -52,100 +53,111 @@ public class Tournament implements Runnable {
         Tournament.prevUpdateTime = prevUpdateTime;
     }
 
+    public static long getPrevAllwinnersUpdateTime() {
+        return prevAllwinnersUpdateTime;
+    }
+
+    public static void setPrevAllwinnersUpdateTime(long prevAllwinnersUpdateTime) {
+        Tournament.prevAllwinnersUpdateTime = prevAllwinnersUpdateTime;
+    }
+
     @PostConstruct
     public void init() {
-
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
     }
+
     @Override
     public void run() {
-
-
-
-
         while (true) {
             try {
-
-                if (prevTime == 0 || prevUpdateTime == 0) {
-                    synchronized (Tournament.class) {
-                        if (prevTime == 0) {
-                            prevTime = UtilsTime.getUniversalTimestamp() / 1000;
-                        }
-                        if (prevUpdateTime == 0) {
-                            prevUpdateTime = UtilsTime.getUniversalTimestamp() / 1000;
-                        }
-                    }
-                    tournament.updatingNodeEndBlocks(true);
-                }
+                initializePrevTimesIfNeeded();
 
 
                 tournament.getAllWinner();
                 tournament.tournament();
                 tournament.updatingNodeEndBlocks(false);
 
+                checkAndUpdatePrevTime();
+                checkAndUpdatePrevUpdateTime();
+                checkAndUpdatePrevAllwinnersUpdateTime();
 
-
-                //TODO
-                //если после обновления победитель изменился
-                //то нужно в all winners добавить нового победителя
-                //и заменить победителя, на победителя из базы данных последнего
-
-
-                long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
-                long prevTime = Tournament.getPrevTime() / 1000L;
-                long timeDifference = timestamp - prevTime;
-
-                if(timeDifference > Seting.TIME_TOURNAMENT_SECOND ){
-                    System.out.println("----------------------------------------------------");
-
-                    System.out.println("change time prev before: " + Tournament.getPrevTime());
-                    Tournament.setPrevTime(UtilsTime.getUniversalTimestamp());
-                    System.out.println("timeDifference: " + timeDifference);
-                    System.out.println("change time after before: " + Tournament.getPrevTime());
-                    System.out.println("----------------------------------------------------");
-                }
-
-                long timestamp2 = UtilsTime.getUniversalTimestamp() / 1000;
-                long prevTime2 = Tournament.getPrevUpdateTime() / 1000L;
-                long timeDifference2 = timestamp2 - prevTime2;
-
-                if(timeDifference2 > Seting.TIME_UPDATING ){
-                    System.out.println("----------------------------------------------------");
-
-                    System.out.println("change time prev before: " + Tournament.getPrevTime());
-                    Tournament.setPrevUpdateTime(UtilsTime.getUniversalTimestamp());
-                    System.out.println("timeDifference: " + timeDifference);
-                    System.out.println("change time after before: " + Tournament.getPrevTime());
-                    System.out.println("----------------------------------------------------");
-
-
-                }
-
-
-
-            }catch (Exception e){
-                e.printStackTrace();
-                BasisController.setWinnerList(null);
-                BasisController.getWinnerList().clear();
-                if(BasisController.getWinnerList() == null){
-                    BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-                }else {
-                    BasisController.getWinnerList().clear();
-                }
-                BasisController.setIsSaveFile(true);
-                MyLogger.saveLog("tournament exeption: ", e);
-                continue;
-            }finally {
+            } catch (Exception e) {
+                handleException(e);
+            } finally {
                 BasisController.setIsSaveFile(true);
             }
-
-
         }
-
-
     }
 
+    private void initializePrevTimesIfNeeded() {
+        if (prevTime == 0 || prevUpdateTime == 0 || prevAllwinnersUpdateTime == 0) {
+            tournament.updatingNodeEndBlocks(true);
+            long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
 
+            if (BasisController.prevBlock() == null) {
+                prevTime = currentTime;
+                prevUpdateTime = currentTime;
+                prevAllwinnersUpdateTime = currentTime;
+            } else {
+                long blockTime = BasisController.prevBlock().getTimestamp().getTime() / 1000;
+                prevTime = (prevTime == 0) ? blockTime : prevTime;
+                prevUpdateTime = (prevUpdateTime == 0) ? blockTime : prevUpdateTime;
+                prevAllwinnersUpdateTime = (prevAllwinnersUpdateTime == 0) ? blockTime : prevAllwinnersUpdateTime;
+            }
+        }
+    }
+
+    private void checkAndUpdatePrevTime() {
+        long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
+        long timeDifference = currentTime - prevTime;
+
+        if (timeDifference > Seting.TIME_TOURNAMENT_SECOND) {
+            logTimeUpdate("Tournament", prevTime, currentTime);
+            prevTime = currentTime;
+        }
+    }
+
+    private void checkAndUpdatePrevUpdateTime() {
+        long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
+        long timeDifference = currentTime - prevUpdateTime;
+
+        if (timeDifference > Seting.TIME_UPDATING) {
+            logTimeUpdate("Node Update", prevUpdateTime, currentTime);
+            prevUpdateTime = currentTime;
+        }
+    }
+
+    private void checkAndUpdatePrevAllwinnersUpdateTime(){
+        long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
+        long timeDifference = currentTime - prevAllwinnersUpdateTime;
+
+        if (timeDifference > Seting.GET_WINNER_SECOND) {
+            logTimeUpdate("Node Update", prevAllwinnersUpdateTime, currentTime);
+            prevAllwinnersUpdateTime = currentTime;
+        }
+    }
+
+    private void logTimeUpdate(String process, long previousTime, long currentTime) {
+        System.out.println("----------------------------------------------------");
+        System.out.println("Process: " + process);
+        System.out.println("Previous time: " + previousTime);
+        System.out.println("Current time: " + currentTime);
+        System.out.println("----------------------------------------------------");
+    }
+
+    private void handleException(Exception e) {
+        e.printStackTrace();
+        MyLogger.saveLog("Tournament exception: ", e);
+
+        BasisController.setWinnerList(null);
+        if (BasisController.getWinnerList() == null) {
+            BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+        } else {
+            BasisController.getWinnerList().clear();
+        }
+
+        BasisController.setIsSaveFile(true);
+    }
 }
