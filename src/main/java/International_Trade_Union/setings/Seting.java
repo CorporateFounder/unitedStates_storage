@@ -307,6 +307,7 @@ public interface Seting {
     String PUBLIC_KEY = "STANDART";
 
     int DELETED_FILE_BLOCKED_HOST = 3;
+    int DELETED_FILE_ALL_ADDRESS= 3;
     int DELETED_FILE_BLOCKED_HOST_TIME_SECOND = 1000;
 
     int IS_BIG_DIFFERENT = 20;

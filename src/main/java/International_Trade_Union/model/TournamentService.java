@@ -138,8 +138,11 @@ public class TournamentService {
                         new ArrayList<>(), tempBalances, sign
                     );
                     if (temp.isValidation()) {
-                        if (!BasisController.getWinnerList().contains(block))
+                        if (!BasisController.getWinnerList().contains(block)){
                             BasisController.getWinnerList().add(block);
+                            MyLogger.saveLog("getWinnerList: index: " + block.getIndex() + "address: " + block.getMinerAddress());
+                        }
+
                     }
                 }
             } catch (Exception e) {

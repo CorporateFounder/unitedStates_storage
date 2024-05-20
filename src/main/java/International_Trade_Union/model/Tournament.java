@@ -77,6 +77,7 @@ public class Tournament implements Runnable {
                             prevUpdateTime = UtilsTime.getUniversalTimestamp() / 1000;
                         }
                     }
+                    tournament.updatingNodeEndBlocks(true);
                 }
 
 

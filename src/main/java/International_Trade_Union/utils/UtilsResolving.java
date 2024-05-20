@@ -20,6 +20,7 @@ import International_Trade_Union.setings.Seting;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -30,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -42,6 +45,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static International_Trade_Union.controllers.BasisController.getNodes;
 import static International_Trade_Union.controllers.BasisController.utilsMethod;
@@ -62,9 +66,6 @@ public class UtilsResolving {
         UtilsBlock.setBlockService(blockService);
 
         //удаляет файлы которые хранять заблокированные хосты
-        if (BasisController.getBlockchainSize() % Seting.DELETED_FILE_BLOCKED_HOST == 0) {
-            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-        }
 
         int bigSize = 0;
         try {
@@ -1341,246 +1342,171 @@ public class UtilsResolving {
 
 
     public boolean rollBackAddBlock4(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-        java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+       try {
+           java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+           boolean existM = true;
 
-        boolean existM = true;
+           List<String> signs = new ArrayList<>();
+           Map<String, Laws> allLaws = new HashMap<>();
+           List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
-        List<String> signs = new ArrayList<>();
-        //пакет законов.
-        Map<String, Laws> allLaws = new HashMap<>();
-        List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
+           File file = Blockchain.indexNameFileBlock((int) deleteBlocks.get(0).getIndex(), filename);
+           if (file == null) {
+               System.out.println("rollBackAddBlock4 file:" + file.getAbsolutePath());
+               MyLogger.saveLog("rollBackAddBlock4 file is null:");
+               return false;
+           }
 
-        //сначала узнаем название файла, где есть первый блок для удаления из файла
-        File file = Blockchain.indexNameFileBlock((int) deleteBlocks.get(0).getIndex(), filename);
-        if (file == null) {
-            System.out.println("rollBackAddBlock4 file:" + file.getAbsolutePath());
-            MyLogger.saveLog("rollBackAddBlock4 file is null:");
-            existM = false;
-            return existM;
-        }
-        //потом берем список блоков из этого файл
-        System.out.println("rollBackAddBlock4: file: " + file.getAbsolutePath());
-        List<String> tempList = new ArrayList<>();
-        tempList = UtilsFileSaveRead.reads(file.getAbsolutePath());
+           System.out.println("rollBackAddBlock4: file: " + file.getAbsolutePath());
+           List<String> tempList = UtilsFileSaveRead.reads(file.getAbsolutePath());
 
-        List<Block> tempBlock = new ArrayList<>();
+           List<Block> tempBlock = new ArrayList<>();
+           for (String s : tempList) {
+               try {
+                   Block block = UtilsJson.jsonToBLock(s);
+                   tempBlock.add(block);
+               } catch (JsonProcessingException e) {
+                   MyLogger.saveLog("JsonProcessingException in rollBackAddBlock4: " + e.getMessage());
+                   throw new RuntimeException(e);
+               }
+           }
 
-        for (String s : tempList) {
+           tempBlock = tempBlock.stream()
+                   .filter(t -> t.getIndex() < deleteBlocks.get(0).getIndex())
+                   .sorted(Comparator.comparing(Block::getIndex))
+                   .collect(Collectors.toList());
 
-            Block block = UtilsJson.jsonToBLock(s);
-            tempBlock.add(block);
-        }
-        //потом удаляем из этого списка блоки, которые не должны быть в файле.
-        tempBlock = tempBlock.stream()
-                .filter(t -> t.getIndex() < deleteBlocks.get(0)
-                        .getIndex())
-                .sorted(Comparator.comparing(Block::getIndex))
-                .collect(Collectors.toList());
+           System.out.println("rollBackAddBlock4: delete: " + file.getAbsolutePath());
+           Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
+           System.out.println("rollBackAddBlock4: delete finish: " + file.getAbsolutePath());
+           long threshold = deleteBlocks.get(0).getIndex();
 
-        //TODO здесь мы должны удалить все файлы идущие после этого файла,
+           Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
+           for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
+               Block block = deleteBlocks.get(i);
+               System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
+               balances = rollbackCalculateBalance(balances, block);
+               allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+           }
 
-        System.out.println("rollBackAddBlock4: delete: " + file.getAbsolutePath());
-        Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        System.out.println("rollBackAddBlock4: delete finish: " + file.getAbsolutePath());
-        long threshold = deleteBlocks.get(0).getIndex();
+           tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+           List<EntityAccount> accountList = blockService.findByAccountIn(balances);
+           accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
-        //для удаления баланса
-        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
+           long startTime = UtilsTime.getUniversalTimestamp();
+           blockService.saveAccountAllF(accountList);
+           long finishTime = UtilsTime.getUniversalTimestamp();
 
-        for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
-            Block block = deleteBlocks.get(i);
-            System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
+           System.out.println("UtilsResolving: rollBackAddBlock4: time save accounts: " + UtilsTime.differentMillSecondTime(startTime, finishTime));
+           System.out.println("UtilsResolving: rollBackAddBlock4: total different balance: " + tempBalances.size());
+           System.out.println("UtilsResolving: rollBackAddBlock4: total original balance: " + balances.size());
 
-            //возвращаем деньги на счета и аннулируем добытые монеты в неверной ветке
-            balances = rollbackCalculateBalance(balances, block);
+           if (threshold > 0) {
+               blockService.deleteEntityBlocksAndRelatedData(threshold);
+           }
 
-            //Аннулирует законы из списка законов, которые из неправильной ветки.
-            allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+           allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+           Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+           UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-        }
+           java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+           Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
 
-        tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-        List<EntityAccount> accountList = blockService.findByAccountIn(balances);
-        accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+           int tempIndexTest = (int) tempBlock.get(0).getIndex();
+           int tempIndexTest2 = (int) tempBlock.get(tempBlock.size() - 1).getIndex();
 
+           tempBlock = tempBlock.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+           for (Block block : tempBlock) {
+               saveBlockSafe(block, filename);
+           }
 
-        long startTime = UtilsTime.getUniversalTimestamp();
-        blockService.saveAccountAllF(accountList);
-        long finishTime = UtilsTime.getUniversalTimestamp();
+           System.out.println("addBlock 3: time: result: " + result);
+           System.out.println(":BasisController: addBlock3: finish: " + deleteBlocks.size());
+           System.out.println("deleteBlocks: index: start: " + deleteBlocks.get(deleteBlocks.size() - 1).getIndex());
+           System.out.println("tempBlock: index: start: " + tempIndexTest);
+           System.out.println("tempBlock: index: finish: " + tempIndexTest2);
+           System.out.println("balances size: " + balances.size());
 
-        System.out.println("UtilsResolving: rollBackAddBlock4: time save accounts: " + UtilsTime.differentMillSecondTime(startTime, finishTime));
-        System.out.println("UtilsResolving: rollBackAddBlock4: total different balance: " + tempBalances.size());
-        System.out.println("UtilsResolving: rollBackAddBlock4: total original balance: " + balances.size());
+           if (!saveBlocks.isEmpty()) {
+               boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+               if (!save) {
+                   existM = false;
+               }
+           }
+           return existM;
+       }catch (Exception e){
+           MyLogger.saveLog("error: ", e);
+           return false;
+       }
 
-        //Удаляет блоки из неправильной ветки.
-//        BlockService.removeAllBlock(list);
-        if (threshold > 0)
-            blockService.deleteEntityBlocksAndRelatedData(threshold);
-
-        //возвращает все законы с балансом,
-        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
-                Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-
-        //removal of obsolete laws
-        //удаление устаревших законов
-        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-        //rewriting all existing laws
-        //перезапись всех действующих законов
-        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-
-        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
-
-        int tempIndexTest = (int) tempBlock.get(0).getIndex();
-        int tempIndexTest2 = (int) tempBlock.get(tempBlock.size() - 1).getIndex();
-
-        tempBlock = tempBlock.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-        for (Block block : tempBlock) {
-            UtilsBlock.saveBLock(block, filename);
-        }
-
-        System.out.println("addBlock 3: time: result: " + result);
-        System.out.println(":BasisController: addBlock3: finish: " + deleteBlocks.size());
-        System.out.println("deleteBlocks: index: start: " + deleteBlocks.get(deleteBlocks.size() - 1).getIndex());
-        System.out.println("tempBlock: index: start: " + tempIndexTest);
-        System.out.println("tempBlock: index: finish: " + tempIndexTest2);
-
-        System.out.println("balances size: " + balances.size());
-
-
-        if (!saveBlocks.isEmpty()) {
-            boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-            if (save == false) {
-                existM = false;
-            }
-        }
-
-
-        return existM;
     }
 
 
     public boolean rollBackAddBlock3(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-
-        boolean existM = true;
-
-        List<String> signs = new ArrayList<>();
-        //пакет законов.
+        try{
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
-        //сначала узнаем название файла, где есть первый блок для удаления из файла
         File file = Blockchain.indexNameFileBlock((int) deleteBlocks.get(0).getIndex(), filename);
-//        потом берем список блоков из этого файл
         if (file == null) {
-            System.out.println("rollBackAddBlock3: file: " + file);
             MyLogger.saveLog("rollBackAddBlock3 file is null:");
-            existM = false;
-            return existM;
+            return false;
         }
 
-
-        System.out.println("rollBackAddBlock3: file: " + file);
-        List<String> tempList = new ArrayList<>();
-        tempList = UtilsFileSaveRead.reads(file.getAbsolutePath());
-
-        List<Block> tempBlock = new ArrayList<>();
-
-        for (String s : tempList) {
-
-            Block block = UtilsJson.jsonToBLock(s);
-            tempBlock.add(block);
+        List<Block> tempBlock;
+        try (Stream<String> lines = Files.lines(Paths.get(file.getAbsolutePath()))) {
+            tempBlock = lines.map(line -> {
+                        try {
+                            return UtilsJson.jsonToBLock(line);
+                        } catch (JsonProcessingException e) {
+                            MyLogger.saveLog("JsonProcessingException in rollBackAddBlock3: " + e.getMessage());
+                            throw new RuntimeException(e);
+                        }
+                    }).filter(block -> block.getIndex() < deleteBlocks.get(0).getIndex())
+                    .collect(Collectors.toList());
         }
-        //потом удаляем из этого списка блоки, которые не должны быть в файле.
-        tempBlock = tempBlock.stream()
-                .filter(t -> t.getIndex() < deleteBlocks.get(0).getIndex()).collect(Collectors.toList());
-
-        //TODO здесь мы должны удалить все файлы идущие после этого файла,
-        System.out.println("rollBackAddBlock3: delete: " + file.getAbsolutePath());
 
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        System.out.println("rollBackAddBlock3: delete finish: " + file.getAbsolutePath());
-        long threshold = deleteBlocks.get(0).getIndex();
 
-        //для удаления баланса
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
-
-
         for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
             Block block = deleteBlocks.get(i);
-            System.out.println("rollBackAddBlock3 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
-
-            //возвращаем деньги на счета и аннулируем добытые монеты в неверной ветке
             balances = rollbackCalculateBalance(balances, block);
-
-            //Аннулирует законы из списка законов, которые из неправильной ветки.
             allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
-
         }
 
-        tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-
+        Map<String, Account> updatedBalances = UtilsUse.differentAccount(tempBalances, balances);
         List<EntityAccount> accountList = blockService.findByAccountIn(balances);
-        accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
-
-        long startTime = UtilsTime.getUniversalTimestamp();
+        accountList = UtilsUse.mergeAccounts(updatedBalances, accountList);
         blockService.saveAccountAllF(accountList);
+        blockService.deleteEntityBlocksAndRelatedData(deleteBlocks.get(0).getIndex());
 
-        long finishTime = UtilsTime.getUniversalTimestamp();
-
-        System.out.println("UtilsResolving: rollBackAddBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(startTime, finishTime));
-        System.out.println("UtilsResolving: rollBackAddBlock3: total different balance: " + tempBalances.size());
-        System.out.println("UtilsResolving: rollBackAddBlock3: total original balance: " + balances.size());
-
-        //Удаляет блоки из неправильной ветки.
-//        BlockService.removeAllBlock(list);
-        blockService.deleteEntityBlocksAndRelatedData(threshold);
-
-
-        //возвращает все законы с балансом,
-        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances,
-                Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-        //removal of obsolete laws
-        //удаление устаревших законов
+        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-        //rewriting all existing laws
-        //перезапись всех действующих законов
         UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        tempBlock.stream().sorted(Comparator.comparing(Block::getIndex))
+                .forEachOrdered(block -> saveBlockSafe(block, filename));
 
-        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
-
-        int tempIndexTest = (int) tempBlock.get(0).getIndex();
-        int tempIndexTest2 = (int) tempBlock.get(tempBlock.size() - 1).getIndex();
-
-        tempBlock = tempBlock.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-        for (Block block : tempBlock) {
-            UtilsBlock.saveBLock(block, filename);
+        return addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        }catch (Exception e){
+            MyLogger.saveLog("rollBackAddBlock3: ", e);
+            return false;
         }
 
-        System.out.println("addBlock 3: time: result: " + result);
-        System.out.println(":BasisController: addBlock3: finish: " + deleteBlocks.size());
-        System.out.println("deleteBlocks: index: start: " + deleteBlocks.get(deleteBlocks.size() - 1).getIndex());
-        System.out.println("tempBlock: index: start: " + tempIndexTest);
-        System.out.println("tempBlock: index: finish: " + tempIndexTest2);
-
-        System.out.println("balances size: " + balances.size());
-
-
-        boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        if (save == false) {
-            existM = false;
-        }
-
-        return existM;
     }
+
+    private void saveBlockSafe(Block block, String filename) {
+        try {
+            UtilsBlock.saveBLock(block, filename);
+        } catch (IOException | NoSuchAlgorithmException | SignatureException | InvalidKeySpecException | NoSuchProviderException | InvalidKeyException e) {
+            MyLogger.saveLog("Exception in saveBlockSafe: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+
 
 
     public int resovle2() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -2076,6 +2002,12 @@ public class UtilsResolving {
 
         // Вывод информации о завершении метода
         System.out.println("finish: sortPriorityHost: " + resultList);
+        if (BasisController.getBlockchainSize() % Seting.DELETED_FILE_BLOCKED_HOST == 0) {
+            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+        }
+        if (BasisController.getBlockchainSize() % Seting.DELETED_FILE_ALL_ADDRESS == 0) {
+            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+        }
 
         // Возвращение итогового списка
         return resultList;
