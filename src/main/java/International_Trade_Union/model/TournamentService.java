@@ -130,6 +130,11 @@ public class TournamentService {
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                 // Convert JSON data to a list of blocks
                 List<Block> blocks = UtilsJson.jsonToListBLock(json);
+                json = UtilUrl.readJsonFromUrl(s+ "/prevBlock");
+                blocks.add(UtilsJson.jsonToBLock(json));
+
+
+
 
                 // Process each block
                 for (Block block : blocks) {
