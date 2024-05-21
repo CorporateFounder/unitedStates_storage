@@ -56,7 +56,7 @@ public class BlockService {
             dtoTransactionRepository.deleteAll();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("deletedAll: error: save: ");
+            throw new IOException("deletedAll: error: save: ", e);
 
         }
 
@@ -87,7 +87,7 @@ public class BlockService {
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("saveBlock: error: save: ");
+            throw new IOException("saveBlock: error: save: ", e);
 
         }
 
@@ -103,7 +103,7 @@ public class BlockService {
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("deleteEntityBlocksAndRelatedData: error: save: ");
+            throw new IOException("deleteEntityBlocksAndRelatedData: error: save: ", e);
 
         }
     }
@@ -118,7 +118,7 @@ public class BlockService {
 
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findByAccountIn: error: save: ");
+            throw new IOException("findByAccountIn: error: save: ", e);
 
         }
 
@@ -133,7 +133,7 @@ public class BlockService {
             entityAccounts = entityAccountRepository.findByAccount(account);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findByAccount: error: save: ");
+            throw new IOException("findByAccount: error: save: ", e);
 
         }
         return entityAccounts;
@@ -146,7 +146,7 @@ public class BlockService {
 
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findBYAccountString: error: save: ");
+            throw new IOException("findBYAccountString: error: save: ", e);
 
         }
 
@@ -173,7 +173,7 @@ public class BlockService {
             entityAccounts = entityAccountRepository.findByAccountIn(accounts);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findByDtoAccounts: error: save: ");
+            throw new IOException("findByDtoAccounts: error: save: ", e);
 
         }
 
@@ -188,7 +188,7 @@ public class BlockService {
            entityAccounts = entityAccountRepository.findAll();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findAllAccounts: error: save: ");
+            throw new IOException("findAllAccounts: error: save: ", e);
 
         }
 
@@ -203,7 +203,7 @@ public class BlockService {
              size = entityBlockRepository.count();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("sizeBlock: error: save: ");
+            throw new IOException("sizeBlock: error: save: ", e);
         }
 
         return size;
@@ -217,7 +217,7 @@ public class BlockService {
 
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("lastBlock: error: save: ");
+            throw new IOException("lastBlock: error: save: ", e);
         }
         return entityBlock;
     }
@@ -229,7 +229,7 @@ public class BlockService {
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
-           throw new IOException("saveAllBLockF: error: save: ");
+           throw new IOException("saveAllBLockF: error: save: ", e);
         }
 
     }
@@ -241,7 +241,7 @@ public class BlockService {
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("saveAllBlock: error: save: ");
+            throw new IOException("saveAllBlock: error: save: ", e);
         }
 
     }
@@ -252,7 +252,7 @@ public class BlockService {
             entityBlockRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("removeAllBlock: error: save: ");
+            throw new IOException("removeAllBlock: error: save: ", e);
 
         }
     }
@@ -263,7 +263,7 @@ public class BlockService {
             entityAccountRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("saveAccount: error: save: ");
+            throw new IOException("saveAccount: error: save: ", e);
 
         }
 
@@ -290,7 +290,7 @@ public class BlockService {
             entityAccountRepository.flush();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("saveAccountAllF: error: save: ");
+            throw new IOException("saveAccountAllF: error: save: ", e);
 
         }
 
@@ -338,7 +338,7 @@ public class BlockService {
             }
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("saveAccountAll: error: save: ");
+            throw new IOException("saveAccountAll: error: save: ", e);
 
         }
 
@@ -356,7 +356,7 @@ public class BlockService {
 
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findBySign: error: save: ");
+            throw new IOException("findBySign: error: save: ", e);
 
         }
         return entityDtoTransaction;
@@ -375,7 +375,7 @@ public class BlockService {
            dtoTransactions = dtoTransactionRepository.findAll();
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findAllDto: error: save: ");
+            throw new IOException("findAllDto: error: save: ", e);
 
         }
         return dtoTransactions;
@@ -398,7 +398,7 @@ public class BlockService {
             entityBlock = entityBlockRepository.findBySpecialIndex(specialIndex);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findBySpecialIndex: error: save: ");
+            throw new IOException("findBySpecialIndex: error: save: ", e);
 
         }
 
@@ -416,7 +416,7 @@ public class BlockService {
             entityBlocks = entityBlockRepository.findBySpecialIndexBetween(from, to);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findBySpecialIndexBetween: error: save: ");
+            throw new IOException("findBySpecialIndexBetween: error: save: ", e);
 
         }
         return entityBlocks;
@@ -447,7 +447,7 @@ public class BlockService {
             exists = entityBlockRepository.existsById(1L);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("isEmpty: error: save: ");
+            throw new IOException("isEmpty: error: save: ", e);
 
         }
 
@@ -467,7 +467,7 @@ public class BlockService {
                     UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findBySender: error: save: ");
+            throw new IOException("findBySender: error: save: ", e);
 
         }
         return dtoTransactions;
@@ -485,7 +485,7 @@ public class BlockService {
                     UtilsBlockToEntityBlock.entityDtoTransactionToDtoTransaction(list);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("findByCustomer: error: save: ");
+            throw new IOException("findByCustomer: error: save: ", e);
 
         }
 
@@ -500,7 +500,7 @@ public class BlockService {
             size = dtoTransactionRepository.countBySender(sender);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("countSenderTransaction: error: save: ");
+            throw new IOException("countSenderTransaction: error: save: ", e);
 
         }
 
@@ -515,7 +515,7 @@ public class BlockService {
             size = dtoTransactionRepository.countByCustomer(customer);
         }catch (Exception e){
             e.printStackTrace();
-            throw new IOException("countCustomerTransaction: error: save: ");
+            throw new IOException("countCustomerTransaction: error: save: ", e);
 
         }
 
