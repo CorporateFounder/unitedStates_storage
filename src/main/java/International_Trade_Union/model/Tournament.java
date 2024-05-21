@@ -74,10 +74,6 @@ public class Tournament implements Runnable {
             try {
                 initializePrevTimesIfNeeded();
 
-
-
-
-
                 long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
 
                 if (isTimeForTournament(currentTime)) {
@@ -125,35 +121,7 @@ public class Tournament implements Runnable {
         }
     }
 
-    private void checkAndUpdatePrevTime() {
-        long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
-        long timeDifference = currentTime - prevTime;
 
-        if (timeDifference > Seting.TIME_TOURNAMENT_SECOND) {
-            logTimeUpdate("Tournament", prevTime, currentTime);
-            prevTime = currentTime;
-        }
-    }
-
-    private void checkAndUpdatePrevUpdateTime() {
-        long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
-        long timeDifference = currentTime - prevUpdateTime;
-
-        if (timeDifference > Seting.TIME_UPDATING) {
-            logTimeUpdate("Node Update", prevUpdateTime, currentTime);
-            prevUpdateTime = currentTime;
-        }
-    }
-
-    private void checkAndUpdatePrevAllwinnersUpdateTime(){
-        long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
-        long timeDifference = currentTime - prevAllwinnersUpdateTime;
-
-        if (timeDifference > Seting.GET_WINNER_SECOND) {
-            logTimeUpdate("Node Update", prevAllwinnersUpdateTime, currentTime);
-            prevAllwinnersUpdateTime = currentTime;
-        }
-    }
 
     private void logTimeUpdate(String process, long previousTime, long currentTime) {
         System.out.println("----------------------------------------------------");

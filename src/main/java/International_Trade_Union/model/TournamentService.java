@@ -128,12 +128,14 @@ public class TournamentService {
             try {
                 // Read JSON data from the node's /winnerList endpoint
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
+                if (json.isEmpty() || json.isBlank()) {
+                    continue;
+                }
                 // Convert JSON data to a list of blocks
                 List<Block> blocks = UtilsJson.jsonToListBLock(json);
-                json = UtilUrl.readJsonFromUrl(s+ "/prevBlock");
-                blocks.add(UtilsJson.jsonToBLock(json));
-
-
+                json = UtilUrl.readJsonFromUrl(s + "/prevBlock");
+                if (!json.isEmpty() && !json.isBlank())
+                    blocks.add(UtilsJson.jsonToBLock(json));
 
 
                 // Process each block
@@ -210,221 +212,221 @@ public class TournamentService {
 //            System.out.println("different time: " + timeDifference);
 
 
-                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-                System.out.println("start tournament:");
-                long startTournament = UtilsTime.getUniversalTimestamp();
-                System.out.println("prevTime: " + prevTime);
-                System.out.println("prevTime /1000L: " + prevTime / 1000L);
-                System.out.println("timestamp: " + timestamp);
-                System.out.println("timeDifferent: " + timeDifference);
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("start tournament:");
+            long startTournament = UtilsTime.getUniversalTimestamp();
+            System.out.println("prevTime: " + prevTime);
+            System.out.println("prevTime /1000L: " + prevTime / 1000L);
+            System.out.println("timestamp: " + timestamp);
+            System.out.println("timeDifferent: " + timeDifference);
 
 
-                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-                if (winner == null) {
-                    winner = new ArrayList<>();
-                } else {
-                    winner.clear();
-                }
-                if (winnerDiff == null) {
-                    winnerDiff = new ArrayList<>();
-                } else {
-                    winnerDiff.clear();
-                }
-                if (winnerCountTransaction == null) {
-                    winnerCountTransaction = new ArrayList<>();
-                } else {
-                    winnerCountTransaction.clear();
-                }
-                if (winnerStaking == null) {
-                    winnerStaking = new ArrayList<>();
-                } else {
-                    winnerStaking.clear();
-                }
+            if (winner == null) {
+                winner = new ArrayList<>();
+            } else {
+                winner.clear();
+            }
+            if (winnerDiff == null) {
+                winnerDiff = new ArrayList<>();
+            } else {
+                winnerDiff.clear();
+            }
+            if (winnerCountTransaction == null) {
+                winnerCountTransaction = new ArrayList<>();
+            } else {
+                winnerCountTransaction.clear();
+            }
+            if (winnerStaking == null) {
+                winnerStaking = new ArrayList<>();
+            } else {
+                winnerStaking.clear();
+            }
 
 
-                System.out.println("tournament: winner: " + winner.size());
-                Map<String, Account> balances = new HashMap<>();
+            System.out.println("tournament: winner: " + winner.size());
+            Map<String, Account> balances = new HashMap<>();
 
 //                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
-                BasisController.setIsSaveFile(false);
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+            BasisController.setIsSaveFile(false);
 
 
-                Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
-                // Обеспечение наличия всех аккаунтов в finalBalances
-                list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, 0.0, 0.0, 0.0)));
+            Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
+            // Обеспечение наличия всех аккаунтов в finalBalances
+            list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, 0.0, 0.0, 0.0)));
 
-                List<Block> winnerList = new ArrayList<>();
+            List<Block> winnerList = new ArrayList<>();
 
-                if (list.isEmpty()) {
-                    return;
+            if (list.isEmpty()) {
+                return;
+            }
+
+
+            winnerList = sortWinner(finalBalances, list);
+
+
+            Block prevBlock = BasisController.prevBlock();
+
+            winner.add(winnerList.get(0));
+            if (winner == null || winner.size() == 0 || winner.get(0) == null || winner.get(0).getTimestamp() == null) {
+                System.out.println("--------------------------------------------");
+
+                System.out.println("error null: winner: " + winner);
+                System.out.println("--------------------------------------------");
+                return;
+            }
+
+
+            List<Block> lastDiff = new ArrayList<>();
+            List<String> sign = new ArrayList<>();
+
+            if (prevBlock.getIndex() < Seting.V34_NEW_ALGO) {
+                lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
+                        blockService.findBySpecialIndexBetween(
+                                (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
+                                prevBlock.getIndex() + 1
+                        )
+                );
+            }
+
+
+            Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+            sign = new ArrayList<>();
+            //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
+            DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
+
+            if (temp == null || !temp.isValidation()) {
+                System.out.println("wrong validation short: " + temp);
+                return;
+            }
+
+            System.out.println("save winner: " + winner.size() + " balances: " + balances.size());
+            //TODO прекратить давать блоки через sub block, если происходит запись
+            BasisController.setIsSaveFile(false);
+//                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+
+
+            boolean save = false;
+            //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
+            if (winner != null && balances != null) {
+                save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            }
+
+
+            if (save) {
+                //делает запись мета данных блокчейна.
+
+                //Добавляет мета данные в статическую переменную.
+                BasisController.setShortDataBlockchain(temp);
+                BasisController.setBlockcheinSize((int) temp.getSize());
+                BasisController.setBlockchainValid(temp.isValidation());
+                String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
+                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+
+                EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
+                System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
+                //берет последний блок, и добавляет его в статистическую переменную.
+
+                prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
+                BasisController.setPrevBlock(prevBlock);
+                if (prevBlock == null) {
+                    System.out.println("----------");
+                    System.out.println("prevBlock: " + prevBlock);
+                    System.out.println("----------");
+                    System.exit(1);
                 }
 
+            }
 
-                winnerList = sortWinner(finalBalances, list);
+            BasisController.setIsSaveFile(true);
 
+            BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+            BasisController.getCountTransactionsWiner().clear();
+            BasisController.getStakingWiners().clear();
+            BasisController.getBigRandomWiner().clear();
+            BasisController.getPowerWiners().clear();
+            BasisController.setCountTransactionsWiner(null);
+            BasisController.setStakingWiners(null);
+            BasisController.setBigRandomWiner(null);
+            BasisController.setPowerWiners(null);
 
-                Block prevBlock = BasisController.prevBlock();
+            BasisController.setCountTransactionsWiner(blockToLiteVersion(new ArrayList<>(), balances));
+            BasisController.setStakingWiners(blockToLiteVersion(new ArrayList<>(), balances));
+            BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
 
-                winner.add(winnerList.get(0));
-                if (winner == null || winner.size() == 0 || winner.get(0) == null || winner.get(0).getTimestamp() == null) {
-                    System.out.println("--------------------------------------------");
+            BasisController.setPowerWiners(blockToLiteVersion(new ArrayList<>(), balances));
+            if (winner.get(0).getIndex() % 576 == 0) {
+                BasisController.setTotalTransactionsDays(0);
+                BasisController.setTotalTransactionsSumDllar(0);
+            }
+            BasisController.setTotalTransactionsDays(
+                    (int) (BasisController.totalTransactionsDays()
+                            + winner.get(0).getDtoTransactions().size())
+            );
 
-                    System.out.println("error null: winner: " + winner);
-                    System.out.println("--------------------------------------------");
-                    return;
-                }
+            BasisController.setTotalTransactionsSumDllar(
+                    BasisController.totalTransactionsSumDollar() +
+                            winner.get(0).getDtoTransactions().stream()
+                                    .mapToDouble(t -> t.getDigitalDollar())
+                                    .sum()
+            );
 
-
-                List<Block> lastDiff = new ArrayList<>();
-                List<String> sign = new ArrayList<>();
-
-                if (prevBlock.getIndex() < Seting.V34_NEW_ALGO) {
-                    lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                            blockService.findBySpecialIndexBetween(
-                                    (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
-                                    prevBlock.getIndex() + 1
-                            )
+            if (BasisController.totalDollars() == 0) {
+                for (Map.Entry<String, Account> ba : balances.entrySet()) {
+                    BasisController.setTotalDollars(
+                            BasisController.totalDollars() +
+                                    ba.getValue().getDigitalDollarBalance()
                     );
                 }
 
-
-                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
-                sign = new ArrayList<>();
-                //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
-                DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
-
-                if (temp == null || !temp.isValidation()) {
-                    System.out.println("wrong validation short: " + temp);
-                    return;
-                }
-
-                System.out.println("save winner: " + winner.size() + " balances: " + balances.size());
-                //TODO прекратить давать блоки через sub block, если происходит запись
-                BasisController.setIsSaveFile(false);
-//                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+            }
+            BasisController.setTotalDollars(
+                    BasisController.totalDollars() +
+                            winner.get(0).getDtoTransactions()
+                                    .stream()
+                                    .filter(t -> t.getSender().equals(Seting.BASIS_ADDRESS))
+                                    .mapToDouble(t -> t.getDigitalDollar())
+                                    .sum()
+            );
 
 
-                boolean save = false;
-                //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-                if (winner != null && balances != null) {
-                    save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                }
+            if (winner == null) {
+                winner = new ArrayList<>();
+            } else {
+                winner.clear();
+            }
+            if (winnerDiff == null) {
+                winnerDiff = new ArrayList<>();
+            } else {
+                winnerDiff.clear();
+            }
+            if (winnerCountTransaction == null) {
+                winnerCountTransaction = new ArrayList<>();
+            } else {
+                winnerCountTransaction.clear();
+            }
+            if (winnerStaking == null) {
+                winnerStaking = new ArrayList<>();
+            } else {
+                winnerStaking.clear();
+            }
+            if (BasisController.getWinnerList() == null) {
+                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+            } else {
+                BasisController.getWinnerList().clear();
+            }
 
 
-                if (save) {
-                    //делает запись мета данных блокчейна.
-
-                    //Добавляет мета данные в статическую переменную.
-                    BasisController.setShortDataBlockchain(temp);
-                    BasisController.setBlockcheinSize((int) temp.getSize());
-                    BasisController.setBlockchainValid(temp.isValidation());
-                    String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-
-
-                    EntityBlock entityBlock = blockService.findBySpecialIndex(temp.getSize() - 1);
-                    System.out.println("entityBlock: " + entityBlock + " temp size: " + (temp.getSize() - 1));
-                    //берет последний блок, и добавляет его в статистическую переменную.
-
-                    prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
-                    BasisController.setPrevBlock(prevBlock);
-                    if (prevBlock == null) {
-                        System.out.println("----------");
-                        System.out.println("prevBlock: " + prevBlock);
-                        System.out.println("----------");
-                        System.exit(1);
-                    }
-
-                }
-
-                BasisController.setIsSaveFile(true);
-
-                BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
-                BasisController.getCountTransactionsWiner().clear();
-                BasisController.getStakingWiners().clear();
-                BasisController.getBigRandomWiner().clear();
-                BasisController.getPowerWiners().clear();
-                BasisController.setCountTransactionsWiner(null);
-                BasisController.setStakingWiners(null);
-                BasisController.setBigRandomWiner(null);
-                BasisController.setPowerWiners(null);
-
-                BasisController.setCountTransactionsWiner(blockToLiteVersion(new ArrayList<>(), balances));
-                BasisController.setStakingWiners(blockToLiteVersion(new ArrayList<>(), balances));
-                BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
-
-                BasisController.setPowerWiners(blockToLiteVersion(new ArrayList<>(), balances));
-                if (winner.get(0).getIndex() % 576 == 0) {
-                    BasisController.setTotalTransactionsDays(0);
-                    BasisController.setTotalTransactionsSumDllar(0);
-                }
-                BasisController.setTotalTransactionsDays(
-                        (int) (BasisController.totalTransactionsDays()
-                                + winner.get(0).getDtoTransactions().size())
-                );
-
-                BasisController.setTotalTransactionsSumDllar(
-                        BasisController.totalTransactionsSumDollar() +
-                                winner.get(0).getDtoTransactions().stream()
-                                        .mapToDouble(t -> t.getDigitalDollar())
-                                        .sum()
-                );
-
-                if (BasisController.totalDollars() == 0) {
-                    for (Map.Entry<String, Account> ba : balances.entrySet()) {
-                        BasisController.setTotalDollars(
-                                BasisController.totalDollars() +
-                                        ba.getValue().getDigitalDollarBalance()
-                        );
-                    }
-
-                }
-                BasisController.setTotalDollars(
-                        BasisController.totalDollars() +
-                                winner.get(0).getDtoTransactions()
-                                        .stream()
-                                        .filter(t -> t.getSender().equals(Seting.BASIS_ADDRESS))
-                                        .mapToDouble(t -> t.getDigitalDollar())
-                                        .sum()
-                );
-
-
-                if (winner == null) {
-                    winner = new ArrayList<>();
-                } else {
-                    winner.clear();
-                }
-                if (winnerDiff == null) {
-                    winnerDiff = new ArrayList<>();
-                } else {
-                    winnerDiff.clear();
-                }
-                if (winnerCountTransaction == null) {
-                    winnerCountTransaction = new ArrayList<>();
-                } else {
-                    winnerCountTransaction.clear();
-                }
-                if (winnerStaking == null) {
-                    winnerStaking = new ArrayList<>();
-                } else {
-                    winnerStaking.clear();
-                }
-                if (BasisController.getWinnerList() == null) {
-                    BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-                } else {
-                    BasisController.getWinnerList().clear();
-                }
-
-
-                System.out.println("___________________________________________________");
-                long finishTournament = UtilsTime.getUniversalTimestamp();
-                System.out.println("finish time: " + UtilsTime.differentMillSecondTime(startTournament, finishTournament));
-                System.out.println("___________________________________________________");
-                BasisController.setIsSaveFile(true);
+            System.out.println("___________________________________________________");
+            long finishTournament = UtilsTime.getUniversalTimestamp();
+            System.out.println("finish time: " + UtilsTime.differentMillSecondTime(startTournament, finishTournament));
+            System.out.println("___________________________________________________");
+            BasisController.setIsSaveFile(true);
 
 
         } catch (IOException e) {
@@ -480,71 +482,70 @@ public class TournamentService {
             //timestamp % Seting.TIME_UPDATING == 0
 
 
-
-                //TODO здесь будет скачиваться обновление
+            //TODO здесь будет скачиваться обновление
 //                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
-                result = utilsResolving.resolve3();
-                MyLogger.saveLog("start: updatingNodeEndBlocks: result: " + result);
+            result = utilsResolving.resolve3();
+            MyLogger.saveLog("start: updatingNodeEndBlocks: result: " + result);
 //                long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory after: resolve3" + afterMemory);
 //                MyLogger.saveLog("memory result resolve3: " + (afterMemory - beforeMemory));
-                System.out.println("finish updating --------------------------------------------");
+            System.out.println("finish updating --------------------------------------------");
 
 
-                //TODO отправка своего хоста
-                System.out.println("sending host --------------------------------------------");
-                System.out.println("updatingNodeEndBlocks: send my host");
+            //TODO отправка своего хоста
+            System.out.println("sending host --------------------------------------------");
+            System.out.println("updatingNodeEndBlocks: send my host");
 //                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: getNodes: " + beforeMemory);
-                Set<String> nodes = BasisController.getNodes();
+            Set<String> nodes = BasisController.getNodes();
 //                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory after: getNodes: " + afterMemory);
 //                MyLogger.saveLog("memory result getNodes: " + (afterMemory - beforeMemory));
 
-                System.out.println("tournament nodes: " + nodes);
-                System.out.println("my host: " + myHost);
-                System.out.println("domain configuration: " + domainConfiguration);
+            System.out.println("tournament nodes: " + nodes);
+            System.out.println("my host: " + myHost);
+            System.out.println("domain configuration: " + domainConfiguration);
 //
 //                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: sendAddress: " + beforeMemory);
-                UtilsAllAddresses.sendAddress(nodes, myHost);
+            UtilsAllAddresses.sendAddress(nodes, myHost);
 //                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory after: sendAddress: " + afterMemory);
 //                MyLogger.saveLog("memory result sendAddress: " + (afterMemory - beforeMemory));
 
-                System.out.println("finish sending host --------------------------------------------");
-                //TODO отправка скачивание всех хостов
-                System.out.println("download host --------------------------------------------");
-                System.out.println("download host");
-                Set<String> node = BasisController.getNodes();
-                node.remove(myHost.getHost());
+            System.out.println("finish sending host --------------------------------------------");
+            //TODO отправка скачивание всех хостов
+            System.out.println("download host --------------------------------------------");
+            System.out.println("download host");
+            Set<String> node = BasisController.getNodes();
+            node.remove(myHost.getHost());
 //
 //                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: for (String s : node): " + beforeMemory);
-                for (String s : node) {
-                    try {
-                        if (s == null || s.isBlank())
-                            continue;
+            for (String s : node) {
+                try {
+                    if (s == null || s.isBlank())
+                        continue;
 
-                        System.out.println("updating");
-                        Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(s + "/getNodes"));
+                    System.out.println("updating");
+                    Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(s + "/getNodes"));
 
-                        if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
-                            System.out.println(":its your address or excluded address: " + s);
-                            continue;
-                        }
-                        for (String s1 : tempNode) {
-                            System.out.println("put host: s1:  " + s1);
-                            UtilsAllAddresses.putHost(s1);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println("updatingNodeEndBlocks: host not worked: " + s);
+                    if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
+                        System.out.println(":its your address or excluded address: " + s);
                         continue;
                     }
-
+                    for (String s1 : tempNode) {
+                        System.out.println("put host: s1:  " + s1);
+                        UtilsAllAddresses.putHost(s1);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("updatingNodeEndBlocks: host not worked: " + s);
+                    continue;
                 }
+
+            }
 //                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory after: for (String s : node) " + afterMemory);
 //                MyLogger.saveLog("memory result for (String s : node) " + (afterMemory - beforeMemory));
@@ -552,49 +553,49 @@ public class TournamentService {
 
 //                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: clear: " + beforeMemory);
-                if (winner == null) {
-                    winner = new ArrayList<>();
-                } else {
-                    winner.clear();
-                }
-                if (winnerDiff == null) {
-                    winnerDiff = new ArrayList<>();
-                } else {
-                    winnerDiff.clear();
-                }
-                if (winnerCountTransaction == null) {
-                    winnerCountTransaction = new ArrayList<>();
-                } else {
-                    winnerCountTransaction.clear();
-                }
-                if (winnerStaking == null) {
-                    winnerStaking = new ArrayList<>();
-                } else {
-                    winnerStaking.clear();
-                }
-                if (BasisController.getWinnerList() == null) {
-                    BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-                } else {
-                    BasisController.getWinnerList().clear();
-                }
+            if (winner == null) {
+                winner = new ArrayList<>();
+            } else {
+                winner.clear();
+            }
+            if (winnerDiff == null) {
+                winnerDiff = new ArrayList<>();
+            } else {
+                winnerDiff.clear();
+            }
+            if (winnerCountTransaction == null) {
+                winnerCountTransaction = new ArrayList<>();
+            } else {
+                winnerCountTransaction.clear();
+            }
+            if (winnerStaking == null) {
+                winnerStaking = new ArrayList<>();
+            } else {
+                winnerStaking.clear();
+            }
+            if (BasisController.getWinnerList() == null) {
+                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+            } else {
+                BasisController.getWinnerList().clear();
+            }
 
 //                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory after: clear " + afterMemory);
 //                MyLogger.saveLog("memory result clear " + (afterMemory - beforeMemory));
 
-                MyLogger.saveLog("*******************[tournamentService-updating-start]*****************");
-                MyLogger.saveLog("winner.size: " + winner.size());
-                MyLogger.saveLog("winnerDiff.size: " + winnerDiff.size());
-                MyLogger.saveLog("winnerCountTransaction.size: " + winnerCountTransaction.size());
-                MyLogger.saveLog("winnerStaking.size: " + winnerStaking.size());
-                MyLogger.saveLog("BasisController.getAllWiners.size: " + BasisController.getAllWiners().size());
-                MyLogger.saveLog("BasisController.getStakingWiners.size: " + BasisController.getStakingWiners().size());
-                MyLogger.saveLog("BasisController.getPowerWiners.size: " + BasisController.getPowerWiners().size());
-                MyLogger.saveLog("BasisController.getWinnerList.size: " + BasisController.getWinnerList().size());
-                MyLogger.saveLog("BasisController.getCountTransactionsWiner.size: " + BasisController.getCountTransactionsWiner().size());
-                MyLogger.saveLog("BasisController.getBigRandomWiner.size: " + BasisController.getBigRandomWiner().size());
-                MyLogger.saveLog("BasisController.getNodes.size: " + BasisController.getNodes().size());
-                MyLogger.saveLog("*******************[tournamentService-updating-finish]****************");
+            MyLogger.saveLog("*******************[tournamentService-updating-start]*****************");
+            MyLogger.saveLog("winner.size: " + winner.size());
+            MyLogger.saveLog("winnerDiff.size: " + winnerDiff.size());
+            MyLogger.saveLog("winnerCountTransaction.size: " + winnerCountTransaction.size());
+            MyLogger.saveLog("winnerStaking.size: " + winnerStaking.size());
+            MyLogger.saveLog("BasisController.getAllWiners.size: " + BasisController.getAllWiners().size());
+            MyLogger.saveLog("BasisController.getStakingWiners.size: " + BasisController.getStakingWiners().size());
+            MyLogger.saveLog("BasisController.getPowerWiners.size: " + BasisController.getPowerWiners().size());
+            MyLogger.saveLog("BasisController.getWinnerList.size: " + BasisController.getWinnerList().size());
+            MyLogger.saveLog("BasisController.getCountTransactionsWiner.size: " + BasisController.getCountTransactionsWiner().size());
+            MyLogger.saveLog("BasisController.getBigRandomWiner.size: " + BasisController.getBigRandomWiner().size());
+            MyLogger.saveLog("BasisController.getNodes.size: " + BasisController.getNodes().size());
+            MyLogger.saveLog("*******************[tournamentService-updating-finish]****************");
 
 
         } catch (IOException e) {
