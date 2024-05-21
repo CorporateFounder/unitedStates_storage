@@ -84,7 +84,7 @@ public class Tournament implements Runnable {
                 checkAndUpdatePrevAllwinnersUpdateTime();
 
             } catch (Exception e) {
-                handleException(e);
+//                handleException(e);
             } finally {
                 BasisController.setIsSaveFile(true);
             }
