@@ -169,12 +169,12 @@ public class Tournament implements Runnable {
 
     private boolean isTimeForTournament(long currentTime) {
         long timeDifference = currentTime - (prevTime / 1000L);
-        return timeDifference > Seting.TIME_TOURNAMENT_SECOND + 10;
+        return timeDifference > Seting.TIME_TOURNAMENT_SECOND ;
     }
 
     private boolean isTimeForUpdate(long currentTime) {
         long timeDifference = currentTime - (prevUpdateTime / 1000L);
-        return timeDifference > Seting.TIME_UPDATING + 10;
+        return timeDifference > Seting.TIME_UPDATING;
     }
 
 
