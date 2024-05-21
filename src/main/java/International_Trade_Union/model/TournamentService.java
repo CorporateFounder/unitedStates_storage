@@ -471,20 +471,11 @@ public class TournamentService {
         try {
 
             MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
-            long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
-
-            long prevTime = Tournament.getPrevUpdateTime() / 1000L;
-            long timeDifference = timestamp - prevTime;
             //timestamp % Seting.TIME_UPDATING == 0
 
 
-                System.out.println("updating --------------------------------------------");
-                System.out.println("updatingNodeEndBlocks: start resolving ");
-                System.out.println("prevTime: " + prevTime);
-                System.out.println("prevTime /1000L: " + prevTime / 1000L);
-                System.out.println("timestamp: " + timestamp);
-                System.out.println("timeDifferent: " + timeDifference);
+
                 //TODO здесь будет скачиваться обновление
 //                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
@@ -494,7 +485,7 @@ public class TournamentService {
 //                MyLogger.saveLog("memory after: resolve3" + afterMemory);
 //                MyLogger.saveLog("memory result resolve3: " + (afterMemory - beforeMemory));
                 System.out.println("finish updating --------------------------------------------");
-                System.out.println("time changing in update: " + timeDifference);
+
 
                 //TODO отправка своего хоста
                 System.out.println("sending host --------------------------------------------");

@@ -32,7 +32,7 @@ public class Tournament implements Runnable {
 
     @Autowired
     private TournamentService tournament;
-    private boolean isWinnersFetched = false;
+
     private static long prevTime;
     private static long prevUpdateTime;
     private static long prevAllwinnersUpdateTime;
@@ -76,25 +76,21 @@ public class Tournament implements Runnable {
 
 
 
-                if (!isWinnersFetched) {
-                    tournament.getAllWinner();
-                    isWinnersFetched = true;
-                }
+
 
                 long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
 
                 if (isTimeForTournament(currentTime)) {
+                    tournament.getAllWinner();
                     tournament.tournament();
                     logTimeUpdate("Tournament", prevTime, currentTime);
                     prevTime = UtilsTime.getUniversalTimestamp();
-                    isWinnersFetched = false; // Reset for the next tournament cycle
                 }
 
                 if (isTimeForUpdate(currentTime)) {
                     tournament.updatingNodeEndBlocks();
                     logTimeUpdate("Node Update", prevUpdateTime, currentTime);
                     prevUpdateTime = UtilsTime.getUniversalTimestamp();
-                    isWinnersFetched = false; // Reset for the next tournament cycle
 
                 }
                 System.out.println("you can safely shut down the server");
