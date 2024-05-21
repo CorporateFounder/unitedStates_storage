@@ -60,6 +60,8 @@ public class BasisController {
      */
     @Autowired
     Tournament tournament;
+    @Autowired
+    UtilsResolving utilsResolving;
 
 
     /**
@@ -1017,6 +1019,8 @@ public class BasisController {
 
 
                     winnerList.addAll(addlist);
+                    utilsResolving.sendAllBlocksToStorage(addlist);
+
                     //прибавить к общей сумме денег
 
                     dificultyOneBlock = prevBlock().getHashCompexity();

@@ -316,7 +316,6 @@ public interface Seting {
     int GET_WINNER_SECOND = 100;
     int TIME_TOURNAMENT_SECOND = 100;
     long TIME_UPDATING = 100;
-    long TIME_OFFSET_SECOND = 44;
 
 
 }
