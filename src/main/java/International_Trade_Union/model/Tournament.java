@@ -32,7 +32,7 @@ public class Tournament implements Runnable {
 
     @Autowired
     private TournamentService tournament;
-
+    private boolean isWinnersFetched = false;
     private static long prevTime;
     private static long prevUpdateTime;
     private static long prevAllwinnersUpdateTime;
@@ -75,13 +75,33 @@ public class Tournament implements Runnable {
                 initializePrevTimesIfNeeded();
 
 
-                tournament.getAllWinner();
-                tournament.tournament();
-                tournament.updatingNodeEndBlocks(false);
 
-                checkAndUpdatePrevTime();
-                checkAndUpdatePrevUpdateTime();
-                checkAndUpdatePrevAllwinnersUpdateTime();
+                if (!isWinnersFetched) {
+                    tournament.getAllWinner();
+                    isWinnersFetched = true;
+                }
+
+                long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
+
+                if (isTimeForTournament(currentTime)) {
+                    tournament.tournament();
+                    logTimeUpdate("Tournament", prevTime, currentTime);
+                    prevTime = UtilsTime.getUniversalTimestamp();
+                    isWinnersFetched = false; // Reset for the next tournament cycle
+                }
+
+                if (isTimeForUpdate(currentTime)) {
+                    tournament.updatingNodeEndBlocks();
+                    logTimeUpdate("Node Update", prevUpdateTime, currentTime);
+                    prevUpdateTime = UtilsTime.getUniversalTimestamp();
+                    isWinnersFetched = false; // Reset for the next tournament cycle
+
+                }
+                System.out.println("you can safely shut down the server");
+
+//                checkAndUpdatePrevTime();
+//                checkAndUpdatePrevUpdateTime();
+//                checkAndUpdatePrevAllwinnersUpdateTime();
 
             } catch (Exception e) {
 //                handleException(e);
@@ -93,7 +113,7 @@ public class Tournament implements Runnable {
 
     private void initializePrevTimesIfNeeded() {
         if (prevTime == 0 || prevUpdateTime == 0 || prevAllwinnersUpdateTime == 0) {
-            tournament.updatingNodeEndBlocks(true);
+            tournament.updatingNodeEndBlocks();
             long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
 
             if (BasisController.prevBlock() == null) {
@@ -146,6 +166,17 @@ public class Tournament implements Runnable {
         System.out.println("Current time: " + currentTime);
         System.out.println("----------------------------------------------------");
     }
+
+    private boolean isTimeForTournament(long currentTime) {
+        long timeDifference = currentTime - (prevTime / 1000L);
+        return timeDifference > Seting.TIME_TOURNAMENT_SECOND + 10;
+    }
+
+    private boolean isTimeForUpdate(long currentTime) {
+        long timeDifference = currentTime - (prevUpdateTime / 1000L);
+        return timeDifference > Seting.TIME_UPDATING + 10;
+    }
+
 
     private void handleException(Exception e) {
         e.printStackTrace();

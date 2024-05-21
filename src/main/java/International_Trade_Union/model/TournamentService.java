@@ -116,42 +116,61 @@ public class TournamentService {
         return list1;
     }
 
-   public void getAllWinner() {
-    long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
-    long prevTime = Tournament.getPrevTime() / 1000L;
-    long timeDifference = timestamp - prevTime;
-    if (timeDifference > Seting.GET_WINNER_SECOND) {
+    public void getAllWinner() {
+        MyLogger.saveLog("start: getAllWinner");
+        // Retrieve and sort nodes by priority
         Set<String> nodesAll = getNodes();
         List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+
+        // Iterate over each sorted node
         for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
             String s = hostEndDataShortB.getHost();
             try {
+                // Read JSON data from the node's /winnerList endpoint
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
+                // Convert JSON data to a list of blocks
                 List<Block> blocks = UtilsJson.jsonToListBLock(json);
+
+                // Process each block
                 for (Block block : blocks) {
+                    MyLogger.saveLog("Processing block with index: " + block.getIndex()); // Log block processing
                     List<String> sign = new ArrayList<>();
                     List<Block> tempBlock = new ArrayList<>();
                     tempBlock.add(block);
-                    Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
-                    DataShortBlockchainInformation temp = Blockchain.shortCheck(
-                        BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
-                        new ArrayList<>(), tempBalances, sign
-                    );
-                    if (temp.isValidation()) {
-                        if (!BasisController.getWinnerList().contains(block)){
-                            BasisController.getWinnerList().add(block);
-                            MyLogger.saveLog("getWinnerList: index: " + block.getIndex() + "address: " + block.getMinerAddress());
-                        }
 
+                    // Convert temporary blocks to a map of accounts
+                    Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
+
+                    // Perform a short validation check on the block
+                    DataShortBlockchainInformation temp = Blockchain.shortCheck(
+                            BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
+                            new ArrayList<>(), tempBalances, sign
+                    );
+
+                    // Log validation result
+                    if (temp.isValidation()) {
+                        MyLogger.saveLog("Block is valid: " + block.getIndex());
+                        // Update winner list if block is valid and not already in the list
+                        if (!BasisController.getWinnerList().contains(block)) {
+                            BasisController.getWinnerList().add(block);
+                            MyLogger.saveLog("getWinnerList: index: " + block.getIndex() + " address: " + block.getMinerAddress());
+                        } else {
+                            MyLogger.saveLog("Block already in winner list: index " + block.getIndex());
+                        }
+                    } else {
+                        MyLogger.saveLog("Block validation failed: index " + block.getIndex());
                     }
                 }
             } catch (Exception e) {
-                System.out.println("cannot connect");
+                // Log connection error and exception
+                MyLogger.saveLog("cannot connect to " + s);
+                MyLogger.saveLog(e.toString());
                 continue;
             }
         }
+        MyLogger.saveLog("finish: getAllWinner");
     }
-}
+
     @Transactional
     public void tournament() {
 
@@ -185,7 +204,7 @@ public class TournamentService {
 
 //            System.out.println("different time: " + timeDifference);
 
-            if (timeDifference > Seting.TIME_TOURNAMENT_SECOND) {
+
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                 System.out.println("start tournament:");
                 long startTournament = UtilsTime.getUniversalTimestamp();
@@ -401,10 +420,6 @@ public class TournamentService {
                 System.out.println("finish time: " + UtilsTime.differentMillSecondTime(startTournament, finishTournament));
                 System.out.println("___________________________________________________");
                 BasisController.setIsSaveFile(true);
-            } else {
-                System.out.println("you can safely shut down the server. tournament method");
-
-            }
 
 
         } catch (IOException e) {
@@ -451,7 +466,7 @@ public class TournamentService {
     }
 
 
-    public void updatingNodeEndBlocks(boolean fastUpdating) {
+    public void updatingNodeEndBlocks() {
         int result = -10;
         try {
 
@@ -462,7 +477,7 @@ public class TournamentService {
             long prevTime = Tournament.getPrevUpdateTime() / 1000L;
             long timeDifference = timestamp - prevTime;
             //timestamp % Seting.TIME_UPDATING == 0
-            if (timeDifference > Seting.TIME_UPDATING || fastUpdating) {
+
 
                 System.out.println("updating --------------------------------------------");
                 System.out.println("updatingNodeEndBlocks: start resolving ");
@@ -585,9 +600,7 @@ public class TournamentService {
                 MyLogger.saveLog("BasisController.getNodes.size: " + BasisController.getNodes().size());
                 MyLogger.saveLog("*******************[tournamentService-updating-finish]****************");
 
-            } else {
-                System.out.println("you can safely shut down the server. Update method");
-            }
+
         } catch (IOException e) {
             e.printStackTrace();
             MyLogger.saveLog("TournamentService updating: ", e);
