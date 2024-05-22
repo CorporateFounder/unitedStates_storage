@@ -117,11 +117,17 @@ public class TournamentService {
     }
 
     public void getAllWinner() {
+        List<HostEndDataShortB> sortPriorityHost = null;
         MyLogger.saveLog("start: getAllWinner");
         // Retrieve and sort nodes by priority
-        Set<String> nodesAll = getNodes();
-        List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+        try {
+            Set<String> nodesAll = getNodes();
 
+            sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+        }catch (Exception e){
+            MyLogger.saveLog("getAllWinner: ", e);
+            return;
+        }
         // Iterate over each sorted node
         for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
             String s = hostEndDataShortB.getHost();
