@@ -133,7 +133,7 @@ public class TournamentService {
             String s = hostEndDataShortB.getHost();
             try {
 
-                if (BasisController.getExcludedAddresses().contains(s) || s.equals(domainConfiguration.getPubllc_domain())) {
+                if (BasisController.getExcludedAddresses().contains(s)) {
                     System.out.println(":its your address or excluded address: " + s);
                     continue;
                 }

@@ -74,10 +74,6 @@ public class Tournament implements Runnable {
             try {
                 initializePrevTimesIfNeeded();
 
-
-
-
-
                 long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
 
                 if (isTimeForTournament(currentTime)) {

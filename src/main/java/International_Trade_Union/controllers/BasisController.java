@@ -581,7 +581,6 @@ public class BasisController {
         String localaddress = scheme + "://" + serverName + ":" + serverPort;
 
         excludedAddresses.add(localaddress);
-        MyLogger.saveLog("BasisController: getExcludedAddresses: excludedAddresses: " + excludedAddresses.size());
         return excludedAddresses;
     }
 
