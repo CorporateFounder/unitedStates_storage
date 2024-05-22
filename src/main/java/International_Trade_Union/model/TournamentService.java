@@ -126,6 +126,11 @@ public class TournamentService {
         for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
             String s = hostEndDataShortB.getHost();
             try {
+
+                if (BasisController.getExcludedAddresses().contains(s) || s.equals(domainConfiguration.getPubllc_domain())) {
+                    System.out.println(":its your address or excluded address: " + s);
+                    continue;
+                }
                 // Read JSON data from the node's /winnerList endpoint
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                 if (json.isEmpty() || json.isBlank()) {
