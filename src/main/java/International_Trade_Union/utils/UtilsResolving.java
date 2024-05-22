@@ -1376,11 +1376,11 @@ public class UtilsResolving {
             Block block = UtilsJson.jsonToBLock(s);
             tempBlock.add(block);
         }
+
+        long threshold = deleteBlocks.get(0).getIndex();
         //потом удаляем из этого списка блоки, которые не должны быть в файле.
-        tempBlock = tempBlock.stream()
-                .filter(t -> t.getIndex() < deleteBlocks.get(0)
-                        .getIndex())
-                .sorted(Comparator.comparing(Block::getIndex))
+        tempBlock = tempBlock.stream().sorted(Comparator.comparing(Block::getIndex))
+                .filter(t -> t.getIndex() < threshold)
                 .collect(Collectors.toList());
 
         //TODO здесь мы должны удалить все файлы идущие после этого файла,
@@ -1388,7 +1388,7 @@ public class UtilsResolving {
         System.out.println("rollBackAddBlock4: delete: " + file.getAbsolutePath());
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         System.out.println("rollBackAddBlock4: delete finish: " + file.getAbsolutePath());
-        long threshold = deleteBlocks.get(0).getIndex();
+
 
         //для удаления баланса
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
@@ -1502,16 +1502,18 @@ public class UtilsResolving {
             Block block = UtilsJson.jsonToBLock(s);
             tempBlock.add(block);
         }
+
+        long threshold = deleteBlocks.get(0).getIndex();
         //потом удаляем из этого списка блоки, которые не должны быть в файле.
-        tempBlock = tempBlock.stream()
-                .filter(t -> t.getIndex() < deleteBlocks.get(0).getIndex()).collect(Collectors.toList());
+        tempBlock = tempBlock.stream().sorted(Comparator.comparing(Block::getIndex))
+                .filter(t -> t.getIndex() < threshold).collect(Collectors.toList());
 
         //TODO здесь мы должны удалить все файлы идущие после этого файла,
         System.out.println("rollBackAddBlock3: delete: " + file.getAbsolutePath());
 
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         System.out.println("rollBackAddBlock3: delete finish: " + file.getAbsolutePath());
-        long threshold = deleteBlocks.get(0).getIndex();
+
 
         //для удаления баланса
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
