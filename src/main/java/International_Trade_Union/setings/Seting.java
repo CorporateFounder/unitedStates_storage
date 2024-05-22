@@ -300,7 +300,7 @@ public interface Seting {
 
 
 
-    int RANDOM_HOSTS = 20;
+    int RANDOM_HOSTS = 12;
 
 
     String NAME_SERVER = "STANDART";
