@@ -60,7 +60,8 @@ public class UtilsResolving {
     @Autowired
     BlockService blockService;
 
-
+    @Autowired
+    DomainConfiguration domainConfiguration;
     public int resolve3() {
         BasisController.setUpdating(true);
         UtilsBalance.setBlockService(blockService);
@@ -2151,7 +2152,7 @@ public class UtilsResolving {
 
             System.out.println(":trying to connect to the server send block: " + s + ": timeout 45 seconds");
 
-            if (BasisController.getExcludedAddresses().contains(s)) {
+            if (BasisController.getExcludedAddresses().contains(s) || s.equals(domainConfiguration.getPubllc_domain())) {
                 System.out.println(":its your address or excluded address: " + s);
                 continue;
             }

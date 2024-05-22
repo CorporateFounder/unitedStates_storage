@@ -923,6 +923,13 @@ public class BasisController {
             try {
 
                 List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
+
+                if(addlist.isEmpty()
+                        || addlist.get(0).getIndex() != BasisController.getBlockchainSize()
+                 || winnerList.contains(addlist)){
+                    MyLogger.saveLog("this block has in system: ");
+                    return new ResponseEntity<>("FALSE", HttpStatus.OK);
+                }
                 System.out.println("account: " + addressMiner);
                 Account account = balances.get(addressMiner);
                 if (account == null) {

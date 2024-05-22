@@ -133,9 +133,7 @@ public class TournamentService {
                 }
                 // Convert JSON data to a list of blocks
                 List<Block> blocks = UtilsJson.jsonToListBLock(json);
-                json = UtilUrl.readJsonFromUrl(s + "/prevBlock");
-                if (!json.isEmpty() && !json.isBlank())
-                    blocks.add(UtilsJson.jsonToBLock(json));
+
 
 
                 // Process each block
