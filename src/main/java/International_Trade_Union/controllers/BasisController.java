@@ -900,7 +900,9 @@ public class BasisController {
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
             System.out.println("isSave: " + isSaveFile);
 
-
+            if(isSaveFile == false){
+                return new ResponseEntity<>("FALSE", HttpStatus.OK);
+            }
             if (sendBlocksEndInfo.getVersion() != Seting.VERSION) {
                 System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
                 return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);

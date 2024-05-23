@@ -117,6 +117,7 @@ public class TournamentService {
     }
 
     public void getAllWinner() {
+
         List<HostEndDataShortB> sortPriorityHost = null;
         MyLogger.saveLog("start: getAllWinner");
         // Retrieve and sort nodes by priority
@@ -482,9 +483,6 @@ public class TournamentService {
         try {
 
             MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
-
-            //timestamp % Seting.TIME_UPDATING == 0
-
 
             //TODO здесь будет скачиваться обновление
 //                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
