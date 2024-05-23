@@ -22,6 +22,8 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -35,38 +37,58 @@ public class Tournament implements Runnable {
 
     private static final long TOURNAMENT_INTERVAL = 100 * 1000; // 100 секунд в миллисекундах
     private static final long GET_ALL_WINNERS_ADVANCE_TIME = 20 * 1000; // 20 секунд в миллисекундах
+    private static final long UPDATE_BLOCKS_DELAY = 5 * 1000; // 5 секунд в миллисекундах после турнира
 
     @PostConstruct
     public void init() {
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
-        tournament.updatingNodeEndBlocks();
+
     }
 
     @Override
     public void run() {
+        tournament.updatingNodeEndBlocks();
         while (true) {
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
                 long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
+                long nextUpdateBlocksStartTime = nextTournamentStartTime + UPDATE_BLOCKS_DELAY;
 
-                if (currentTime >= nextGetAllWinnersStartTime && currentTime < nextTournamentStartTime) {
-                    tournament.getAllWinner();
-                    logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
-                    Thread.sleep(nextTournamentStartTime - currentTime); // Подождать до начала турнира
+                // Wait until it's time to start getAllWinner
+                if (currentTime < nextGetAllWinnersStartTime) {
+                    Thread.sleep(nextGetAllWinnersStartTime - currentTime);
+                    currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
                 }
 
-                if (currentTime >= nextTournamentStartTime) {
-                    tournament.tournament();
-                    tournament.updatingNodeEndBlocks();
-                    logTimeUpdate("Tournament", nextTournamentStartTime, currentTime);
-                    Thread.sleep(TOURNAMENT_INTERVAL); // Подождать до следующего запуска цикла
+                // Start getAllWinner
+                tournament.getAllWinner();
+                logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
+
+                // Wait until it's time to start the tournament
+                if (currentTime < nextTournamentStartTime) {
+                    Thread.sleep(nextTournamentStartTime - currentTime);
+                    currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
                 }
 
-                // Sleep until the next check
-                Thread.sleep(1000); // Проверять каждую секунду
+                // Start the tournament
+                tournament.tournament();
+                logTimeUpdate("Tournament", nextTournamentStartTime, currentTime);
+
+                // Wait until it's time to start updatingNodeEndBlocks
+                if (currentTime < nextUpdateBlocksStartTime) {
+                    Thread.sleep(nextUpdateBlocksStartTime - currentTime);
+                    currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
+                }
+
+                // Start updatingNodeEndBlocks
+                tournament.updatingNodeEndBlocks();
+                logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
+
+                // Sleep until the next tournament interval
+                Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
 
             } catch (Exception e) {
                 handleException(e);
@@ -102,3 +124,5 @@ public class Tournament implements Runnable {
         }
     }
 }
+
+
