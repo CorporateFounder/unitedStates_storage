@@ -62,7 +62,7 @@ public class Tournament implements Runnable {
                 currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
                 // Start getAllWinner
-                BasisController.setIsSaveFile(false);
+
                 tournament.getAllWinner();
                 logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
 
@@ -72,7 +72,7 @@ public class Tournament implements Runnable {
 
                 // Start the tournament
                 tournament.tournament();
-                BasisController.setIsSaveFile(true);
+
                 logTimeUpdate("Tournament", nextTournamentStartTime, currentTime);
 
                 // Wait until it's time to start updatingNodeEndBlocks
