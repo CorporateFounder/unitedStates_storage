@@ -58,10 +58,8 @@ public class Tournament implements Runnable {
                 long nextUpdateBlocksStartTime = nextTournamentStartTime + UPDATE_BLOCKS_DELAY;
 
                 // Wait until it's time to start getAllWinner
-                if (currentTime < nextGetAllWinnersStartTime) {
-                    Thread.sleep(nextGetAllWinnersStartTime - currentTime);
-                    currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-                }
+                waitUntil(nextGetAllWinnersStartTime);
+                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
                 // Start getAllWinner
                 BasisController.setIsSaveFile(false);
@@ -69,27 +67,20 @@ public class Tournament implements Runnable {
                 logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
 
                 // Wait until it's time to start the tournament
+                waitUntil(nextTournamentStartTime);
                 currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-                if (currentTime < nextTournamentStartTime) {
-                    Thread.sleep(nextTournamentStartTime - currentTime);
-                    currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-                }
 
                 // Start the tournament
                 tournament.tournament();
-
+                BasisController.setIsSaveFile(true);
                 logTimeUpdate("Tournament", nextTournamentStartTime, currentTime);
 
                 // Wait until it's time to start updatingNodeEndBlocks
+                waitUntil(nextUpdateBlocksStartTime);
                 currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-                if (currentTime < nextUpdateBlocksStartTime) {
-                    Thread.sleep(nextUpdateBlocksStartTime - currentTime);
-                    currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-                }
 
                 // Start updatingNodeEndBlocks
                 tournament.updatingNodeEndBlocks();
-                BasisController.setIsSaveFile(true);
                 logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
 
                 // Sleep until the next tournament interval
@@ -100,6 +91,13 @@ public class Tournament implements Runnable {
             } finally {
                 BasisController.setIsSaveFile(true);
             }
+        }
+    }
+
+    private void waitUntil(long targetTime) throws InterruptedException {
+        long currentTime = UtilsTime.getUniversalTimestamp();
+        if (currentTime < targetTime) {
+            Thread.sleep(targetTime - currentTime);
         }
     }
 
