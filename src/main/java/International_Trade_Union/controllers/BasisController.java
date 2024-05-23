@@ -677,6 +677,7 @@ public class BasisController {
             prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
 
+            if(blockcheinSize < Seting.V34_NEW_ALGO){
             if (blockcheinSize > 600) {
                 dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
                                 blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
@@ -687,6 +688,9 @@ public class BasisController {
                                 blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
                         Seting.BLOCK_GENERATION_INTERVAL,
                         Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+            }
+            }else {
+                dificultyOneBlock = prevBlock().getHashCompexity();
             }
 
 

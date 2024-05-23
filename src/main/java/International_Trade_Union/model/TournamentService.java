@@ -191,8 +191,7 @@ public class TournamentService {
     public void tournament() {
 
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
-        long prevTime = Tournament.getPrevTime() / 1000L;
-        long timeDifference = timestamp - prevTime;
+
 
         //TODO удаляет заблокированные хосты, каждые 500 секунд. Возможно
         //TODO хост уже работает правильно
@@ -224,10 +223,6 @@ public class TournamentService {
             System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             System.out.println("start tournament:");
             long startTournament = UtilsTime.getUniversalTimestamp();
-            System.out.println("prevTime: " + prevTime);
-            System.out.println("prevTime /1000L: " + prevTime / 1000L);
-            System.out.println("timestamp: " + timestamp);
-            System.out.println("timeDifferent: " + timeDifference);
 
 
             System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");

@@ -33,126 +33,72 @@ public class Tournament implements Runnable {
     @Autowired
     private TournamentService tournament;
 
-    private static long prevTime;
-    private static long prevUpdateTime;
-    private static long prevAllwinnersUpdateTime;
-
-    public static long getPrevTime() {
-        return prevTime;
-    }
-
-    public static void setPrevTime(long prevTime) {
-        Tournament.prevTime = prevTime;
-    }
-
-    public static long getPrevUpdateTime() {
-        return prevUpdateTime;
-    }
-
-    public static void setPrevUpdateTime(long prevUpdateTime) {
-        Tournament.prevUpdateTime = prevUpdateTime;
-    }
-
-    public static long getPrevAllwinnersUpdateTime() {
-        return prevAllwinnersUpdateTime;
-    }
-
-    public static void setPrevAllwinnersUpdateTime(long prevAllwinnersUpdateTime) {
-        Tournament.prevAllwinnersUpdateTime = prevAllwinnersUpdateTime;
-    }
+    private static final long TOURNAMENT_INTERVAL = 100 * 1000; // 100 секунд в миллисекундах
+    private static final long GET_ALL_WINNERS_ADVANCE_TIME = 20 * 1000; // 20 секунд в миллисекундах
 
     @PostConstruct
     public void init() {
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
+        tournament.updatingNodeEndBlocks();
     }
 
     @Override
     public void run() {
         while (true) {
             try {
-                initializePrevTimesIfNeeded();
+                long currentTime = UtilsTime.getUniversalTimestamp();
+                long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
+                long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
 
-                long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
-
-                if (isTimeForTournament(currentTime)) {
+                if (currentTime >= nextGetAllWinnersStartTime && currentTime < nextTournamentStartTime) {
                     tournament.getAllWinner();
+                    logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
+                    Thread.sleep(nextTournamentStartTime - currentTime); // Подождать до начала турнира
+                }
+
+                if (currentTime >= nextTournamentStartTime) {
                     tournament.tournament();
-                    logTimeUpdate("Tournament", prevTime, currentTime);
-                    prevTime = UtilsTime.getUniversalTimestamp();
-                }
-
-                if (isTimeForUpdate(currentTime)) {
                     tournament.updatingNodeEndBlocks();
-                    logTimeUpdate("Node Update", prevUpdateTime, currentTime);
-                    prevUpdateTime = UtilsTime.getUniversalTimestamp();
-
+                    logTimeUpdate("Tournament", nextTournamentStartTime, currentTime);
+                    Thread.sleep(TOURNAMENT_INTERVAL); // Подождать до следующего запуска цикла
                 }
-                System.out.println("you can safely shut down the server");
 
-//                checkAndUpdatePrevTime();
-//                checkAndUpdatePrevUpdateTime();
-//                checkAndUpdatePrevAllwinnersUpdateTime();
+                // Sleep until the next check
+                Thread.sleep(1000); // Проверять каждую секунду
 
             } catch (Exception e) {
-//                handleException(e);
+                handleException(e);
             } finally {
                 BasisController.setIsSaveFile(true);
             }
         }
     }
 
-    private void initializePrevTimesIfNeeded() {
-        if (prevTime == 0 || prevUpdateTime == 0 || prevAllwinnersUpdateTime == 0) {
-            tournament.updatingNodeEndBlocks();
-            long currentTime = UtilsTime.getUniversalTimestamp() / 1000;
-
-            if (BasisController.prevBlock() == null) {
-                prevTime = currentTime;
-                prevUpdateTime = currentTime;
-                prevAllwinnersUpdateTime = currentTime;
-            } else {
-                long blockTime = BasisController.prevBlock().getTimestamp().getTime() / 1000;
-                prevTime = (prevTime == 0) ? blockTime : prevTime;
-                prevUpdateTime = (prevUpdateTime == 0) ? blockTime : prevUpdateTime;
-                prevAllwinnersUpdateTime = (prevAllwinnersUpdateTime == 0) ? blockTime : prevAllwinnersUpdateTime;
-            }
-        }
+    private long getNextTournamentStartTime(long currentTime) {
+        long referenceTime = 0; // Начало эпохи (1 января 1970 года, 00:00:00 UTC)
+        long timeSinceReference = currentTime - referenceTime;
+        long nextTournamentStartTime = referenceTime + ((timeSinceReference / TOURNAMENT_INTERVAL) + 1) * TOURNAMENT_INTERVAL;
+        return nextTournamentStartTime;
     }
 
-
-
-    private void logTimeUpdate(String process, long previousTime, long currentTime) {
+    private void logTimeUpdate(String process, long scheduledTime, long currentTime) {
         System.out.println("----------------------------------------------------");
         System.out.println("Process: " + process);
-        System.out.println("Previous time: " + previousTime);
+        System.out.println("Scheduled time: " + scheduledTime);
         System.out.println("Current time: " + currentTime);
         System.out.println("----------------------------------------------------");
     }
 
-    private boolean isTimeForTournament(long currentTime) {
-        long timeDifference = currentTime - (prevTime / 1000L);
-        return timeDifference > Seting.TIME_TOURNAMENT_SECOND ;
-    }
-
-    private boolean isTimeForUpdate(long currentTime) {
-        long timeDifference = currentTime - (prevUpdateTime / 1000L);
-        return timeDifference > Seting.TIME_UPDATING;
-    }
-
-
     private void handleException(Exception e) {
         e.printStackTrace();
         MyLogger.saveLog("Tournament exception: ", e);
-
         BasisController.setWinnerList(null);
         if (BasisController.getWinnerList() == null) {
             BasisController.setWinnerList(new CopyOnWriteArrayList<>());
         } else {
             BasisController.getWinnerList().clear();
         }
-
-        BasisController.setIsSaveFile(true);
     }
 }
