@@ -2131,90 +2131,50 @@ public class UtilsResolving {
     }
 
     public int sendAllBlocksToStorage(List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-
         System.out.println(new Date() + ":BasisController: sendAllBlocksToStorage: start: ");
-        int bigsize = 0;
-        int blocks_current_size = (int) blocks.get(blocks.size() - 1).getIndex() + 1;
-        //отправка блокчейна на хранилище блокчейна
+        int blocksCurrentSize = (int) blocks.get(blocks.size() - 1).getIndex() + 1;
         System.out.println(":BasisController: sendAllBlocksToStorage: ");
         Set<String> nodesAll = getNodes();
-
         List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
 
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
             String s = hostEndDataShortB.getHost();
-
-
-            System.out.println(":trying to connect to the server send block: " + s + ": timeout 45 seconds");
-
             if (BasisController.getExcludedAddresses().contains(s)) {
                 System.out.println(":its your address or excluded address: " + s);
                 continue;
             }
 
-            try {
-                System.out.println(":BasisController:resolve conflicts: address: " + s + "/size");
-                String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
-                Integer size = 0;
-                if (Integer.valueOf(sizeStr) > 0)
-                    size = Integer.valueOf(sizeStr);
-                System.out.println(":BasisController: send: local size: " + blocks_current_size + " global size: " + size);
-
-//                List<Block> fromToTempBlock = blocks.subList(size, blocks_current_size);
-                List<Block> fromToTempBlock = new ArrayList<>();
-                fromToTempBlock.addAll(blocks);
-                SendBlocksEndInfo infoBlocks = new SendBlocksEndInfo(Seting.VERSION, fromToTempBlock);
-                String jsonFromTo = UtilsJson.objToStringJson(infoBlocks);
-                //if the current blockchain is larger than the storage, then
-                //send current blockchain send to storage
-                //если блокчейн текущей больше чем в хранилище, то
-                //отправить текущий блокчейн отправить в хранилище
-
-
-                int response = -1;
-                //Test start algorithm
-                String originalF = s;
-                System.out.println(":send resolve_from_to_block");
-                String urlFrom = s + "/nodes/resolve_from_to_block";
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
-                    response = UtilUrl.sendPost(jsonFromTo, urlFrom);
-                    System.out.println(":CONFLICT TREE, IN GLOBAL DIFFERENT TREE " + HttpStatus.CONFLICT.value());
-                    System.out.println(":GOOD: SUCCESS  " + HttpStatus.OK.value());
-                    System.out.println(":FAIL BAD BLOCKCHAIN: " + HttpStatus.EXPECTATION_FAILED.value());
-                    System.out.println(":CONFLICT VERSION: " + HttpStatus.FAILED_DEPENDENCY.value());
+                    System.out.println(":BasisController:resolve conflicts: address: " + s + "/size");
+                    String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
+                    Integer size = Integer.valueOf(sizeStr);
+                    System.out.println(":BasisController: send: local size: " + blocksCurrentSize + " global size: " + size);
+
+                    List<Block> fromToTempBlock = new ArrayList<>(blocks);
+                    SendBlocksEndInfo infoBlocks = new SendBlocksEndInfo(Seting.VERSION, fromToTempBlock);
+                    String jsonFromTo = UtilsJson.objToStringJson(infoBlocks);
+
+                    String urlFrom = s + "/nodes/resolve_from_to_block";
+                    int response = UtilUrl.sendPost(jsonFromTo, urlFrom);
                     System.out.println(":response: " + response + " address: " + s);
                     MyLogger.saveLog("sendBlock: response: " + response + " address: " + s);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    System.out.println(":exception resolve_from_to_block: " + originalF);
-                    continue;
+                    System.out.println(":exception resolve_from_to_block: " + s);
                 }
-                System.out.println(":CONFLICT TREE, IN GLOBAL DIFFERENT TREE: " + HttpStatus.CONFLICT.value());
-                System.out.println(":GOOD SUCCESS: " + HttpStatus.OK.value());
-                System.out.println(":FAIL BAD BLOCKHAIN: " + HttpStatus.EXPECTATION_FAILED.value());
-                System.out.println(":CONFLICT VERSION: " + HttpStatus.FAILED_DEPENDENCY.value());
-                System.out.println(":NAME CONFLICT: " + HttpStatus.NOT_ACCEPTABLE.value());
-                System.out.println("two miner addresses cannot be consecutive: " + HttpStatus.NOT_ACCEPTABLE.value());
-                System.out.println("PARITY ERROR" + HttpStatus.LOCKED);
-                System.out.println("Test version: If the index is even, then the stock balance must also be even; if the index is not even, all can mining"
-                        + HttpStatus.LOCKED.value());
-                System.out.println("BLOCK HAS CHEATER ADDRESS: " + HttpStatus.SEE_OTHER);
-                System.out.println(":response: " + response + " address: " + s);
-
-                System.out.println(":BasisController: sendAllBlocksStorage: response: " + response + " address: " + s);
-
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-                continue;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                continue;
-            }
-
+            }, executor);
+            futures.add(future);
         }
+
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allFutures.join();
+        executor.shutdown();
+
+        int bigsize = 0; // Возможно, вам нужно изменить способ определения значения bigsize
         if (BasisController.getBlockchainSize() > bigsize) {
             return 1;
         } else if (BasisController.getBlockchainSize() < bigsize) {
@@ -2225,6 +2185,7 @@ public class UtilsResolving {
             return -4;
         }
     }
+
 
 }
 

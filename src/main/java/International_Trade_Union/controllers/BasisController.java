@@ -1042,7 +1042,7 @@ public class BasisController {
 
 
                     winnerList.addAll(addlist);
-//                    utilsResolving.sendAllBlocksToStorage(addlist);
+                    utilsResolving.sendAllBlocksToStorage(addlist);
 
                     //прибавить к общей сумме денег
 
