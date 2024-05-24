@@ -49,7 +49,9 @@ public class Tournament implements Runnable {
 
     @Override
     public void run() {
+        BasisController.getBlockedNewSendBlock().set(false);
         tournament.updatingNodeEndBlocks();
+        BasisController.getBlockedNewSendBlock().set(true);
         while (true) {
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
@@ -62,7 +64,7 @@ public class Tournament implements Runnable {
                 currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
                 // Start getAllWinner
-
+                BasisController.getBlockedNewSendBlock().set(false);
                 tournament.getAllWinner();
                 logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
 
@@ -73,6 +75,7 @@ public class Tournament implements Runnable {
                 // Start the tournament
                 tournament.tournament();
                 tournament.updatingNodeEndBlocks();
+                BasisController.getBlockedNewSendBlock().set(true);
                 logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
 
                 // Sleep until the next tournament interval
@@ -82,6 +85,7 @@ public class Tournament implements Runnable {
                 handleException(e);
             } finally {
                 BasisController.setIsSaveFile(true);
+                BasisController.getBlockedNewSendBlock().set(true);
             }
         }
     }

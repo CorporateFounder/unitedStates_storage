@@ -44,6 +44,7 @@ import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
@@ -63,6 +64,15 @@ public class BasisController {
     @Autowired
     UtilsResolving utilsResolving;
 
+    private static volatile AtomicBoolean blockedNewSendBlock = new AtomicBoolean(true);
+
+    public static AtomicBoolean getBlockedNewSendBlock() {
+        return blockedNewSendBlock;
+    }
+
+    public static void setBlockedNewSendBlock(AtomicBoolean blockedNewSendBlock) {
+        BasisController.blockedNewSendBlock = blockedNewSendBlock;
+    }
 
     /**
      * список кандидатов с данного сервера в качестве победителей
@@ -893,6 +903,9 @@ public class BasisController {
     public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
         try {
 
+            if(!blockedNewSendBlock.get()){
+                return new ResponseEntity<>("START SYNCHORNIZATION", HttpStatus.OK);
+            }
             UtilsBalance.setBlockService(blockService);
             Blockchain.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);

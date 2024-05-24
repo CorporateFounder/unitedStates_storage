@@ -9,6 +9,7 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.converter.json.GsonBuilderUtils;
@@ -20,7 +21,9 @@ import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -116,77 +119,76 @@ public class TournamentService {
         return list1;
     }
 
-    public void getAllWinner() {
 
+
+    public void getAllWinner() {
         List<HostEndDataShortB> sortPriorityHost = null;
         MyLogger.saveLog("start: getAllWinner");
-        // Retrieve and sort nodes by priority
+
         try {
             Set<String> nodesAll = getNodes();
-
             sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
-        }catch (Exception e){
+        } catch (Exception e) {
             MyLogger.saveLog("getAllWinner: ", e);
             return;
         }
-        // Iterate over each sorted node
-        for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
+
+        List<CompletableFuture<Void>> futures = sortPriorityHost.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
             try {
-
                 if (BasisController.getExcludedAddresses().contains(s)) {
                     System.out.println(":its your address or excluded address: " + s);
-                    continue;
+                    return;
                 }
-                // Read JSON data from the node's /winnerList endpoint
+
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                 if (json.isEmpty() || json.isBlank()) {
-                    continue;
+                    return;
                 }
-                // Convert JSON data to a list of blocks
+
                 List<Block> blocks = UtilsJson.jsonToListBLock(json);
 
-
-
-                // Process each block
                 for (Block block : blocks) {
-                    MyLogger.saveLog("Processing block with index: " + block.getIndex()); // Log block processing
+                    MyLogger.saveLog("Processing block with index: " + block.getIndex());
                     List<String> sign = new ArrayList<>();
                     List<Block> tempBlock = new ArrayList<>();
                     tempBlock.add(block);
 
-                    // Convert temporary blocks to a map of accounts
                     Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
 
-                    // Perform a short validation check on the block
                     DataShortBlockchainInformation temp = Blockchain.shortCheck(
                             BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
                             new ArrayList<>(), tempBalances, sign
                     );
 
-                    // Log validation result
                     if (temp.isValidation()) {
                         MyLogger.saveLog("Block is valid: " + block.getIndex() + " s: " + s);
-                        // Update winner list if block is valid and not already in the list
-                        if (!BasisController.getWinnerList().contains(block)) {
-                            BasisController.getWinnerList().add(block);
-//                            MyLogger.saveLog("getWinnerList: index: " + block.getIndex() + " address: " + block.getMinerAddress());
-                        } else {
-//                            MyLogger.saveLog("Block already in winner list: index " + block.getIndex());
+                        synchronized (BasisController.getWinnerList()) {
+                            if (!BasisController.getWinnerList().contains(block)) {
+                                BasisController.getWinnerList().add(block);
+                            }
                         }
-                    } else {
-//                        MyLogger.saveLog("Block validation failed: index " + block.getIndex());
                     }
                 }
-            } catch (Exception e) {
-                // Log connection error and exception
+            } catch (IOException | JSONException e) {
                 MyLogger.saveLog("cannot connect to " + s);
                 MyLogger.saveLog(e.toString());
-                continue;
+            } catch (Exception e) {
+                MyLogger.saveLog("Unexpected error: " + s);
+                MyLogger.saveLog(e.toString());
             }
+        })).collect(Collectors.toList());
+
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        try {
+            allOf.get();
+        } catch (InterruptedException | ExecutionException e) {
+            MyLogger.saveLog("getAllWinner: ", e);
         }
+
         MyLogger.saveLog("finish: getAllWinner");
     }
+
 
     @Transactional
     public void tournament() {
