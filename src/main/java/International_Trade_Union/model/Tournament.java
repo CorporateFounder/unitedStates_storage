@@ -72,14 +72,6 @@ public class Tournament implements Runnable {
 
                 // Start the tournament
                 tournament.tournament();
-
-                logTimeUpdate("Tournament", nextTournamentStartTime, currentTime);
-
-                // Wait until it's time to start updatingNodeEndBlocks
-                waitUntil(nextUpdateBlocksStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-
-                // Start updatingNodeEndBlocks
                 tournament.updatingNodeEndBlocks();
                 logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
 
