@@ -13,8 +13,8 @@ public class UtilUrl {
     ////модифицированный ими код
     public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
         URLConnection conn = new URL(url).openConnection();
-        conn.setConnectTimeout(3000); // Таймаут соединения в миллисекундах
-        conn.setReadTimeout(3000); // Таймаут чтения в миллисекундах
+        conn.setConnectTimeout(6000); // Таймаут соединения в миллисекундах
+        conn.setReadTimeout(6000); // Таймаут чтения в миллисекундах
 
         try (InputStream is = conn.getInputStream();
              BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
@@ -31,8 +31,8 @@ public class UtilUrl {
     public static String readJsonFromUrl(String url) throws IOException, JSONException {
         URL url1 = new URL(url);
         URLConnection conn = url1.openConnection();
-        conn.setConnectTimeout(3000); // Устанавливаем таймаут соединения в 5 секунд
-        conn.setReadTimeout(3000); // Устанавливаем таймаут чтения в 5 секунд
+        conn.setConnectTimeout(6000); // Устанавливаем таймаут соединения в 5 секунд
+        conn.setReadTimeout(6000); // Устанавливаем таймаут чтения в 5 секунд
         InputStream is = conn.getInputStream();
         BufferedReader rd = null;
         try {
@@ -77,8 +77,8 @@ public class UtilUrl {
         try {
 
 
-            conn.setReadTimeout(3000);
-            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(6000);
+            conn.setConnectTimeout(6000);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
@@ -116,8 +116,8 @@ public class UtilUrl {
         URL url = new URL(requestStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 //        conn.connect();
-        conn.setReadTimeout(3000);
-        conn.setConnectTimeout(3000);
+        conn.setReadTimeout(6000);
+        conn.setConnectTimeout(6000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
