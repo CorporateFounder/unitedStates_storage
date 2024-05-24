@@ -306,16 +306,10 @@ public interface Seting {
     String NAME_SERVER = "STANDART";
     String PUBLIC_KEY = "STANDART";
 
-    int DELETED_FILE_BLOCKED_HOST = 3;
-    int DELETED_FILE_ALL_ADDRESS= 3;
+
     int DELETED_FILE_BLOCKED_HOST_TIME_SECOND = 1000;
 
     int IS_BIG_DIFFERENT = 20;
     int DUPLICATE_INDEX = 243927;
-
-    int GET_WINNER_SECOND = 100;
-    int TIME_TOURNAMENT_SECOND = 100;
-    long TIME_UPDATING = 100;
-
 
 }

@@ -1210,9 +1210,24 @@ public class UtilsResolving {
             MyLogger.saveLog("helpResolve4: temp: " + temp);
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
-                temp.setValidation(false);
+
                 MyLogger.saveLog("helpResolve4: isSmall(global, temp): " + isSmall(global, temp));
-                return temp;
+                MyLogger.saveLog("helpResolve4: global: " + global);
+                MyLogger.saveLog("helpResolve4: temp: " + temp);
+                if(different != null){
+                    MyLogger.saveLog("helpResolve4: different: 0 " + different.get(0).getIndex() + " hash: " + different.get(0).getHashBlock());
+                    MyLogger.saveLog("helpResolve4: different: size-1 " + different.get(different.size()-1).getIndex()+
+                            " hash: " + different.get(different.size()-1).getHashBlock());
+
+                }
+                if(emptyList != null){
+                    MyLogger.saveLog("helpResolve4: emptyList: 0 " + emptyList.get(0).getIndex() + " hash: " + emptyList.get(0).getHashBlock());
+                    MyLogger.saveLog("helpResolve4: emptyList: size-1 " + emptyList.get(emptyList.size()-1).getIndex()+
+                            " hash: " + emptyList.get(emptyList.size()-1).getHashBlock());
+
+                }
+                temp.setValidation(false);
+               return temp;
             }
 
 
@@ -2070,12 +2085,6 @@ public class UtilsResolving {
 
         // Вывод информации о завершении метода
         System.out.println("finish: sortPriorityHost: " + resultList);
-        if (BasisController.getBlockchainSize() % Seting.DELETED_FILE_BLOCKED_HOST == 0) {
-            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-        }
-        if (BasisController.getBlockchainSize() % Seting.DELETED_FILE_ALL_ADDRESS == 0) {
-            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        }
 
         // Возвращение итогового списка
         return resultList;

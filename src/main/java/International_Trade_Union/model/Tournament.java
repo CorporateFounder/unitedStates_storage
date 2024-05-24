@@ -47,6 +47,7 @@ public class Tournament implements Runnable {
         thread.start();
     }
 
+    private int countDelete = 0;
     @Override
     public void run() {
         BasisController.getBlockedNewSendBlock().set(false);
@@ -75,6 +76,12 @@ public class Tournament implements Runnable {
                 // Start the tournament
                 tournament.tournament();
                 tournament.updatingNodeEndBlocks();
+                countDelete++;
+                if(countDelete == 10){
+                    countDelete = 0;
+                    Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                    Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+                }
                 BasisController.getBlockedNewSendBlock().set(true);
                 logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
 
