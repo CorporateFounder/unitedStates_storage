@@ -191,7 +191,7 @@ public class TournamentService {
 
     @Transactional
     public void tournament() {
-
+        getAllWinner();
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
 

@@ -77,8 +77,8 @@ public class Tournament implements Runnable {
                 currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
                 // Start the tournament
-                tournament.tournament();
                 BasisController.getBlockedNewSendBlock().set(false);
+                tournament.tournament();
                 tournament.updatingNodeEndBlocks();
                 //TODO тестовая часть метода. берет транзакции со всех серверов.
                 AllTransactions.addTransaction(tournament.getInstance());
