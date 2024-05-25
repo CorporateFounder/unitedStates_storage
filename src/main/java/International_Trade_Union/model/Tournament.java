@@ -58,14 +58,14 @@ public class Tournament implements Runnable {
         BasisController.getBlockedNewSendBlock().set(true);
         while (true) {
             try {
-                long currentTime = UtilsTime.getUniversalTimestamp2();
+                long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
                 long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
                 long nextUpdateBlocksStartTime = nextTournamentStartTime + UPDATE_BLOCKS_DELAY;
 
                 // Wait until it's time to start getAllWinner
                 waitUntil(nextGetAllWinnersStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp2(); // Update current time
+                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
                 // Start getAllWinner
                 tournament.getAllWinner();
@@ -74,7 +74,7 @@ public class Tournament implements Runnable {
 
                 // Wait until it's time to start the tournament
                 waitUntil(nextTournamentStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp2(); // Update current time
+                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
                 // Start the tournament
                 tournament.tournament();
@@ -93,7 +93,7 @@ public class Tournament implements Runnable {
                 logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
 
                 // Sleep until the next tournament interval
-                Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp2() - nextTournamentStartTime));
+                Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
 
             } catch (Exception e) {
                 handleException(e);
@@ -105,7 +105,7 @@ public class Tournament implements Runnable {
     }
 
     private void waitUntil(long targetTime) throws InterruptedException {
-        long currentTime = UtilsTime.getUniversalTimestamp2();
+        long currentTime = UtilsTime.getUniversalTimestamp();
         if (currentTime < targetTime) {
             Thread.sleep(targetTime - currentTime);
         }
