@@ -33,7 +33,6 @@ public class AllTransactions {
         }
         instance = new ArrayList<>();
 
-
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
         instance = instance.stream().distinct().collect(Collectors.toList());
 
@@ -85,6 +84,11 @@ public class AllTransactions {
         }
 
 
+    }
+    public static synchronized void addTransaction(List<DtoTransaction> transactions) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        for (DtoTransaction transaction : transactions) {
+            addTransaction(transaction);
+        }
     }
 
     public static synchronized void addSendedTransaction(List<DtoTransaction> transactions) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {

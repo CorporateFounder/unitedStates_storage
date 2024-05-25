@@ -1,6 +1,7 @@
 package International_Trade_Union.model;
 
 import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import International_Trade_Union.entity.blockchain.block.Block;
@@ -21,9 +22,7 @@ import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -597,4 +596,37 @@ public class TournamentService {
 
 
     }
+    public List<DtoTransaction> getInstance() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        List<DtoTransaction> instance = new ArrayList<>();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (HostEndDataShortB hostEndDataShortB : utilsResolving.sortPriorityHost(BasisController.getNodes())) {
+            String s = hostEndDataShortB.getHost();
+            final List<DtoTransaction> finalInstance = instance; // Создаем final-копию instance
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    System.out.println("Получение транзакций с сервера: " + s + ". Время ожидания 45 секунд.");
+                    String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
+                    List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
+                    synchronized(finalInstance) {
+                        finalInstance.addAll(list);
+                    }
+                } catch (IOException | JSONException e) {
+                    System.out.println("Ошибка при получении транзакций с сервера " + s + ": " + e.getMessage());
+                }
+            });
+            futures.add(future);
+        }
+
+        // Дожидаемся завершения всех CompletableFuture
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allFutures.join();
+
+        // Добавляем транзакции из локального хранилища и удаляем дубликаты
+        instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
+        instance = instance.stream().distinct().collect(Collectors.toList());
+
+        return instance;
+    }
+
 }

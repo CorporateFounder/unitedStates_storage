@@ -1,14 +1,17 @@
 package International_Trade_Union.model;
 
 import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
+import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -55,38 +58,42 @@ public class Tournament implements Runnable {
         BasisController.getBlockedNewSendBlock().set(true);
         while (true) {
             try {
-                long currentTime = UtilsTime.getUniversalTimestamp();
+                long currentTime = UtilsTime.getUniversalTimestamp2();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
                 long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
                 long nextUpdateBlocksStartTime = nextTournamentStartTime + UPDATE_BLOCKS_DELAY;
 
                 // Wait until it's time to start getAllWinner
                 waitUntil(nextGetAllWinnersStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
+                currentTime = UtilsTime.getUniversalTimestamp2(); // Update current time
 
                 // Start getAllWinner
-                BasisController.getBlockedNewSendBlock().set(false);
                 tournament.getAllWinner();
+
                 logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
 
                 // Wait until it's time to start the tournament
                 waitUntil(nextTournamentStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
+                currentTime = UtilsTime.getUniversalTimestamp2(); // Update current time
 
                 // Start the tournament
                 tournament.tournament();
+                BasisController.getBlockedNewSendBlock().set(false);
                 tournament.updatingNodeEndBlocks();
+                //TODO тестовая часть метода. берет транзакции со всех серверов.
+                AllTransactions.addTransaction(tournament.getInstance());
+                BasisController.getBlockedNewSendBlock().set(true);
                 countDelete++;
                 if(countDelete == 10){
                     countDelete = 0;
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
                 }
-                BasisController.getBlockedNewSendBlock().set(true);
+
                 logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
 
                 // Sleep until the next tournament interval
-                Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
+                Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp2() - nextTournamentStartTime));
 
             } catch (Exception e) {
                 handleException(e);
@@ -98,7 +105,7 @@ public class Tournament implements Runnable {
     }
 
     private void waitUntil(long targetTime) throws InterruptedException {
-        long currentTime = UtilsTime.getUniversalTimestamp();
+        long currentTime = UtilsTime.getUniversalTimestamp2();
         if (currentTime < targetTime) {
             Thread.sleep(targetTime - currentTime);
         }
