@@ -147,6 +147,17 @@ public class TournamentService {
 
                 List<Block> blocks = UtilsJson.jsonToListBLock(json);
 
+                json = UtilUrl.readJsonFromUrl(s + "/prevBlock");
+                if (json.isEmpty() || json.isBlank()) {
+                    return;
+                }
+
+                Block prevBlock = UtilsJson.jsonToBLock(json);
+                if(BasisController.getBlockchainSize() == prevBlock.getIndex()){
+                    blocks.add(prevBlock);
+                }
+
+
                 for (Block block : blocks) {
                     MyLogger.saveLog("Processing block with index: " + block.getIndex());
                     List<String> sign = new ArrayList<>();
