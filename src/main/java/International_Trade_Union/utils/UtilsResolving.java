@@ -49,8 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static International_Trade_Union.controllers.BasisController.getNodes;
-import static International_Trade_Union.controllers.BasisController.utilsMethod;
+import static International_Trade_Union.controllers.BasisController.*;
 import static International_Trade_Union.setings.Seting.RANDOM_HOSTS;
 import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 import static International_Trade_Union.utils.UtilsBalance.rollbackCalculateBalance;
@@ -704,7 +703,7 @@ public class UtilsResolving {
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
         if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT
-                && global.getBigRandomNumber() > actual.getBigRandomNumber()) {
+                && global.getBigRandomNumber() > actual.getBigRandomNumber() + (prevBlock().getHashCompexity() * 25)) {
             return true;
         }
         return false;
