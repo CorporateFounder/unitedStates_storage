@@ -1936,28 +1936,39 @@ public class UtilsResolving {
             calculateBalance(balances, block, signs);
 //            UtilsBlock.saveBLock(block, filename);
         }
-        UtilsBlock.saveBlocks(originalBlocks, filename);
 
+        list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
         // Вызов getLaws один раз для всех блоков
-        allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
 
         long finish = UtilsTime.getUniversalTimestamp();
         System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
+        try {
+            blockService.saveAllBLockF(list);
 
-        blockService.saveAllBLockF(list);
+            tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+            List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
+            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
-        tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-        List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
-        accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+            start = UtilsTime.getUniversalTimestamp();
+            blockService.saveAccountAllF(accountList);
+            finish = UtilsTime.getUniversalTimestamp();
+        }catch (Exception e){
+            MyLogger.saveLog("addBlock3: error: ", e);
+            String stackerror = "";
+            for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+                stackerror += stackTraceElement.toString() + "\n";
+            }
+            MyLogger.saveLog("addBlock3: error: " + stackerror);
+            return false;
 
-        start = UtilsTime.getUniversalTimestamp();
-        blockService.saveAccountAllF(accountList);
-        finish = UtilsTime.getUniversalTimestamp();
+        }
 
         System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
         System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
 
+        UtilsBlock.saveBlocks(originalBlocks, filename);
+        allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
         Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);

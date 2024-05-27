@@ -86,6 +86,7 @@ public class UtilsBlock {
         nextFile = filename + count + ".txt";
 
         List<String> jsons = new ArrayList<>();
+        blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
         for (Block block : blocks) {
             String json = UtilsJson.objToStringJson(block);
             jsons.add(json);
