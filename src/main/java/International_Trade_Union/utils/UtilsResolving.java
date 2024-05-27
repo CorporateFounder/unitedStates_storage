@@ -9,8 +9,6 @@ import International_Trade_Union.entity.blockchain.DataShortBlockchainInformatio
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
-import International_Trade_Union.entity.repository.EntityAccountRepository;
-import International_Trade_Union.entity.repository.EntityBlockRepository;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
@@ -24,17 +22,13 @@ import International_Trade_Union.vote.UtilsLaws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -45,7 +39,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -195,7 +188,7 @@ public class UtilsResolving {
                                     System.out.println("-------------------------------------");
                                     continue;
                                 }
-                                List<Block> subBlocks = UtilsJson.jsonToListBLock(str);
+                                List<Block> subBlocks = UtilsJson.jsonToObject(str);
 
                                 if (subBlocks.isEmpty() || subBlocks.size() == 0) {
                                     System.out.println("-------------------------------------");
@@ -378,7 +371,7 @@ public class UtilsResolving {
                                         System.out.println("-------------------------------------");
                                         continue;
                                     }
-                                    subBlocks = UtilsJson.jsonToListBLock(str);
+                                    subBlocks = UtilsJson.jsonToObject(str);
 
                                     if (subBlocks.isEmpty() || subBlocks.size() == 0) {
                                         System.out.println("-------------------------------------");
@@ -514,7 +507,7 @@ public class UtilsResolving {
                                 System.out.println("-------------------------------------");
                                 continue;
                             }
-                            List<Block> subBlocks = UtilsJson.jsonToListBLock(str);
+                            List<Block> subBlocks = UtilsJson.jsonToObject(str);
 
                             if (subBlocks == null || subBlocks.isEmpty() || subBlocks.size() == 0) {
                                 System.out.println("-------------------------------------");
@@ -750,7 +743,7 @@ public class UtilsResolving {
 
                 SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(startIndex, endIndex);
                 String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
-                List<Block> blockList = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
+                List<Block> blockList = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                 System.out.println("check subBlockchainEntity: " + subBlockchainEntity);
                 blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex).reversed()).collect(Collectors.toList());
                 for (Block block : blockList) {
@@ -845,7 +838,7 @@ public class UtilsResolving {
 
                 SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(startIndex, endIndex);
                 String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
-                List<Block> blockList = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
+                List<Block> blockList = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                 System.out.println("check2 subBlockchainEntity: " + subBlockchainEntity);
                 blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex).reversed()).collect(Collectors.toList());
 
@@ -943,7 +936,7 @@ public class UtilsResolving {
 
                     SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(startIndex, endIndex);
                     String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
-                    List<Block> blockList = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
+                    List<Block> blockList = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                     System.out.println("subBlockchainEntity: " + subBlockchainEntity);
                     blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex).reversed()).collect(Collectors.toList());
                     for (Block block : blockList) {
@@ -1138,7 +1131,7 @@ public class UtilsResolving {
                     SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(startIndex, endIndex);
                     String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
 
-                    List<Block> blockList = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
+                    List<Block> blockList = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                     System.out.println("subBlockchainEntity: " + subBlockchainEntity);
 
                     blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex).reversed()).collect(Collectors.toList());
@@ -1668,7 +1661,7 @@ public class UtilsResolving {
                                 System.out.println("1:sublockchainEntity: " + subBlockchainEntity);
                                 subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
                                 System.out.println("1:sublockchainJson: " + subBlockchainJson);
-                                List<Block> subBlocks = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
+                                List<Block> subBlocks = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                                 System.out.println("1:download sub block: " + subBlocks.size());
 
                                 finish = (int) subBlocks.get(subBlocks.size() - 1).getIndex() + Seting.PORTION_DOWNLOAD + 1;
@@ -1765,7 +1758,7 @@ public class UtilsResolving {
                                     System.out.println("2:sublockchainEntity: " + subBlockchainEntity);
                                     subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
                                     System.out.println("2:sublockchainJson: " + subBlockchainJson);
-                                    subBlocks = UtilsJson.jsonToListBLock(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
+                                    subBlocks = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
                                     System.out.println("2:download sub block: " + subBlocks.size());
 
 //                                    balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
@@ -1824,7 +1817,7 @@ public class UtilsResolving {
                                 System.out.println("-------------------------------------");
                                 continue;
                             }
-                            List<Block> subBlocks = UtilsJson.jsonToListBLock(str);
+                            List<Block> subBlocks = UtilsJson.jsonToObject(str);
 
                             if (subBlocks.isEmpty() || subBlocks.size() == 0) {
                                 System.out.println("-------------------------------------");

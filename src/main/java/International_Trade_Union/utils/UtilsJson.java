@@ -31,12 +31,12 @@ public class UtilsJson {
         return writer.toString();
     }
 
-    public static Object jsonToListBLock(String json, Class cls) throws JsonProcessingException {
+    public static Object jsonToObject(String json, Class cls) throws JsonProcessingException {
 
         return mapper.readValue(json, cls);
     }
 
-    public static List<Block> jsonToListBLock(String json) throws JsonProcessingException {
+    public static List<Block> jsonToObject(String json) throws JsonProcessingException {
 
         return mapper.readValue(json, new TypeReference<List<Block>>(){});
     }

@@ -13,9 +13,7 @@ import International_Trade_Union.utils.*;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.ls.LSOutput;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -118,7 +116,62 @@ public class TournamentService {
         return list1;
     }
 
+    public void getCheckSyncTime(){
+        List<HostEndDataShortB> sortPriorityHost = null;
+        MyLogger.saveLog("start: getCheckSyncTime");
 
+        try {
+            Set<String> nodesAll = getNodes();
+            sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+        } catch (Exception e) {
+            MyLogger.saveLog("getCheckSyncTime: ", e);
+            return;
+        }
+
+        List<CompletableFuture<Void>> futures = sortPriorityHost.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
+            String s = hostEndDataShortB.getHost();
+            try {
+                if (BasisController.getExcludedAddresses().contains(s)) {
+                    System.out.println(":its your address or excluded address: " + s);
+                    return;
+                }
+
+                //TODO здесь должен он получить время и сравнить его с pool.ntp.org
+                //TODO так как каждый сервер ntp настраивает на уровне виндовса
+                //TODO как мы можем убедиться здесь чтобы этот сервер настроил свой ntp
+                //TODO или нет, чтобы если он не настроил, у него не брать блоки
+                //TODO если нет, то он должен так заблокировать
+                // UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                String timestr = UtilUrl.readJsonFromUrl(s +"/timentp");
+                if(timestr == null || timestr.isEmpty() || timestr.isBlank()){
+                    return;
+                }
+                long localTime = UtilsTime.getUniversalTimestamp();
+                long serverTime = (long) UtilsJson.jsonToObject(timestr, Long.class);
+                if (!UtilsTime.isTimeSynchronized(localTime, serverTime)){
+                    MyLogger.saveLog("pool.ntp.org different time in server");
+                    UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                }
+
+
+            } catch (IOException | JSONException e) {
+                MyLogger.saveLog("cannot connect to " + s);
+                MyLogger.saveLog(e.toString());
+            } catch (Exception e) {
+                MyLogger.saveLog("Unexpected error: " + s);
+                MyLogger.saveLog(e.toString());
+            }
+        })).collect(Collectors.toList());
+
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        try {
+            allOf.get();
+        } catch (InterruptedException | ExecutionException e) {
+            MyLogger.saveLog("getCheckSyncTime: ", e);
+        }
+
+        MyLogger.saveLog("finish: getCheckSyncTime");
+    }
 
     public void getAllWinner() {
         List<HostEndDataShortB> sortPriorityHost = null;
@@ -140,17 +193,38 @@ public class TournamentService {
                     return;
                 }
 
+                //TODO здесь должен он получить время и сравнить его с pool.ntp.org
+                //TODO так как каждый сервер ntp настраивает на уровне виндовса
+                //TODO как мы можем убедиться здесь чтобы этот сервер настроил свой ntp
+                //TODO или нет, чтобы если он не настроил, у него не брать блоки
+                //TODO если нет, то он должен так заблокировать
+                // UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                String timestr = UtilUrl.readJsonFromUrl(s +"/timentp");
+                if(timestr == null || timestr.isEmpty() || timestr.isBlank()){
+                    return;
+                }
+                long localTime = UtilsTime.getUniversalTimestamp();
+                long serverTime = (long) UtilsJson.jsonToObject(timestr, Long.class);
+                if (!UtilsTime.isTimeSynchronized(localTime, serverTime)){
+                    MyLogger.saveLog("pool.ntp.org different time in server");
+                    return;
+//                    UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                }
+
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                 if (json.isEmpty() || json.isBlank()) {
                     return;
                 }
 
-                List<Block> blocks = UtilsJson.jsonToListBLock(json);
+                List<Block> blocks = UtilsJson.jsonToObject(json);
 
                 json = UtilUrl.readJsonFromUrl(s + "/prevBlock");
                 if (json.isEmpty() || json.isBlank()) {
                     return;
                 }
+
+
+
 
                 Block prevBlock = UtilsJson.jsonToBLock(json);
                 if(BasisController.getBlockchainSize() == prevBlock.getIndex()){

@@ -1285,6 +1285,13 @@ public class BasisController {
         }
         return accountMap;
     }
+
+
+    @GetMapping("/timentp")
+    @ResponseBody
+    public Long timentp(){
+        return UtilsTime.getUniversalTimestamp();
+    }
 }
 
 

@@ -19,7 +19,10 @@ public class UtilsTime {
     public static long getUniversalTimestamp() {
         return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond() * 1000L;
     }
-
+    public static boolean isTimeSynchronized(long localTime, long serverTime) {
+        long tolerance = 5000L; // Допустимая погрешность в миллисекундах
+        return Math.abs(localTime - serverTime) <= tolerance;
+    }
     public static String getUniversalTimestampString() {
         return ZonedDateTime.now(ZoneOffset.UTC).toString();
     }

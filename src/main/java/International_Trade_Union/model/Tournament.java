@@ -39,9 +39,8 @@ public class Tournament implements Runnable {
     private TournamentService tournament;
 
     private static final long TOURNAMENT_INTERVAL = 100 * 1000; // 100 секунд в миллисекундах
-    private static final long MAX_METHOD_EXECUTION_TIME = 14 * 1000; // 14 секунд в миллисекундах
-    private static final long GET_ALL_WINNERS_ADVANCE_TIME = MAX_METHOD_EXECUTION_TIME + 20 * 1000; // 34 секунд в миллисекундах
-    private static final long UPDATE_BLOCKS_DELAY = MAX_METHOD_EXECUTION_TIME + 5 * 1000; // 19 секунд в миллисекундах после турнира
+    private static final long MAX_METHOD_EXECUTION_TIME = 18 * 1000; // 14 секунд в миллисекундах
+    private static final long GET_ALL_WINNERS_ADVANCE_TIME = MAX_METHOD_EXECUTION_TIME + 40 * 1000; // 34 секунд в миллисекундах
 
     @PostConstruct
     public void init() {
@@ -61,7 +60,6 @@ public class Tournament implements Runnable {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
                 long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
-                long nextUpdateBlocksStartTime = nextTournamentStartTime + UPDATE_BLOCKS_DELAY;
 
                 // Wait until it's time to start getAllWinner
                 waitUntil(nextGetAllWinnersStartTime);
@@ -74,8 +72,6 @@ public class Tournament implements Runnable {
 
                 // Wait until it's time to start the tournament
                 waitUntil(nextTournamentStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-
                 // Start the tournament
                 BasisController.getBlockedNewSendBlock().set(false);
                 tournament.tournament();
@@ -83,14 +79,14 @@ public class Tournament implements Runnable {
                 //TODO тестовая часть метода. берет транзакции со всех серверов.
                 AllTransactions.addTransaction(tournament.getInstance());
                 BasisController.getBlockedNewSendBlock().set(true);
+                tournament.getCheckSyncTime();
+
                 countDelete++;
                 if(countDelete == 10){
                     countDelete = 0;
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
                 }
-
-                logTimeUpdate("updatingNodeEndBlocks", nextUpdateBlocksStartTime, currentTime);
 
                 // Sleep until the next tournament interval
                 Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
