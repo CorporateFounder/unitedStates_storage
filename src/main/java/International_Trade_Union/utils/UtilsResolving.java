@@ -1420,7 +1420,7 @@ public class UtilsResolving {
         return temp;
     }
 
-
+    @Transactional
     public boolean rollBackAddBlock4(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
     java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
     boolean existM = true;
@@ -1430,6 +1430,8 @@ public class UtilsResolving {
     List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
     deleteBlocks = deleteBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
     long threshold = deleteBlocks.get(0).getIndex();
+    if(threshold <= 0 )
+        return false;
 
     File file = Blockchain.indexNameFileBlock((int) threshold, filename);
     if (file == null) {
@@ -1469,16 +1471,18 @@ public class UtilsResolving {
     List<EntityAccount> accountList = blockService.findByAccountIn(balances);
     accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
-    long startTime = UtilsTime.getUniversalTimestamp();
-    blockService.saveAccountAllF(accountList);
-    long finishTime = UtilsTime.getUniversalTimestamp();
+    try {
+        blockService.saveAccountAllF(accountList);
+    }catch (Exception e){
+        MyLogger.saveLog("error: rollBackAddBlock3: ", e);
+        return false;
+    }
 
-    System.out.println("UtilsResolving: rollBackAddBlock4: time save accounts: " + UtilsTime.differentMillSecondTime(startTime, finishTime));
     System.out.println("UtilsResolving: rollBackAddBlock4: total different balance: " + tempBalances.size());
     System.out.println("UtilsResolving: rollBackAddBlock4: total original balance: " + balances.size());
 
-    if (threshold > 0)
-        blockService.deleteEntityBlocksAndRelatedData(threshold);
+
+    blockService.deleteEntityBlocksAndRelatedData(threshold);
 
     allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
@@ -1511,6 +1515,7 @@ public class UtilsResolving {
 
 
 
+    @Transactional
     public boolean rollBackAddBlock3(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         MyLogger.saveLog("rollBackAddBlock3 start");
@@ -1520,6 +1525,8 @@ public class UtilsResolving {
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
         deleteBlocks = deleteBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
         long threshold = deleteBlocks.get(0).getIndex();
+        if(threshold <= 0 )
+            return false;
         File file = Blockchain.indexNameFileBlock((int) threshold, filename);
 
         if (file == null) {
@@ -1551,22 +1558,20 @@ public class UtilsResolving {
         }
 
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-
         List<EntityAccount> accountList = blockService.findByAccountIn(balances);
         accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+        try {
 
-        long startTime = UtilsTime.getUniversalTimestamp();
-        blockService.saveAccountAllF(accountList);
-        long finishTime = UtilsTime.getUniversalTimestamp();
+            blockService.saveAccountAllF(accountList);
 
+        }catch (Exception e){
+            MyLogger.saveLog("error: rollBackAddBlock3: ", e);
+            return false;
+        }
         blockService.deleteEntityBlocksAndRelatedData(threshold);
-
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
 
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         UtilsBlock.saveBlocks(tempBlock, filename);
