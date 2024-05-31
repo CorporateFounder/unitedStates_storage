@@ -84,16 +84,9 @@ public class BasisController {
     public String winnerList() {
         String json = "";
         try {
-            List<Block> tempList = winnerList.stream()
-                    .collect(Collectors.groupingBy(Block::getHashCompexity)) // Группировка по сложности хеша
-                    .entrySet().stream()
-                    .sorted((e1, e2) -> e2.getKey().compareTo(e1.getKey())) // Сортировка групп по сложности хеша в убывающем порядке
-                    .limit(2) // Ограничение до самых высоких и вторых по величине значений сложности хеша
-                    .flatMap(entry -> entry.getValue().stream()) // Преобразование групп обратно в поток
-                    .sorted(Comparator.comparing(Block::getIndex).reversed()) // Сортировка по индексу в убывающем порядке
-                    .collect(Collectors.toList());
 
-            json = UtilsJson.objToStringJson(tempList);
+
+            json = UtilsJson.objToStringJson(winnerList);
         } catch (Exception e) {
             e.printStackTrace();
         }
