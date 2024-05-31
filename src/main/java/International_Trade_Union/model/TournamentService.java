@@ -193,23 +193,6 @@ public class TournamentService {
                     return;
                 }
 
-                //TODO здесь должен он получить время и сравнить его с pool.ntp.org
-                //TODO так как каждый сервер ntp настраивает на уровне виндовса
-                //TODO как мы можем убедиться здесь чтобы этот сервер настроил свой ntp
-                //TODO или нет, чтобы если он не настроил, у него не брать блоки
-                //TODO если нет, то он должен так заблокировать
-                // UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                String timestr = UtilUrl.readJsonFromUrl(s +"/timentp");
-                if(timestr == null || timestr.isEmpty() || timestr.isBlank()){
-                    return;
-                }
-                long localTime = UtilsTime.getUniversalTimestamp();
-                long serverTime = (long) UtilsJson.jsonToObject(timestr, Long.class);
-                if (!UtilsTime.isTimeSynchronized(localTime, serverTime)){
-                    MyLogger.saveLog("pool.ntp.org different time in server");
-                    return;
-//                    UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                }
 
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                 if (json.isEmpty() || json.isBlank()) {
@@ -275,7 +258,12 @@ public class TournamentService {
 
 
     @Transactional
-    public void tournament() {
+    public void tournament()  {
+        try {
+            Thread.sleep(7000);
+        }catch (Exception e){
+            MyLogger.saveLog("tournament: ", e);
+        }
         getAllWinner();
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
