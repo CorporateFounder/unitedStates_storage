@@ -308,6 +308,7 @@ public interface Seting {
 
 
     int DELETED_FILE_BLOCKED_HOST_TIME_SECOND = 1000;
+    int RESYNC_TIME = 100;
 
     int IS_BIG_DIFFERENT = 20;
     int DUPLICATE_INDEX = 243927;

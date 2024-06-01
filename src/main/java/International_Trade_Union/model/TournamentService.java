@@ -273,6 +273,13 @@ public class TournamentService {
         if (timestamp % Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND == 0) {
             Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
         }
+        if(BasisController.getBlockchainSize() % Seting.RESYNC_TIME == 0){
+            try {
+                UtilsTime.resyncTime();
+            }catch (Exception e){
+                MyLogger.saveLog("error resyncTime: ", e);
+            }
+        }
         try {
             List<Block> list = BasisController.getWinnerList();
             list = list.stream()

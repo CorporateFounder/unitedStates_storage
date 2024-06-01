@@ -1254,6 +1254,8 @@ public class UtilsResolving {
                     System.out.println("different start index: " + different.get(0).getIndex());
                     System.out.println("different finish index: " + different.get(different.size() - 1).getIndex());
                     System.out.println("------------------------------------------");
+                    return temp;
+
                 } catch (Exception e) {
                     System.out.println("******************************");
                     System.out.println("elpresolve4: address: " + s);
@@ -1525,8 +1527,11 @@ public class UtilsResolving {
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
         deleteBlocks = deleteBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
         long threshold = deleteBlocks.get(0).getIndex();
-        if(threshold <= 0 )
+        if(threshold <= 0 ){
+            MyLogger.saveLog("threshold <= 0: " + threshold);
             return false;
+        }
+
         File file = Blockchain.indexNameFileBlock((int) threshold, filename);
 
         if (file == null) {
@@ -1535,6 +1540,7 @@ public class UtilsResolving {
             return existM;
         }
 
+        MyLogger.saveLog("rollBackAddBlock3: synchronizedList: " + threshold);
         List<Block> tempBlock = Collections.synchronizedList(new ArrayList<>());
         try (Stream<String> lines = Files.lines(file.toPath())) {
             lines.parallel().forEach(line -> {
@@ -1549,33 +1555,42 @@ public class UtilsResolving {
             });
         }
 
+        MyLogger.saveLog("rollBackAddBlock3 before clone");
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
-
-        for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
-            Block block = deleteBlocks.get(i);
-            balances = rollbackCalculateBalance(balances, block);
-            allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+        MyLogger.saveLog("rollBackAddBlock3 afer clone");
+        try {
+            for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
+                Block block = deleteBlocks.get(i);
+                balances = rollbackCalculateBalance(balances, block);
+                allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+            }
+        }catch (Exception e){
+            MyLogger.saveLog("rollBackAddBlock3: rollbackCalculateBalance: ", e);
+            return false;
         }
 
+        MyLogger.saveLog("rollBackAddBlock3: after rollbackCalculateBalance: ");
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-        List<EntityAccount> accountList = blockService.findByAccountIn(balances);
-        accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+        MyLogger.saveLog("rollBackAddBlock3: after: differentAccount:");
+        List<EntityAccount> accountList = null;
         try {
-
+            blockService.findByAccountIn(balances);
+            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
             blockService.saveAccountAllF(accountList);
 
         }catch (Exception e){
             MyLogger.saveLog("error: rollBackAddBlock3: ", e);
             return false;
         }
+        MyLogger.saveLog("rollBackAddBlock3: before: deleteEntityBlocksAndRelatedData:");
         blockService.deleteEntityBlocksAndRelatedData(threshold);
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
+        MyLogger.saveLog("rollBackAddBlock3: before: deleteFileBlockchain:");
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         UtilsBlock.saveBlocks(tempBlock, filename);
-
+        MyLogger.saveLog("rollBackAddBlock3: after: saveBlocks:");
         boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         if (!save) {
             existM = false;

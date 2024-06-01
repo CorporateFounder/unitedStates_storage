@@ -317,6 +317,11 @@ public class UtilsUse {
     public static Map<String, Account> balancesClone(Map<String, Account> balances) throws CloneNotSupportedException {
         Map<String, Account> temp = new HashMap<>();
         for (Map.Entry<String, Account> accountEntry : balances.entrySet()) {
+            if(accountEntry == null
+                    || accountEntry.getKey().isBlank()
+                    || accountEntry.getValue() == null){
+                continue;
+            }
             temp.put(accountEntry.getKey(), accountEntry.getValue().clone());
         }
         return temp;
@@ -388,6 +393,9 @@ public class UtilsUse {
         Map<String, Account> thirdMap = new HashMap<>();
         for (Map.Entry<String, Account> entry : second.entrySet()) {
             String key = entry.getKey();
+            if(key.isBlank() || key.isEmpty()){
+                continue;
+            }
             Account accountInSecondMap = entry.getValue();
             Account accountInFirstMap = first.get(key);
 

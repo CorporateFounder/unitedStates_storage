@@ -80,4 +80,27 @@ public class UtilsTime {
         // If all NTP servers fail, fall back to HTTP
         return getUniversalTimestampFromHttp();
     }
+
+    public static void resyncTime() throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command("cmd.exe", "/c", "w32tm /resync");
+
+        Process process = processBuilder.start();
+        int exitCode = process.waitFor();
+        if (exitCode == 0) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+        } else {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.err.println(line);
+                }
+            }
+        }
+    }
 }
