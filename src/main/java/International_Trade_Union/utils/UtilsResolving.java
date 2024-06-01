@@ -1254,8 +1254,6 @@ public class UtilsResolving {
                     System.out.println("different start index: " + different.get(0).getIndex());
                     System.out.println("different finish index: " + different.get(different.size() - 1).getIndex());
                     System.out.println("------------------------------------------");
-                    return temp;
-
                 } catch (Exception e) {
                     System.out.println("******************************");
                     System.out.println("elpresolve4: address: " + s);
@@ -1574,7 +1572,7 @@ public class UtilsResolving {
         MyLogger.saveLog("rollBackAddBlock3: after: differentAccount:");
         List<EntityAccount> accountList = null;
         try {
-            blockService.findByAccountIn(balances);
+            accountList = blockService.findByAccountIn(balances);
             accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
             blockService.saveAccountAllF(accountList);
 
