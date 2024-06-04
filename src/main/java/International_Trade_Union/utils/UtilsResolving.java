@@ -1555,13 +1555,11 @@ public class UtilsResolving {
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
                 Block block = deleteBlocks.get(i);
                 balances = rollbackCalculateBalance(balances, block);
-//                allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
             }
         }catch (Exception e){
             MyLogger.saveLog("rollBackAddBlock3: rollbackCalculateBalance: ", e);
             return false;
         }
-        allLaws = UtilsLaws.rollBackLaws2(deleteBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
         MyLogger.saveLog("rollBackAddBlock3: after rollbackCalculateBalance: ");
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
         MyLogger.saveLog("rollBackAddBlock3: after: differentAccount:");

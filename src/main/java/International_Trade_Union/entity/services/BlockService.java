@@ -142,6 +142,7 @@ public class BlockService {
     public List<EntityAccount> findBYAccountString(List<String> accounts) throws IOException {
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try {
+            accounts = accounts.stream().filter(t->t != null).collect(Collectors.toList());
             entityAccounts = entityAccountRepository.findByAccountIn(accounts);
 
         } catch (Exception e) {
