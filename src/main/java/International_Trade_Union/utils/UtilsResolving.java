@@ -630,26 +630,9 @@ public class UtilsResolving {
 
 
                             if (!temp.isValidation()) {
-                                //TODO добавить хост в заблокированный файл
-                                System.out.println("-------------------------------------------------");
-                                System.out.println("Blocked host: ");
-                                System.out.println("expected host: " + hostEndDataShortB.getDataShortBlockchainInformation());
-
-                                System.out.println("host: " + hostEndDataShortB.getHost());
-                                System.out.println("-------------------------------------------------");
-                                UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                                 continue;
                             }
 
-//                            BasisController.setShortDataBlockchain(temp);
-//                            BasisController.setBlockcheinSize((int) temp.getSize());
-//                            BasisController.setBlockchainValid(temp.isValidation());
-//
-//                            EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-//                            BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-//
-//                            String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-//                            UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
                         }
                         System.out.println("size temporaryBlockchain: ");
                         System.out.println("resolve: temporaryBlockchain: ");
@@ -1011,6 +994,8 @@ public class UtilsResolving {
             MyLogger.saveLog("helpResolve5: temp: " + temp);
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
+                System.out.println("host: " + s);
+                UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 temp.setValidation(false);
                 return temp;
             }
@@ -1069,6 +1054,8 @@ public class UtilsResolving {
 
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
+                System.out.println("host: " + s);
+                UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 temp.setValidation(false);
                 return temp;
             }
@@ -1219,7 +1206,10 @@ public class UtilsResolving {
                             " hash: " + emptyList.get(emptyList.size()-1).getHashBlock());
 
                 }
+                System.out.println("host: " + s);
+                UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 temp.setValidation(false);
+
                return temp;
             }
 
@@ -1279,6 +1269,8 @@ public class UtilsResolving {
 
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
+                System.out.println("host: " + s);
+                UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 temp.setValidation(false);
                 return temp;
             }
