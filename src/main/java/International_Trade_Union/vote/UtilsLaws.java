@@ -4,6 +4,7 @@ import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.governments.Director;
 import International_Trade_Union.governments.Directors;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsFileSaveRead;
@@ -203,6 +204,44 @@ public class UtilsLaws {
 
         }
 
+        lawsFromFile.removeAll(lawsForSave);
+        saveLaws(lawsFromFile, fileLaws);
+
+        return lawsMap;
+    }
+    public static Map<String, Laws> rollBackLaws2(
+            List<Block> deleteBlocks,
+            String fileLaws,
+            Map<String, Laws> lawsMap
+    ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+
+        List<Laws> lawsFromFile = readLineLaws(fileLaws);
+        List<Laws> lawsForSave = new ArrayList<>();
+
+        try {
+            for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
+                Block block = deleteBlocks.get(i);
+                Map<String, Laws> blockLaws = getPackageLaws(block, new HashMap<>());
+                lawsMap.putAll(blockLaws);
+
+                for (Map.Entry<String, Laws> map : blockLaws.entrySet()) {
+                    if (!lawsFromFile.contains(map.getValue())) {
+                        if (map.getValue() != null &&
+                                map.getValue().packetLawName != null &&
+                                map.getValue().getLaws() != null &&
+                                !map.getValue().getHashLaw().isEmpty() &&
+                                map.getValue().getLaws().size() > 0) {
+                            lawsForSave.add(map.getValue());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            MyLogger.saveLog("rollBackLaws2: rollbackCalculateBalance: ", e);
+            return lawsMap;
+        }
+
+        // Удаляем законы и сохраняем файл один раз в конце
         lawsFromFile.removeAll(lawsForSave);
         saveLaws(lawsFromFile, fileLaws);
 

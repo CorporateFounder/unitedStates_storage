@@ -1456,8 +1456,9 @@ public class UtilsResolving {
         System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
         balances = rollbackCalculateBalance(balances, block);
-        allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+//        allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
     }
+        allLaws = UtilsLaws.rollBackLaws2(deleteBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
 
     tempBalances = UtilsUse.differentAccount(tempBalances, balances);
     List<EntityAccount> accountList = blockService.findByAccountIn(balances);
@@ -1548,17 +1549,19 @@ public class UtilsResolving {
         MyLogger.saveLog("rollBackAddBlock3 before clone");
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
         MyLogger.saveLog("rollBackAddBlock3 afer clone");
+        //TODO именно в даной части кода происхдоит прерывание и полчему то в логер не записывается ошибка.
+        //TODO но метод прекращается после этого участка.
         try {
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
                 Block block = deleteBlocks.get(i);
                 balances = rollbackCalculateBalance(balances, block);
-                allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+//                allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
             }
         }catch (Exception e){
             MyLogger.saveLog("rollBackAddBlock3: rollbackCalculateBalance: ", e);
             return false;
         }
-
+        allLaws = UtilsLaws.rollBackLaws2(deleteBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
         MyLogger.saveLog("rollBackAddBlock3: after rollbackCalculateBalance: ");
         tempBalances = UtilsUse.differentAccount(tempBalances, balances);
         MyLogger.saveLog("rollBackAddBlock3: after: differentAccount:");
