@@ -1456,9 +1456,7 @@ public class UtilsResolving {
         System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
         balances = rollbackCalculateBalance(balances, block);
-//        allLaws = UtilsLaws.rollBackLaws(block, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
     }
-        allLaws = UtilsLaws.rollBackLaws2(deleteBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
 
     tempBalances = UtilsUse.differentAccount(tempBalances, balances);
     List<EntityAccount> accountList = blockService.findByAccountIn(balances);
@@ -1553,8 +1551,11 @@ public class UtilsResolving {
         //TODO но метод прекращается после этого участка.
         try {
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
+                MyLogger.saveLog("rollBackAddBlock3 index: " + i);
                 Block block = deleteBlocks.get(i);
+                MyLogger.saveLog("rollBackAddBlock3 block: index: " + block.getIndex());
                 balances = rollbackCalculateBalance(balances, block);
+                MyLogger.saveLog("rollBackAddBlock3 after: rollbackCalculateBalance");
             }
         }catch (Exception e){
             MyLogger.saveLog("rollBackAddBlock3: rollbackCalculateBalance: ", e);
