@@ -1557,7 +1557,7 @@ public class UtilsResolving {
                 balances = rollbackCalculateBalance(balances, block);
                 MyLogger.saveLog("rollBackAddBlock3 after: rollbackCalculateBalance");
             }
-        }catch (Exception e){
+        }catch (Throwable  e){
             MyLogger.saveLog("rollBackAddBlock3: rollbackCalculateBalance: ", e);
             return false;
         }
