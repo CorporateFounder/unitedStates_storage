@@ -368,7 +368,7 @@ public class UtilsUse {
             limit = 135;
 
         }
-        // Генерация случайного числа в диапазоне от 0 до 25
+        // Генерация случайного числа в диапазоне от 0 до 1355
         int result = deterministicRandom.nextInt(limit);
         result = (int) ((int) (result + (actual.getHashCompexity() * waight)) + calculateScore(miner.getDigitalStakingBalance(), number)
         );

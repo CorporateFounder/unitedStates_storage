@@ -455,23 +455,10 @@ public class TournamentService {
                                     .sum()
             );
 
-            if (BasisController.totalDollars() == 0) {
-                for (Map.Entry<String, Account> ba : balances.entrySet()) {
-                    BasisController.setTotalDollars(
-                            BasisController.totalDollars() +
-                                    ba.getValue().getDigitalDollarBalance()
-                    );
-                }
+            if (BasisController.getBlockchainSize() % 576 == 0) {
+              BasisController.setTotalDollars(blockService.getTotalDigitalDollarBalance());
 
             }
-            BasisController.setTotalDollars(
-                    BasisController.totalDollars() +
-                            winner.get(0).getDtoTransactions()
-                                    .stream()
-                                    .filter(t -> t.getSender().equals(Seting.BASIS_ADDRESS))
-                                    .mapToDouble(t -> t.getDigitalDollar())
-                                    .sum()
-            );
 
 
             if (winner == null) {

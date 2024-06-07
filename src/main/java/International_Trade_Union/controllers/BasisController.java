@@ -515,10 +515,7 @@ public class BasisController {
         try {
             Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
             if (totalDollars == 0) {
-                for (Map.Entry<String, Account> account : balances.entrySet()) {
-                    totalDollars += account.getValue().getDigitalDollarBalance();
-                }
-
+                BasisController.setTotalDollars(blockService.getTotalDigitalDollarBalance());
             }
         } catch (Exception e) {
             e.printStackTrace();

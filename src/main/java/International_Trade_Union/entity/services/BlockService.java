@@ -126,6 +126,11 @@ public class BlockService {
 
     }
 
+    @Transactional(readOnly = true)
+    public double getTotalDigitalDollarBalance() {
+        Double totalBalance = entityAccountRepository.getTotalDigitalDollarBalance();
+        return (totalBalance != null) ? totalBalance : 0.0;
+    }
 
     public EntityAccount findByAccount(String account) throws IOException {
         EntityAccount entityAccounts = null;
