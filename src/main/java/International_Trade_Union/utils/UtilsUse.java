@@ -429,12 +429,11 @@ public class UtilsUse {
     }
 
     public static List<EntityAccount> mergeAccounts(Map<String, Account> map, List<EntityAccount> db) {
-        for (Account account : map.values()) {
-            EntityAccount entityAccount = db.stream()
-                    .filter(e -> e.getAccount().equals(account.getAccount()))
-                    .findFirst()
-                    .orElse(null);
+        Map<String, EntityAccount> dbMap = db.stream()
+                .collect(Collectors.toMap(e -> e.getAccount(), e -> e));
 
+        for (Account account : map.values()) {
+            EntityAccount entityAccount = dbMap.get(account.getAccount());
             if (entityAccount != null) {
                 entityAccount.setDigitalDollarBalance(account.getDigitalDollarBalance());
                 entityAccount.setDigitalStockBalance(account.getDigitalStockBalance());
@@ -447,12 +446,12 @@ public class UtilsUse {
                         account.getDigitalStakingBalance()
                 );
                 db.add(entityAccount);
+                dbMap.put(account.getAccount(), entityAccount);
             }
         }
 
         return db;
     }
-
 
     public static List<EntityAccount> accounts(List<Block> blocks, BlockService blockService) throws IOException {
         List<String> accounts = new ArrayList<>();

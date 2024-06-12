@@ -141,7 +141,8 @@ public class UtilsBalance {
         int i = (int) block.getIndex();
 
         int BasisSendCount = 0;
-        for (int j = 0; j < block.getDtoTransactions().size(); j++) {;
+        for (int j = 0; j < block.getDtoTransactions().size(); j++) {
+
 
 
             DtoTransaction transaction = block.getDtoTransactions().get(j);
@@ -150,8 +151,7 @@ public class UtilsBalance {
                     System.out.println("this transaction signature has already been used and is not valid from db");
                     continue;
                 }
-            }
-            if (sign.contains(base.encode(transaction.getSign()))) {
+            }else if (sign.contains(base.encode(transaction.getSign()))) {
                 System.out.println("this transaction signature has already been used and is not valid");
                 continue;
             } else {
