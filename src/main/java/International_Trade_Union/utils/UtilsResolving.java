@@ -1956,7 +1956,7 @@ public class UtilsResolving {
 
             tempBalances = UtilsUse.differentAccount(tempBalances, balances);
             List<EntityAccount> accountList  = UtilsAccountToEntityAccount.accountsToEntityAccounts(tempBalances);
-            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+//            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
             start = UtilsTime.getUniversalTimestamp();
             blockService.saveAccountAllF(accountList);
