@@ -8,9 +8,7 @@ import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
-import International_Trade_Union.model.Account;
-import International_Trade_Union.model.LiteVersionWiner;
-import International_Trade_Union.model.Tournament;
+import International_Trade_Union.model.*;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
@@ -22,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.springframework.http.ResponseEntity;
@@ -84,7 +81,27 @@ public class BasisController {
     public String winnerList() {
         String json = "";
         try {
+            List<Block> list = BasisController.getWinnerList();
+            Map<String, Account> balances = new HashMap<>();
 
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+
+            Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
+            // Обеспечение наличия всех аккаунтов в finalBalances
+            list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, 0.0, 0.0, 0.0)));
+
+            List<Block> winnerList = new ArrayList<>();
+
+            if (list.isEmpty()) {
+                return json = UtilsJson.objToStringJson(winnerList);
+            }
+
+
+            List<Block> tempWinner = TournamentService.sortWinner(finalBalances, list);
+
+
+            List<Block> winner = new ArrayList<>();
+            winner.add(tempWinner.get(0));
 
             json = UtilsJson.objToStringJson(winnerList);
         } catch (Exception e) {
