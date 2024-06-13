@@ -103,7 +103,7 @@ public class BasisController {
             List<Block> winner = new ArrayList<>();
             winner.add(tempWinner.get(0));
 
-            json = UtilsJson.objToStringJson(winnerList);
+            json = UtilsJson.objToStringJson(winner);
         } catch (Exception e) {
             e.printStackTrace();
         }
