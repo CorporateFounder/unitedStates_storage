@@ -66,7 +66,7 @@ public class Tournament implements Runnable {
                 currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
                 // Start getAllWinner
-                tournament.getAllWinner();
+//                tournament.getAllWinner();
 
                 logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
 
