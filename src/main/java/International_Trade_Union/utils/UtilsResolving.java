@@ -679,7 +679,7 @@ public class UtilsResolving {
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
         if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT
-                && global.getBigRandomNumber() > actual.getBigRandomNumber() + (prevBlock().getHashCompexity() * 25)) {
+                && global.getBigRandomNumber() > actual.getBigRandomNumber() + (prevBlock().getHashCompexity() * 55)) {
             return true;
         }
         return false;
