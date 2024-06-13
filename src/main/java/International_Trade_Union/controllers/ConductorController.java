@@ -180,20 +180,11 @@ public class ConductorController {
      */
     @GetMapping("/isTransactionAdd")
     public Boolean isTransactionGet(@RequestParam String sign) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        boolean result = false;
-        Blockchain blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
-        for (Block block : blockchain.getBlockchainList()) {
-            for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {
-                if (dtoTransaction.toSign().equals(sign)) {
-                    result = true;
-                    return result;
-                }
-            }
 
-        }
-        return result;
+        Base base = new Base58();
+        return blockService.existsBySign(base.decode(sign));
+
+
     }
 
 //    /**find block from index*/

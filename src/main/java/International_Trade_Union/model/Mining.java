@@ -36,7 +36,6 @@ public class Mining {
     private static int customDiff = Seting.V34_MIN_DIFF;
     public static boolean miningIsObsolete = false;
     private static volatile boolean isMiningStop = false;
-
     public static Blockchain getBlockchain(String filename, BlockchainFactoryEnum factoryEnum) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
         List<Block> blocks = UtilsBlock.readLineObject(filename);
@@ -195,11 +194,7 @@ public class Mining {
                             System.out.println("digital reputation for send: " + (transaction.getDigitalDollar() + transaction.getBonusForMiner()));
                             continue cicle;
                         }
-//                        if (transaction.getSender().equals(transaction.getCustomer()) && !transaction.getVoteEnum().equals(VoteEnum.STAKING) ||
-//                                transaction.getSender().equals(transaction.getCustomer()) && !transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)) {
-//                            System.out.println("sender end recipient equals " + transaction.getSender() + " : recipient: " + transaction.getCustomer());
-//                            continue cicle;
-//                        }
+
                         forAdd.add(transaction);
                     }
 
