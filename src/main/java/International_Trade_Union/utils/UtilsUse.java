@@ -456,7 +456,8 @@ public class UtilsUse {
         return db;
     }
 
-    public static List<EntityAccount> accounts(List<Block> blocks, BlockService blockService) throws IOException {
+
+    public static List<EntityAccount> accounts (List<Block> blocks, BlockService blockService) throws IOException {
         List<String> accounts = new ArrayList<>();
         for (Block block : blocks) {
             for (DtoTransaction transaction : block.getDtoTransactions()) {
@@ -468,6 +469,12 @@ public class UtilsUse {
             }
         }
         return blockService.findBYAccountString(accounts);
+    }
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        long factor = (long) Math.pow(10, places);
+        value *= factor;
+        return (double) Math.round(value) / factor;
     }
 
 }

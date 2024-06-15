@@ -38,10 +38,12 @@ public class ConductorController {
 
     @Autowired
     BlockService blockService;
+    @Autowired
+    UtilsResolving utilsResolving;
     /**
-     * created account
-     * Params: nothing
-     * Body: nothing
+     * создает новую пару ключ и пароль.
+     * creates a new key and password pair.
+     * (from local host)
      */
     @GetMapping("/keys")
     public Map<String, String> keys() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
@@ -49,15 +51,26 @@ public class ConductorController {
     }
 
 
-
+    /**скачать актуальный блокчейн.
+     * download the current blockchain.
+     * (update local from global node)*/
+    @GetMapping("/updating")
+    @ResponseBody
+    public Integer updating() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        return utilsResolving.resolve3();
+    }
 
     /**
-     * get find end get account
+     *получить полный баланс адреса, по публичному ключу адреса.
+     * get the full balance of the address using the public key of the address.
+     * (from local host)
      */
     @GetMapping("/account")
+    @ResponseBody
     public Account account(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+
         Account account = UtilsBalance.getBalance(address, balances);
 
         return account;
@@ -65,30 +78,37 @@ public class ConductorController {
 
     /**
      * get dollar balance
+     * (from local host)
      */
     @GetMapping("/dollar")
+    @ResponseBody
     public Double dollar(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-        Map<String, Account> balances =  balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+
         Account account = UtilsBalance.getBalance(address, balances);
-        return account.getDigitalDollarBalance();
+        return UtilsUse.round(account.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
     }
 
     /**
      * get stock balance
      */
     @GetMapping("/stock")
+    @ResponseBody
     public Double stock(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-        Map<String, Account>  balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+
         Account account = UtilsBalance.getBalance(address, balances);
-        return account.getDigitalStockBalance();
+        return UtilsUse.round(account.getDigitalStockBalance(), Seting.DECIMAL_PLACES);
     }
 
     /**
-     * send dollar or stock (if return wrong-its not sending if return sign its success)
+     * send dollar or stock (if return wrong-its not sending, if return sign its success)
+     * (send to global node)
      */
     @GetMapping("/sendCoin")
+    @ResponseBody
     public String send(@RequestParam String sender,
                        @RequestParam String recipient,
                        @RequestParam Double dollar,
@@ -97,13 +117,17 @@ public class ConductorController {
                        @RequestParam String password) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, IOException, SignatureException, InvalidKeyException {
         Base base = new Base58();
         String result = "wrong";
-        if (dollar == null)
+
+        dollar = UtilsUse.round(dollar, Seting.DECIMAL_PLACES);
+        stock = UtilsUse.round(stock, Seting.DECIMAL_PLACES);
+        reward = UtilsUse.round(reward, Seting.DECIMAL_PLACES);
+        if (dollar == null || dollar < 0.0)
             dollar = 0.0;
 
-        if (stock == null)
+        if (stock == null || stock < 0.0)
             stock = 0.0;
 
-        if (reward == null)
+        if (reward == null || reward < 0.0)
             reward = 0.0;
 
         Laws laws = new Laws();
@@ -177,6 +201,7 @@ public class ConductorController {
 
     /**
      * whether the transaction was added to the blockchain, find with sign
+     * (check from local host)
      */
     @GetMapping("/isTransactionAdd")
     public Boolean isTransactionGet(@RequestParam String sign) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -187,20 +212,24 @@ public class ConductorController {
 
     }
 
-//    /**find block from index*/
-//    @GetMapping("/block")
-//    public Block block(@RequestParam int index) throws JsonProcessingException {
-//        return Blockchain.indexFromFile(index, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-//    }
 
-    /**find block from hash*/
+    /**find block from hash
+     * (from local host)*/
     @GetMapping("/blockHash")
-    public Block blockFromHash(@RequestParam String hash) throws JsonProcessingException {
-        return Blockchain.hashFromFile(hash, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+    @ResponseBody
+    public Block blockFromHash(@RequestParam String hash) throws IOException {
+//        return Blockchain.hashFromFile(hash, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        Block block = UtilsBlockToEntityBlock.entityBlockToBlock(
+                blockService.findByHashBlock(hash)
+        );
+        return block;
     }
 
 
 
+    /**найти блок по индексу.
+     * find a block by index.
+     * (from local host)*/
     @GetMapping("/conductorBlock")
     @ResponseBody
     public Block  block(@RequestParam Integer index) throws IOException {
@@ -214,6 +243,11 @@ public class ConductorController {
                 blockService.findBySpecialIndex(index)
         );
     }
+    /***
+     * находит транзакцию по подписи.
+     * finds a transaction by signature.
+     * (from local host)
+     */
 
     @GetMapping("/conductorHashTran")
     @ResponseBody
@@ -233,6 +267,5 @@ public class ConductorController {
 
         return UtilsBlockToEntityBlock.entityToDto(entityDtoTransaction);
     }
-
 
 }

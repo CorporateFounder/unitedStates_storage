@@ -1,6 +1,7 @@
 package International_Trade_Union.utils;
 
 
+import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
@@ -25,8 +26,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static International_Trade_Union.setings.Seting.IS_SECURITY;
-import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
+import static International_Trade_Union.setings.Seting.*;
 
 public class UtilsBlock {
 
@@ -419,144 +419,182 @@ public class UtilsBlock {
         int countBasisSendAll = 0;
         finished:
         for (DtoTransaction transaction : thisBlock.getDtoTransactions()) {
+            if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
+                double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
+                double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
+                if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION) {
+                    minerReward = thisBlock.getHashCompexity() * Seting.MONEY;
+                    minerPowerReward = thisBlock.getHashCompexity() * Seting.MONEY;
+                    minerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
+                    minerPowerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
+                }
+                if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && thisBlock.getIndex() <= Seting.V34_NEW_ALGO){
+                    long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                            / (576 * Seting.YEAR);
+                    money = (long) (Seting.MULTIPLIER - money);
+                    money = money < 1 ? 1: money;
+
+                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions());
+                    minerReward = (Seting.V28_REWARD + G) * money;
+                    minerPowerReward = (Seting.V28_REWARD + G) * money;
+
+                }
+                if( thisBlock.getIndex() > Seting.V34_NEW_ALGO){
+                    long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                            / (576 * Seting.YEAR);
+                    money = (long) (Seting.MULTIPLIER - money);
+                    money = money < 1 ? 1: money;
 
 
+                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions());
+                    minerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD)) * money;
+                    minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD))* money;
 
-                if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
-                    double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
-                    double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
-                    if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION) {
-                        minerReward = thisBlock.getHashCompexity() * Seting.MONEY;
-                        minerPowerReward = thisBlock.getHashCompexity() * Seting.MONEY;
-                        minerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
-                        minerPowerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
-                    }
-                    if (thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && thisBlock.getIndex() <= Seting.V34_NEW_ALGO) {
-                        long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                                / (576 * Seting.YEAR);
-                        money = (long) (Seting.MULTIPLIER - money);
-                        money = money < 1 ? 1 : money;
-
-                        double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions());
-                        minerReward = (Seting.V28_REWARD + G) * money;
-                        minerPowerReward = (Seting.V28_REWARD + G) * money;
-
-                    }
-                    if (thisBlock.getIndex() > Seting.V34_NEW_ALGO) {
-                        long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                                / (576 * Seting.YEAR);
-                        money = (long) (Seting.MULTIPLIER - money);
-                        money = money < 1 ? 1 : money;
-
-
-                        double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions());
-                        minerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD)) * money;
-                        minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD)) * money;
-
-                    }
-
-                    if (thisBlock.getIndex() == Seting.SPECIAL_BLOCK_FORK && thisBlock.getMinerAddress().equals(Seting.FORK_ADDRESS_SPECIAL)) {
-                        minerReward = SPECIAL_FORK_BALANCE;
-                        minerPowerReward = SPECIAL_FORK_BALANCE;
+                    if(BasisController.getBlockchainSize() > START_BLOCK_DECIMAL_PLACES){
+                        minerReward = UtilsUse.round(minerReward, Seting.DECIMAL_PLACES);
+                        minerPowerReward = UtilsUse.round(minerPowerReward, Seting.DECIMAL_PLACES);
                     }
 
-                    if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
-                            transaction.getCustomer().equals(thisBlock.getMinerAddress()) && transaction.getDigitalDollar() > minerReward
-                            && thisBlock.getIndex() > 1) {
-                        System.out.println("wrong transaction: reward miner wrong digital dollar: " + minerReward + " index: " + thisBlock.getIndex());
-                        System.out.println("sendmoney " + transaction.getDigitalDollar());
-                        validated = false;
-                        break;
-                    }
-                    if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
-                            transaction.getCustomer().equals(thisBlock.getMinerAddress()) && transaction.getDigitalStockBalance()
-                            > minerPowerReward
-                            && thisBlock.getIndex() > 1) {
-                        System.out.println("wrong transaction: reward miner wrong digital stock: " + minerPowerReward + " need: " + transaction.getDigitalStockBalance());
-                        System.out.println(transaction);
-                        validated = false;
-                        break;
-                    }
+                }
+
+                if (thisBlock.getIndex() == Seting.SPECIAL_BLOCK_FORK && thisBlock.getMinerAddress().equals(Seting.FORK_ADDRESS_SPECIAL)) {
+                    minerReward = SPECIAL_FORK_BALANCE;
+                    minerPowerReward = SPECIAL_FORK_BALANCE;
+                }
+
+                if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
+                        transaction.getCustomer().equals(thisBlock.getMinerAddress()) && transaction.getDigitalDollar() > minerReward
+                        && thisBlock.getIndex() > 1) {
+                    System.out.println("wrong transaction: reward miner wrong digital dollar: " + minerReward + " index: " + thisBlock.getIndex());
+                    System.out.println("sendmoney " + transaction.getDigitalDollar());
+                    validated = false;
+                    break;
+                }
+                if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
+                        transaction.getCustomer().equals(thisBlock.getMinerAddress()) && transaction.getDigitalStockBalance()
+                        > minerPowerReward
+                        && thisBlock.getIndex() > 1) {
+                    System.out.println("wrong transaction: reward miner wrong digital stock: " + minerPowerReward + " need: " + transaction.getDigitalStockBalance());
+                    System.out.println(transaction);
+                    validated = false;
+                    break;
+                }
 
 
-                    if (transaction.getSender().equals(Seting.BASIS_ADDRESS)
-                            && transaction.getCustomer().equals(addressFounder)) {
-                        countBasisSendFounder += 1;
-                        if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION && thisBlock.getIndex() <= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
-                            if (thisBlock.getHashCompexity() >= 8) {
-                                if (transaction.getDigitalDollar() != thisBlock.getHashCompexity() ||
-                                        thisBlock.getHashCompexity() != transaction.getDigitalStockBalance()) {
-                                    System.out.println("wrong reward founder: index: " + thisBlock.getIndex()
-                                            + ":reward dollar: " + transaction.getDigitalDollar() + ": reward stock: "
-                                            + transaction.getDigitalStockBalance()
-                                            + " difficult: " + thisBlock.getHashCompexity()
-                                            + " founder: " + addressFounder);
-                                    validated = false;
-                                    break;
-                                }
-                            } else {
-                                if (transaction.getDigitalDollar() != 8 || transaction.getDigitalStockBalance() != 8) {
-                                    System.out.println("wrong reward founder: index: " + thisBlock.getIndex()
-                                            + ":reward dollar: " + transaction.getDigitalDollar() + ": reward stock: "
-                                            + transaction.getDigitalStockBalance() + " difficult: " + thisBlock.getHashCompexity());
-                                    validated = false;
-                                    break;
-                                }
+                if (transaction.getSender().equals(Seting.BASIS_ADDRESS)
+                        && transaction.getCustomer().equals(addressFounder)) {
+                    countBasisSendFounder += 1;
+                    if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION && thisBlock.getIndex() <= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
+                        if (thisBlock.getHashCompexity() >= 8) {
+                            if (transaction.getDigitalDollar() != thisBlock.getHashCompexity() ||
+                                    thisBlock.getHashCompexity() != transaction.getDigitalStockBalance()) {
+                                System.out.println("wrong reward founder: index: " + thisBlock.getIndex()
+                                        + ":reward dollar: " + transaction.getDigitalDollar() + ": reward stock: "
+                                        + transaction.getDigitalStockBalance()
+                                        + " difficult: " + thisBlock.getHashCompexity()
+                                        + " founder: " + addressFounder);
+                                validated = false;
+                                break;
+                            }
+                        } else {
+                            if (transaction.getDigitalDollar() != 8 || transaction.getDigitalStockBalance() != 8) {
+                                System.out.println("wrong reward founder: index: " + thisBlock.getIndex()
+                                        + ":reward dollar: " + transaction.getDigitalDollar() + ": reward stock: "
+                                        + transaction.getDigitalStockBalance() + " difficult: " + thisBlock.getHashCompexity());
+                                validated = false;
+                                break;
+                            }
+                        }
+
+                    }
+                    else if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
+                        if(thisBlock.getIndex() > START_BLOCK_DECIMAL_PLACES){
+                            double epsilon = 1e-9;  // Define a small margin of error
+                            double expectedDollar = minerReward / Seting.DOLLAR;
+                            double actualDollar = transaction.getDigitalDollar();
+                            double expectedStock = minerPowerReward / Seting.STOCK;
+                            double actualStock = transaction.getDigitalStockBalance();
+
+                            if(Math.abs(expectedDollar - actualDollar) > epsilon){
+                                System.out.printf("wrong founder reward dollar: index: %d, expected: %.10f, dollar actual: %.10f\n",
+                                        thisBlock.getIndex(), expectedDollar, actualDollar);
+                                validated = false;
+                                break;
                             }
 
-                        } else if (thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
-                            if (transaction.getDigitalDollar() < minerReward / Seting.DOLLAR || transaction.getDigitalDollar() > minerReward) {
+                            if(Math.abs(expectedStock - actualStock) > epsilon){
+                                System.out.printf("wrong founder reward stock: index: %d, expected: %.10f, stock actual: %.10f\n",
+                                        thisBlock.getIndex(), expectedStock, actualStock);
+                                validated = false;
+                                break;
+                            }
+                        }
+                        else {
+                            if(transaction.getDigitalDollar() < minerReward/Seting.DOLLAR || transaction.getDigitalDollar() > minerReward){
                                 System.out.printf("wrong founder reward dollar: index: %d, " +
                                                 " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
-                                        (minerReward / Seting.DOLLAR), transaction.getDigitalDollar());
+                                        (minerReward/Seting.DOLLAR), transaction.getDigitalDollar());
                                 validated = false;
                                 break;
                             }
-                            if (transaction.getDigitalStockBalance() < minerPowerReward / Seting.STOCK || transaction.getDigitalStockBalance() > minerPowerReward) {
+                            if (transaction.getDigitalStockBalance() < minerPowerReward/Seting.STOCK || transaction.getDigitalStockBalance() > minerPowerReward){
                                 System.out.printf("wrong founder reward stock: index: %d, " +
                                                 " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
-                                        (minerPowerReward / Seting.STOCK), transaction.getDigitalStockBalance());
+                                        (minerPowerReward/Seting.STOCK), transaction.getDigitalStockBalance());
                                 validated = false;
                                 break;
                             }
                         }
-                    }
-
-                    if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
-                            !transaction.getCustomer().equals(addressFounder)) {
-                        countBasisSendAll += 1;
 
                     }
 
-                    if (countBasisSendFounder > 2 && thisBlock.getIndex() > 1) {
-                        System.out.println("basis sender send for founder uper one: " + countBasisSendFounder);
-                        validated = false;
-                        break;
-                    }
+                }
 
-                    if (countBasisSendAll > 1 && thisBlock.getIndex() > 1) {
-                        System.out.println("basis sender send uper two: " + countBasisSendAll + " block index: " + thisBlock.getIndex());
-                        validated = false;
-                        break;
-                    }
-                } else if (!transaction.verify()) {
-                    System.out.println("wrong transaction: " + transaction + " verify: " + transaction.verify());
+                if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
+                        !transaction.getCustomer().equals(addressFounder)) {
+                    countBasisSendAll += 1;
+
+                }
+
+                if (countBasisSendFounder > 2 && thisBlock.getIndex() > 1) {
+                    System.out.println("basis sender send for founder uper one: " + countBasisSendFounder);
                     validated = false;
-                    break finished;
+                    break;
                 }
 
-                if (thisBlock.getIndex() > Seting.DUPLICATE_INDEX) {
-                    if (blockService != null) {
-                        if (blockService.existsBySign(transaction.getSign())) {
-                            System.out.println("=====================================");
-                            System.out.println("has duplicate transaction");
-                            System.out.println("=====================================");
-                            validated = false;
-                            break finished;
+                if (countBasisSendAll > 1 && thisBlock.getIndex() > 1) {
+                    System.out.println("basis sender send uper two: " + countBasisSendAll + " block index: " + thisBlock.getIndex());
+                    validated = false;
+                    break;
+                }
+            } else if (!transaction.verify()) {
+                System.out.println("wrong transaction: " + transaction + " verify: " + transaction.verify());
+                validated = false;
+                break finished;
+            }
+
+            if(thisBlock.getIndex() > Seting.DUPLICATE_INDEX ){
+                if(blockService != null){
+                    if(blockService.existsBySign(transaction.getSign())){
+                        System.out.println("=====================================");
+                        System.out.println("has duplicate transaction");
+                        System.out.println("sign: " + base.encode(transaction.getSign()));
+                        System.out.println("=====================================");
+                        for (DtoTransaction dtoTransaction : thisBlock.getDtoTransactions()) {
+
+                            System.out.println("dto: sign" + base.encode(transaction.getSign()));
+                            System.out.println("dto:getSender " + dtoTransaction.getSender());
+                            System.out.println("dto:getCustomer " + dtoTransaction.getCustomer());
+                            System.out.println("dto:getDigitalDollar " + dtoTransaction.getDigitalDollar());
+                            System.out.println("dto:getDigitalStockBalance " + dtoTransaction.getDigitalStockBalance());
                         }
+
+                        System.out.println("=====================================");
+                        validated = false;
+                        break finished;
                     }
                 }
-
+            }
 
         }
 
