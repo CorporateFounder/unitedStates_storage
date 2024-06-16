@@ -272,6 +272,7 @@ public class Mining {
                 founderDigigtalReputationReward = UtilsUse.round(founderDigigtalReputationReward, Seting.DECIMAL_PLACES);
             }
         }
+
         Base base = new Base58();
 
         //суммирует все вознаграждения майнеров
