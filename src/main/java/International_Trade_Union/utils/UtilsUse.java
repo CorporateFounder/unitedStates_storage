@@ -428,6 +428,23 @@ public class UtilsUse {
         return filteredMap;
     }
 
+    public static Map<String, Account> merge(Map<String, Account> first, Map<String, Account> second) {
+        Map<String, Account> mergedMap = new HashMap<>(first);
+        for (Map.Entry<String, Account> entry : second.entrySet()) {
+            String key = entry.getKey();
+            if (key.isBlank() || key.isEmpty()) {
+                continue;
+            }
+            Account accountInSecondMap = entry.getValue();
+            Account accountInFirstMap = first.get(key);
+
+            if (accountInFirstMap == null || areAccountsDifferent(accountInFirstMap, accountInSecondMap)) {
+                mergedMap.put(key, accountInSecondMap);
+            }
+        }
+        return mergedMap;
+    }
+
     public static List<EntityAccount> mergeAccounts(Map<String, Account> map, List<EntityAccount> db) {
         if (map == null || db == null) throw new IllegalArgumentException("map and db cannot be null");
 

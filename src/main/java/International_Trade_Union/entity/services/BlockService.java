@@ -277,7 +277,11 @@ public class BlockService {
         }
 
     }
-
+    private boolean accountsAreEqual(EntityAccount existingAccount, EntityAccount newAccount) {
+        return existingAccount.getDigitalDollarBalance() == newAccount.getDigitalDollarBalance()
+                && existingAccount.getDigitalStockBalance() == newAccount.getDigitalStockBalance()
+                && existingAccount.getDigitalStakingBalance() == newAccount.getDigitalStakingBalance();
+    }
 
     @Transactional
     public void saveAccountAllF(List<EntityAccount> entityAccounts) {
@@ -285,23 +289,38 @@ public class BlockService {
         try {
             session = entityManager.unwrap(Session.class);
             session.setJdbcBatchSize(50);
-            List<EntityAccount> entityResult = new ArrayList<>();
-            for (EntityAccount entityAccount : entityAccounts) {
-                if (entityAccountRepository.findByAccount(entityAccount.getAccount()) != null) {
-                    EntityAccount temp = entityAccountRepository.findByAccount(entityAccount.getAccount());
-                    temp.setDigitalDollarBalance(entityAccount.getDigitalDollarBalance());
-                    temp.setDigitalStockBalance(entityAccount.getDigitalStockBalance());
-                    entityResult.add(temp);
-                } else {
-                    entityResult.add(entityAccount);
-                }
-            }
+
+            // Fetch all existing accounts in a single query
+            List<String> accountNames = entityAccounts.stream()
+                    .map(EntityAccount::getAccount)
+                    .collect(Collectors.toList());
+
+            Map<String, EntityAccount> existingAccounts = entityAccountRepository.findAllByAccountIn(accountNames)
+                    .stream()
+                    .collect(Collectors.toMap(EntityAccount::getAccount, account -> account));
+
+            List<EntityAccount> entityResult = entityAccounts.stream()
+                    .map(entityAccount -> {
+                        if (existingAccounts.containsKey(entityAccount.getAccount())) {
+                            EntityAccount existingAccount = existingAccounts.get(entityAccount.getAccount());
+                            if (!accountsAreEqual(existingAccount, entityAccount)) {
+                                existingAccount.setDigitalDollarBalance(entityAccount.getDigitalDollarBalance());
+                                existingAccount.setDigitalStockBalance(entityAccount.getDigitalStockBalance());
+                                existingAccount.setDigitalStakingBalance(entityAccount.getDigitalStakingBalance());
+                            }
+                            return existingAccount;
+                        } else {
+                            return entityAccount;
+                        }
+                    })
+                    .collect(Collectors.toList());
 
             entityAccountRepository.saveAll(entityResult);
             entityAccountRepository.flush();
         } finally {
-
-            session.clear();
+            if (session != null) {
+                session.clear();
+            }
         }
     }
 

@@ -450,7 +450,7 @@ public class UtilsBlock {
                     minerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD)) * money;
                     minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD))* money;
 
-                    if(BasisController.getBlockchainSize() > START_BLOCK_DECIMAL_PLACES){
+                    if(thisBlock.getIndex() > Seting.START_BLOCK_DECIMAL_PLACES){
                         minerReward = UtilsUse.round(minerReward, Seting.DECIMAL_PLACES);
                         minerPowerReward = UtilsUse.round(minerPowerReward, Seting.DECIMAL_PLACES);
                     }

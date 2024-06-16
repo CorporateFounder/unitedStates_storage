@@ -1448,7 +1448,7 @@ public class UtilsResolving {
           .collect(Collectors.toList());
     }
 
-    Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
+//    Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
 
     for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
         Block block = deleteBlocks.get(i);
@@ -1457,18 +1457,19 @@ public class UtilsResolving {
         balances = rollbackCalculateBalance(balances, block);
     }
 
-    tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-    List<EntityAccount> accountList = blockService.findByAccountIn(balances);
-    accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+//    tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+//    tempBalances = UtilsUse.merge(tempBalances, balances);
+//    List<EntityAccount> accountList = blockService.findByAccountIn(balances);
+//    accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
     try {
-        blockService.saveAccountAllF(accountList);
+        blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
     }catch (Exception e){
         MyLogger.saveLog("error: rollBackAddBlock3: ", e);
         return false;
     }
 
-    System.out.println("UtilsResolving: rollBackAddBlock4: total different balance: " + tempBalances.size());
+    System.out.println("UtilsResolving: rollBackAddBlock4: total different balance: " + balances.size());
     System.out.println("UtilsResolving: rollBackAddBlock4: total original balance: " + balances.size());
 
 
@@ -1544,7 +1545,7 @@ public class UtilsResolving {
         }
 
         MyLogger.saveLog("rollBackAddBlock3 before clone");
-        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
+//        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
         MyLogger.saveLog("rollBackAddBlock3 afer clone");
         //TODO именно в даной части кода происхдоит прерывание и полчему то в логер не записывается ошибка.
         //TODO но метод прекращается после этого участка.
@@ -1561,13 +1562,14 @@ public class UtilsResolving {
             return false;
         }
         MyLogger.saveLog("rollBackAddBlock3: after rollbackCalculateBalance: ");
-        tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+//        tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+//        tempBalances = UtilsUse.merge(tempBalances, balances);
         MyLogger.saveLog("rollBackAddBlock3: after: differentAccount:");
         List<EntityAccount> accountList = null;
         try {
-            accountList = blockService.findByAccountIn(balances);
-            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
-            blockService.saveAccountAllF(accountList);
+//            accountList = blockService.findByAccountIn(balances);
+//            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+            blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
 
         }catch (Exception e){
             MyLogger.saveLog("error: rollBackAddBlock3: ", e);
