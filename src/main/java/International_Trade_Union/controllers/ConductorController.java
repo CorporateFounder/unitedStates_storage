@@ -295,9 +295,6 @@ public class ConductorController {
     }
 
 
-    /**
-     * Получить список транзакций для адреса отправителя, от определенного блока до определенного блока
-     */
     @GetMapping("/senderTransactions")
     @ResponseBody
     public List<DtoTransaction> senderTransactions(
@@ -306,16 +303,15 @@ public class ConductorController {
             @RequestParam int to
     ) {
         try {
+            if (to - from > 500) {
+                to = from + 500;
+            }
             return blockService.findBySender(address, from, to);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
-
-    /**
-     * Получить список транзакций для адреса получателя, от определенного блока до определенного блока
-     */
 
     @GetMapping("/customerTransactions")
     @ResponseBody
@@ -325,13 +321,15 @@ public class ConductorController {
             @RequestParam int to
     ) {
         try {
+            if (to - from > 500) {
+                to = from + 500;
+            }
             return blockService.findByCustomer(address, from, to);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
-
     /**
      * количество отправленных транзакций от данного адреса
      */
