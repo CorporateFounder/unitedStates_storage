@@ -54,6 +54,7 @@ public class Tournament implements Runnable {
     public void run() {
         BasisController.getBlockedNewSendBlock().set(false);
         tournament.updatingNodeEndBlocks();
+        tournament.getAllWinner();
         BasisController.getBlockedNewSendBlock().set(true);
         while (true) {
             try {
