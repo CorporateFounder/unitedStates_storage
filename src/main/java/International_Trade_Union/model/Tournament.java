@@ -58,19 +58,22 @@ public class Tournament implements Runnable {
         List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
         tournament.updatingNodeEndBlocks(hosts);
         BasisController.getBlockedNewSendBlock().set(true);
+
+        try {
+            long currentTime = UtilsTime.getUniversalTimestamp();
+            long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
+            long startTimeWithDelay = nextTournamentStartTime + 10000; // 5 секунд после следующего начала турнира
+
+            // Ждем, пока не наступит время начала турнира с задержкой
+            waitUntil(startTimeWithDelay - currentTime);
+
+        } catch (InterruptedException e) {
+            handleException(e);
+            return;
+        }
+
         while (true) {
-            try {
-                long currentTime = UtilsTime.getUniversalTimestamp();
-                long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
-                long startTimeWithDelay = nextTournamentStartTime + 5000; // 5 секунд после следующего начала турнира
 
-                // Ждем, пока не наступит время начала турнира с задержкой
-                waitUntil(startTimeWithDelay);
-
-            } catch (InterruptedException e) {
-                handleException(e);
-                return;
-            }
 
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
@@ -78,12 +81,8 @@ public class Tournament implements Runnable {
                 long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
 
                 // Wait until it's time to start getAllWinner
-                waitUntil(nextGetAllWinnersStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
-
+                waitUntil(nextTournamentStartTime);
                 // Start getAllWinner
-//                tournament.getAllWinner();
-
                 BasisController.getBlockedNewSendBlock().set(false);
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
                 tournament.tournament(hosts);
