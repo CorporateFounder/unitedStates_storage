@@ -54,9 +54,25 @@ public class Tournament implements Runnable {
     public void run() {
         BasisController.getBlockedNewSendBlock().set(false);
         tournament.updatingNodeEndBlocks();
-        tournament.getAllWinner();
+        //TODO вот здесь система должна заснуть и начаться сразу же должен запуститься 
+        //TODO ниже идущий цикл, когда турнир закончинться. то есть когда время
+        //TODO уже на 5 секунд будет после nextTournamentStartTime
+        //TODO как сделать это
         BasisController.getBlockedNewSendBlock().set(true);
         while (true) {
+            try {
+                long currentTime = UtilsTime.getUniversalTimestamp();
+                long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
+                long startTimeWithDelay = nextTournamentStartTime + 5000; // 5 seconds after nextTournamentStartTime
+
+                // Wait until it's 5 seconds past nextTournamentStartTime
+                waitUntil(startTimeWithDelay);
+
+            } catch (InterruptedException e) {
+                handleException(e);
+                return;
+            }
+
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
