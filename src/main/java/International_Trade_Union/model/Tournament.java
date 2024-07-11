@@ -77,10 +77,12 @@ public class Tournament implements Runnable {
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
                 long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
 
-                // Ждем, пока не наступит время для начала getAllWinner
+                // Wait until it's time to start getAllWinner
                 waitUntil(nextGetAllWinnersStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp(); // Обновляем текущее время
+                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
 
+                // Start getAllWinner
+//                tournament.getAllWinner();
 
                 BasisController.getBlockedNewSendBlock().set(false);
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
@@ -90,19 +92,14 @@ public class Tournament implements Runnable {
                 BasisController.getBlockedNewSendBlock().set(true);
                 tournament.getCheckSyncTime();
 
-                // Устанавливаем все узлы в состояние NOT_READY после завершения турнира
-                for (HostEndDataShortB host : hosts) {
-                    UtilUrl.readJsonFromUrl(host.getHost() + "/setAllWinnerNotReady");
-                }
-
                 countDelete++;
-                if (countDelete == 10) {
+                if(countDelete == 10){
                     countDelete = 0;
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
                 }
 
-                // Ждем до начала следующего турнира
+                // Sleep until the next tournament interval
                 Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
 
             } catch (Exception e) {

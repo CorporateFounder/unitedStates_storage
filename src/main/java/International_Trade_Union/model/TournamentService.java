@@ -173,18 +173,18 @@ public class TournamentService {
         MyLogger.saveLog("finish: getCheckSyncTime");
     }
 
-    public void getAllWinner(List<HostEndDataShortB> hosts) {
+    public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
         List<HostEndDataShortB> sortPriorityHost = null;
         MyLogger.saveLog("start: getAllWinner");
 
         try {
-            sortPriorityHost = hosts;
+
+            sortPriorityHost = hostEndDataShortBS;
         } catch (Exception e) {
             MyLogger.saveLog("getAllWinner: ", e);
             return;
         }
 
-        // Запускаем параллельную обработку всех хостов
         List<CompletableFuture<Void>> futures = sortPriorityHost.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
             try {
@@ -192,6 +192,7 @@ public class TournamentService {
                     System.out.println(":its your address or excluded address: " + s);
                     return;
                 }
+
 
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                 if (json.isEmpty() || json.isBlank()) {
@@ -205,10 +206,14 @@ public class TournamentService {
                     return;
                 }
 
+
+
+
                 Block prevBlock = UtilsJson.jsonToBLock(json);
-                if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
+                if(BasisController.getBlockchainSize() == prevBlock.getIndex()){
                     blocks.add(prevBlock);
                 }
+
 
                 for (Block block : blocks) {
                     MyLogger.saveLog("Processing block with index: " + block.getIndex());
@@ -232,10 +237,6 @@ public class TournamentService {
                         }
                     }
                 }
-
-                // Уведомляем другие узлы о завершении загрузки данных
-                UtilUrl.readJsonFromUrl(s + "/setAllWinnerReady?ready=true");
-
             } catch (IOException | JSONException e) {
                 MyLogger.saveLog("cannot connect to " + s);
                 MyLogger.saveLog(e.toString());
@@ -247,58 +248,23 @@ public class TournamentService {
 
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         try {
-            allOf.get(40, TimeUnit.SECONDS); // Ожидаем завершения всех задач с таймаутом в 40 секунд
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            allOf.get();
+        } catch (InterruptedException | ExecutionException e) {
             MyLogger.saveLog("getAllWinner: ", e);
         }
-
-        // Проверяем готовность всех узлов
-        checkAllNodesReady(sortPriorityHost);
 
         MyLogger.saveLog("finish: getAllWinner");
     }
 
-    private void checkAllNodesReady(List<HostEndDataShortB> sortPriorityHost) {
-        List<CompletableFuture<Void>> readinessFutures = sortPriorityHost.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
-            String s = hostEndDataShortB.getHost();
-            try {
-                boolean ready = false;
-                for (int i = 0; i < 40; i++) {
-                    String response = UtilUrl.readJsonFromUrl(s + "/isReady");
-                    if ("true".equalsIgnoreCase(response)) {
-                        ready = true;
-                        break;
-                    }
-                    Thread.sleep(1000);
-                }
-                if (!ready) {
-                    MyLogger.saveLog("Node not ready within 40 seconds: " + s);
-                }
-            } catch (IOException | JSONException | InterruptedException e) {
-                MyLogger.saveLog("Error checking node readiness: " + s);
-                MyLogger.saveLog(e.toString());
-            }
-        })).collect(Collectors.toList());
-
-        CompletableFuture<Void> allReadinessChecks = CompletableFuture.allOf(readinessFutures.toArray(new CompletableFuture[0]));
-        try {
-            allReadinessChecks.get(40, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            MyLogger.saveLog("Error in readiness checks: ", e);
-        }
-    }
 
     @Transactional
-    public void tournament(List<HostEndDataShortB> hosts) throws JSONException, IOException {
+    public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
         try {
 
         }catch (Exception e){
             MyLogger.saveLog("tournament: ", e);
         }
-        getAllWinner(hosts);
-        for (HostEndDataShortB host : hosts) {
-            UtilUrl.readJsonFromUrl(host.getHost() + "/setAllWinnerReady?ready=true");
-        }
+        getAllWinner(hostEndDataShortBS);
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
 
@@ -568,15 +534,12 @@ public class TournamentService {
         } finally {
 
             BasisController.setIsSaveFile(true);
-            for (HostEndDataShortB host : hosts) {
-                UtilUrl.readJsonFromUrl(host.getHost() + "/setAllWinnerNotReady");
-            }
         }
 
     }
 
 
-    public void updatingNodeEndBlocks(List<HostEndDataShortB> hostsList) {
+    public void updatingNodeEndBlocks(List<HostEndDataShortB> hostEndDataShortBS) {
         int result = -10;
         try {
 
@@ -585,7 +548,7 @@ public class TournamentService {
             //TODO здесь будет скачиваться обновление
 //                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
-            result = utilsResolving.resolve3(hostsList);
+            result = utilsResolving.resolve3(hostEndDataShortBS);
             MyLogger.saveLog("start: updatingNodeEndBlocks: result: " + result);
 //                long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory after: resolve3" + afterMemory);
