@@ -37,6 +37,8 @@ public class Tournament implements Runnable {
 
     @Autowired
     private TournamentService tournament;
+    @Autowired
+    private UtilsResolving utilsResolving;
 
     private static final long TOURNAMENT_INTERVAL = 100 * 1000; // 100 секунд в миллисекундах
     private static final long MAX_METHOD_EXECUTION_TIME = 18 * 1000; // 14 секунд в миллисекундах
@@ -53,19 +55,16 @@ public class Tournament implements Runnable {
     @Override
     public void run() {
         BasisController.getBlockedNewSendBlock().set(false);
-        tournament.updatingNodeEndBlocks();
-        //TODO вот здесь система должна заснуть и начаться сразу же должен запуститься 
-        //TODO ниже идущий цикл, когда турнир закончинться. то есть когда время
-        //TODO уже на 5 секунд будет после nextTournamentStartTime
-        //TODO как сделать это
+        List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
+        tournament.updatingNodeEndBlocks(hosts);
         BasisController.getBlockedNewSendBlock().set(true);
         while (true) {
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
-                long startTimeWithDelay = nextTournamentStartTime + 5000; // 5 seconds after nextTournamentStartTime
+                long startTimeWithDelay = nextTournamentStartTime + 5000; // 5 секунд после следующего начала турнира
 
-                // Wait until it's 5 seconds past nextTournamentStartTime
+                // Ждем, пока не наступит время начала турнира с задержкой
                 waitUntil(startTimeWithDelay);
 
             } catch (InterruptedException e) {
@@ -78,34 +77,32 @@ public class Tournament implements Runnable {
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
                 long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
 
-                // Wait until it's time to start getAllWinner
+                // Ждем, пока не наступит время для начала getAllWinner
                 waitUntil(nextGetAllWinnersStartTime);
-                currentTime = UtilsTime.getUniversalTimestamp(); // Update current time
+                currentTime = UtilsTime.getUniversalTimestamp(); // Обновляем текущее время
 
-                // Start getAllWinner
-//                tournament.getAllWinner();
 
-                logTimeUpdate("getAllWinner", nextGetAllWinnersStartTime, currentTime);
-
-                // Wait until it's time to start the tournament
-                waitUntil(nextTournamentStartTime);
-                // Start the tournament
                 BasisController.getBlockedNewSendBlock().set(false);
-                tournament.tournament();
-                tournament.updatingNodeEndBlocks();
-                //TODO тестовая часть метода. берет транзакции со всех серверов.
+                hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
+                tournament.tournament(hosts);
+                tournament.updatingNodeEndBlocks(hosts);
                 AllTransactions.addTransaction(tournament.getInstance());
                 BasisController.getBlockedNewSendBlock().set(true);
                 tournament.getCheckSyncTime();
 
+                // Устанавливаем все узлы в состояние NOT_READY после завершения турнира
+                for (HostEndDataShortB host : hosts) {
+                    UtilUrl.readJsonFromUrl(host.getHost() + "/setAllWinnerNotReady");
+                }
+
                 countDelete++;
-                if(countDelete == 10){
+                if (countDelete == 10) {
                     countDelete = 0;
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
                 }
 
-                // Sleep until the next tournament interval
+                // Ждем до начала следующего турнира
                 Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
 
             } catch (Exception e) {

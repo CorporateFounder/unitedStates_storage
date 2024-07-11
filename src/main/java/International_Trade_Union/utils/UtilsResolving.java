@@ -55,7 +55,7 @@ public class UtilsResolving {
     @Autowired
     DomainConfiguration domainConfiguration;
 
-    public int resolve3() {
+    public int resolve3(List<HostEndDataShortB> hostsList) {
         BasisController.setUpdating(true);
         UtilsBalance.setBlockService(blockService);
         Blockchain.setBlockService(blockService);
@@ -84,8 +84,8 @@ public class UtilsResolving {
             Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
             Set<String> nodesAll = getNodes();
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
-            Set<String> newAddress = newHostsLoop(sortPriorityHost.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
-            newAddress.remove(nodesAll);
+            Set<String> newAddress = newHostsLoop(hostsList.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
+//            newAddress.remove(nodesAll);
 
             for (String s : newAddress) {
                 UtilsAllAddresses.putHost(s);
@@ -93,7 +93,7 @@ public class UtilsResolving {
 
 
             hostContinue:
-            for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
+            for (HostEndDataShortB hostEndDataShortB : hostsList) {
                 String s = hostEndDataShortB.getHost();
 
                 //if the local address matches the host address, it skips
@@ -678,8 +678,11 @@ public class UtilsResolving {
     public boolean isBig(
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
+        if(global.getSize() == actual.getSize() && global.getBigRandomNumber() > actual.getBigRandomNumber()){
+            return true;
+        }
         if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT
-                && global.getBigRandomNumber() > actual.getBigRandomNumber() + (prevBlock().getHashCompexity() * 25)) {
+                && global.getBigRandomNumber() > actual.getBigRandomNumber() + (prevBlock().getHashCompexity() * 55)) {
             return true;
         }
         return false;

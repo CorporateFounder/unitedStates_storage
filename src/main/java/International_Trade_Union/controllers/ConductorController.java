@@ -56,7 +56,8 @@ public class ConductorController {
     @GetMapping("/updating")
     @ResponseBody
     public Integer updating() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        return utilsResolving.resolve3();
+        List<HostEndDataShortB> hostEndDataShortBS = utilsResolving.sortPriorityHost(getNodes());
+        return utilsResolving.resolve3(hostEndDataShortBS);
     }
 
     /**
