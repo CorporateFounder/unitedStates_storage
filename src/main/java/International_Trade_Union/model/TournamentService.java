@@ -1,6 +1,7 @@
 package International_Trade_Union.model;
 
 import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.controllers.NodeController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
@@ -174,25 +175,15 @@ public class TournamentService {
     }
 
     public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
-        List<HostEndDataShortB> sortPriorityHost = null;
         MyLogger.saveLog("start: getAllWinner");
 
-        try {
-
-            sortPriorityHost = hostEndDataShortBS;
-        } catch (Exception e) {
-            MyLogger.saveLog("getAllWinner: ", e);
-            return;
-        }
-
-        List<CompletableFuture<Void>> futures = sortPriorityHost.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
+        List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
             try {
                 if (BasisController.getExcludedAddresses().contains(s)) {
                     System.out.println(":its your address or excluded address: " + s);
                     return;
                 }
-
 
                 String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
                 if (json.isEmpty() || json.isBlank()) {
@@ -206,14 +197,10 @@ public class TournamentService {
                     return;
                 }
 
-
-
-
                 Block prevBlock = UtilsJson.jsonToBLock(json);
-                if(BasisController.getBlockchainSize() == prevBlock.getIndex()){
+                if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
                     blocks.add(prevBlock);
                 }
-
 
                 for (Block block : blocks) {
                     MyLogger.saveLog("Processing block with index: " + block.getIndex());
@@ -264,7 +251,15 @@ public class TournamentService {
         }catch (Exception e){
             MyLogger.saveLog("tournament: ", e);
         }
+        // Сначала вызываем getAllWinner
         getAllWinner(hostEndDataShortBS);
+
+        // Меняем состояние на "готов"
+        NodeController.setReady();
+
+        // Затем вызываем initiateProcess
+        initiateProcess(hostEndDataShortBS);
+
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
 
@@ -532,7 +527,7 @@ public class TournamentService {
             MyLogger.saveLog("TournamentService: ", e);
 
         } finally {
-
+            NodeController.setNotReady();
             BasisController.setIsSaveFile(true);
         }
 
@@ -688,5 +683,95 @@ public class TournamentService {
 
         return instance;
     }
+    public void initiateProcess(List<HostEndDataShortB> sortPriorityHost) {
+        MyLogger.saveLog("start: initiateProcess");
+
+        // Сначала проверяем состояние всех узлов
+        List<CompletableFuture<Boolean>> checkFutures = sortPriorityHost.stream()
+                .map(host -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
+                        return !"ready".equals(response);
+                    } catch (Exception e) {
+                        MyLogger.saveLog("Error checking readiness for " + host.getHost() + ": " + e.getMessage());
+                        return false; // Считаем недоступный узел как "не ожидающий"
+                    }
+                }))
+                .collect(Collectors.toList());
+
+        // Ждем завершения всех проверок
+        CompletableFuture.allOf(checkFutures.toArray(new CompletableFuture[0])).join();
+
+        // Подсчитываем количество неготовых узлов
+        long notReadyCount = checkFutures.stream()
+                .map(CompletableFuture::join)
+                .filter(isNotReady -> isNotReady)
+                .count();
+
+        // Ограничиваем количество ожидаемых узлов до 7
+        int nodesToWait = (int) Math.min(notReadyCount, 7);
+
+        if (nodesToWait == 0) {
+            MyLogger.saveLog("No nodes to wait for, all are ready or unreachable");
+            return;
+        }
+
+        MyLogger.saveLog("Waiting for " + nodesToWait + " nodes to become ready");
+
+        CountDownLatch latch = new CountDownLatch(nodesToWait);
+
+        // Теперь ждем, пока неготовые узлы станут готовыми
+        List<CompletableFuture<Void>> waitFutures = sortPriorityHost.stream()
+                .filter(host -> {
+                    try {
+                        String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
+                        return !"ready".equals(response);
+                    } catch (Exception e) {
+                        return false; // Пропускаем недоступные узлы
+                    }
+                })
+                .map(host -> CompletableFuture.runAsync(() -> {
+                    while (true) {
+                        try {
+                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
+                            if ("ready".equals(response)) {
+                                latch.countDown();
+                                break;
+                            }
+                            Thread.sleep(1000); // Пауза перед следующей проверкой
+                        } catch (Exception e) {
+                            MyLogger.saveLog("Error waiting for readiness of " + host.getHost() + ": " + e.getMessage());
+                            latch.countDown(); // Уменьшаем счетчик, если узел стал недоступен
+                            break;
+                        }
+                    }
+                }))
+                .collect(Collectors.toList());
+
+        try {
+            // Ждем максимум 15 секунд
+            boolean completed = latch.await(15, TimeUnit.SECONDS);
+            if (!completed) {
+                MyLogger.saveLog("Timeout waiting for nodes to become ready");
+            }
+        } catch (InterruptedException e) {
+            MyLogger.saveLog("Waiting was interrupted: " + e.getMessage());
+        }
+
+        MyLogger.saveLog("finish: initiateProcess");
+    }
+
+    private boolean confirmReadiness(String host) {
+        try {
+            String response = UtilUrl.readJsonFromUrl(host + "/confirmReadiness", 2000); // Таймаут 2 секунды
+            return "ready".equals(response);
+        } catch (IOException | JSONException e) {
+            MyLogger.saveLog("cannot connect to " + host);
+            MyLogger.saveLog(e.toString());
+            return false;
+        }
+    }
+
+
 
 }

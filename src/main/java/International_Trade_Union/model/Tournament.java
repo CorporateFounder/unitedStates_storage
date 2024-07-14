@@ -1,6 +1,7 @@
 package International_Trade_Union.model;
 
 import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.controllers.NodeController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
@@ -104,6 +105,7 @@ public class Tournament implements Runnable {
             } catch (Exception e) {
                 handleException(e);
             } finally {
+                NodeController.setNotReady();
                 BasisController.setIsSaveFile(true);
                 BasisController.getBlockedNewSendBlock().set(true);
             }

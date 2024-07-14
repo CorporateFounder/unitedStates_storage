@@ -1,5 +1,6 @@
 package International_Trade_Union.utils;
 
+import International_Trade_Union.model.NodeState;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 
@@ -22,6 +23,37 @@ public class UtilUrl {
 
             return jsonText;
         } finally {
+            if (conn instanceof HttpURLConnection) {
+                ((HttpURLConnection) conn).disconnect();
+            }
+        }
+    }
+    public static String readJsonFromUrl(String url, int timeoutMillis) throws IOException, JSONException {
+        URL url1 = new URL(url);
+        URLConnection conn = url1.openConnection();
+        conn.setConnectTimeout(timeoutMillis); // Устанавливаем таймаут соединения
+        conn.setReadTimeout(timeoutMillis); // Устанавливаем таймаут чтения
+        InputStream is = conn.getInputStream();
+        BufferedReader rd = null;
+        try {
+            rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+            String jsonText = readAll(rd);
+            return jsonText;
+        } finally {
+            if (rd != null) {
+                try {
+                    rd.close();
+                } catch (IOException e) {
+                    e.printStackTrace(); // Логируем исключение
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace(); // Логируем исключение
+                }
+            }
             if (conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).disconnect();
             }
@@ -134,6 +166,33 @@ public class UtilUrl {
             throw e; // Перебросить исключение выше
         } finally {
             conn.disconnect(); // Закрыть соединение независимо от исключения
+        }
+
+        return response;
+    }
+    public static int sendJsonToUrl(String requestStr, NodeState state, int timeoutMillis) throws IOException {
+        int response;
+
+        URL url = new URL(requestStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setReadTimeout(timeoutMillis);
+        conn.setConnectTimeout(timeoutMillis);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json; utf-8");
+        conn.setRequestProperty("Accept", "application/json");
+        conn.setDoOutput(true);
+
+        String jsonObject = UtilsJson.objToStringJson(state);
+
+        try (OutputStream outputStream = conn.getOutputStream()) {
+            byte[] input = jsonObject.getBytes("utf-8");
+            outputStream.write(input, 0, input.length);
+            response = conn.getResponseCode();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            conn.disconnect();
         }
 
         return response;
