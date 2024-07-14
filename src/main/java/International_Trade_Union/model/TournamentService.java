@@ -174,60 +174,64 @@ public class TournamentService {
         MyLogger.saveLog("finish: getCheckSyncTime");
     }
 
-    public List<HostEndDataShortB> getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
+    public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
         MyLogger.saveLog("start: getAllWinner");
 
-        List<HostEndDataShortB> respondingHosts = new ArrayList<>();
-        List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream().map(hostEndDataShortB ->
-                CompletableFuture.runAsync(() -> {
-                    String host = hostEndDataShortB.getHost();
-                    try {
-                        if (BasisController.getExcludedAddresses().contains(host)) {
-                            System.out.println(":its your address or excluded address: " + host);
-                            return;
-                        }
+        List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
+            String s = hostEndDataShortB.getHost();
+            try {
+                if (BasisController.getExcludedAddresses().contains(s)) {
+                    System.out.println(":its your address or excluded address: " + s);
+                    return;
+                }
 
-                        // Проверка доступности хоста
-                        String response = UtilUrl.readJsonFromUrl(host + "/confirmReadiness", 2000); // Таймаут 2 секунды
-                        if (response == null || response.isEmpty() || response.isBlank()) {
-                            MyLogger.saveLog("Host not responding: " + host);
-                            return;
-                        }
+                String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
+                if (json.isEmpty() || json.isBlank()) {
+                    return;
+                }
 
-                        // Если хост отвечает, добавляем его в список отвечающих хостов
-                        synchronized (respondingHosts) {
-                            respondingHosts.add(hostEndDataShortB);
-                        }
+                List<Block> blocks = UtilsJson.jsonToObject(json);
 
-                        // Остальная логика обработки блоков...
-                        String json = UtilUrl.readJsonFromUrl(host + "/winnerList");
-                        if (json.isEmpty() || json.isBlank()) {
-                            return;
-                        }
+                json = UtilUrl.readJsonFromUrl(s + "/prevBlock");
+                if (json.isEmpty() || json.isBlank()) {
+                    return;
+                }
 
-                        List<Block> blocks = UtilsJson.jsonToObject(json);
+                Block prevBlock = UtilsJson.jsonToBLock(json);
+                if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
+                    blocks.add(prevBlock);
+                }
 
-                        json = UtilUrl.readJsonFromUrl(host + "/prevBlock");
-                        if (json.isEmpty() || json.isBlank()) {
-                            return;
-                        }
+                for (Block block : blocks) {
+                    MyLogger.saveLog("Processing block with index: " + block.getIndex());
+                    List<String> sign = new ArrayList<>();
+                    List<Block> tempBlock = new ArrayList<>();
+                    tempBlock.add(block);
 
-                        Block prevBlock = UtilsJson.jsonToBLock(json);
-                        if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
-                            blocks.add(prevBlock);
-                        }
+                    Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
 
-                        for (Block block : blocks) {
-                            // ... (остальной код обработки блоков остается без изменений)
+                    DataShortBlockchainInformation temp = Blockchain.shortCheck(
+                            BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
+                            new ArrayList<>(), tempBalances, sign
+                    );
+
+                    if (temp.isValidation()) {
+                        MyLogger.saveLog("Block is valid: " + block.getIndex() + " s: " + s);
+                        synchronized (BasisController.getWinnerList()) {
+                            if (!BasisController.getWinnerList().contains(block)) {
+                                BasisController.getWinnerList().add(block);
+                            }
                         }
-                    } catch (IOException | JSONException e) {
-                        MyLogger.saveLog("cannot connect to " + host);
-                        MyLogger.saveLog(e.toString());
-                    } catch (Exception e) {
-                        MyLogger.saveLog("Unexpected error: " + host);
-                        MyLogger.saveLog(e.toString());
                     }
-                })).collect(Collectors.toList());
+                }
+            } catch (IOException | JSONException e) {
+                MyLogger.saveLog("cannot connect to " + s);
+                MyLogger.saveLog(e.toString());
+            } catch (Exception e) {
+                MyLogger.saveLog("Unexpected error: " + s);
+                MyLogger.saveLog(e.toString());
+            }
+        })).collect(Collectors.toList());
 
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         try {
@@ -237,7 +241,6 @@ public class TournamentService {
         }
 
         MyLogger.saveLog("finish: getAllWinner");
-        return respondingHosts;
     }
 
 
@@ -249,13 +252,13 @@ public class TournamentService {
             MyLogger.saveLog("tournament: ", e);
         }
         // Сначала вызываем getAllWinner
-        List<HostEndDataShortB> hostEndDataShortBS1 = getAllWinner(hostEndDataShortBS);
+        getAllWinner(hostEndDataShortBS);
 
         // Меняем состояние на "готов"
         NodeController.setReady();
 
         // Затем вызываем initiateProcess
-        initiateProcess(hostEndDataShortBS1);
+        initiateProcess(hostEndDataShortBS);
 
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
