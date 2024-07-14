@@ -21,7 +21,6 @@ public class NodesController {
 
     /**добавить адрес узла*/
     @PostMapping("/putNode")
-
     public void addNode(@RequestBody MyHost host)  {
         System.out.println("add node: host: " + host);
         UtilsAllAddresses.putNode(host);
