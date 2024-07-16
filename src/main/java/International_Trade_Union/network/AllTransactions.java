@@ -35,8 +35,9 @@ public class AllTransactions {
         }
         instance = new ArrayList<>();
 
+        Base base = new Base58();
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
-        instance = instance.stream().filter(UtilsUse.distinctByKey(DtoTransaction::getSign)).collect(Collectors.toList());
+        instance = instance.stream().filter(UtilsUse.distinctByKey(t->base.encode(t.getSign()))).collect(Collectors.toList());
 
         sendedTransaction = getInsanceSended();
 
@@ -80,7 +81,8 @@ public class AllTransactions {
         instance = getInstance();
         instance.add(transaction);
         Mining.deleteFiles(Seting.ORGINAL_ALL_TRANSACTION_FILE);
-        instance = instance.stream().filter(UtilsUse.distinctByKey(DtoTransaction::getSign)).collect(Collectors.toList());
+        Base base = new Base58();
+        instance = instance.stream().filter(UtilsUse.distinctByKey(t->base.encode(t.getSign()))).collect(Collectors.toList());
         for (DtoTransaction dtoTransaction : instance) {
             UtilsTransaction.saveAllTransaction(dtoTransaction, Seting.ORGINAL_ALL_TRANSACTION_FILE);
         }

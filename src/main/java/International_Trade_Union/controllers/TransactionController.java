@@ -60,8 +60,8 @@ public class TransactionController {
 
         List<DtoTransaction> transactions  = new ArrayList<>();
         try {
-
-            transactions = AllTransactions.getInstance().stream().filter(UtilsUse.distinctByKey(DtoTransaction::getSign)).collect(Collectors.toList());
+            Base base = new Base58();
+            transactions = AllTransactions.getInstance().stream().filter(UtilsUse.distinctByKey(t->base.encode(t.getSign()))).collect(Collectors.toList());
             transactions = getTransactions(transactions);
             transactions = transactions.stream()
                     .filter(t -> {
@@ -120,7 +120,8 @@ public class TransactionController {
 
 
     public Set<String> getTransactions() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        List<DtoTransaction> transactions = AllTransactions.getInstance().stream().filter(UtilsUse.distinctByKey(DtoTransaction::getSign)).collect(Collectors.toList());
+       Base base = new Base58();
+        List<DtoTransaction> transactions = AllTransactions.getInstance().stream().filter(UtilsUse.distinctByKey(t->base.encode(t.getSign()))).collect(Collectors.toList());
         Set<String> strings = new HashSet<>();
         for (DtoTransaction dtoTransaction : transactions) {
             if(!blockService.existsBySign(dtoTransaction.getSign())){
