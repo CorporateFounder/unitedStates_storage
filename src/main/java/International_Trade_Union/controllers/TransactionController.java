@@ -9,6 +9,8 @@ import International_Trade_Union.model.Account;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsAccountToEntityAccount;
+import International_Trade_Union.utils.base.Base;
+import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +86,7 @@ public class TransactionController {
         for (DtoTransaction transaction : transactions) {
             if(balances.containsKey(transaction.getSender())){
                 Account account = balances.get(transaction.getSender());
-                if(account.getDigitalStockBalance() >= transaction.getDigitalDollar()
+                if(account.getDigitalDollarBalance() >= transaction.getDigitalDollar()
                         + transaction.getBonusForMiner()
                 ){
                     dtoTransactions.add(transaction);
@@ -95,7 +97,7 @@ public class TransactionController {
                 if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() && transaction.getVoteEnum().equals(VoteEnum.NO)){
                     dtoTransactions.add(transaction);
                 }
-                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() && transaction.getVoteEnum().equals(VoteEnum.STAKING)){
+                if(account.getDigitalDollarBalance() >= transaction.getDigitalDollar() && transaction.getVoteEnum().equals(VoteEnum.STAKING)){
                     dtoTransactions.add(transaction);
                 }
             }
@@ -129,9 +131,10 @@ public class TransactionController {
     public Set<String> getTransactions() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         List<DtoTransaction> transactions = AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
         Set<String> strings = new HashSet<>();
+        Base base = new Base58();
         for (DtoTransaction dtoTransaction : transactions) {
             if(!blockService.existsBySign(dtoTransaction.getSign())){
-                strings.add(dtoTransaction.toSign());
+                strings.add(base.encode(dtoTransaction.getSign()));
             }
         }
         return strings;
