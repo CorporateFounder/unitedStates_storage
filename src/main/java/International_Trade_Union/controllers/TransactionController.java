@@ -60,7 +60,6 @@ public class TransactionController {
         List<DtoTransaction> transactions  = new ArrayList<>();
         try {
 
-            transactions = AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
             transactions = getTransactions(transactions);
             transactions = transactions.stream()
                     .filter(t -> {
@@ -117,28 +116,8 @@ public class TransactionController {
         return dtoTransactions;
     }
 
-    public  boolean check(Block block) throws IOException {
-        boolean result = true;
 
 
-        for (DtoTransaction transaction : block.getDtoTransactions()) {
-            if(!blockService.existsBySign(transaction.getSign())){
-                result = false;
-            }
-        }
-        return result;
-    }
-    public Set<String> getTransactions() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        List<DtoTransaction> transactions = AllTransactions.getInstance().stream().distinct().collect(Collectors.toList());
-        Set<String> strings = new HashSet<>();
-        Base base = new Base58();
-        for (DtoTransaction dtoTransaction : transactions) {
-            if(!blockService.existsBySign(dtoTransaction.getSign())){
-                strings.add(base.encode(dtoTransaction.getSign()));
-            }
-        }
-        return strings;
-    }
 
 
 }
