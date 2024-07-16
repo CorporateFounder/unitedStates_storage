@@ -9,6 +9,7 @@ import International_Trade_Union.model.Account;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsAccountToEntityAccount;
+import International_Trade_Union.utils.UtilsUse;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.VoteEnum;
@@ -60,6 +61,7 @@ public class TransactionController {
         List<DtoTransaction> transactions  = new ArrayList<>();
         try {
 
+            transactions = AllTransactions.getInstance().stream().filter(UtilsUse.distinctByKey(DtoTransaction::getSign)).collect(Collectors.toList());
             transactions = getTransactions(transactions);
             transactions = transactions.stream()
                     .filter(t -> {
@@ -117,7 +119,16 @@ public class TransactionController {
     }
 
 
-
+    public Set<String> getTransactions() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        List<DtoTransaction> transactions = AllTransactions.getInstance().stream().filter(UtilsUse.distinctByKey(DtoTransaction::getSign)).collect(Collectors.toList());
+        Set<String> strings = new HashSet<>();
+        for (DtoTransaction dtoTransaction : transactions) {
+            if(!blockService.existsBySign(dtoTransaction.getSign())){
+                strings.add(dtoTransaction.toSign());
+            }
+        }
+        return strings;
+    }
 
 
 }
