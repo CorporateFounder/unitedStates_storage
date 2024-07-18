@@ -685,16 +685,32 @@ public class TournamentService {
     }
     public void initiateProcess(List<HostEndDataShortB> sortPriorityHost) {
         MyLogger.saveLog("start: initiateProcess");
+        Set<String> allAddresses = new HashSet<>();
+        try {
+            // Считать все адреса из файла
+            allAddresses = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+        }catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
+                NoSuchProviderException | InvalidKeyException e){
+            return;
+        }
+        // Потокобезопасный список для доступных узлов
+        List<HostEndDataShortB> availableHosts = Collections.synchronizedList(new ArrayList<>());
 
-        // Сначала проверяем состояние всех узлов
-        List<CompletableFuture<Boolean>> checkFutures = sortPriorityHost.stream()
-                .map(host -> CompletableFuture.supplyAsync(() -> {
-                    try {
-                        String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
-                        return !"ready".equals(response);
-                    } catch (Exception e) {
-                        MyLogger.saveLog("Error checking readiness for " + host.getHost() + ": " + e.getMessage());
-                        return false; // Считаем недоступный узел как "не ожидающий"
+        // Проверяем состояние всех узлов
+        List<CompletableFuture<Void>> checkFutures = sortPriorityHost.stream()
+                .map(host -> CompletableFuture.runAsync(() -> {
+                    for (int attempt = 0; attempt < 3; attempt++) {
+                        try {
+                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
+                            if ("ready".equals(response)) {
+                                synchronized (availableHosts) {
+                                    availableHosts.add(host);
+                                }
+                                break;
+                            }
+                        } catch (Exception e) {
+                            MyLogger.saveLog("Error checking readiness for " + host.getHost() + " on attempt " + (attempt + 1) + ": " + e.getMessage());
+                        }
                     }
                 }))
                 .collect(Collectors.toList());
@@ -702,14 +718,43 @@ public class TournamentService {
         // Ждем завершения всех проверок
         CompletableFuture.allOf(checkFutures.toArray(new CompletableFuture[0])).join();
 
-        // Подсчитываем количество неготовых узлов
-        long notReadyCount = checkFutures.stream()
-                .map(CompletableFuture::join)
-                .filter(isNotReady -> isNotReady)
-                .count();
+        // Фильтруем адреса недоступных узлов
+        List<String> notReadyAddresses = sortPriorityHost.stream()
+                .filter(host -> !availableHosts.contains(host))
+                .map(HostEndDataShortB::getHost)
+                .collect(Collectors.toList());
+
+        // Удаляем неготовые адреса из общего списка
+        allAddresses.removeAll(notReadyAddresses);
+
+        // Удаляем файл с адресами
+        Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+
+        // Перезаписываем оставшиеся адреса в файл
+        allAddresses.forEach(address ->
+                {
+                    try {
+                        UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    } catch (SignatureException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeySpecException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchProviderException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeyException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+
+        MyLogger.saveLog("Filtered addresses and updated file");
 
         // Ограничиваем количество ожидаемых узлов до 7
-        int nodesToWait = (int) Math.min(notReadyCount, 7);
+        int nodesToWait = Math.min(notReadyAddresses.size(), 7);
 
         if (nodesToWait == 0) {
             MyLogger.saveLog("No nodes to wait for, all are ready or unreachable");
@@ -721,15 +766,7 @@ public class TournamentService {
         CountDownLatch latch = new CountDownLatch(nodesToWait);
 
         // Теперь ждем, пока неготовые узлы станут готовыми
-        List<CompletableFuture<Void>> waitFutures = sortPriorityHost.stream()
-                .filter(host -> {
-                    try {
-                        String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
-                        return !"ready".equals(response);
-                    } catch (Exception e) {
-                        return false; // Пропускаем недоступные узлы
-                    }
-                })
+        List<CompletableFuture<Void>> waitFutures = availableHosts.stream()
                 .map(host -> CompletableFuture.runAsync(() -> {
                     while (true) {
                         try {
@@ -750,7 +787,7 @@ public class TournamentService {
 
         try {
             // Ждем максимум 15 секунд
-            boolean completed = latch.await(15, TimeUnit.SECONDS);
+            boolean completed = latch.await(25, TimeUnit.SECONDS);
             if (!completed) {
                 MyLogger.saveLog("Timeout waiting for nodes to become ready");
             }

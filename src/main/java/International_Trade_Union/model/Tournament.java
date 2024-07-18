@@ -12,6 +12,7 @@ import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
+import International_Trade_Union.utils.base.Base;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -56,7 +57,36 @@ public class Tournament implements Runnable {
     @Override
     public void run() {
         BasisController.getBlockedNewSendBlock().set(false);
-        List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
+        // 1. Получаем исходный список узлов
+        Set<String> nodes = BasisController.getNodes();
+        List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(nodes);
+        Set<String> allNodes = new HashSet<>(nodes);
+
+        // Получаем списки узлов от каждого сервера
+        for (HostEndDataShortB hostEndDataShortB : hosts) {
+            String s = hostEndDataShortB.getHost();
+            try {
+                String strNodes = UtilUrl.readJsonFromUrl(s + "/getNodes");
+                Set<String> serverNodes = UtilsJson.jsonToSetAddresses(strNodes);
+                allNodes.addAll(serverNodes);
+            } catch (IOException | JSONException e) {
+                MyLogger.saveLog("Error getting nodes from " + s + ": " + e.getMessage());
+            }
+        }
+
+        // 2. Удаляем внутренний список
+        Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+
+        // 3. Сохраняем каждый адрес отдельно
+        for (String address : allNodes) {
+            try {
+                UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+            } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
+                     SignatureException | NoSuchProviderException | InvalidKeyException e) {
+                MyLogger.saveLog("Error saving address " + address + ": " + e.getMessage());
+            }
+        }
+
         tournament.updatingNodeEndBlocks(hosts);
         BasisController.getBlockedNewSendBlock().set(true);
 
@@ -93,10 +123,9 @@ public class Tournament implements Runnable {
                 tournament.getCheckSyncTime();
 
                 countDelete++;
-                if(countDelete == 10){
+                if(countDelete == 3){
                     countDelete = 0;
                     Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                    Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
                 }
 
                 // Sleep until the next tournament interval
