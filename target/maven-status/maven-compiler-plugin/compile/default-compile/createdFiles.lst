@@ -117,6 +117,7 @@ International_Trade_Union\utils\UtilsJson$1.class
 International_Trade_Union\network\AllTransactions.class
 International_Trade_Union\UnitedStatesApplication.class
 International_Trade_Union\controllers\NodesController.class
+International_Trade_Union\entity\DtoTransaction\MerkleTree.class
 International_Trade_Union\utils\UtilsBlock$3.class
 International_Trade_Union\entity\SendBlocksEndInfo.class
 International_Trade_Union\model\Account.class

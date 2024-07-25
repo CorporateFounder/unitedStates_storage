@@ -89,7 +89,13 @@ public final class Block implements Cloneable {
                     this.minerRewards,
                     this.hashCompexity,
                     this.timestamp,
-                    this.index); return UtilsUse.sha256hash(block.jsonString());
+                    this.index);
+            if(index > Seting.NEW_ALGO_MINING){
+               return UtilsUse.hashMerkleBlock(block);
+            }{
+                return UtilsUse.sha256hash(block.jsonString());
+            }
+
         }
 
 
@@ -399,6 +405,8 @@ public final class Block implements Cloneable {
 //     System.out.println("-------------------");
 //      System.out.println(">>HASHSTR  :"+hashStr);
     this.randomNumberProof=0;
+    String firstPart = UtilsUse.firstPartHash(block);
+    String secondPart = UtilsUse.secondPartHash(block);
     final String[] jsonParts = splitJson(hashStr);
 
 
@@ -455,8 +463,12 @@ public final class Block implements Cloneable {
                 } //i==0
 
 
+                    if(index > Seting.NEW_ALGO_MINING){
+                        hash = UtilsUse.finalHash(firstPart, secondPart, k);
+                    }else {
+                        hash = DigestUtils.sha256Hex(generateJsonWithProof(jsonParts, k));
+                    }
 
-                    hash = DigestUtils.sha256Hex(generateJsonWithProof(jsonParts, k));
 
                 //Использует последний алгоритм добычи, где сумма единиц в битах должна быть ниже
                 //или равно 100 - сложность.

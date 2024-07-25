@@ -295,6 +295,7 @@ public interface Seting {
     double ONE_HUNDRED_THOUSAND = 100000;
     int WAIGHT_MINING = 9;
     int WAIGHT_MINING_2 = 55;
+    int WAIGHT_MINING_3 = 45;
     int WAIGHT_MINING_INDEX =247867;
     int TIME_CHECK_BLOCK = 233682; //221055
 
@@ -316,5 +317,5 @@ public interface Seting {
     int DECIMAL_PLACES = 10;
     int START_BLOCK_DECIMAL_PLACES = 268765;
 
-
+    int NEW_ALGO_MINING = 286891;
 }

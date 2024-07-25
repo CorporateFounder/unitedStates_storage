@@ -77,7 +77,7 @@ public class Tournament implements Runnable {
         // 2. Удаляем внутренний список
         Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
-        // 3. Сохраняем каждый адрес отдельно
+        // 3. Сохраняем каждый адрес отфдельно
         for (String address : allNodes) {
             try {
                 UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);

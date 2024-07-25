@@ -50,8 +50,13 @@ public class TransactionController {
         System.out.println("TransactionController: add: " + AllTransactions.getInstance().size());
     }
 
-    /**Возвращает хэш транзакций*/
-
+    @GetMapping("/isWait58")
+    @ResponseBody
+    public Boolean isWait58(@RequestParam String sign){
+        Base base = new Base58();
+        long count = getTransaction().stream().filter(t->base.encode(t.getSign()).equals(sign)).count();
+        return count > 0;
+    }
 
     /**Возвращает список транзакций ожидающих добавления в блокчейн. В список не попадают транзакции,
      * если они были уже добавлены в блокчейн или их баланс не соответствует сумме которую они хотят отправить*/
