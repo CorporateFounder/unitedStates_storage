@@ -409,8 +409,7 @@ public class UtilsBalance {
         double recipientDigitalStaking = recipientAddress.getDigitalStakingBalance();
 
         double minerDigitalDollar = minerAddress.getDigitalDollarBalance();
-        double minerDigitalStock = minerAddress.getDigitalStockBalance();
-        double minerDigitalStaking = minerAddress.getDigitalStakingBalance();
+
 
         boolean sendTrue = true;
         if (BasisController.getBlockchainSize() > Seting.START_BLOCK_DECIMAL_PLACES) {
