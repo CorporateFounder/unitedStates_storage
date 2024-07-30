@@ -8,6 +8,7 @@ import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
@@ -627,6 +628,15 @@ public class UtilsBlock {
 
         if (thisBlock.getIndex() > Seting.NEW_CHECK_UTILS_BLOCK && !thisBlock.getHashBlock().equals(thisBlock.hashForTransaction())) {
             System.out.println("false hash added wrong hash");
+            MyLogger.saveLog("**************************************************+\n");
+            MyLogger.saveLog("hash end hashForTransaction not equals: ");
+            MyLogger.saveLog("actual: " + thisBlock.getHashBlock() +"\n");
+            MyLogger.saveLog("expected: " + thisBlock.hashForTransaction()+"\n");
+
+            MyLogger.saveLog("block: " + UtilsJson.objToStringJson(thisBlock) + "\n");
+            MyLogger.saveLog("**************************************************"+"\n");
+
+
             System.out.println("actual: " + thisBlock.getHashBlock());
             System.out.println("expected: " + thisBlock.hashForTransaction());
             System.out.println("miner address: " + thisBlock.getMinerAddress());
@@ -637,7 +647,11 @@ public class UtilsBlock {
 
         if (!actualPrevHash.equals(recordedPrevHash)) {
             System.out.println("-------------------------------------------------------");
-
+            MyLogger.saveLog("**************************************************");
+            MyLogger.saveLog("actualPrevHash end recordedPrevHash not equals: ");
+            MyLogger.saveLog("actual: " + thisBlock.getHashBlock());
+            MyLogger.saveLog("expected: " + thisBlock.hashForTransaction());
+            MyLogger.saveLog("**************************************************");
             System.out.println("Blockchain is invalid, expected: " + recordedPrevHash + " actual: " + actualPrevHash);
             System.out.println("actual index block: " + thisBlock.getIndex());
 

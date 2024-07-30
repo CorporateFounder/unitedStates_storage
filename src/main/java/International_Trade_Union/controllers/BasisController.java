@@ -1042,6 +1042,7 @@ public class BasisController {
                     if (temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
                         System.out.println("code error: " + HttpStatus.CONFLICT);
                         System.out.println("miner: " + account);
+                        MyLogger.saveLog("CONFLICT: " + account + " temp: " + temp);
                         return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
                     }
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);

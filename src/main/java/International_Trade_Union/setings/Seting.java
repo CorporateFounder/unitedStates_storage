@@ -317,5 +317,5 @@ public interface Seting {
     int DECIMAL_PLACES = 10;
     int START_BLOCK_DECIMAL_PLACES = 268765;
 
-    int NEW_ALGO_MINING = 286891;
+    int NEW_ALGO_MINING = 286892;
 }

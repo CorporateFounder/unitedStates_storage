@@ -2,10 +2,14 @@ package International_Trade_Union.entity.blockchain.block;
 
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.exception.NotValidTransactionException;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.json.JSONException;
@@ -20,9 +24,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -33,11 +35,11 @@ import java.util.stream.IntStream;
 @JsonAutoDetect
 @Data
 public final class Block implements Cloneable {
+    //мой класс
     private static volatile boolean blockFound = false;
     private static long randomNumberProofStatic = 0;
     private static int INCREMENT_VALUE = 50000;
     private static int THREAD_COUNT = 10;
-
 
 
     private static boolean MULTI_THREAD = false;
@@ -71,16 +73,21 @@ public final class Block implements Cloneable {
     private String previousHash;
     private String minerAddress;
     private String founderAddress;
+
+    //аналог это nonce в биткоин.
+    //analogue is a nonce in Bitcoin.
     private long randomNumberProof;
     private double minerRewards;
+
+    //сложность которому блок должен соответствовать.
+    //difficulty that the block must match.
     private long hashCompexity;
     private Timestamp timestamp;
     private long index;
     private String hashBlock;
 
     public String hashForTransaction() throws IOException {
-
-        if(this != null){
+        if (this != null) {
             BlockForHash block = new BlockForHash(this.getDtoTransactions(),
                     this.previousHash,
                     this.minerAddress,
@@ -90,17 +97,21 @@ public final class Block implements Cloneable {
                     this.hashCompexity,
                     this.timestamp,
                     this.index);
-            if(index > Seting.NEW_ALGO_MINING){
-               return UtilsUse.hashMerkleBlock(block);
-            }{
-                return UtilsUse.sha256hash(block.jsonString());
+
+            if(this.getIndex() > Seting.NEW_ALGO_MINING){
+                // New hashing algorithm
+                String staticBlockHash = DigestUtils.sha256Hex(block.jsonStringWithoutProof());
+                String proofString = Long.toString(block.randomNumberProof);
+                String hash = DigestUtils.sha256Hex(staticBlockHash + proofString);
+                return hash;
+            }else {
+                    return UtilsUse.sha256hash(block.jsonString());
+                }
+
             }
-
-        }
-
-
-       return "";
+        return "";
     }
+
 
     public static long getRandomNumberProofStatic() {
         return randomNumberProofStatic;
@@ -177,12 +188,35 @@ public final class Block implements Cloneable {
         }
 
         public String hashForTransaction() throws IOException {
-            return UtilsUse.sha256hash(jsonString());
+
+                return UtilsUse.sha256hash(jsonString());
+
+
         }
 
         public String jsonString() throws IOException {
             return UtilsJson.objToStringJson(this);
         }
+        // New method to get JSON string without randomNumberProof
+        @JsonIgnore
+        public String jsonStringWithoutProof() throws IOException {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+            // Create a map of all fields except randomNumberProof
+            Map<String, Object> fieldMap = new HashMap<>();
+            fieldMap.put("transactions", this.transactions);
+            fieldMap.put("previousHash", this.previousHash);
+            fieldMap.put("minerAddress", this.minerAddress);
+            fieldMap.put("founderAddress", this.founderAddress);
+            fieldMap.put("minerRewards", this.minerRewards);
+            fieldMap.put("hashCompexity", this.hashCompexity);
+            fieldMap.put("timestamp", this.timestamp);
+            fieldMap.put("index", this.index);
+
+            return mapper.writeValueAsString(fieldMap);
+        }
+
     }
 
     public Block() {
@@ -217,6 +251,10 @@ public final class Block implements Cloneable {
         return UtilsJson.objToStringJson(this);
     }
 
+    /**
+     * TODO Устаревший метод и уже не используется.
+     * TODO This method is obsolete and is no longer used.
+     */
     public String multipleFindHash(long hashCoplexity) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         System.out.println("find hash method");
 
@@ -236,11 +274,13 @@ public final class Block implements Cloneable {
                 int size = UtilsStorage.getSize();
                 Timestamp previus = new Timestamp(UtilsTime.getUniversalTimestamp());
                 String nameThread = Thread.currentThread().getName();
-                while (!blockFound){
+                while (!blockFound) {
                     BlockForHash block = new BlockForHash(this.dtoTransactions,
                             this.previousHash, this.minerAddress, this.founderAddress,
                             nonce, this.minerRewards, this.hashCompexity, this.timestamp, this.index);
-//                    System.out.printf("\tTrying %d to find a block: ThreadName %s:\n ", nonce , nameThread);
+                    //почему если я отключаю данную строчку кода, возникает ошибка с выходом за массив,
+
+                    System.out.printf("\tTrying %d to find a block: ThreadName %s:\n ", nonce, nameThread);
                     Instant instant1 = Instant.ofEpochMilli(UtilsTime.getUniversalTimestamp());
                     Instant instant2 = previus.toInstant();
 
@@ -253,7 +293,7 @@ public final class Block implements Cloneable {
                     }
                     if (seconds > 10 || seconds < -10) {
                         long milliseconds = instant1.toEpochMilli();
-                        previus  = new Timestamp(milliseconds);
+                        previus = new Timestamp(milliseconds);
                         previus.setTime(milliseconds);
 
                         //проверяет устаревание майнинга, если устарел - прекращает майнинг
@@ -271,9 +311,6 @@ public final class Block implements Cloneable {
                             break;
 
                         }
-
-
-
                     }
 
                     //если true, то прекращаем майнинг
@@ -321,20 +358,22 @@ public final class Block implements Cloneable {
         }
         blockFound = false;
 
-            return  foundHash;
+        return foundHash;
     }
 
 
-    /**Метод отвечает за поиск блока, добывает блок.
-     * The method is responsible for searching for a block and mining the block.*/
+    /**
+     * Метод отвечает за поиск блока, добывает блок.
+     * The method is responsible for searching for a block and mining the block.
+     */
     public String chooseMultiString(long hashCompexity, boolean MULTI_THREAD) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        if(MULTI_THREAD){
+        if (MULTI_THREAD) {
             return multipleFindHash(hashCompexity);
-        }else {
-        String result="";
-         try {
-            result= findHash(hashCompexity);
-         } catch (Exception e) {
+        } else {
+            String result = "";
+            try {
+                result = findHash(hashCompexity);
+            } catch (Exception e) {
                 // Handle or log the exception
                 e.printStackTrace();
             }
@@ -343,208 +382,213 @@ public final class Block implements Cloneable {
     }
 
 
-
-
-     public String findHash(long hashCoplexity) throws IOException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException, Exception  {
-        if (!verifyesTransSign()){
+    public String findHash(long hashCoplexity) throws IOException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException, Exception {
+        if (!verifyesTransSign()) {
             throw new NotValidTransactionException();
         }
-         String hash = "";
+        String hash = "";
 
-           if (this.index > Seting.V31_FIX_DIFF ) //jump to v31 algo
+        if (this.index > Seting.V31_FIX_DIFF) //jump to v31 algo
         {
             //Многоточный майнинг.
             //Multi-thead mining.
             hash = findHash_MT2(hashCoplexity);
 
-        }
-        else
-        {
+        } else {
             //Однопоточный майнинг.
             hash = findHash_org(hashCoplexity);
         }
 
-  //hash = findHash_org(hashCoplexity);
+        //hash = findHash_org(hashCoplexity);
 
-       return hash;
+        return hash;
     }
 
 
-               public static String[] splitJson(String jsonString) throws IOException{
+    public static String[] splitJson(String jsonString) throws IOException {
         String identifier = "\"randomNumberProof\":";
         int index = jsonString.indexOf(identifier) + identifier.length();
-        return new String[] {
-            jsonString.substring(0, index),
-            jsonString.substring(index+1)
+        return new String[]{
+                jsonString.substring(0, index),
+                jsonString.substring(index + 1)
         };
     }
 
-         public static String generateJsonWithProof(String[] jsonParts, long randomNumberProof) {
-        return jsonParts[0] + randomNumberProof +jsonParts[1];
+    public static String generateJsonWithProof(String[] jsonParts, long randomNumberProof) {
+        return jsonParts[0] + randomNumberProof + jsonParts[1];
     }
 
 
     public String findHash_MT2(long hashCoplexity) throws IOException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
-     if (!verifyesTransSign()) {
-        throw new NotValidTransactionException();
-    }
- if (!verifyesTransSign()) {
+        if (!verifyesTransSign()) {
+            throw new NotValidTransactionException();
+        }
+        if (!verifyesTransSign()) {
             throw new NotValidTransactionException();
         }
 
-      final int numThreads = Runtime.getRuntime().availableProcessors() - 1;
+        final int numThreads = Runtime.getRuntime().availableProcessors() - 1;
 
-    final AtomicBoolean solutionFound = new AtomicBoolean(false);
-    final CompletableFuture<String> solution = new CompletableFuture<>();
-    final ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-    BlockForHash block = new BlockForHash(
-                        this.dtoTransactions, this.previousHash, this.minerAddress,
-                        this.founderAddress, 0, this.minerRewards,
-                        this.hashCompexity, this.timestamp, this.index);
-    String hashStr=block.jsonString();
+        final AtomicBoolean solutionFound = new AtomicBoolean(false);
+        final CompletableFuture<String> solution = new CompletableFuture<>();
+        final ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        BlockForHash block = new BlockForHash(
+                this.dtoTransactions, this.previousHash, this.minerAddress,
+                this.founderAddress, 0, this.minerRewards,
+                this.hashCompexity, this.timestamp, this.index);
+        String hashStr = block.jsonString();
 //     System.out.println("-------------------");
 //      System.out.println(">>HASHSTR  :"+hashStr);
-    this.randomNumberProof=0;
-    String firstPart = UtilsUse.firstPartHash(block);
-    String secondPart = UtilsUse.secondPartHash(block);
-    final String[] jsonParts = splitJson(hashStr);
+        this.randomNumberProof = 0;
 
 
+        final String[] jsonParts = splitJson(hashStr);
 
-    final long range = Long.MAX_VALUE / 10240;
+
+        final long range = Long.MAX_VALUE / 10240;
 
 
-    System.out.println(">>numThreads: " + numThreads + " hashCoplexity:" + hashCoplexity+" Length: "+jsonString().length());
+        System.out.println(">>numThreads: " + numThreads + " hashCoplexity:" + hashCoplexity + " Length: " + jsonString().length());
 
+        // Предварительно хешируем неизменяемую часть данных для нового алгоритма
+        final String immutableHashPart;
+        if (index > Seting.NEW_ALGO_MINING) {
+            immutableHashPart = DigestUtils.sha256Hex(jsonParts[0] + jsonParts[1]);
+        } else {
+            immutableHashPart = null;  // Не используется в старом алгоритме
+        }
 //       System.out.println(">>[0]:"+jsonParts[0]);
 //       System.out.println(">>[1]:"+jsonParts[1]);
-    IntStream.range(0, numThreads).forEach(i -> {
-        executor.submit(() -> {
-            long endTime, duration;
+        IntStream.range(0, numThreads).forEach(i -> {
+            executor.submit(() -> {
+                long endTime, duration;
 
-            double durationInMilliseconds;
-            long min = range * i;
-            long max = i == numThreads - 1 ? Long.MAX_VALUE : min + range;
-            String hash = "";
-            long startTime = System.nanoTime();
-            endTime=startTime;
-            int cnt=0;
+                double durationInMilliseconds;
+                long min = range * i;
+                long max = i == numThreads - 1 ? Long.MAX_VALUE : min + range;
+                String hash = "";
+                long startTime = System.nanoTime();
+                endTime = startTime;
+                int cnt = 0;
 
-            for (long k = min; k < max; k++) {
-                if (solutionFound.get()) {
-                    break;
-                }
+                for (long k = min; k < max; k++) {
+                    if (solutionFound.get()) {
+                        break;
+                    }
 
 
-                if (i==0 && k % 100000 == 0 ){
-                     if ( isAdvanced() == 1) {
+                    if (i == 0 && k % 100000 == 0) {
+                        if (isAdvanced() == 1) {
                             solutionFound.set(true);
                             solution.complete("");
-            //               this.randomNumberProof = k;
+                            //               this.randomNumberProof = k;
                             Mining.miningIsObsolete = true;
-                     }//isAdvanced() == 1
+                        }//isAdvanced() == 1
 
-                     // Display status
-                    if (k % 100000 == 0){
+                        // Display status
+                        if (k % 100000 == 0) {
 
-                    endTime= System.nanoTime();
-
-
-                    duration = endTime - startTime;  // Time in nanoseconds
-                    durationInMilliseconds = duration / 1_000_000.0;  // Convert to milliseconds
-
-                    double hashRate = (k-min)/1000 / durationInMilliseconds * numThreads;
-                    String formattedHashRate = String.format("%.2f", hashRate);
-                    System.out.print("Hash rate: " + formattedHashRate + " KH/S\r");
-                    System.out.flush();  // Ensures the printed content is immediately displayed
-
-                    }//if (k % 400000 == 0)
-
-                } //i==0
+                            endTime = System.nanoTime();
 
 
-                    if(index > Seting.NEW_ALGO_MINING){
-                        hash = UtilsUse.finalHash(firstPart, secondPart, k);
-                    }else {
+                            duration = endTime - startTime;  // Time in nanoseconds
+                            durationInMilliseconds = duration / 1_000_000.0;  // Convert to milliseconds
+
+                            double hashRate = (k - min) / 1000 / durationInMilliseconds * numThreads;
+                            String formattedHashRate = String.format("%.2f", hashRate);
+                            System.out.print("Hash rate: " + formattedHashRate + " KH/S\r");
+                            System.out.flush();  // Ensures the printed content is immediately displayed
+
+                        }//if (k % 400000 == 0)
+
+                    } //i==0
+
+                    if (index > Seting.NEW_ALGO_MINING) {
+                        // Используем новый алгоритм хеширования с предварительно хешированной неизменяемой частью
+                        String mutablePart = String.valueOf(k);
+                        hash = DigestUtils.sha256Hex(immutableHashPart + mutablePart);
+                    } else {
+                        // Используем старый алгоритм хеширования
                         hash = DigestUtils.sha256Hex(generateJsonWithProof(jsonParts, k));
                     }
 
 
-                //Использует последний алгоритм добычи, где сумма единиц в битах должна быть ниже
-                //или равно 100 - сложность.
-                //Uses the latest mining algorithm, where the sum of units in bits must be lower
-                //or equal to 100 - difficulty.
-                //if (UtilsUse.chooseComplexity(hash, hashCoplexity, index)) {
-               if (BlockchainDifficulty.isValidHashV29(hash, 100-(int)hashCoplexity)) {
-                   // if (  cal_v4MeetsDifficulty(hash, hashCoplexity ))  {
 
-                    if (!solutionFound.getAndSet(true)) {
-                        solution.complete(hash);
-                        System.out.println("Block found: hash: " + hash + " k: " + k + " at Thread " + i);
+                    //Использует последний алгоритм добычи, где сумма единиц в битах должна быть ниже
+                    //или равно 100 - сложность.
+                    //Uses the latest mining algorithm, where the sum of units in bits must be lower
+                    //or equal to 100 - difficulty.
+                    //if (UtilsUse.chooseComplexity(hash, hashCoplexity, index)) {
+                    if (BlockchainDifficulty.isValidHashV29(hash, 100 - (int) hashCoplexity)) {
+                        // if (  cal_v4MeetsDifficulty(hash, hashCoplexity ))  {
+
+                        if (!solutionFound.getAndSet(true)) {
+                            solution.complete(hash);
+                            System.out.println("Block found: hash: " + hash + " k: " + k + " at Thread " + i);
 
 //                          System.out.println("!!>>"+generateJsonWithProof(jsonParts, k));
-                        this.randomNumberProof = k;
+                            this.randomNumberProof = k;
+                        }
                     }
                 }
-            }
+            });
         });
-    });
 
-    try {
-        return solution.get();
-    } catch (InterruptedException | ExecutionException e) {
-        System.out.println("************************************");
-        e.printStackTrace();
-        System.out.println("************************************");
-        throw new RuntimeException(e);
-    } finally {
-        executor.shutdownNow();
+        try {
+            return solution.get();
+        } catch (InterruptedException | ExecutionException e) {
+            System.out.println("************************************");
+            e.printStackTrace();
+            System.out.println("************************************");
+            throw new RuntimeException(e);
+        } finally {
+            executor.shutdownNow();
+        }
     }
-}
-
 
 
     /*if the index advanced, then we quit the current hasfind() */
-     private int isAdvanced() {
+    private int isAdvanced() {
 
-     try {
-        String  s;
+        try {
+            String s;
 //       s="http://125.229.48.110:16888";
-       s="http://194.87.236.238:82";
-         for (String address : Seting.ORIGINAL_ADDRESSES) {
-             s = address;
-         }
-
-
-        String sizeStr = UtilUrl.readJsonFromUrl_silent(s + "/size");
-       Long cur_index=Long.parseLong(sizeStr);
-
-
-//        System.out.print("#");
-      // System.out.println("#### cur_index "+cur_index+" index:"+this.index);
-        if (cur_index>this.index)
-        {
-            System.out.println("######### STOP: cur_index "+cur_index+" index:"+this.index+"######");
-            return 1;
-        }
-
-         //если true, то прекращаем майнинг
-         if (Mining.isIsMiningStop()) {
-             System.out.println("mining will be stopped");
-             return 1;
-
-         }
-       } catch (JSONException | IOException e) {
-
-
-                System.out.println("isAdvanced:  error");
-                return 0;
+            s = "http://194.87.236.238:82";
+            for (String address : Seting.ORIGINAL_ADDRESSES) {
+                s = address;
             }
 
 
-         return 0;
 
+            String sizeStr = UtilUrl.readJsonFromUrl_silent(s + "/size");
+            Long cur_index = Long.parseLong(sizeStr);
+
+
+//        System.out.print("#");
+            // System.out.println("#### cur_index "+cur_index+" index:"+this.index);
+            if (cur_index > this.index) {
+                System.out.println("######### STOP: cur_index " + cur_index + " index:" + this.index + "######");
+                return 1;
+            }
+
+            //если true, то прекращаем майнинг
+            if (Mining.isIsMiningStop()) {
+                System.out.println("mining will be stopped");
+                return 1;
+
+            }
+        } catch (JSONException | IOException e) {
+
+
+            System.out.println("isAdvanced:  error");
+            return 0;
         }
+
+
+        return 0;
+
+    }
+
     //TODO
     public String findHash_org(long hashCoplexity) throws IOException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
         System.out.println("find hash method");
@@ -581,7 +625,7 @@ public final class Block implements Cloneable {
 
             if (seconds > 10 || seconds < -10) {
                 long milliseconds = instant1.toEpochMilli();
-                previus  = new Timestamp(milliseconds);
+                previus = new Timestamp(milliseconds);
                 previus.setTime(milliseconds);
 
                 //проверяет устаревание майнинга, если устарел - прекращает майнинг
