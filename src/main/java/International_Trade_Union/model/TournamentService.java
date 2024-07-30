@@ -31,7 +31,8 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 @Component
 @Scope("singleton")
 public class TournamentService {
-
+    @Autowired
+    UtilsTransactions utilsTransactions;
 
     @Autowired
     UtilsResolving utilsResolving;
@@ -663,6 +664,7 @@ public class TournamentService {
                     System.out.println("Получение транзакций с сервера: " + s + ". Время ожидания 45 секунд.");
                     String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
                     List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
+                    list = utilsTransactions.balanceTransaction(list, blockService);
                     synchronized(finalInstance) {
                         finalInstance.addAll(list);
                     }

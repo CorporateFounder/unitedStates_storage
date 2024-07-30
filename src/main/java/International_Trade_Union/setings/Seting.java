@@ -318,4 +318,5 @@ public interface Seting {
     int START_BLOCK_DECIMAL_PLACES = 268765;
 
     int NEW_ALGO_MINING = 286892;
+    int DELETE_ALL_TRANSACTIONS_LIST = 286892;
 }

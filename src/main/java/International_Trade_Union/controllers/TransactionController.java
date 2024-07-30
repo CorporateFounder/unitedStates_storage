@@ -40,9 +40,11 @@ public class TransactionController {
     @RequestMapping(method = RequestMethod.POST, value = "/addTransaction", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void add(@RequestBody DtoTransaction data) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 //        System.out.println("add transaction: " + data);
-
-        AllTransactions.getInstance();
-        if (!AllTransactions.getInstance().contains(data)) {
+        Base base = new Base58();
+        List<DtoTransaction> transactions = AllTransactions.getInstance();
+        transactions = transactions.stream().filter(UtilsUse.distinctByKey(t->base.encode(t.getSign()))).collect(Collectors.toList());
+        transactions = balanceTransaction(transactions);
+        if (!transactions.contains(data)) {
             if (!blockService.existsBySign(data.getSign()))
                 AllTransactions.addTransaction(data);
         }
@@ -82,6 +84,7 @@ public class TransactionController {
                     })
                     .collect(Collectors.toList());
             transactions = balanceTransaction(transactions);
+            AllTransactions.addAllTransactions(transactions);
         }catch (Exception e){
             e.printStackTrace();
             return new ArrayList<>();
@@ -101,18 +104,26 @@ public class TransactionController {
                 ){
                     dtoTransactions.add(transaction);
                 }
-                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() && transaction.getVoteEnum().equals(VoteEnum.YES)){
+                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() + transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.YES)){
+
                     dtoTransactions.add(transaction);
                 }
-                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() && transaction.getVoteEnum().equals(VoteEnum.NO)){
+                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance()  + transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.NO)){
                     dtoTransactions.add(transaction);
                 }
-                if(account.getDigitalDollarBalance() >= transaction.getDigitalDollar() && transaction.getVoteEnum().equals(VoteEnum.STAKING)){
+                if(account.getDigitalDollarBalance() >= transaction.getDigitalDollar() + transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.STAKING)){
+
                     dtoTransactions.add(transaction);
                 }
+                if(account.getDigitalStakingBalance() >= transaction.getDigitalDollar()+ transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)){
+                    dtoTransactions.add(transaction);
+                }
+
+
             }
+
         }
-        return transactions;
+        return dtoTransactions;
     }
     //вычисляет транзакции которые были добавлены в блок, и их снова не добавляет
     public  List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws IOException {
