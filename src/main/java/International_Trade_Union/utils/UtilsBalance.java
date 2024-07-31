@@ -355,8 +355,19 @@ public class UtilsBalance {
                     recipientAddress.setDigitalStockBalance(recipientDigitalStock - digitalStock);
                 }
 
-                if (indexBlock > Seting.NEW_ALGO_MINING)
-                    minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                if (indexBlock > Seting.NEW_ALGO_MINING){
+                    if(senderAddress.getAccount().equals(minerAddress.getAccount())){
+                        senderDigitalDollar = UtilsUse.round(senderAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(senderDigitalDollar + minerRewards);
+                    } else if (recipientAddress.getAccount().equals(minerAddress.getAccount())) {
+                        recipientDigitalDollar = UtilsUse.round(recipientAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(recipientDigitalDollar + minerRewards);
+                    } else {
+                        minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                    }
+
+                }
+
             } else if (voteEnum.equals(VoteEnum.STAKING)) {
                 System.out.println("STAKING: ");
                 if (senderDigitalDollar < digitalDollar + minerRewards) {
@@ -367,8 +378,18 @@ public class UtilsBalance {
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar - digitalDollar);
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking + digitalDollar);
 
-                if (indexBlock > Seting.NEW_ALGO_MINING)
-                    minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                if (indexBlock > Seting.NEW_ALGO_MINING){
+                    if(senderAddress.getAccount().equals(minerAddress.getAccount())){
+                        senderDigitalDollar = UtilsUse.round(senderAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(senderDigitalDollar + minerRewards);
+                    } else if (recipientAddress.getAccount().equals(minerAddress.getAccount())) {
+                        recipientDigitalDollar = UtilsUse.round(recipientAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(recipientDigitalDollar + minerRewards);
+                    } else {
+                        minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                    }
+
+                }
             } else if (voteEnum.equals(VoteEnum.UNSTAKING)) {
                 System.out.println("UNSTAKING");
                 if (senderDigitalStaking < digitalDollar) {
@@ -379,8 +400,17 @@ public class UtilsBalance {
 
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar + digitalDollar);
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking - digitalDollar);
-                if (indexBlock > Seting.NEW_ALGO_MINING)
-                    minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                if (indexBlock > Seting.NEW_ALGO_MINING){
+                    if(senderAddress.getAccount().equals(minerAddress.getAccount())){
+                        senderDigitalDollar = UtilsUse.round(senderAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(senderDigitalDollar + minerRewards);
+                    } else if (recipientAddress.getAccount().equals(minerAddress.getAccount())) {
+                        recipientDigitalDollar = UtilsUse.round(recipientAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(recipientDigitalDollar + minerRewards);
+                    } else {
+                        minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                    }
+                }
             }
 
 
@@ -444,8 +474,17 @@ public class UtilsBalance {
                     //политика сдерживания.
                     recipientAddress.setDigitalStockBalance(recipientDigitalStock + digitalStock);
                 }
-                if (indexBlock > Seting.NEW_ALGO_MINING)
-                    minerAddress.setDigitalDollarBalance(minerDigitalDollar - minerRewards);
+                if (indexBlock > Seting.NEW_ALGO_MINING){
+                    if(senderAddress.getAccount().equals(minerAddress.getAccount())){
+                        senderDigitalDollar = UtilsUse.round(senderAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(senderDigitalDollar + minerRewards);
+                    } else if (recipientAddress.getAccount().equals(minerAddress.getAccount())) {
+                        recipientDigitalDollar = UtilsUse.round(recipientAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(recipientDigitalDollar + minerRewards);
+                    } else {
+                        minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                    }
+                }
 
             } else if (voteEnum.equals(VoteEnum.STAKING)) {
                 System.out.println("STAKING: ");
@@ -453,15 +492,33 @@ public class UtilsBalance {
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar + digitalDollar);
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking - digitalDollar);
 
-                if (indexBlock > Seting.NEW_ALGO_MINING)
-                    minerAddress.setDigitalDollarBalance(minerDigitalDollar - minerRewards);
+                if (indexBlock > Seting.NEW_ALGO_MINING){
+                    if(senderAddress.getAccount().equals(minerAddress.getAccount())){
+                        senderDigitalDollar = UtilsUse.round(senderAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(senderDigitalDollar + minerRewards);
+                    } else if (recipientAddress.getAccount().equals(minerAddress.getAccount())) {
+                        recipientDigitalDollar = UtilsUse.round(recipientAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(recipientDigitalDollar + minerRewards);
+                    } else {
+                        minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                    }
+                }
             } else if (voteEnum.equals(VoteEnum.UNSTAKING)) {
                 System.out.println("UNSTAKING");
 
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar - digitalDollar);
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking + digitalDollar);
-                if (indexBlock > Seting.NEW_ALGO_MINING)
-                    minerAddress.setDigitalDollarBalance(minerDigitalDollar - minerRewards);
+                if (indexBlock > Seting.NEW_ALGO_MINING){
+                    if(senderAddress.getAccount().equals(minerAddress.getAccount())){
+                        senderDigitalDollar = UtilsUse.round(senderAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(senderDigitalDollar + minerRewards);
+                    } else if (recipientAddress.getAccount().equals(minerAddress.getAccount())) {
+                        recipientDigitalDollar = UtilsUse.round(recipientAddress.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+                        minerAddress.setDigitalDollarBalance(recipientDigitalDollar + minerRewards);
+                    } else {
+                        minerAddress.setDigitalDollarBalance(minerDigitalDollar + minerRewards);
+                    }
+                }
 
             }
 

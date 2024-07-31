@@ -136,9 +136,6 @@ public class AllTransactions {
         try{
             instance = getInstance();
             instance.add(transaction);
-
-
-
             Mining.deleteFiles(Seting.ORGINAL_ALL_TRANSACTION_FILE);
             Base base = new Base58();
             instance = instance.stream()

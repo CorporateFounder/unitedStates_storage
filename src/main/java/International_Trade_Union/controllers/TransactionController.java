@@ -25,6 +25,7 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,7 +43,14 @@ public class TransactionController {
 //        System.out.println("add transaction: " + data);
         Base base = new Base58();
         List<DtoTransaction> transactions = AllTransactions.getInstance();
-        transactions = transactions.stream().filter(UtilsUse.distinctByKey(t->base.encode(t.getSign()))).collect(Collectors.toList());
+        transactions = transactions.stream().filter(UtilsUse.distinctByKeyString(t -> {
+            try {
+                return base.encode(t.getSign());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null; // или другое значение по умолчанию
+            }
+        })).collect(Collectors.toList());
         transactions = balanceTransaction(transactions);
         if (!transactions.contains(data)) {
             if (!blockService.existsBySign(data.getSign()))
@@ -67,12 +75,8 @@ public class TransactionController {
 
         List<DtoTransaction> transactions  = new ArrayList<>();
         try {
-            Base base = new Base58();
-            transactions = AllTransactions.getInstance()
-                    .stream()
-                    .filter(UtilsUse.distinctByKeyString(t -> base.encode(t.getSign())))
-                    .collect(Collectors.toList());
 
+            transactions = AllTransactions.getInstance();
             transactions = getTransactions(transactions);
             transactions = transactions.stream()
                     .filter(t -> {
@@ -85,11 +89,24 @@ public class TransactionController {
                     .collect(Collectors.toList());
             transactions = balanceTransaction(transactions);
             AllTransactions.addAllTransactions(transactions);
+
         }catch (Exception e){
             e.printStackTrace();
             return new ArrayList<>();
         }
-       return transactions;
+        System.out.println("tranactions: " + transactions);
+        transactions = transactions.stream().sorted(Comparator.comparing(DtoTransaction::getDigitalDollar).reversed()).collect(Collectors.toList());
+        Base base = new Base58();
+        transactions = transactions .stream()
+                .filter(UtilsUse.distinctByKeyString(t -> {
+                    try {
+                        return base.encode(t.getSign());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null; // или другое значение по умолчанию
+                    }
+                })).collect(Collectors.toList());
+        return transactions;
     }
 
     /**Возвращает транзакции, которые имеют достаточно денег на счетах*/
@@ -142,8 +159,14 @@ public class TransactionController {
     public Set<String> getTransactions() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         Base base = new Base58();
         List<DtoTransaction> transactions = AllTransactions.getInstance() .stream()
-                .filter(UtilsUse.distinctByKeyString(t -> base.encode(t.getSign())))
-                .collect(Collectors.toList());
+                .filter(UtilsUse.distinctByKeyString(t -> {
+                    try {
+                        return base.encode(t.getSign());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null; // или другое значение по умолчанию
+                    }
+                })).collect(Collectors.toList());
         Set<String> strings = new HashSet<>();
         for (DtoTransaction dtoTransaction : transactions) {
             if(!blockService.existsBySign(dtoTransaction.getSign())){
