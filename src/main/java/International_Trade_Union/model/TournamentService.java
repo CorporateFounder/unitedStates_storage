@@ -694,10 +694,11 @@ public class TournamentService {
         try {
             // Считать все адреса из файла
             allAddresses = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        }catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
-                NoSuchProviderException | InvalidKeyException e){
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
+                 NoSuchProviderException | InvalidKeyException e) {
             return;
         }
+
         // Потокобезопасный список для доступных узлов
         List<HostEndDataShortB> availableHosts = Collections.synchronizedList(new ArrayList<>());
 
@@ -729,32 +730,26 @@ public class TournamentService {
                 .map(HostEndDataShortB::getHost)
                 .collect(Collectors.toList());
 
+        // Создаем Set для фильтрации адресов
+        Set<String> notReadyAddressesSet = notReadyAddresses.stream()
+                .map(this::extractHostPort)
+                .collect(Collectors.toSet());
+
         // Удаляем неготовые адреса из общего списка
-        allAddresses.removeAll(notReadyAddresses);
+        allAddresses.removeIf(address -> notReadyAddressesSet.contains(extractHostPort(address)));
 
         // Удаляем файл с адресами
         Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
         // Перезаписываем оставшиеся адреса в файл
-        allAddresses.forEach(address ->
-                {
-                    try {
-                        UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new RuntimeException(e);
-                    } catch (SignatureException e) {
-                        throw new RuntimeException(e);
-                    } catch (InvalidKeySpecException e) {
-                        throw new RuntimeException(e);
-                    } catch (NoSuchProviderException e) {
-                        throw new RuntimeException(e);
-                    } catch (InvalidKeyException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-        );
+        allAddresses.forEach(address -> {
+            try {
+                UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
+            } catch (IOException | NoSuchAlgorithmException | SignatureException | InvalidKeySpecException |
+                     NoSuchProviderException | InvalidKeyException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         MyLogger.saveLog("Filtered addresses and updated file");
 
@@ -791,7 +786,7 @@ public class TournamentService {
                 .collect(Collectors.toList());
 
         try {
-            // Ждем максимум 15 секунд
+            // Ждем максимум 25 секунд
             boolean completed = latch.await(25, TimeUnit.SECONDS);
             if (!completed) {
                 MyLogger.saveLog("Timeout waiting for nodes to become ready");
@@ -801,6 +796,15 @@ public class TournamentService {
         }
 
         MyLogger.saveLog("finish: initiateProcess");
+    }
+
+    private String extractHostPort(String url) {
+        try {
+            java.net.URL netUrl = new java.net.URL(url);
+            return netUrl.getHost() + ":" + netUrl.getPort();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid URL: " + url, e);
+        }
     }
 
     private boolean confirmReadiness(String host) {
