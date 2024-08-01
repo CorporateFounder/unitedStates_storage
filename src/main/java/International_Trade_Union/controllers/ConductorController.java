@@ -4,11 +4,13 @@ import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.entities.EntityDtoTransaction;
 import International_Trade_Union.entity.entities.SignRequest;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.governments.Directors;
 import International_Trade_Union.governments.UtilsGovernment;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.model.CreateAccount;
 import International_Trade_Union.model.HostEndDataShortB;
@@ -285,8 +287,34 @@ public class ConductorController {
         return block;
     }
 
+    @GetMapping ("/findBlocksFromSign58")
+    public List<Block> findBlocksFromSign58(@RequestParam String sign){
+        try {
+            List<EntityBlock> blocks = blockService.findBlocksByTransactionSign(sign);
+            List<Block> blocks1 = UtilsBlockToEntityBlock.entityBlocksToBlocks(blocks);
+            return blocks1;
+        }catch (Exception e){
+            MyLogger.saveLog("findBlocksFromSign58: ", e);
+            return new ArrayList<>();
+        }
 
+    }
 
+    @GetMapping ("/findBlocksFromSign64")
+    public List<Block> findBlocksFromSign64(@RequestParam String sign){
+        try {
+
+            byte[] bytes = Base64.getDecoder().decode(sign);
+            sign = base58.encode(bytes);
+            List<EntityBlock> blocks = blockService.findBlocksByTransactionSign(sign);
+            List<Block> blocks1 = UtilsBlockToEntityBlock.entityBlocksToBlocks(blocks);
+            return blocks1;
+        }catch (Exception e){
+            MyLogger.saveLog("findBlocksFromSign58: ", e);
+            return new ArrayList<>();
+        }
+
+    }
     /**найти блок по индексу.
      * find a block by index.
      * (from local host)*/

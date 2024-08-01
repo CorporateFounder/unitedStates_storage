@@ -274,7 +274,10 @@ public class TournamentService {
             list = list.stream()
                     .filter(t -> t.getIndex() == BasisController.getBlockchainSize())
                     .filter(UtilsUse.distinctByKey(Block::getHashBlock))
+                    .filter(t-> UtilsUse.getDuplicateTransactions(t).size() == 0)
                     .collect(Collectors.toList());
+
+
 
 
             if (list == null || list.isEmpty() || list.size() == 0) {
