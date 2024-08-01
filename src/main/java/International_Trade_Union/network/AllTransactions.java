@@ -41,9 +41,16 @@ public class AllTransactions {
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
         Base base = new Base58();
         instance = instance.stream()
-                .filter(UtilsUse.distinctByKeyString(t -> base.encode(t.getSign())))
+                .filter(UtilsUse.distinctByKeyString(t -> {
+                    try {
+                        return base.encode(t.getSign());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null; // или другое значение по умолчанию
+                    }
+                }))
                 .collect(Collectors.toList());
-
+        instance = instance.stream().filter(t->t!= null).collect(Collectors.toList());
         sendedTransaction = getInsanceSended();
 
         instance.removeAll(sendedTransaction);
@@ -99,6 +106,7 @@ public class AllTransactions {
                         }
                     }))
                     .collect(Collectors.toList());
+            instance = instance.stream().filter(t->t!= null).collect(Collectors.toList());
             for (DtoTransaction dtoTransaction : instance) {
                 UtilsTransaction.saveAllTransaction(dtoTransaction, Seting.ORGINAL_ALL_TRANSACTION_FILE);
             }
@@ -148,6 +156,8 @@ public class AllTransactions {
                         }
                     }))
                     .collect(Collectors.toList());
+
+            instance = instance.stream().filter(t->t!= null).collect(Collectors.toList());
             for (DtoTransaction dtoTransaction : instance) {
                 UtilsTransaction.saveAllTransaction(dtoTransaction, Seting.ORGINAL_ALL_TRANSACTION_FILE);
             }
@@ -192,6 +202,7 @@ public class AllTransactions {
                     }
                 }))
                 .collect(Collectors.toList());
+        instance = instance.stream().filter(t->t!= null).collect(Collectors.toList());
         return sendedTransaction;
     }
 

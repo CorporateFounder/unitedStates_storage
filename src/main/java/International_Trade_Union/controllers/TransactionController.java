@@ -105,7 +105,9 @@ public class TransactionController {
                         e.printStackTrace();
                         return null; // или другое значение по умолчанию
                     }
-                })).collect(Collectors.toList());
+                }))
+                .collect(Collectors.toList());
+        transactions = transactions.stream().filter(t->t!= null).collect(Collectors.toList());
         return transactions;
     }
 
@@ -167,6 +169,8 @@ public class TransactionController {
                         return null; // или другое значение по умолчанию
                     }
                 })).collect(Collectors.toList());
+        transactions = transactions.stream().filter(t->t!= null).collect(Collectors.toList());
+
         Set<String> strings = new HashSet<>();
         for (DtoTransaction dtoTransaction : transactions) {
             if(!blockService.existsBySign(dtoTransaction.getSign())){
