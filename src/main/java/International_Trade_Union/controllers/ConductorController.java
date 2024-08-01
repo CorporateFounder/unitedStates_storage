@@ -288,9 +288,9 @@ public class ConductorController {
     }
 
     @GetMapping ("/findBlocksFromSign58")
-    public List<Block> findBlocksFromSign58(@RequestParam String sign){
+    public List<Block> findBlocksFromSign58(@RequestBody SignRequest reques){
         try {
-            List<EntityBlock> blocks = blockService.findBlocksByTransactionSign(sign);
+            List<EntityBlock> blocks = blockService.findBlocksByTransactionSign(reques.getSign());
             List<Block> blocks1 = UtilsBlockToEntityBlock.entityBlocksToBlocks(blocks);
             return blocks1;
         }catch (Exception e){
@@ -301,11 +301,11 @@ public class ConductorController {
     }
 
     @GetMapping ("/findBlocksFromSign64")
-    public List<Block> findBlocksFromSign64(@RequestParam String sign){
+    public List<Block> findBlocksFromSign64(@RequestBody SignRequest reques){
         try {
 
-            byte[] bytes = Base64.getDecoder().decode(sign);
-            sign = base58.encode(bytes);
+            byte[] bytes = Base64.getDecoder().decode(reques.getSign());
+            String sign = base58.encode(bytes);
             List<EntityBlock> blocks = blockService.findBlocksByTransactionSign(sign);
             List<Block> blocks1 = UtilsBlockToEntityBlock.entityBlocksToBlocks(blocks);
             return blocks1;
