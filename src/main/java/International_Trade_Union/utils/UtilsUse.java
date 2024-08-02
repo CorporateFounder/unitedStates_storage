@@ -9,7 +9,6 @@ import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -392,7 +391,7 @@ public class UtilsUse {
             double transactionSum = actual.getDtoTransactions().stream()
                     .sorted(Comparator.comparing(DtoTransaction::getDigitalDollar).reversed())
                     .filter(UtilsUse.distinctByKey(DtoTransaction::getSender))
-                    .mapToDouble(t -> t.getDigitalDollar() + t.getDigitalStockBalance() + t.getBonusForMiner() * 4)
+                    .mapToDouble(t -> t.getDigitalDollar() + t.getDigitalStockBalance())
                     .sum();
 
             // Рассчитываем очки за сумму транзакций
