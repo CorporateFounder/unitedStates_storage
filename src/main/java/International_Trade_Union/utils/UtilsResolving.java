@@ -84,11 +84,9 @@ public class UtilsResolving {
             Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
             Set<String> nodesAll = getNodes();
             List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
-            Set<String> newAddress = newHostsLoop(sortPriorityHost.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
-            newAddress.remove(nodesAll);
-            if(newAddress.size() > 0){
-                Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-            }
+            Set<String> newAddress = newHostsLoop(hostsList.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
+//            newAddress.remove(nodesAll);
+
             for (String s : newAddress) {
                 UtilsAllAddresses.putHost(s);
             }

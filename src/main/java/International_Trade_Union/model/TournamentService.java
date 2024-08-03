@@ -702,20 +702,34 @@ public class TournamentService {
         // Потокобезопасный список для доступных узлов
         List<HostEndDataShortB> availableHosts = Collections.synchronizedList(new ArrayList<>());
 
+        // Потокобезопасное множество для недоступных узлов
+        Set<String> unresponsiveAddresses = Collections.synchronizedSet(new HashSet<>());
+
         // Проверяем состояние всех узлов
         List<CompletableFuture<Void>> checkFutures = sortPriorityHost.stream()
                 .map(host -> CompletableFuture.runAsync(() -> {
+                    boolean isReady = false;
+                    boolean isResponding = false;
                     for (int attempt = 0; attempt < 3; attempt++) {
                         try {
                             String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
+                            isResponding = true;
                             if ("ready".equals(response)) {
-                                synchronized (availableHosts) {
-                                    availableHosts.add(host);
-                                }
+                                isReady = true;
                                 break;
                             }
                         } catch (Exception e) {
                             MyLogger.saveLog("Error checking readiness for " + host.getHost() + " on attempt " + (attempt + 1) + ": " + e.getMessage());
+                        }
+                    }
+                    if (isReady) {
+                        synchronized (availableHosts) {
+                            availableHosts.add(host);
+                        }
+                    }
+                    if (!isResponding) {
+                        synchronized (unresponsiveAddresses) {
+                            unresponsiveAddresses.add(extractHostPort(host.getHost()));
                         }
                     }
                 }))
@@ -724,25 +738,14 @@ public class TournamentService {
         // Ждем завершения всех проверок
         CompletableFuture.allOf(checkFutures.toArray(new CompletableFuture[0])).join();
 
-        // Фильтруем адреса недоступных узлов
-        List<String> notReadyAddresses = sortPriorityHost.stream()
-                .filter(host -> !availableHosts.contains(host))
-                .map(HostEndDataShortB::getHost)
-                .collect(Collectors.toList());
-
-        // Создаем Set для фильтрации адресов
-        Set<String> notReadyAddressesSet = notReadyAddresses.stream()
-                .map(this::extractHostPort)
-                .collect(Collectors.toSet());
-
-        // Удаляем неготовые адреса из общего списка
-        allAddresses.removeIf(address -> notReadyAddressesSet.contains(extractHostPort(address)));
-
         // Удаляем файл с адресами
         Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
 
-        // Перезаписываем оставшиеся адреса в файл
-        allAddresses.forEach(address -> {
+        // Перезаписываем оставшиеся адреса в файл, исключая недоступные
+        Set<String> finalAllAddresses = allAddresses;
+        finalAllAddresses.removeAll(unresponsiveAddresses);
+
+        finalAllAddresses.forEach(address -> {
             try {
                 UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
             } catch (IOException | NoSuchAlgorithmException | SignatureException | InvalidKeySpecException |
@@ -754,7 +757,7 @@ public class TournamentService {
         MyLogger.saveLog("Filtered addresses and updated file");
 
         // Ограничиваем количество ожидаемых узлов до 7
-        int nodesToWait = Math.min(notReadyAddresses.size(), 7);
+        int nodesToWait = Math.min(availableHosts.size(), 7);
 
         if (nodesToWait == 0) {
             MyLogger.saveLog("No nodes to wait for, all are ready or unreachable");
