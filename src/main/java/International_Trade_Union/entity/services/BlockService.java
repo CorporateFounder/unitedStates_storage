@@ -8,14 +8,12 @@ import International_Trade_Union.entity.repository.EntityAccountRepository;
 import International_Trade_Union.entity.repository.EntityBlockRepository;
 import International_Trade_Union.entity.repository.EntityDtoTransactionRepository;
 import International_Trade_Union.entity.repository.EntityLawsRepository;
-import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.utils.UtilsBlockToEntityBlock;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -28,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -136,10 +133,12 @@ public class BlockService {
         EntityAccount entityAccounts = null;
         try {
             entityAccounts = entityAccountRepository.findByAccount(account);
-        } catch (Exception e) {
+            if (entityAccounts == null) {
+                return new EntityAccount(account, 0, 0, 0);
+            }
+        } catch (Throwable e) {
             e.printStackTrace();
             return new EntityAccount(account, 0, 0, 0);
-
         }
         return entityAccounts;
     }
