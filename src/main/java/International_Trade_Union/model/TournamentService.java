@@ -31,6 +31,9 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 @Component
 @Scope("singleton")
 public class TournamentService {
+
+    @Autowired
+    NodeChecker nodeChecker;
     @Autowired
     UtilsTransactions utilsTransactions;
 
@@ -259,7 +262,7 @@ public class TournamentService {
         NodeController.setReady();
 
         // Затем вызываем initiateProcess
-        initiateProcess(hostEndDataShortBS);
+        nodeChecker.initiateProcess(hostEndDataShortBS);
 
         long timestamp = UtilsTime.getUniversalTimestamp() / 1000;
 
@@ -688,127 +691,11 @@ public class TournamentService {
 
         return instance;
     }
-    public void initiateProcess(List<HostEndDataShortB> sortPriorityHost) {
-        MyLogger.saveLog("start: initiateProcess");
-        Set<String> allAddresses = new HashSet<>();
-        try {
-            // Считать все адреса из файла
-            allAddresses = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
-                 NoSuchProviderException | InvalidKeyException e) {
-            return;
-        }
 
-        // Потокобезопасный список для доступных узлов
-        List<HostEndDataShortB> availableHosts = Collections.synchronizedList(new ArrayList<>());
 
-        // Потокобезопасное множество для недоступных узлов
-        Set<String> unresponsiveAddresses = Collections.synchronizedSet(new HashSet<>());
 
-        // Проверяем состояние всех узлов
-        List<CompletableFuture<Void>> checkFutures = sortPriorityHost.stream()
-                .map(host -> CompletableFuture.runAsync(() -> {
-                    boolean isReady = false;
-                    boolean isResponding = false;
-                    for (int attempt = 0; attempt < 3; attempt++) {
-                        try {
-                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
-                            isResponding = true;
-                            if ("ready".equals(response)) {
-                                isReady = true;
-                                break;
-                            }
-                        } catch (Exception e) {
-                            MyLogger.saveLog("Error checking readiness for " + host.getHost() + " on attempt " + (attempt + 1) + ": " + e.getMessage());
-                        }
-                    }
-                    if (isReady) {
-                        synchronized (availableHosts) {
-                            availableHosts.add(host);
-                        }
-                    }
-                    if (!isResponding) {
-                        synchronized (unresponsiveAddresses) {
-                            unresponsiveAddresses.add(extractHostPort(host.getHost()));
-                        }
-                    }
-                }))
-                .collect(Collectors.toList());
 
-        // Ждем завершения всех проверок
-        CompletableFuture.allOf(checkFutures.toArray(new CompletableFuture[0])).join();
 
-        // Удаляем файл с адресами
-        Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-
-        // Перезаписываем оставшиеся адреса в файл, исключая недоступные
-        Set<String> finalAllAddresses = allAddresses;
-        finalAllAddresses.removeAll(unresponsiveAddresses);
-
-        finalAllAddresses.forEach(address -> {
-            try {
-                UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-            } catch (IOException | NoSuchAlgorithmException | SignatureException | InvalidKeySpecException |
-                     NoSuchProviderException | InvalidKeyException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        MyLogger.saveLog("Filtered addresses and updated file");
-
-        // Ограничиваем количество ожидаемых узлов до 7
-        int nodesToWait = Math.min(availableHosts.size(), 7);
-
-        if (nodesToWait == 0) {
-            MyLogger.saveLog("No nodes to wait for, all are ready or unreachable");
-            return;
-        }
-
-        MyLogger.saveLog("Waiting for " + nodesToWait + " nodes to become ready");
-
-        CountDownLatch latch = new CountDownLatch(nodesToWait);
-
-        // Теперь ждем, пока неготовые узлы станут готовыми
-        List<CompletableFuture<Void>> waitFutures = availableHosts.stream()
-                .map(host -> CompletableFuture.runAsync(() -> {
-                    while (true) {
-                        try {
-                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
-                            if ("ready".equals(response)) {
-                                latch.countDown();
-                                break;
-                            }
-                            Thread.sleep(1000); // Пауза перед следующей проверкой
-                        } catch (Exception e) {
-                            MyLogger.saveLog("Error waiting for readiness of " + host.getHost() + ": " + e.getMessage());
-                            latch.countDown(); // Уменьшаем счетчик, если узел стал недоступен
-                            break;
-                        }
-                    }
-                }))
-                .collect(Collectors.toList());
-
-        try {
-            // Ждем максимум 25 секунд
-            boolean completed = latch.await(25, TimeUnit.SECONDS);
-            if (!completed) {
-                MyLogger.saveLog("Timeout waiting for nodes to become ready");
-            }
-        } catch (InterruptedException e) {
-            MyLogger.saveLog("Waiting was interrupted: " + e.getMessage());
-        }
-
-        MyLogger.saveLog("finish: initiateProcess");
-    }
-
-    private String extractHostPort(String url) {
-        try {
-            java.net.URL netUrl = new java.net.URL(url);
-            return netUrl.getHost() + ":" + netUrl.getPort();
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid URL: " + url, e);
-        }
-    }
 
     private boolean confirmReadiness(String host) {
         try {

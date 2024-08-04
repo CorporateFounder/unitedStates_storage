@@ -31,11 +31,14 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Component
 @Scope("singleton")
 public class Tournament implements Runnable {
+    @Autowired
+    NodeChecker nodeChecker;
 
     @Autowired
     private TournamentService tournament;
@@ -60,31 +63,12 @@ public class Tournament implements Runnable {
         // 1. Получаем исходный список узлов
         Set<String> nodes = BasisController.getNodes();
         List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(nodes);
-        Set<String> allNodes = new HashSet<>(nodes);
-
-        // Получаем списки узлов от каждого сервера
-        for (HostEndDataShortB hostEndDataShortB : hosts) {
-            String s = hostEndDataShortB.getHost();
-            try {
-                String strNodes = UtilUrl.readJsonFromUrl(s + "/getNodes");
-                Set<String> serverNodes = UtilsJson.jsonToSetAddresses(strNodes);
-                allNodes.addAll(serverNodes);
-            } catch (IOException | JSONException e) {
-                MyLogger.saveLog("Error getting nodes from " + s + ": " + e.getMessage());
-            }
-        }
-
-        // 2. Удаляем внутренний список
-        Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-
-        // 3. Сохраняем каждый адрес отфдельно
-        for (String address : allNodes) {
-            try {
-                UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-            } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
-                     SignatureException | NoSuchProviderException | InvalidKeyException e) {
-                MyLogger.saveLog("Error saving address " + address + ": " + e.getMessage());
-            }
+        try {
+            nodeChecker.checkNodes(utilsResolving);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
 
         tournament.updatingNodeEndBlocks(hosts);
@@ -173,4 +157,5 @@ public class Tournament implements Runnable {
             BasisController.getWinnerList().clear();
         }
     }
+
 }

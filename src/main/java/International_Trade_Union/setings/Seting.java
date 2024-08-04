@@ -309,7 +309,7 @@ public interface Seting {
 
 
     int DELETED_FILE_BLOCKED_HOST_TIME_SECOND = 1000;
-    int RESYNC_TIME = 100;
+
 
     int IS_BIG_DIFFERENT = 20;
     int DUPLICATE_INDEX = 243927;
@@ -319,4 +319,5 @@ public interface Seting {
 
     int NEW_ALGO_MINING = 286892;
     int DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS = 287971;
+    int BIG_DECIMAL_CALCULATE = 289381;
 }
