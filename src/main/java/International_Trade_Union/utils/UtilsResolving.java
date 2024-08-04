@@ -2118,6 +2118,11 @@ public class UtilsResolving {
 
     // Метод для получения данных из источника
     private DataShortBlockchainInformation fetchDataShortBlockchainInformation(String host) throws IOException, JSONException {
+        // Проверка и добавление протокола, если необходимо
+        if (!host.startsWith("http://") && !host.startsWith("https://")) {
+            host = "http://" + host;
+        }
+
         // Загрузка JSON данных с URL
         String jsonGlobalData = UtilUrl.readJsonFromUrl(host + "/datashort");
         // Вывод загруженных данных
@@ -2125,6 +2130,7 @@ public class UtilsResolving {
         // Преобразование JSON данных в объект
         return UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
     }
+
 
     //скачивает хосты из других узлов
     public Set<String> newHosts(String host) throws JSONException, IOException {
