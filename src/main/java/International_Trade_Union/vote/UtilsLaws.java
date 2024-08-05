@@ -4,7 +4,6 @@ import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.governments.Director;
 import International_Trade_Union.governments.Directors;
-import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsFileSaveRead;
@@ -209,44 +208,6 @@ public class UtilsLaws {
 
         return lawsMap;
     }
-    public static Map<String, Laws> rollBackLaws2(
-            List<Block> deleteBlocks,
-            String fileLaws,
-            Map<String, Laws> lawsMap
-    ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-
-        List<Laws> lawsFromFile = readLineLaws(fileLaws);
-        List<Laws> lawsForSave = new ArrayList<>();
-
-        try {
-            for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
-                Block block = deleteBlocks.get(i);
-                Map<String, Laws> blockLaws = getPackageLaws(block, new HashMap<>());
-                lawsMap.putAll(blockLaws);
-
-                for (Map.Entry<String, Laws> map : blockLaws.entrySet()) {
-                    if (!lawsFromFile.contains(map.getValue())) {
-                        if (map.getValue() != null &&
-                                map.getValue().packetLawName != null &&
-                                map.getValue().getLaws() != null &&
-                                !map.getValue().getHashLaw().isEmpty() &&
-                                map.getValue().getLaws().size() > 0) {
-                            lawsForSave.add(map.getValue());
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            MyLogger.saveLog("rollBackLaws2: rollbackCalculateBalance: ", e);
-            return lawsMap;
-        }
-
-        // Удаляем законы и сохраняем файл один раз в конце
-        lawsFromFile.removeAll(lawsForSave);
-        saveLaws(lawsFromFile, fileLaws);
-
-        return lawsMap;
-    }
 
 
     /**возвращает список всех законов, как действующих, так и не действующих, если закон новый то автоматически сохраняет его*/
@@ -277,6 +238,7 @@ public class UtilsLaws {
 
         return lawsMap;
     }
+
     public static List<LawEligibleForParliamentaryApproval> getCurrentLaws(Map<String, Laws> lawsMap, Map<String, Account> balances, String fileCurrentLaws) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         List<Account> lawsBalances = allPackegeLaws(balances);
 
@@ -337,7 +299,7 @@ public class UtilsLaws {
                 .filter(t->Objects.nonNull(t.getLaws().getPacketLawName()))
                 .filter(t->Objects.nonNull(t.getName()))
                 .filter(t->Objects.nonNull(t.getLaws().getHashLaw()))
-                .sorted((f1, f2) -> Double.compare(f2.getAccount().getDigitalStockBalance(), f1.getAccount().getDigitalStockBalance()))
+                .sorted((f1, f2) -> Double.compare(f2.getAccount().getDigitalStockBalance().doubleValue(), f1.getAccount().getDigitalStockBalance().doubleValue()))
                 .filter(t-> t.getLaws().getPacketLawName().equals(higherSpecialPositions.getName()))
                 .limit(higherSpecialPositions.getCount())
                 .collect(Collectors.toList());

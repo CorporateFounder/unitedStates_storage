@@ -692,8 +692,7 @@ public class UtilsResolving {
                 actual.getSize() < expected.getSize()
                         || actual.getBigRandomNumber() < expected.getBigRandomNumber()
                         || actual.getTransactions() < expected.getTransactions()
-                        || actual.getStaking() < expected.getTransactions()
-
+                        || actual.getStaking().compareTo(expected.getStaking()) < 0
         ) {
             return true;
         }
@@ -1947,7 +1946,6 @@ public class UtilsResolving {
             list.add(entityBlock);
 
             calculateBalance(balances, block, signs);
-//            UtilsBlock.saveBLock(block, filename);
         }
 
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
@@ -2029,13 +2027,14 @@ public class UtilsResolving {
         if (actual.isValidation() != expected.isValidation()
                 || actual.getSize() < expected.getSize()
                 || actual.getTransactions() < expected.getTransactions()
-                || actual.getStaking() < expected.getStaking()
+                || actual.getStaking().compareTo(expected.getStaking()) < 0
                 || actual.getBigRandomNumber() < expected.getBigRandomNumber()
                 || actual.getHashCount() < expected.getHashCount()) {
             result = false;
         }
         return result;
     }
+
 
     public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) {
 
@@ -2094,7 +2093,6 @@ public class UtilsResolving {
                     .collect(Collectors.toList());
         });
 
-
         // Получение итогового списка
         List<HostEndDataShortB> resultList = allComplete.join();
 
@@ -2103,6 +2101,7 @@ public class UtilsResolving {
 
         // Вывод информации о завершении метода
         System.out.println("finish: sortPriorityHost: " + resultList);
+
 
         // Возвращение итогового списка
         return resultList;

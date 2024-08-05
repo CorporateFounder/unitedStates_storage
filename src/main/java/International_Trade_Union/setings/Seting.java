@@ -232,8 +232,8 @@ public interface Seting {
     double MONEY = 30;
     double DIGITAL_DOLLAR_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_DOLLAR_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
     double DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE = Math.round(UtilsUse.countPercents(Seting.DIGITAL_STOCK_REWARDS_BEFORE, Seting.FOUNDERS_REWARD));
-
-
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS_PERCENT =  57;
+    int ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS_VOTE = 4;
     //каким количеством порций отправлять блоки
 
     int DELETED_PORTION = 150;
@@ -320,4 +320,6 @@ public interface Seting {
     int NEW_ALGO_MINING = 286892;
     int DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS = 287971;
     int BIG_DECIMAL_CALCULATE = 289381;
+
+    double MINIMUM = 0.000001;
 }

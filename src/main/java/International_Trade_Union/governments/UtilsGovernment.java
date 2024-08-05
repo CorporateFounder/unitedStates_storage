@@ -8,6 +8,7 @@ import International_Trade_Union.setings.Seting;
 import International_Trade_Union.vote.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -54,13 +55,13 @@ public class UtilsGovernment {
             minersHaveMoreStock = blocks;
         }
         List<Account> boardAccounts = minersHaveMoreStock.stream().map(
-                        t -> new Account(t.getMinerAddress(), 0, 0, 0))
+                        t -> new Account(t.getMinerAddress(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO))
                 .collect(Collectors.toList());
 
         for (Block block : minersHaveMoreStock) {
             System.out.println("calculating board of shareholder: index:  " + block.getIndex());
             for (DtoTransaction dtoTransaction : block.getDtoTransactions()) {
-                boardAccounts.add(new Account(dtoTransaction.getSender(), 0, 0, 0));
+                boardAccounts.add(new Account(dtoTransaction.getSender(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
             }
 
         }
@@ -74,14 +75,14 @@ public class UtilsGovernment {
         boardOfShareholders = boardOfShareholders
                 .stream()
                 .filter(t -> !t.getAccount().startsWith(Seting.NAME_LAW_ADDRESS_START))
-                .filter(t -> t.getDigitalStakingBalance() > 0)
+                .filter(t -> t.getDigitalStakingBalance().doubleValue() > 0)
                 .sorted(Comparator.comparing(Account::getDigitalStakingBalance).reversed())
                 .collect(Collectors.toList());
 
-        boardOfShareholders = boardOfShareholders
-                .stream()
-                .limit(Seting.BOARD_OF_SHAREHOLDERS)
-                .collect(Collectors.toList());
+//        boardOfShareholders = boardOfShareholders
+//                .stream()
+//                .limit(Seting.BOARD_OF_SHAREHOLDERS)
+//                .collect(Collectors.toList());
 
         return boardOfShareholders;
     }
@@ -186,7 +187,7 @@ public class UtilsGovernment {
 
                 double vote = votesMap.get(currentLawVotesEndBalance.getAddressLaw()).votesLaw(balances, yesAverage, noAverage);
                 int supremeVotes  = votesMap.get(currentLawVotesEndBalance.getAddressLaw()).voteGovernment(balances, corporateCouncilOfReferees);
-                int boardOfDirectorsVotes = votesMap.get(currentLawVotesEndBalance.getAddressLaw()).voteGovernment(balances, boardOfDirectors);
+                int boardOfDirectorsVotes = votesMap.get(currentLawVotesEndBalance.getAddressLaw()).voteDirector(balances, boardOfDirectors);
                 double boardOfDirectorsVotesPR = votesMap.get(currentLawVotesEndBalance.getAddressLaw()).voteFractions(fractions);
                 List<Vote> directorsVote = votesMap.get(currentLawVotesEndBalance.getAddressLaw()).directorsVote(fractions);
                 currentLawVotesEndBalance.setVotes(vote);
@@ -205,8 +206,10 @@ public class UtilsGovernment {
         List<String> hightJudge = new ArrayList<>();
         for (CurrentLawVotesEndBalance currentLawVotesEndBalance : current) {
             if(currentLawVotesEndBalance.getPackageName().equals(NamePOSITION.GENERAL_EXECUTIVE_DIRECTOR.toString())){
-                if(currentLawVotesEndBalance.getFractionVote() >= Seting.ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS
-                && currentLawVotesEndBalance.getVotes() >= Seting.ALL_STOCK_VOTE
+                if(currentLawVotesEndBalance.getFractionVote() >= Seting.ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS_PERCENT
+                 ||
+                        currentLawVotesEndBalance.getVotesBoardOfDirectors() > Seting.ORIGINAL_LIMIT_MIN_VOTE_BOARD_OF_DIRECTORS_VOTE
+
                 ){
                     primeMinister.add(currentLawVotesEndBalance.getLaws().get(0));
                 }

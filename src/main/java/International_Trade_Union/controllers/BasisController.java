@@ -34,6 +34,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
+import java.math.BigDecimal;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
@@ -88,7 +89,7 @@ public class BasisController {
 
             Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
             // Обеспечение наличия всех аккаунтов в finalBalances
-            list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, 0.0, 0.0, 0.0)));
+            list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
 
             List<Block> winnerList = new ArrayList<>();
 
@@ -965,7 +966,7 @@ public class BasisController {
                 System.out.println("account: " + addressMiner);
                 Account account = balances.get(addressMiner);
                 if (account == null) {
-                    account = new Account(addressMiner, 0, 0, 0);
+                    account = new Account(addressMiner, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
                 }
 
 

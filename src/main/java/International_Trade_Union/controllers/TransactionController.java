@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -112,35 +113,42 @@ public class TransactionController {
     }
 
     /**Возвращает транзакции, которые имеют достаточно денег на счетах*/
-    public  List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException {
+    public List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
-        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts( blockService.findByDtoAccounts(transactions));
+        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
+
+        BigDecimal minimum = BigDecimal.valueOf(Seting.MINIMUM);
+
         for (DtoTransaction transaction : transactions) {
-            if(balances.containsKey(transaction.getSender())){
-                Account account = balances.get(transaction.getSender());
-                if(account.getDigitalDollarBalance() >= transaction.getDigitalDollar()
-                        + transaction.getBonusForMiner()
-                ){
-                    dtoTransactions.add(transaction);
-                }
-                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance() + transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.YES)){
+            BigDecimal transactionDigitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
+            BigDecimal transactionDigitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
 
-                    dtoTransactions.add(transaction);
-                }
-                if(account.getDigitalStockBalance() >= transaction.getDigitalStockBalance()  + transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.NO)){
-                    dtoTransactions.add(transaction);
-                }
-                if(account.getDigitalDollarBalance() >= transaction.getDigitalDollar() + transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.STAKING)){
-
-                    dtoTransactions.add(transaction);
-                }
-                if(account.getDigitalStakingBalance() >= transaction.getDigitalDollar()+ transaction.getBonusForMiner() && transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)){
-                    dtoTransactions.add(transaction);
-                }
-
-
+            // Check if both digital dollar and digital stock are below the minimum
+            if (transactionDigitalDollar.compareTo(minimum) < 0 && transactionDigitalStock.compareTo(minimum) < 0) {
+                continue;
             }
 
+            if (balances.containsKey(transaction.getSender())) {
+                Account account = balances.get(transaction.getSender());
+
+                BigDecimal transactionBonusForMiner = BigDecimal.valueOf(transaction.getBonusForMiner());
+
+                if (account.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
+                    dtoTransactions.add(transaction);
+                }
+                if (account.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.YES)) {
+                    dtoTransactions.add(transaction);
+                }
+                if (account.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.NO)) {
+                    dtoTransactions.add(transaction);
+                }
+                if (account.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.STAKING)) {
+                    dtoTransactions.add(transaction);
+                }
+                if (account.getDigitalStakingBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)) {
+                    dtoTransactions.add(transaction);
+                }
+            }
         }
         return dtoTransactions;
     }

@@ -21,8 +21,8 @@ import International_Trade_Union.vote.VoteEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -45,7 +45,7 @@ public class Mining {
 
         if (blocks.size() != 0) {
             blocks = blocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-            blockchain.setBlockchainList(blocks);
+           blockchain.setBlockchainList(blocks);
         }
         return blockchain;
     }
@@ -180,22 +180,27 @@ public class Mining {
                             continue cicle;
                         }
 
+
                         if(transaction.getVoteEnum().equals(VoteEnum.STAKING)
                                 || transaction.getVoteEnum().equals(VoteEnum.YES)
-                                || transaction.getVoteEnum().equals(VoteEnum.NO) ){
-                            if (account.getDigitalDollarBalance() < transaction.getDigitalDollar() + transaction.getBonusForMiner()) {
+                                || transaction.getVoteEnum().equals(VoteEnum.NO)) {
+                            BigDecimal transactionDigitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
+                            BigDecimal transactionBonusForMiner = BigDecimal.valueOf(transaction.getBonusForMiner());
+                            BigDecimal totalTransactionAmount = transactionDigitalDollar.add(transactionBonusForMiner);
+
+                            if (account.getDigitalDollarBalance().compareTo(totalTransactionAmount) < 0) {
                                 System.out.println("sender don't have digital dollar: " + account.getAccount() + " balance: " + account.getDigitalDollarBalance());
-                                System.out.println("digital dollar for send: " + (transaction.getDigitalDollar() + transaction.getBonusForMiner()));
-                                continue cicle;
+                                System.out.println("digital dollar for send: " + totalTransactionAmount);
+                                continue;
                             }
                         }
 
-                        if (account.getDigitalStockBalance() < transaction.getDigitalStockBalance()) {
+                        BigDecimal transactionDigitalStockBalance = BigDecimal.valueOf(transaction.getDigitalStockBalance());
+                        if (account.getDigitalStockBalance().compareTo(transactionDigitalStockBalance) < 0) {
                             System.out.println("sender don't have digital reputation: " + account.getAccount() + " balance: " + account.getDigitalStockBalance());
-                            System.out.println("digital reputation for send: " + (transaction.getDigitalDollar() + transaction.getBonusForMiner()));
-                            continue cicle;
+                            System.out.println("digital reputation for send: " + transactionDigitalStockBalance);
+                            continue;
                         }
-
                         forAdd.add(transaction);
                     }
 
@@ -272,7 +277,6 @@ public class Mining {
                 founderDigigtalReputationReward = UtilsUse.round(founderDigigtalReputationReward, Seting.DECIMAL_PLACES);
             }
         }
-
         Base base = new Base58();
 
         //суммирует все вознаграждения майнеров
@@ -318,19 +322,25 @@ public class Mining {
                 minerRewards, digitalReputationForMiner, new Laws(), sumRewards, VoteEnum.YES );
 
 
+
+
+        //подписывает
+        byte[] signGold = UtilsSecurity.sign(privateKey, minerRew.toSign());
+        minerRew.setSign(signGold);
+
+
         forAdd.add(minerRew);
 
         forAdd = forAdd.stream().filter(UtilsUse.distinctByKeyString(t -> {
             try {
-                return base.encode(t.getSign());
+                return t.getSign() != null ? base.encode(t.getSign()) : null;
             } catch (Exception e) {
                 e.printStackTrace();
                 return null; // или другое значение по умолчанию
             }
         })).collect(Collectors.toList());
-        //подписывает
-        byte[] signGold = UtilsSecurity.sign(privateKey, minerRew.toSign());
-        minerRew.setSign(signGold);
+
+        forAdd = forAdd.stream().filter(t->t!= null).collect(Collectors.toList());
         //blockchain.getHashBlock(blockchain.sizeBlockhain() - 1)
         Block block = new Block(
                 forAdd,

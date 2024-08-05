@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -70,7 +71,7 @@ public class TournamentService {
                 .thenComparing(Block::getHashCompexity, Comparator.reverseOrder()) // Затем по hashComplexity
                 .thenComparing(block -> Optional.ofNullable(finalBalances.get(block.getMinerAddress()))
                         .map(Account::getDigitalStakingBalance)
-                        .orElse(0.0), Comparator.reverseOrder()) // Затем по staking
+                        .orElse(BigDecimal.ZERO), Comparator.reverseOrder()) // Затем по staking
                 .thenComparing(block -> block.getDtoTransactions().size(), Comparator.reverseOrder()); // И наконец, по количеству транзакций
 
 // Применение компаратора для сортировки списка
@@ -106,13 +107,13 @@ public class TournamentService {
         for (Block block : list) {
             Account account = balances.get(block.getMinerAddress());
             if (account == null)
-                account = new Account(block.getMinerAddress(), 0, 0, 0);
+                account = new Account(block.getMinerAddress(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
             LiteVersionWiner liteVersionWiner = new LiteVersionWiner(
                     block.getIndex(),
                     block.getMinerAddress(),
                     block.getHashBlock(),
                     block.getDtoTransactions().size(),
-                    account.getDigitalStakingBalance(),
+                    account.getDigitalStakingBalance().doubleValue(),
                     bigRandomWinner(block, account),
                     block.getHashCompexity()
             );
@@ -337,7 +338,7 @@ public class TournamentService {
 
             Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
             // Обеспечение наличия всех аккаунтов в finalBalances
-            list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, 0.0, 0.0, 0.0)));
+            list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
 
             List<Block> winnerList = new ArrayList<>();
 

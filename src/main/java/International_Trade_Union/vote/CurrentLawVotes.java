@@ -23,6 +23,19 @@ public class CurrentLawVotes {
         this.NO = NO;
     }
 
+    public int voteDirector (Map<String, Account> balances,
+                             List<String> governments
+    ){
+        int yes = 0;
+        List<String> addressGovernment = governments;
+        for (String s : YES) {
+            if (addressGovernment.contains(s)) {
+                yes += Seting.VOTE_GOVERNMENT;
+            }
+
+        }
+        return yes;
+    }
 
 
     //подсчет голосов для палат
@@ -64,13 +77,13 @@ public class CurrentLawVotes {
         //
         for (String s : YES) {
 
-            yes += balances.get(s).getDigitalStakingBalance();
+            yes += balances.get(s).getDigitalStakingBalance().doubleValue();
 
         }
         //
         for (String s : NO) {
 
-            no += balances.get(s).getDigitalStakingBalance();
+            no += balances.get(s).getDigitalStakingBalance().doubleValue();
 
         }
 
@@ -84,12 +97,12 @@ public class CurrentLawVotes {
         double yes = 0.0;
         double no = 0.0;
         for (String s : YES) {
-            yes += balances.get(s).getDigitalStakingBalance() ;
+            yes += balances.get(s).getDigitalStakingBalance().doubleValue() ;
 
         }
         for (String s : NO) {
 
-            no += balances.get(s).getDigitalStakingBalance() ;
+            no += balances.get(s).getDigitalStakingBalance().doubleValue() ;
 
         }
 

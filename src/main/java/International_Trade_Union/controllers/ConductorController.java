@@ -89,7 +89,7 @@ public class ConductorController {
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         Account account = UtilsBalance.getBalance(address, balances);
-        return UtilsUse.round(account.getDigitalDollarBalance(), Seting.DECIMAL_PLACES);
+        return UtilsUse.round(account.getDigitalDollarBalance(), Seting.DECIMAL_PLACES).doubleValue();
     }
 
     /**
@@ -102,7 +102,7 @@ public class ConductorController {
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         Account account = UtilsBalance.getBalance(address, balances);
-        return UtilsUse.round(account.getDigitalStockBalance(), Seting.DECIMAL_PLACES);
+        return UtilsUse.round(account.getDigitalStockBalance(), Seting.DECIMAL_PLACES).doubleValue();
     }
 
     /**
@@ -355,8 +355,9 @@ public class ConductorController {
 
         return UtilsBlockToEntityBlock.entityToDto(entityDtoTransaction);
     }
-
-
+    /**
+     * Получить список транзакций для адреса отправителя, от определенного блока до определенного блока
+     */
     @GetMapping("/senderTransactions")
     @ResponseBody
     public List<DtoTransaction> senderTransactions(
