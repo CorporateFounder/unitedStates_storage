@@ -2094,6 +2094,7 @@ public class UtilsResolving {
                     .collect(Collectors.toList());
         });
 
+
         // Получение итогового списка
         List<HostEndDataShortB> resultList = allComplete.join();
 
