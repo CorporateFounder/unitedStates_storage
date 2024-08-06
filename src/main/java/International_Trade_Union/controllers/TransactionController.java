@@ -120,16 +120,13 @@ public class TransactionController {
         BigDecimal minimum = BigDecimal.valueOf(Seting.MINIMUM);
 
         for (DtoTransaction transaction : transactions) {
-            BigDecimal transactionDigitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
-            BigDecimal transactionDigitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
 
             // Check if both digital dollar and digital stock are below the minimum
-            if (transactionDigitalDollar.compareTo(minimum) < 0 && transactionDigitalStock.compareTo(minimum) < 0) {
-                continue;
-            }
 
             if (balances.containsKey(transaction.getSender())) {
                 Account account = balances.get(transaction.getSender());
+                BigDecimal transactionDigitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
+                BigDecimal transactionDigitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
 
                 BigDecimal transactionBonusForMiner = BigDecimal.valueOf(transaction.getBonusForMiner());
 
