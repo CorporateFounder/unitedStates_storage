@@ -117,7 +117,7 @@ public class TransactionController {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
 
-        BigDecimal minimum = BigDecimal.valueOf(Seting.MINIMUM);
+
 
         for (DtoTransaction transaction : transactions) {
 

@@ -21,10 +21,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 //wallet
@@ -50,9 +48,12 @@ public class UtilsBalance {
         Base base = new Base58();
         System.out.println("start rollbackCalculateBalance: index: " + block.getIndex());
         int i = (int) block.getIndex();
-
+        List<DtoTransaction> transactions = block.getDtoTransactions();
+        transactions = transactions.stream()
+                .sorted(Comparator.comparing(DtoTransaction::getDigitalDollar))
+                .collect(Collectors.toList());
         int BasisSendCount = 0;
-        for (int j = 0; j < block.getDtoTransactions().size(); j++) {
+        for (int j = 0; j < transactions.size(); j++) {
 
             DtoTransaction transaction = block.getDtoTransactions().get(j);
             if (transaction.getSender().startsWith(Seting.NAME_LAW_ADDRESS_START)) {
@@ -147,8 +148,12 @@ public class UtilsBalance {
         System.out.println("calculateBalance: index: " + block.getIndex());
         int i = (int) block.getIndex();
 
+        List<DtoTransaction> transactions = block.getDtoTransactions();
+        transactions = transactions.stream()
+                .sorted(Comparator.comparing(DtoTransaction::getDigitalDollar))
+                .collect(Collectors.toList());
         int BasisSendCount = 0;
-        for (int j = 0; j < block.getDtoTransactions().size(); j++) {
+        for (int j = 0; j < transactions.size(); j++) {
 
 
             DtoTransaction transaction = block.getDtoTransactions().get(j);
@@ -346,6 +351,9 @@ public class UtilsBalance {
                 System.out.println("STAKING: ");
                 if (senderDigitalDollar.compareTo(digitalDollar.add(minerRewards)) < 0) {
                     System.out.println("less dollar");
+                    System.out.println("sender: " + senderAddress);
+                    System.out.println("minerRewards: " + minerRewards);
+
                     sendTrue = false;
                     return sendTrue;
                 }
@@ -395,9 +403,17 @@ public class UtilsBalance {
 
         if (!senderAddress.getAccount().equals(Seting.BASIS_ADDRESS)) {
             if (voteEnum.equals(VoteEnum.YES) || voteEnum.equals(VoteEnum.NO)) {
+
+                if (senderAddress.getAccount().equals(recipientAddress.getAccount())) {
+                    System.out.printf("sender %s, recipient %s cannot be equals! Error!%n", senderAddress.getAccount(), recipientAddress.getAccount());
+                    sendTrue = false;
+                    return sendTrue;
+                }
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar.add(digitalDollar));
                 senderAddress.setDigitalStockBalance(senderDigitalStock.add(digitalStock));
                 recipientAddress.setDigitalDollarBalance(recipientDigitalDollar.subtract(digitalDollar));
+
+
 
                 if (voteEnum.equals(VoteEnum.YES)) {
                     recipientAddress.setDigitalStockBalance(recipientDigitalStock.subtract(digitalStock));
@@ -407,10 +423,27 @@ public class UtilsBalance {
 
             } else if (voteEnum.equals(VoteEnum.STAKING)) {
                 System.out.println("STAKING: ");
+                if (senderDigitalStaking.compareTo(digitalDollar.add(minerRewards)) < 0) {
+                    System.out.println("less dollar");
+                    System.out.println("sender: " + senderAddress);
+                    System.out.println("minerRewards: " + minerRewards);
+
+                    sendTrue = false;
+                    return sendTrue;
+                }
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar.add(digitalDollar));
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking.subtract(digitalDollar));
             } else if (voteEnum.equals(VoteEnum.UNSTAKING)) {
                 System.out.println("UNSTAKING");
+
+                if (senderDigitalDollar.compareTo(digitalDollar.add(minerRewards)) < 0) {
+                    System.out.println("less dollar");
+                    System.out.println("sender: " + senderAddress);
+                    System.out.println("minerRewards: " + minerRewards);
+
+                    sendTrue = false;
+                    return sendTrue;
+                }
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar.subtract(digitalDollar));
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking.add(digitalDollar));
             }

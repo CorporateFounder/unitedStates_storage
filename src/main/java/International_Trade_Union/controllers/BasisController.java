@@ -1044,6 +1044,7 @@ public class BasisController {
                         System.out.println("code error: " + HttpStatus.CONFLICT);
                         System.out.println("miner: " + account);
                         MyLogger.saveLog("CONFLICT: " + account + " temp: " + temp);
+                        MyLogger.saveLog("CONFLICT: " + account + " shortDataBlockchain: " + shortDataBlockchain);
                         return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
                     }
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
