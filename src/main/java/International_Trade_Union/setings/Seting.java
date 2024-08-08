@@ -320,5 +320,5 @@ public interface Seting {
     int NEW_ALGO_MINING = 286892;
     int DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS = 287971;
 
-
+    double MINIMUM = 0.00000001;
 }

@@ -108,7 +108,10 @@ public class TransactionController {
                     }
                 }))
                 .collect(Collectors.toList());
-        transactions = transactions.stream().filter(t->t!= null).collect(Collectors.toList());
+        transactions = transactions.stream()
+                .filter(t->t!= null)
+                .filter(t-> UtilsUse.isTransaction(t)).collect(Collectors.toList());
+
         return transactions;
     }
 
