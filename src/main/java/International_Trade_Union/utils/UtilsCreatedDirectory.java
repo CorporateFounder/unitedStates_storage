@@ -1,5 +1,6 @@
 package International_Trade_Union.utils;
 
+import International_Trade_Union.model.Mining;
 import International_Trade_Union.setings.Seting;
 
 import java.io.File;
@@ -36,6 +37,7 @@ public class UtilsCreatedDirectory {
         files.add(Seting.H2_DB);
         files.add(Seting.ERROR_FILE);
 
+        files.add(Seting.SLIDING_WINDOWS_BALANCE);
 
         for (String s : files) {
             // specify an abstract pathname in the File object

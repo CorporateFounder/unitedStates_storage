@@ -9,6 +9,7 @@ import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
+import International_Trade_Union.vote.VoteEnum;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -330,7 +331,9 @@ public class UtilsUse {
                     || accountEntry.getValue() == null) {
                 continue;
             }
-            temp.put(accountEntry.getKey(), accountEntry.getValue().clone());
+            Account clonedAccount = accountEntry.getValue().clone();
+            temp.put(accountEntry.getKey(), clonedAccount);
+
         }
         return temp;
     }
@@ -462,11 +465,21 @@ public class UtilsUse {
     }
 
     public static boolean areAccountsDifferent(Account account1, Account account2) {
-        return account1.getDigitalDollarBalance().compareTo(account2.getDigitalDollarBalance()) != 0 ||
-                account1.getDigitalStockBalance().compareTo(account2.getDigitalStockBalance()) != 0 ||
-                account1.getDigitalStakingBalance().compareTo(account2.getDigitalStakingBalance()) != 0;
-    }
+        BigDecimal divisor = BigDecimal.TEN.pow(10);
 
+        BigDecimal account1DollarLast10 = account1.getDigitalDollarBalance().remainder(divisor);
+        BigDecimal account2DollarLast10 = account2.getDigitalDollarBalance().remainder(divisor);
+
+        BigDecimal account1StockLast10 = account1.getDigitalStockBalance().remainder(divisor);
+        BigDecimal account2StockLast10 = account2.getDigitalStockBalance().remainder(divisor);
+
+        BigDecimal account1StakingLast10 = account1.getDigitalStakingBalance().remainder(divisor);
+        BigDecimal account2StakingLast10 = account2.getDigitalStakingBalance().remainder(divisor);
+
+        return account1DollarLast10.compareTo(account2DollarLast10) != 0 ||
+                account1StockLast10.compareTo(account2StockLast10) != 0 ||
+                account1StakingLast10.compareTo(account2StakingLast10) != 0;
+    }
 
     public static Map<String, Account> getEqualsKeyBalance(
             Map<String, Account> tempBalance,
@@ -587,5 +600,84 @@ public class UtilsUse {
         }
         return result;
     }
+    public static List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions, Map<String, Account> basis) throws IOException {
+        List<DtoTransaction> dtoTransactions = new ArrayList<>();
+        Map<String, Account> balances = new HashMap<>();
+        try {
+            balances = UtilsUse.balancesClone(basis);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
+
+        for (DtoTransaction transaction : transactions) {
+
+            // Check if both digital dollar and digital stock are below the minimum
+            boolean result = false;
+            if (balances.containsKey(transaction.getSender())) {
+                Account sender = balances.get(transaction.getSender());
+                Account customer = balances.get(transaction.getCustomer());
+                BigDecimal transactionDigitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
+                BigDecimal transactionDigitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
+
+                BigDecimal transactionBonusForMiner = BigDecimal.valueOf(transaction.getBonusForMiner());
+
+                if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
+                    dtoTransactions.add(transaction);
+                    result = true;
+                }
+                else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.YES)) {
+                    dtoTransactions.add(transaction);
+                    result = true;
+                }
+                else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.NO)) {
+                    dtoTransactions.add(transaction);
+                    result = true;
+                }
+                else if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.STAKING)) {
+                    dtoTransactions.add(transaction);
+                    result = true;
+                }
+                else if (sender.getDigitalStakingBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)) {
+                    dtoTransactions.add(transaction);
+                    result = true;
+                }
+                try {
+                    if(result == true){
+                        boolean sendtrue = UtilsBalance.sendMoney(
+                                sender,
+                                customer,
+                                BigDecimal.valueOf(transaction.getDigitalDollar()),
+                                BigDecimal.valueOf(transaction.getDigitalStockBalance()),
+                                BigDecimal.valueOf(transaction.getBonusForMiner()),
+                                transaction.getVoteEnum());
+                        if(sendtrue){
+                            balances.put(sender.getAccount(), sender);
+                            balances.put(customer.getAccount(), customer);
+                        }
+                    }
+
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        return dtoTransactions;
+    }
+
+
+    //возвращает скользящее окно для хранения последних 30 слепков балана
+    public static Map<Long, Map<String, Account>> slideWindow(){
+        // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
+        Map<Long, Map<String, Account>> windows = new LinkedHashMap<Long, Map<String, Account>>(30, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<Long, Map<String, Account>> eldest) {
+                return size() > Seting.SLIDING_WINDOW_BALANCE; // Keep only the latest 30 entries
+            }
+        };
+
+        return windows;
+    }
 }

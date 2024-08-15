@@ -1449,17 +1449,21 @@ public class UtilsResolving {
 
 //    Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
 
-    for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
-        Block block = deleteBlocks.get(i);
-        System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
+   // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
+        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
 
-        balances = rollbackCalculateBalance(balances, block);
-    }
+        for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
+            Block block = deleteBlocks.get(i);
+            System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
-//    tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-//    tempBalances = UtilsUse.merge(tempBalances, balances);
-//    List<EntityAccount> accountList = blockService.findByAccountIn(balances);
-//    accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+                if (windows.containsKey(Long.valueOf(i))) {
+                    balances.putAll(windows.get(Long.valueOf(i)));
+                } else {
+                    balances = rollbackCalculateBalance(balances, block);
+                }
+
+
+        }
 
     try {
         blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
@@ -1548,16 +1552,19 @@ public class UtilsResolving {
         MyLogger.saveLog("rollBackAddBlock3 afer clone");
         //TODO именно в даной части кода происхдоит прерывание и полчему то в логер не записывается ошибка.
         //TODO но метод прекращается после этого участка.
+       // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
+        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
         try {
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
-                MyLogger.saveLog("rollBackAddBlock3 index: " + i);
                 Block block = deleteBlocks.get(i);
-                MyLogger.saveLog("rollBackAddBlock3 block: index: " + block.getIndex());
-                balances = rollbackCalculateBalance(balances, block);
-                MyLogger.saveLog("rollBackAddBlock3 after: rollbackCalculateBalance");
+                if (windows.containsKey(Long.valueOf(i))) {
+                    balances.putAll(windows.get(Long.valueOf(i)));
+                } else {
+                    balances = rollbackCalculateBalance(balances, block);
+                }
+
             }
-        }catch (Throwable  e){
-            MyLogger.saveLog("rollBackAddBlock3: rollbackCalculateBalance: ", e);
+        } catch (Throwable e) {
             return false;
         }
         MyLogger.saveLog("rollBackAddBlock3: after rollbackCalculateBalance: ");
@@ -1939,14 +1946,19 @@ public class UtilsResolving {
 
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
         long start = UtilsTime.getUniversalTimestamp();
+
+
+        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
+
         for (Block block : originalBlocks) {
             System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
-
+            windows.put(block.getIndex(), UtilsUse.balancesClone(balances));
             calculateBalance(balances, block, signs);
         }
+        UtilsJson.saveWindowsToFile(windows, Seting.SLIDING_WINDOWS_BALANCE);
 
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
         // Вызов getLaws один раз для всех блоков

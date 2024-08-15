@@ -25,6 +25,7 @@ International_Trade_Union\model\Tournament.class
 International_Trade_Union\vote\UtilsCurrentLaw.class
 International_Trade_Union\CorporateCharterEngDraft\ArticleFiveCharterSupremacyEngDraft.class
 International_Trade_Union\entity\InfoDemerageMoney.class
+International_Trade_Union\utils\UtilsJson$7.class
 International_Trade_Union\model\NodeState.class
 International_Trade_Union\controllers\ConductorController.class
 International_Trade_Union\utils\UtilsBlock$1.class
@@ -49,6 +50,7 @@ International_Trade_Union\setings\Seting.class
 International_Trade_Union\CorporateCharterDraft\ArticleTwoSpecialPositionDraft.class
 International_Trade_Union\utils\BlockchainDifficulty.class
 International_Trade_Union\entity\blockchain\Blockchain$1.class
+International_Trade_Union\utils\UtilsUse$1.class
 International_Trade_Union\vote\UtilsLaws.class
 International_Trade_Union\entity\ResultMiningData.class
 International_Trade_Union\governments\Director.class
@@ -66,6 +68,7 @@ International_Trade_Union\utils\UtilsCreatedDirectory.class
 International_Trade_Union\node\Nodes.class
 International_Trade_Union\utils\UtilsUse.class
 International_Trade_Union\utils\UtilsJson$5.class
+International_Trade_Union\utils\UtilsJson$6.class
 International_Trade_Union\utils\UtilsBlock$2.class
 International_Trade_Union\utils\UtilsBalance.class
 International_Trade_Union\exception\NotValidTransactionException.class
