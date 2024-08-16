@@ -144,7 +144,8 @@ public class Blockchain implements Cloneable {
                 block,
                 Seting.BLOCK_GENERATION_INTERVAL,
                 Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                tempList
+                tempList,
+                blockService
         );
 
         size++;
@@ -228,7 +229,8 @@ public class Blockchain implements Cloneable {
                         block,
                         Seting.BLOCK_GENERATION_INTERVAL,
                         Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                        blockList);
+                        blockList,
+                        blockService);
                 prev = block.clone();
                 size++;
 
@@ -318,7 +320,8 @@ public class Blockchain implements Cloneable {
                             block,
                             Seting.BLOCK_GENERATION_INTERVAL,
                             Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                            new ArrayList<>());
+                            new ArrayList<>(),
+                            blockService);
 
                     if (!valid) {
                         System.out.println("ERROR: UtilsBlock: validation: prevBlock.Hash():" + prevBlock.getHashBlock());
@@ -355,7 +358,8 @@ public class Blockchain implements Cloneable {
                         block,
                         Seting.BLOCK_GENERATION_INTERVAL,
                         Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                        new ArrayList<>());
+                        new ArrayList<>(),
+                        blockService);
 
                 if (!valid) {
                     System.out.println("ERROR: UtilsBlock: validation: prevBlock.Hash():" + prevBlock.getHashBlock());
@@ -449,7 +453,8 @@ public class Blockchain implements Cloneable {
                             block,
                             Seting.BLOCK_GENERATION_INTERVAL,
                             Seting.DIFFICULTY_ADJUSTMENT_INTERVAL,
-                            tempList);
+                            tempList,
+                            blockService);
 
                     System.out.println("checkfromfile: index:  " + block.getIndex());
                     if (!valid) {
@@ -827,11 +832,11 @@ public class Blockchain implements Cloneable {
 //        Blockchain blockchain = Mining.getBlockchain(
 //                Seting.ORIGINAL_BLOCKCHAIN_FILE,
 //                BlockchainFactoryEnum.ORIGINAL);
-        return UtilsBlock.validation(blockchainList, 0, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        return UtilsBlock.validation(blockchainList, 0, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL, blockService);
     }
 
     public boolean validatedBlockchain(int index) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
-        return UtilsBlock.validation(blockchainList, index, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        return UtilsBlock.validation(blockchainList, index, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL, blockService);
     }
 
     public String jsonString() throws IOException {

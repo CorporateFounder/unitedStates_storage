@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,14 +53,18 @@ public class UtilsResolving {
     @Autowired
     BlockService blockService;
 
+    @PostConstruct
+    public void init() {
+        Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
+    }
     @Autowired
     DomainConfiguration domainConfiguration;
 
     public int resolve3(List<HostEndDataShortB> hostsList) {
         BasisController.setUpdating(true);
-        UtilsBalance.setBlockService(blockService);
-        Blockchain.setBlockService(blockService);
-        UtilsBlock.setBlockService(blockService);
+
 
         //удаляет файлы которые хранять заблокированные хосты
 

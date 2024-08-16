@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -39,6 +40,10 @@ public class ConductorController {
 
     @Autowired
     BlockService blockService;
+    @PostConstruct
+    public void init() {
+        Blockchain.setBlockService(blockService);
+    }
     @Autowired
     UtilsResolving utilsResolving;
     /**

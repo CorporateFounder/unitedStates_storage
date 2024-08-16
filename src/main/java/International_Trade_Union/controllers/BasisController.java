@@ -31,6 +31,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
@@ -51,9 +52,73 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 public class BasisController {
 
 
-    //Сервис для работы с базой данных h2
+    private BlockService blockService;
+
     @Autowired
-    BlockService blockService;
+    public BasisController(BlockService blockService) {
+        this.blockService = blockService;
+        Blockchain.setBlockService(blockService);
+        initializeBlockchain();
+    }
+
+
+    private void initializeBlockchain() {
+        try {
+
+            UtilsCreatedDirectory.createPackages();
+//            blockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
+//            blockchain = Mining.getBlockchain(
+//                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+//                    BlockchainFactoryEnum.ORIGINAL);
+            String json = UtilsFileSaveRead.read(Seting.TEMPORARY_BLOCKCHAIN_FILE);
+            if (!json.isEmpty() || !json.isBlank()) {
+                shortDataBlockchain = UtilsJson.jsonToDataShortBlockchainInformation(json);
+
+            } else {
+                shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+//            prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(BlockService.findById((long) blockchainSize+1));
+
+                json = UtilsJson.objToStringJson(shortDataBlockchain);
+                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+            }
+            System.out.println("static: shortDataBlockchain: " + shortDataBlockchain);
+            blockcheinSize = (int) shortDataBlockchain.getSize();
+            blockchainValid = shortDataBlockchain.isValidation();
+            prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+
+            if(blockcheinSize < Seting.V34_NEW_ALGO){
+                if (blockcheinSize > 600) {
+                    dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
+                                    blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
+                            Seting.BLOCK_GENERATION_INTERVAL,
+                            Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                } else {
+                    dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
+                                    blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
+                            Seting.BLOCK_GENERATION_INTERVAL,
+                            Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                }
+            }else {
+                dificultyOneBlock = prevBlock().getHashCompexity();
+            }
+
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SignatureException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
     /**
      * Каждые 100 секунд происходить турнир для отбора победителя.
      */
@@ -678,63 +743,7 @@ public class BasisController {
     }
 
 
-    static {
-        try {
 
-            UtilsCreatedDirectory.createPackages();
-//            blockchain = BLockchainFactory.getBlockchain(BlockchainFactoryEnum.ORIGINAL);
-//            blockchain = Mining.getBlockchain(
-//                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
-//                    BlockchainFactoryEnum.ORIGINAL);
-            String json = UtilsFileSaveRead.read(Seting.TEMPORARY_BLOCKCHAIN_FILE);
-            if (!json.isEmpty() || !json.isBlank()) {
-                shortDataBlockchain = UtilsJson.jsonToDataShortBlockchainInformation(json);
-
-            } else {
-                shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
-//            prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(BlockService.findById((long) blockchainSize+1));
-
-                json = UtilsJson.objToStringJson(shortDataBlockchain);
-                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-            }
-            System.out.println("static: shortDataBlockchain: " + shortDataBlockchain);
-            blockcheinSize = (int) shortDataBlockchain.getSize();
-            blockchainValid = shortDataBlockchain.isValidation();
-            prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
-
-            if(blockcheinSize < Seting.V34_NEW_ALGO){
-            if (blockcheinSize > 600) {
-                dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
-                                blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
-                        Seting.BLOCK_GENERATION_INTERVAL,
-                        Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-            } else {
-                dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
-                                blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
-                        Seting.BLOCK_GENERATION_INTERVAL,
-                        Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-            }
-            }else {
-                dificultyOneBlock = prevBlock().getHashCompexity();
-            }
-
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SignatureException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public BasisController() {
     }

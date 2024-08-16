@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.InvalidKeyException;
@@ -35,10 +36,17 @@ public class TransactionController {
     @Autowired
     BlockService blockService;
 
+    @PostConstruct
+    public void init() {
+        Blockchain.setBlockService(blockService);
+    }
+
     public TransactionController() {
     }
 
-    /**Добавить транзакцию в список транзакций, ожидающих добавления в блокчейн*/
+    /**
+     * Добавить транзакцию в список транзакций, ожидающих добавления в блокчейн
+     */
 
     @RequestMapping(method = RequestMethod.POST, value = "/addTransaction", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void add(@RequestBody DtoTransaction data) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
@@ -64,18 +72,20 @@ public class TransactionController {
 
     @GetMapping("/isWait58")
     @ResponseBody
-    public Boolean isWait58(@RequestParam String sign){
+    public Boolean isWait58(@RequestParam String sign) {
         Base base = new Base58();
-        long count = getTransaction().stream().filter(t->base.encode(t.getSign()).equals(sign)).count();
+        long count = getTransaction().stream().filter(t -> base.encode(t.getSign()).equals(sign)).count();
         return count > 0;
     }
 
-    /**Возвращает список транзакций ожидающих добавления в блокчейн. В список не попадают транзакции,
-     * если они были уже добавлены в блокчейн или их баланс не соответствует сумме которую они хотят отправить*/
+    /**
+     * Возвращает список транзакций ожидающих добавления в блокчейн. В список не попадают транзакции,
+     * если они были уже добавлены в блокчейн или их баланс не соответствует сумме которую они хотят отправить
+     */
     @GetMapping("/getTransactions")
     public List<DtoTransaction> getTransaction() {
 
-        List<DtoTransaction> transactions  = new ArrayList<>();
+        List<DtoTransaction> transactions = new ArrayList<>();
         try {
 
             transactions = AllTransactions.getInstance();
@@ -89,16 +99,19 @@ public class TransactionController {
                         }
                     })
                     .collect(Collectors.toList());
+
+
             transactions = balanceTransaction(transactions);
+
             AllTransactions.addAllTransactions(transactions);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
         transactions = transactions.stream().sorted(Comparator.comparing(DtoTransaction::getDigitalDollar).reversed()).collect(Collectors.toList());
         Base base = new Base58();
-        transactions = transactions .stream()
+        transactions = transactions.stream()
                 .filter(UtilsUse.distinctByKeyString(t -> {
                     try {
                         return base.encode(t.getSign());
@@ -109,15 +122,18 @@ public class TransactionController {
                 }))
                 .collect(Collectors.toList());
         transactions = transactions.stream()
-                .filter(t->t!= null)
-                .filter(t-> UtilsUse.isTransaction(t)).collect(Collectors.toList());
+                .filter(t -> t != null)
+                .filter(t -> UtilsUse.isTransaction(t)).collect(Collectors.toList());
 
         return transactions;
     }
 
 
-    /**Возвращает транзакции, которые имеют достаточно денег на счетах*/
+    /**
+     * Возвращает транзакции, которые имеют достаточно денег на счетах
+     */
     public List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException {
+
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
         for (DtoTransaction transaction : transactions) {
@@ -135,25 +151,21 @@ public class TransactionController {
                 if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
                     dtoTransactions.add(transaction);
                     result = true;
-                }
-                else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.YES)) {
+                } else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.YES)) {
                     dtoTransactions.add(transaction);
                     result = true;
-                }
-                else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.NO)) {
+                } else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.NO)) {
                     dtoTransactions.add(transaction);
                     result = true;
-                }
-                else if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.STAKING)) {
+                } else if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.STAKING)) {
                     dtoTransactions.add(transaction);
                     result = true;
-                }
-                else if (sender.getDigitalStakingBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)) {
+                } else if (sender.getDigitalStakingBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)) {
                     dtoTransactions.add(transaction);
                     result = true;
                 }
                 try {
-                    if(result == true){
+                    if (result == true) {
                         boolean sendtrue = UtilsBalance.sendMoney(
                                 sender,
                                 customer,
@@ -161,14 +173,14 @@ public class TransactionController {
                                 BigDecimal.valueOf(transaction.getDigitalStockBalance()),
                                 BigDecimal.valueOf(transaction.getBonusForMiner()),
                                 transaction.getVoteEnum());
-                        if(sendtrue){
+                        if (sendtrue) {
                             balances.put(sender.getAccount(), sender);
                             balances.put(customer.getAccount(), customer);
                         }
                     }
 
 
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -176,12 +188,13 @@ public class TransactionController {
         }
         return dtoTransactions;
     }
+
     //вычисляет транзакции которые были добавлены в блок, и их снова не добавляет
-    public  List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws IOException {
+    public List<DtoTransaction> getTransactions(List<DtoTransaction> transactions) throws IOException {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
 
         for (DtoTransaction dtoTransaction : transactions) {
-            if(!blockService.existsBySign(dtoTransaction.getSign())){
+            if (!blockService.existsBySign(dtoTransaction.getSign())) {
                 dtoTransactions.add(dtoTransaction);
             }
         }
@@ -192,7 +205,7 @@ public class TransactionController {
 
     public Set<String> getTransactions() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         Base base = new Base58();
-        List<DtoTransaction> transactions = AllTransactions.getInstance() .stream()
+        List<DtoTransaction> transactions = AllTransactions.getInstance().stream()
                 .filter(UtilsUse.distinctByKeyString(t -> {
                     try {
                         return base.encode(t.getSign());
@@ -201,11 +214,11 @@ public class TransactionController {
                         return null; // или другое значение по умолчанию
                     }
                 })).collect(Collectors.toList());
-        transactions = transactions.stream().filter(t->t!= null).collect(Collectors.toList());
+        transactions = transactions.stream().filter(t -> t != null).collect(Collectors.toList());
 
         Set<String> strings = new HashSet<>();
         for (DtoTransaction dtoTransaction : transactions) {
-            if(!blockService.existsBySign(dtoTransaction.getSign())){
+            if (!blockService.existsBySign(dtoTransaction.getSign())) {
                 strings.add(dtoTransaction.toSign());
             }
         }

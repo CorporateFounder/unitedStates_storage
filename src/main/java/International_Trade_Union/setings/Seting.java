@@ -322,6 +322,7 @@ public interface Seting {
 
     double MINIMUM = 0.00000001;
 
-    int FROM_STRING_DOUBLE = 295285;
+
+    int FROM_STRING_DOUBLE = 294006;
     int SLIDING_WINDOW_BALANCE = 30;
 }
