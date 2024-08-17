@@ -13,11 +13,13 @@ D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\SendBlocksEndInfo.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\network\AllTransactions.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\HashPrinter.java
+D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\JacksonConfig.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\MyHost.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\CorporateCharterDraft\ArticleFiveCharterSupremacyDraft.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\UtilsDemerage.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\entities\EntityDtoTransaction.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\governments\CompareObject.java
+D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\NumberFormattingAspect.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\network\Transactions.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\TransactionController.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\model\FIndPositonHelperData.java
