@@ -195,7 +195,7 @@ public class TournamentService {
                     return;
                 }
 
-                List<Block> blocks = UtilsJson.jsonToListBLock(json);
+                List<Block> blocks = UtilsJson.jsonToObject(json);
 
                 json = UtilUrl.readJsonFromUrl(s + "/prevBlock");
                 if (json.isEmpty() || json.isBlank()) {

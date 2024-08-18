@@ -19,7 +19,6 @@ D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\UtilsDemerage.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\entities\EntityDtoTransaction.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\governments\CompareObject.java
-D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\NumberFormattingAspect.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\network\Transactions.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\TransactionController.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\model\FIndPositonHelperData.java
@@ -43,6 +42,7 @@ D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\vote\CurrentLawVotesAverage.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\vote\UtilsCurrentLaw.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\base\Base58.java
+D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\ConditionalBigDecimalSerializer.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\UtilsBalance.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\UtilsBlockToEntityBlock.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\vote\UtilsLaws.java

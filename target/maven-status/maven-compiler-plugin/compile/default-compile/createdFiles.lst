@@ -1,5 +1,4 @@
 International_Trade_Union\governments\FractionPower.class
-International_Trade_Union\utils\UtilsJson$DoubleSerializer.class
 International_Trade_Union\entity\blockchain\Blockchain$7.class
 International_Trade_Union\utils\UtilsJson.class
 International_Trade_Union\CorporateCharterDraft\ArticleThreeJudiciaryDraft.class
@@ -40,14 +39,11 @@ International_Trade_Union\model\Keys.class
 International_Trade_Union\governments\CompareObject.class
 International_Trade_Union\utils\UtilsSecurity.class
 International_Trade_Union\utils\GoogleTime.class
-International_Trade_Union\utils\UtilsJson$BigDecimalDeserializer.class
 International_Trade_Union\model\CreateAccount.class
 International_Trade_Union\originalCorporateCharter\OriginalPreambleEng.class
 International_Trade_Union\utils\UtilsJson$4.class
 International_Trade_Union\entity\blockchain\Blockchain$2.class
 International_Trade_Union\vote\Vote.class
-International_Trade_Union\utils\UtilsJson$DoubleDeserializer.class
-International_Trade_Union\controllers\config\JacksonConfig$DoubleSerializer.class
 International_Trade_Union\entity\blockchain\Blockchain.class
 International_Trade_Union\entity\blockchain\Blockchain$8.class
 International_Trade_Union\setings\Seting.class
@@ -61,8 +57,6 @@ International_Trade_Union\governments\Director.class
 International_Trade_Union\utils\HashPrinter.class
 International_Trade_Union\utils\UtilsAccountToEntityAccount.class
 International_Trade_Union\vote\CurrentLawVotesEndBalance.class
-International_Trade_Union\controllers\config\JacksonConfig$BigDecimalSerializer.class
-International_Trade_Union\controllers\config\NumberFormattingAspect.class
 International_Trade_Union\utils\DomainConfiguration.class
 International_Trade_Union\model\NodeChecker.class
 International_Trade_Union\model\User.class
@@ -74,6 +68,7 @@ International_Trade_Union\utils\UtilsCreatedDirectory.class
 International_Trade_Union\node\Nodes.class
 International_Trade_Union\utils\UtilsUse.class
 International_Trade_Union\utils\UtilsJson$5.class
+International_Trade_Union\controllers\config\ConditionalBigDecimalSerializer.class
 International_Trade_Union\utils\UtilsJson$6.class
 International_Trade_Union\utils\UtilsBlock$2.class
 International_Trade_Union\utils\UtilsBalance.class
@@ -89,7 +84,6 @@ International_Trade_Union\CorporateCharterEngDraft\ArticleOneLegistratureEngDraf
 International_Trade_Union\governments\NamePOSITION.class
 International_Trade_Union\entity\AddressUrl.class
 International_Trade_Union\model\HostEndDataShortB.class
-International_Trade_Union\utils\UtilsJson$BigDecimalSerializer.class
 International_Trade_Union\entity\DtoTransaction\DtoTransaction.class
 International_Trade_Union\utils\UtilsBlockToEntityBlock.class
 International_Trade_Union\entity\blockchain\Blockchain$3.class

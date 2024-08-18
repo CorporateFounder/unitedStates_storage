@@ -150,7 +150,7 @@ public class UtilsBlock {
 
 
     public static List<Block> read(String nameFile) throws FileNotFoundException, JsonProcessingException {
-        return UtilsJson.jsonToListBLock(UtilsFileSaveRead.read(nameFile));
+        return UtilsJson.jsonToObject(UtilsFileSaveRead.read(nameFile));
     }
 
     public static List<Block> readLineObject(String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -207,7 +207,7 @@ public class UtilsBlock {
             if (fileEntry.isDirectory()) {
                 System.out.println("is directory " + fileEntry.getAbsolutePath());
             } else {
-                blocks = UtilsJson.jsonToListBLock(UtilsFileSaveRead.read(fileEntry.getAbsolutePath()));
+                blocks = UtilsJson.jsonToObject(UtilsFileSaveRead.read(fileEntry.getAbsolutePath()));
                 list.add(blocks);
             }
         }

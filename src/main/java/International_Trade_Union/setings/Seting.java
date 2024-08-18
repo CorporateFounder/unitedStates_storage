@@ -323,7 +323,7 @@ public interface Seting {
     double MINIMUM = 0.00000001;
 
 
-    int FROM_STRING_DOUBLE = 294416;
+    int FROM_STRING_DOUBLE = 294714;
     int SLIDING_WINDOW_BALANCE = 30;
 
     int JSON_VERSION_DECIMAL = 294416;
