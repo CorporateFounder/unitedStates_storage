@@ -1,10 +1,10 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.controllers.config.ConditionalBigDecimalDeserializer;
 import International_Trade_Union.controllers.config.ConditionalBigDecimalSerializer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import International_Trade_Union.controllers.config.ConditionalDoubleDeserializer;
+import International_Trade_Union.controllers.config.ConditionalDoubleSerializer;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.EntityChain;
 import International_Trade_Union.entity.InfoDemerageMoney;
@@ -17,6 +17,9 @@ import International_Trade_Union.vote.CurrentLawVotes;
 import International_Trade_Union.vote.CurrentLawVotesEndBalance;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -36,13 +39,28 @@ public class UtilsJson {
     static {
         // Настроить новый ObjectMapper
         newMapper = new ObjectMapper();
+
+        // Включить настройку для записи BigDecimal как plain
         newMapper.enable(SerializationFeature.WRITE_BIGDECIMAL_AS_PLAIN);
 
+        // Создать новый модуль для кастомных сериализаторов и десериализаторов
         SimpleModule module = new SimpleModule();
+
+        // Добавить сериализатор и десериализатор для BigDecimal
         module.addSerializer(BigDecimal.class, new ConditionalBigDecimalSerializer());
+        module.addDeserializer(BigDecimal.class, new ConditionalBigDecimalDeserializer());
+
+        // Добавить сериализатор и десериализатор для Double
+        module.addSerializer(Double.class, new ConditionalDoubleSerializer());
+        module.addDeserializer(Double.class, new ConditionalDoubleDeserializer());
+
+        // Добавить сериализатор и десериализатор для double (примитивного типа)
+        module.addSerializer(double.class, new ConditionalDoubleSerializer());
+        module.addDeserializer(double.class, new ConditionalDoubleDeserializer());
+
+        // Зарегистрировать модуль в ObjectMapper
         newMapper.registerModule(module);
     }
-
     private static ObjectMapper getMapper() {
         return BasisController.getBlockchainSize() > Seting.JSON_VERSION_DECIMAL ? newMapper : oldMapper;
     }

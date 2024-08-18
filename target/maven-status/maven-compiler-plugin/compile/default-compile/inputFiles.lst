@@ -72,10 +72,12 @@ D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\vote\CurrentLawVotes.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\PreambleEngDraft.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\BLockchainFactory.java
+D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\ConditionalDoubleDeserializer.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\entities\EntityLaws.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\ArticleFiveCharterSupremacyEngDraft.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\services\BlockService.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\DomainConfiguration.java
+D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\ConditionalBigDecimalDeserializer.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\InfoDificultyBlockchain.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\governments\Director.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\UtilsAccountToEntityAccount.java
@@ -102,6 +104,7 @@ D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\ResultMiningData.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\blockchain\block\Block.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\base\Base.java
+D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\ConditionalDoubleSerializer.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\vote\CurrentLawVotesEndBalance.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\setings\Seting.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\UtilsCreatedDirectory.java

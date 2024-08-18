@@ -18,6 +18,11 @@ public class JacksonConfig {
 
         SimpleModule module = new SimpleModule();
         module.addSerializer(BigDecimal.class, new ConditionalBigDecimalSerializer());
+        module.addDeserializer(BigDecimal.class, new ConditionalBigDecimalDeserializer());
+        module.addSerializer(Double.class, new ConditionalDoubleSerializer());
+        module.addDeserializer(Double.class, new ConditionalDoubleDeserializer());
+        module.addSerializer(double.class, new ConditionalDoubleSerializer());
+        module.addDeserializer(double.class, new ConditionalDoubleDeserializer());
         objectMapper.registerModule(module);
 
         return objectMapper;
