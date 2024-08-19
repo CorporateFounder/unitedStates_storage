@@ -31,6 +31,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.setings.Seting.*;
+
 @RestController
 public class TransactionController {
     @Autowired
@@ -88,6 +90,8 @@ public class TransactionController {
         List<DtoTransaction> transactions = new ArrayList<>();
         try {
 
+
+
             transactions = AllTransactions.getInstance();
             transactions = getTransactions(transactions);
             transactions = transactions.stream()
@@ -99,6 +103,27 @@ public class TransactionController {
                         }
                     })
                     .collect(Collectors.toList());
+
+            List<DtoTransaction> temp = new ArrayList<>();
+            for (DtoTransaction dtoTransaction : transactions) {
+                double digitalDollar = dtoTransaction.getDigitalDollar();
+                double digitalStock = dtoTransaction.getDigitalStockBalance();
+                double digitalBonus = dtoTransaction.getBonusForMiner();
+                if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar))){
+                    System.out.println("the number dollar of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                    continue;
+                }
+                if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalStock))){
+                    System.out.println("the number stock of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                    continue;
+                }
+                if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalBonus))){
+                    System.out.println("the number bonus of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                    continue;
+                }
+                temp.add(dtoTransaction);
+            }
+            transactions = temp;
 
 
             transactions = balanceTransaction(transactions);
@@ -137,7 +162,18 @@ public class TransactionController {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
         for (DtoTransaction transaction : transactions) {
+            if(!transaction.getCustomer().equals(BASIS_ADDRESS)){
+                if(transaction.getDigitalDollar() < MINIMUM
+                        && transaction.getDigitalStockBalance() < MINIMUM
+                ){
+                    System.out.println("*************************************");
+                    System.out.println("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.");
 
+                    System.out.println("transaction: " + transaction);
+                    System.out.println("*************************************");
+                   continue;
+                }
+            }
             // Check if both digital dollar and digital stock are below the minimum
             boolean result = false;
             if (balances.containsKey(transaction.getSender())) {
@@ -166,7 +202,7 @@ public class TransactionController {
                 }
                 try {
                     if (result == true) {
-                        boolean sendtrue = UtilsBalance.sendMoney(
+                        boolean sendtrue = UtilsBalance.sendMoneyNew(
                                 sender,
                                 customer,
                                 BigDecimal.valueOf(transaction.getDigitalDollar()),

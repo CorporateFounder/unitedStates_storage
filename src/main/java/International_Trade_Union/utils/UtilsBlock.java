@@ -18,7 +18,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -434,17 +436,62 @@ public class UtilsBlock {
         if(thisBlock.getIndex() > FROM_STRING_DOUBLE ){
             Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(thisBlock.getDtoTransactions()));
             int transactionsCount = thisBlock.getDtoTransactions().stream().filter(t->!BASIS_ADDRESS.equals(t.getSender())).collect(Collectors.toList()).size();
-            int after = UtilsUse.balanceTransaction(thisBlock.getDtoTransactions(), balances).size();
+            int after = UtilsUse.balanceTransaction(thisBlock.getDtoTransactions(), balances, thisBlock.getIndex()).size();
             if(after != transactionsCount){
                 System.out.println("*************************************");
-                System.out.println("transactions: before: " + transactionsCount);
-                System.out.println("transactions: after: " + after);
                 System.out.println("The block contains transactions where the user's balance is insufficient.");
-//                thisBlock.getDtoTransactions().stream().forEach(System.out::println);
                 System.out.println("*************************************");
                 validated = false;
                 return validated;
             }
+        }
+
+        if(thisBlock.getIndex() > ALGORITM_MINING){
+            for (DtoTransaction dtoTransaction : thisBlock.getDtoTransactions()) {
+                if(!dtoTransaction.getCustomer().equals(BASIS_ADDRESS)){
+                    if(dtoTransaction.getDigitalDollar() < MINIMUM
+                    && dtoTransaction.getDigitalStockBalance() < MINIMUM
+                    ){
+                        System.out.println("*************************************");
+                        System.out.println("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.");
+                        System.out.println("index: " + thisBlock.getIndex());
+                        System.out.println("transaction: " + dtoTransaction);
+                        System.out.println("*************************************");
+
+
+                        validated = false;
+                        return validated;
+                    }
+                    double digitalDollar = dtoTransaction.getDigitalDollar();
+                    double digitalStock = dtoTransaction.getDigitalStockBalance();
+                    double digitalBonus = dtoTransaction.getBonusForMiner();
+                    if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar))){
+                        System.out.println("the number dollar of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                        MyLogger.saveLog("the number dollar of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                        MyLogger.saveLog("decimal: "+digitalDollar);
+                        MyLogger.saveLog("transaction: " + dtoTransaction);
+                        validated = false;
+                        return validated;
+                    }
+                    if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalStock))){
+                        System.out.println("the number stock of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                        MyLogger.saveLog("the number stock of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                        MyLogger.saveLog("decimal: "+digitalStock);
+                        MyLogger.saveLog("transaction: " + dtoTransaction);
+                        validated = false;
+                        return validated;
+                    }
+                    if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalBonus))){
+                        System.out.println("the number bonus of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                        MyLogger.saveLog("the number bonus of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
+                        MyLogger.saveLog("decimal: "+digitalBonus);
+                        MyLogger.saveLog("transaction: " + dtoTransaction);
+                        validated = false;
+                        return validated;
+                    }
+                }
+            }
+
         }
         finished:
         for (DtoTransaction transaction : thisBlock.getDtoTransactions()) {
@@ -463,29 +510,46 @@ public class UtilsBlock {
                     money = (long) (Seting.MULTIPLIER - money);
                     money = money < 1 ? 1: money;
 
-                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions());
+                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions(), thisBlock.getIndex());
                     minerReward = (Seting.V28_REWARD + G) * money;
                     minerPowerReward = (Seting.V28_REWARD + G) * money;
 
                 }
-                if( thisBlock.getIndex() > Seting.V34_NEW_ALGO){
+                if( thisBlock.getIndex() > Seting.V34_NEW_ALGO ){
                     long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
                             / (576 * Seting.YEAR);
                     money = (long) (Seting.MULTIPLIER - money);
                     money = money < 1 ? 1: money;
 
+                    double moneyFromDif = 0;
+                    if(thisBlock.getIndex() > Seting.ALGORITM_MINING){
+                        moneyFromDif = (thisBlock.getHashCompexity() - 22) / 2;
+                        moneyFromDif = moneyFromDif > 0? moneyFromDif: 0;
+                    }
+                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions(), thisBlock.getIndex());
+                    minerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD) + moneyFromDif) * money;
+                    minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD) + moneyFromDif)* money;
 
-                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions());
-                    minerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD)) * money;
-                    minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD))* money;
-
-                    if(thisBlock.getIndex() > Seting.START_BLOCK_DECIMAL_PLACES){
+                    Account minner = UtilsAccountToEntityAccount.entityAccountToAccount(blockService.findByAccount(thisBlock.getMinerAddress()));
+                    if (thisBlock.getIndex() > ALGORITM_MINING) {
+                        long percent = UtilsUse.calculateScore(minner.getDigitalStakingBalance(), BigDecimal.valueOf(1));
+                        minerReward += minerReward * (percent / 100.0);
+                        minerPowerReward += minerPowerReward * (percent / 100.0);
+                    }
+                    if(thisBlock.getIndex() > Seting.START_BLOCK_DECIMAL_PLACES && thisBlock.getIndex() <= ALGORITM_MINING){
                         minerReward = UtilsUse.round(minerReward, Seting.DECIMAL_PLACES);
                         minerPowerReward = UtilsUse.round(minerPowerReward, Seting.DECIMAL_PLACES);
                     }
 
-                }
 
+                    if(thisBlock.getIndex() > ALGORITM_MINING){
+                        minerReward = UtilsUse.round(minerReward, SENDING_DECIMAL_PLACES);
+                        minerPowerReward = UtilsUse.round(minerPowerReward, SENDING_DECIMAL_PLACES);
+                       }
+                    MyLogger.saveLog("minerReward: "+ minerReward);
+                    MyLogger.saveLog("minerPowerReward: "+ minerPowerReward);
+
+                }
                 if (thisBlock.getIndex() == Seting.SPECIAL_BLOCK_FORK && thisBlock.getMinerAddress().equals(Seting.FORK_ADDRESS_SPECIAL)) {
                     minerReward = SPECIAL_FORK_BALANCE;
                     minerPowerReward = SPECIAL_FORK_BALANCE;
@@ -539,14 +603,25 @@ public class UtilsBlock {
                     else if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
                         if(thisBlock.getIndex() > START_BLOCK_DECIMAL_PLACES){
                             double epsilon = 1e-9;  // Define a small margin of error
+                            MyLogger.saveLog("before: minerReward: " + minerReward);
+
                             double expectedDollar = minerReward / Seting.DOLLAR;
+
+                            MyLogger.saveLog("after: expectedDollar: " + expectedDollar);
                             double actualDollar = transaction.getDigitalDollar();
                             double expectedStock = minerPowerReward / Seting.STOCK;
                             double actualStock = transaction.getDigitalStockBalance();
 
+                            if (thisBlock.getIndex() > ALGORITM_MINING) {
+                                expectedDollar = UtilsUse.round(expectedDollar, SENDING_DECIMAL_PLACES);
+                                expectedStock = UtilsUse.round(expectedStock, SENDING_DECIMAL_PLACES);
+                            }
+
                             if(Math.abs(expectedDollar - actualDollar) > epsilon){
                                 System.out.printf("wrong founder reward dollar: index: %d, expected: %.10f, dollar actual: %.10f\n",
                                         thisBlock.getIndex(), expectedDollar, actualDollar);
+                                MyLogger.saveLog(String.format("wrong founder reward dollar: index: %d, expected: %.10f, dollar actual: %.10f\n",
+                                        thisBlock.getIndex(), expectedDollar, actualDollar));
                                 validated = false;
                                 break;
                             }
@@ -554,6 +629,9 @@ public class UtilsBlock {
                             if(Math.abs(expectedStock - actualStock) > epsilon){
                                 System.out.printf("wrong founder reward stock: index: %d, expected: %.10f, stock actual: %.10f\n",
                                         thisBlock.getIndex(), expectedStock, actualStock);
+
+                                MyLogger.saveLog(String.format("wrong founder reward stock: index: %d, expected: %.10f, stock actual: %.10f\n",
+                                        thisBlock.getIndex(), expectedStock, actualStock));
                                 validated = false;
                                 break;
                             }
@@ -656,15 +734,6 @@ public class UtilsBlock {
 
         if (thisBlock.getIndex() > Seting.NEW_CHECK_UTILS_BLOCK && !thisBlock.getHashBlock().equals(thisBlock.hashForTransaction())) {
             System.out.println("false hash added wrong hash");
-            MyLogger.saveLog("**************************************************+\n");
-            MyLogger.saveLog("hash end hashForTransaction not equals: ");
-            MyLogger.saveLog("actual: " + thisBlock.getHashBlock() +"\n");
-            MyLogger.saveLog("expected: " + thisBlock.hashForTransaction()+"\n");
-
-            MyLogger.saveLog("block: " + UtilsJson.objToStringJson(thisBlock) + "\n");
-            MyLogger.saveLog("**************************************************"+"\n");
-
-
             System.out.println("actual: " + thisBlock.getHashBlock());
             System.out.println("expected: " + thisBlock.hashForTransaction());
             System.out.println("miner address: " + thisBlock.getMinerAddress());
@@ -675,11 +744,7 @@ public class UtilsBlock {
 
         if (!actualPrevHash.equals(recordedPrevHash)) {
             System.out.println("-------------------------------------------------------");
-            MyLogger.saveLog("**************************************************");
-            MyLogger.saveLog("actualPrevHash end recordedPrevHash not equals: ");
-            MyLogger.saveLog("actual: " + thisBlock.getHashBlock());
-            MyLogger.saveLog("expected: " + thisBlock.hashForTransaction());
-            MyLogger.saveLog("**************************************************");
+
             System.out.println("Blockchain is invalid, expected: " + recordedPrevHash + " actual: " + actualPrevHash);
             System.out.println("actual index block: " + thisBlock.getIndex());
 

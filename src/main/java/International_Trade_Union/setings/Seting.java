@@ -1,7 +1,6 @@
 package International_Trade_Union.setings;
 
 import International_Trade_Union.governments.Directors;
-import International_Trade_Union.utils.MyHost;
 import International_Trade_Union.utils.UtilsUse;
 
 
@@ -322,9 +321,9 @@ public interface Seting {
 
     double MINIMUM = 0.00000001;
 
+    int SENDING_DECIMAL_PLACES = 8;
+    int FROM_STRING_DOUBLE = 295316;
+    int SLIDING_WINDOW_BALANCE = 100;
 
-    int FROM_STRING_DOUBLE = 294713;
-    int SLIDING_WINDOW_BALANCE = 30;
-
-    int JSON_VERSION_DECIMAL = 294416;
+    int ALGORITM_MINING = 295316;
 }
