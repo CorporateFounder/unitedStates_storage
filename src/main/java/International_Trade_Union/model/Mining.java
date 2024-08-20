@@ -1,6 +1,7 @@
 package International_Trade_Union.model;
 
 
+
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -285,12 +285,7 @@ public class Mining {
             digitalReputationForMiner = (Seting.V28_REWARD + G + (difficulty * Seting.V34_MINING_REWARD) + moneyFromDif) * money;
 
 
-            if (index > ALGORITM_MINING) {
-                long percent = UtilsUse.calculateScore(minner.getDigitalStakingBalance(), BigDecimal.valueOf(1));
-                minerRewards += minerRewards * (percent / 100.0);
-                digitalReputationForMiner += digitalReputationForMiner * (percent / 100.0);
 
-            }
             founderReward = minerRewards / Seting.DOLLAR;
             founderDigigtalReputationReward = digitalReputationForMiner / Seting.STOCK;
 
