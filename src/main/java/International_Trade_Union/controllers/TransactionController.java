@@ -10,6 +10,7 @@ import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsAccountToEntityAccount;
 import International_Trade_Union.utils.UtilsBalance;
+import International_Trade_Union.utils.UtilsBlock;
 import International_Trade_Union.utils.UtilsUse;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -41,8 +42,10 @@ public class TransactionController {
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
-    }
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
 
+    }
     public TransactionController() {
     }
 

@@ -57,8 +57,10 @@ public class BasisController {
     @Autowired
     public BasisController(BlockService blockService) {
         this.blockService = blockService;
-        Blockchain.setBlockService(blockService);
         initializeBlockchain();
+        Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
     }
 
 

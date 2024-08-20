@@ -1459,7 +1459,7 @@ public class UtilsResolving {
         for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
             Block block = deleteBlocks.get(i);
             System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
-
+            MyLogger.saveLog("rollback4: " + block);
                 if (windows.containsKey(Long.valueOf(i))) {
                     balances.putAll(windows.get(Long.valueOf(i)));
                 } else {
@@ -1561,6 +1561,7 @@ public class UtilsResolving {
         try {
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
                 Block block = deleteBlocks.get(i);
+                MyLogger.saveLog("rollback3: " + block);
                 if (windows.containsKey(Long.valueOf(i))) {
                     balances.putAll(windows.get(Long.valueOf(i)));
                 } else {

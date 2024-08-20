@@ -43,6 +43,9 @@ public class ConductorController {
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
+
     }
     @Autowired
     UtilsResolving utilsResolving;
