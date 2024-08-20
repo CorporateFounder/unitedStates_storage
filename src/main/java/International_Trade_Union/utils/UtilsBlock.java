@@ -433,14 +433,23 @@ public class UtilsBlock {
             return validated;
         }
 
-        if(thisBlock.getIndex() > FROM_STRING_DOUBLE ){
+        if (thisBlock.getIndex() > FROM_STRING_DOUBLE) {
             Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(thisBlock.getDtoTransactions()));
-            int transactionsCount = thisBlock.getDtoTransactions().stream().filter(t->!BASIS_ADDRESS.equals(t.getSender())).collect(Collectors.toList()).size();
-            int after = UtilsUse.balanceTransaction(thisBlock.getDtoTransactions(), balances, thisBlock.getIndex()).size();
-            if(after != transactionsCount){
+            List<DtoTransaction> transactions = thisBlock.getDtoTransactions()
+                    .stream()
+                    .filter(t->!BASIS_ADDRESS.equals(t.getSender()))
+                    .collect(Collectors.toList());
+            int transactionsCount = transactions.size();
+            List<DtoTransaction> temp = UtilsUse.balanceTransaction(transactions, balances, thisBlock.getIndex());
+            int after = temp.size();
+
+           if (after != transactionsCount) {
                 System.out.println("*************************************");
+
+                System.out.println("transactionsCount: " + transactionsCount + "\n");
+                System.out.println("after: " + after + "\n");
                 System.out.println("The block contains transactions where the user's balance is insufficient.");
-                System.out.println("*************************************");
+                  System.out.println("*************************************");
                 validated = false;
                 return validated;
             }
@@ -515,29 +524,29 @@ public class UtilsBlock {
                     minerPowerReward = (Seting.V28_REWARD + G) * money;
 
                 }
-                if( thisBlock.getIndex() > Seting.V34_NEW_ALGO ){
+                if (thisBlock.getIndex() > Seting.V34_NEW_ALGO) {
                     long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
                             / (576 * Seting.YEAR);
                     money = (long) (Seting.MULTIPLIER - money);
-                    money = money < 1 ? 1: money;
+                    money = money < 1 ? 1 : money;
 
                     double moneyFromDif = 0;
-                    if(thisBlock.getIndex() > Seting.ALGORITM_MINING){
+                    if (thisBlock.getIndex() > Seting.ALGORITM_MINING) {
                         moneyFromDif = (thisBlock.getHashCompexity() - 22) / 2;
-                        moneyFromDif = moneyFromDif > 0? moneyFromDif: 0;
+                        moneyFromDif = moneyFromDif > 0 ? moneyFromDif : 0;
                     }
                     double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions(), thisBlock.getIndex());
                     minerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD) + moneyFromDif) * money;
-                    minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD) + moneyFromDif)* money;
+                    minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD) + moneyFromDif) * money;
 
 
-                    if(thisBlock.getIndex() > Seting.START_BLOCK_DECIMAL_PLACES && thisBlock.getIndex() <= ALGORITM_MINING){
+                    if (thisBlock.getIndex() > Seting.START_BLOCK_DECIMAL_PLACES && thisBlock.getIndex() <= ALGORITM_MINING) {
                         minerReward = UtilsUse.round(minerReward, Seting.DECIMAL_PLACES);
                         minerPowerReward = UtilsUse.round(minerPowerReward, Seting.DECIMAL_PLACES);
                     }
 
 
-                    if(thisBlock.getIndex() > ALGORITM_MINING){
+                    if (thisBlock.getIndex() > ALGORITM_MINING) {
                         minerReward = UtilsUse.round(minerReward, SENDING_DECIMAL_PLACES);
                         minerPowerReward = UtilsUse.round(minerPowerReward, SENDING_DECIMAL_PLACES);
                        }
