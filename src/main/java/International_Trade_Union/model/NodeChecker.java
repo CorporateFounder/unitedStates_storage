@@ -178,7 +178,7 @@ public class NodeChecker {
 //            }
 //        });
 
-        MyLogger.saveLog("Filtered addresses and updated file");
+
 
         // Ограничиваем количество ожидаемых узлов до 7
         int nodesToWait = Math.min(availableHosts.size(), 7);

@@ -611,14 +611,16 @@ public class UtilsBlock {
 
                             double expectedDollar = minerReward / Seting.DOLLAR;
 
-                            MyLogger.saveLog("after: expectedDollar: " + expectedDollar);
+
                             double actualDollar = transaction.getDigitalDollar();
                             double expectedStock = minerPowerReward / Seting.STOCK;
                             double actualStock = transaction.getDigitalStockBalance();
 
                             if (thisBlock.getIndex() > ALGORITM_MINING) {
+                                MyLogger.saveLog("before: expectedDollar: " + expectedDollar);
                                 expectedDollar = UtilsUse.round(expectedDollar, SENDING_DECIMAL_PLACES);
                                 expectedStock = UtilsUse.round(expectedStock, SENDING_DECIMAL_PLACES);
+                                MyLogger.saveLog("after: expectedDollar: " + expectedDollar);
                             }
 
                             if(Math.abs(expectedDollar - actualDollar) > epsilon){

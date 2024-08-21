@@ -322,7 +322,7 @@ public interface Seting {
     double MINIMUM = 0.00000001;
 
     int SENDING_DECIMAL_PLACES = 8;
-    int FROM_STRING_DOUBLE = 295366;
+    int FROM_STRING_DOUBLE = 295709;
     int SLIDING_WINDOW_BALANCE = 100;
 
     int ALGORITM_MINING = 295316;
