@@ -326,5 +326,5 @@ public interface Seting {
     int SLIDING_WINDOW_BALANCE = 100;
 
     int ALGORITM_MINING = 295316;
-    int BALANCE_CHEKING = 295813;
+    int BALANCE_CHEKING = 296072;
 }
