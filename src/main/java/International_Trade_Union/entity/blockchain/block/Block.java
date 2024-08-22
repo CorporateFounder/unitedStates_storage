@@ -102,9 +102,9 @@ public final class Block implements Cloneable {
                 // New hashing algorithm
                 String staticBlockHash = DigestUtils.sha256Hex(block.jsonStringWithoutProof());
                 String proofString = Long.toString(block.randomNumberProof);
-                String hash = DigestUtils.sha256Hex(staticBlockHash + proofString);
-                return hash;
+                return DigestUtils.sha256Hex(staticBlockHash + proofString);
             }else {
+
                     return UtilsUse.sha256hash(block.jsonString());
                 }
 
@@ -440,8 +440,8 @@ public final class Block implements Cloneable {
 //     System.out.println("-------------------");
 //      System.out.println(">>HASHSTR  :"+hashStr);
         this.randomNumberProof = 0;
-
-
+        // Hash the static part of the block once
+        String staticBlockHash = DigestUtils.sha256Hex(block.jsonStringWithoutProof());
         final String[] jsonParts = splitJson(hashStr);
 
 
@@ -450,13 +450,12 @@ public final class Block implements Cloneable {
 
         System.out.println(">>numThreads: " + numThreads + " hashCoplexity:" + hashCoplexity + " Length: " + jsonString().length());
 
-        // Предварительно хешируем неизменяемую часть данных для нового алгоритма
-        final String immutableHashPart;
-        if (index > Seting.NEW_ALGO_MINING) {
-            immutableHashPart = DigestUtils.sha256Hex(jsonParts[0] + jsonParts[1]);
-        } else {
-            immutableHashPart = null;  // Не используется в старом алгоритме
-        }
+        // Предполагается, что эти переменные уже определены
+        String staticFieldsHash;
+        String randomNumberProof;
+
+// Хешируем статические поля один раз (это можно сделать при инициализации или первом вызове)
+
 //       System.out.println(">>[0]:"+jsonParts[0]);
 //       System.out.println(">>[1]:"+jsonParts[1]);
         IntStream.range(0, numThreads).forEach(i -> {
@@ -502,17 +501,14 @@ public final class Block implements Cloneable {
                         }//if (k % 400000 == 0)
 
                     } //i==0
-
+                    // В цикле:
                     if (index > Seting.NEW_ALGO_MINING) {
-                        // Используем новый алгоритм хеширования с предварительно хешированной неизменяемой частью
-                        String mutablePart = String.valueOf(k);
-                        hash = DigestUtils.sha256Hex(immutableHashPart + mutablePart);
+                        String proofString = Long.toString(k);
+                        hash = DigestUtils.sha256Hex(staticBlockHash + proofString);
                     } else {
                         // Используем старый алгоритм хеширования
                         hash = DigestUtils.sha256Hex(generateJsonWithProof(jsonParts, k));
                     }
-
-
 
                     //Использует последний алгоритм добычи, где сумма единиц в битах должна быть ниже
                     //или равно 100 - сложность.

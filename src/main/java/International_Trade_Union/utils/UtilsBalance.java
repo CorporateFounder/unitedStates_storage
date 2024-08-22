@@ -1,7 +1,6 @@
 package International_Trade_Union.utils;
 
 
-import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
@@ -16,7 +15,6 @@ import International_Trade_Union.vote.VoteEnum;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -54,9 +52,9 @@ public class UtilsBalance {
         int i = (int) block.getIndex();
         List<DtoTransaction> transactions = block.getDtoTransactions();
         transactions = transactions.stream()
-                .sorted(Comparator.comparing(DtoTransaction::getDigitalDollar)
-                        .thenComparing(t -> base.encode(t.getSign())))
+                .sorted(Comparator.comparing(t -> base.encode(t.getSign())))
                 .collect(Collectors.toList());
+
 
         int BasisSendCount = 0;
         for (int j = 0; j < transactions.size(); j++) {
@@ -125,20 +123,20 @@ public class UtilsBalance {
                 BigDecimal digitalStock = null;
                 BigDecimal mine = null;
 
-                if(block.getIndex() > Seting.FROM_STRING_DOUBLE){
-                    digitalDollar = new BigDecimal(Double.toString(transaction.getDigitalDollar()));
-                    digitalStock = new BigDecimal(Double.toString(transaction.getDigitalStockBalance()));
-                    mine = new BigDecimal(Double.toString(transaction.getBonusForMiner()));
-                    UtilsBalance.INDEX = block.getIndex();
-                    sendTrue = UtilsBalance.rollBackSendMoneyNew(
-                            sender,
-                            customer,
-                            digitalDollar,
-                            digitalStock,
-                            mine,
-                            transaction.getVoteEnum()
-                    );
-                }else {
+//                if(block.getIndex() > Seting.FROM_STRING_DOUBLE){
+//                    digitalDollar = new BigDecimal(Double.toString(transaction.getDigitalDollar()));
+//                    digitalStock = new BigDecimal(Double.toString(transaction.getDigitalStockBalance()));
+//                    mine = new BigDecimal(Double.toString(transaction.getBonusForMiner()));
+//                    UtilsBalance.INDEX = block.getIndex();
+//                    sendTrue = UtilsBalance.rollBackSendMoneyNew(
+//                            sender,
+//                            customer,
+//                            digitalDollar,
+//                            digitalStock,
+//                            mine,
+//                            transaction.getVoteEnum()
+//                    );
+//                }else {
                     digitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
@@ -151,7 +149,7 @@ public class UtilsBalance {
                             mine,
                             transaction.getVoteEnum()
                     );
-                }
+//                }
 
 
 
@@ -187,9 +185,9 @@ public class UtilsBalance {
 
         List<DtoTransaction> transactions = block.getDtoTransactions();
         transactions = transactions.stream()
-                .sorted(Comparator.comparing(DtoTransaction::getDigitalDollar)
-                        .thenComparing(t -> base.encode(t.getSign())))
+                .sorted(Comparator.comparing(t -> base.encode(t.getSign())))
                 .collect(Collectors.toList());
+
 
         int BasisSendCount = 0;
         for (int j = 0; j < transactions.size(); j++) {
@@ -202,7 +200,7 @@ public class UtilsBalance {
                     continue;
                 }
             }
-            if (sign.contains(base.encode(transaction.getSign()))) {
+            else if (sign.contains(base.encode(transaction.getSign()))) {
                 System.out.println("this transaction signature has already been used and is not valid");
                 continue;
             } else {
@@ -273,21 +271,21 @@ public class UtilsBalance {
                 BigDecimal digitalStock = null;
                 BigDecimal mine = null;
 
-                if(block.getIndex() > Seting.FROM_STRING_DOUBLE){
-                    digitalDollar = new BigDecimal(Double.toString(transaction.getDigitalDollar()));
-                     digitalStock = new BigDecimal(Double.toString(transaction.getDigitalStockBalance()));
-                     mine = new BigDecimal(Double.toString(transaction.getBonusForMiner()));
-                    UtilsBalance.INDEX = block.getIndex();
-                    sendTrue = UtilsBalance.sendMoneyNew(
-                            sender,
-                            customer,
-                            digitalDollar,
-                            digitalStock,
-                            mine,
-                            transaction.getVoteEnum()
-                    );
-
-                }else {
+//                if(block.getIndex() > Seting.FROM_STRING_DOUBLE){
+//                    digitalDollar = new BigDecimal(Double.toString(transaction.getDigitalDollar()));
+//                     digitalStock = new BigDecimal(Double.toString(transaction.getDigitalStockBalance()));
+//                     mine = new BigDecimal(Double.toString(transaction.getBonusForMiner()));
+//                    UtilsBalance.INDEX = block.getIndex();
+//                    sendTrue = UtilsBalance.sendMoneyNew(
+//                            sender,
+//                            customer,
+//                            digitalDollar,
+//                            digitalStock,
+//                            mine,
+//                            transaction.getVoteEnum()
+//                    );
+//
+//                }else {
                     digitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
@@ -303,10 +301,7 @@ public class UtilsBalance {
 
                     );
 
-                }
-
-
-
+//                }
 
 
                 //если транзация валидная то записать данн иыезменения в баланс
@@ -376,14 +371,14 @@ public class UtilsBalance {
         BigDecimal recipientDigitalStock = recipientAddress.getDigitalStockBalance();
         BigDecimal recipientDigitalStaking = recipientAddress.getDigitalStakingBalance();
         boolean sendTrue = true;
-        MathContext mc = new MathContext(Seting.DECIMAL_PLACES, RoundingMode.HALF_UP);
-
-        if (BasisController.getBlockchainSize() > Seting.START_BLOCK_DECIMAL_PLACES) {
-
-            digitalDollar = digitalDollar.round(mc);
-            digitalStock = digitalStock.round(mc);
-            minerRewards = minerRewards.round(mc);
-        }
+//        MathContext mc = new MathContext(Seting.DECIMAL_PLACES, RoundingMode.HALF_UP);
+//
+//        if (BasisController.getBlockchainSize() > Seting.START_BLOCK_DECIMAL_PLACES) {
+//
+//            digitalDollar = digitalDollar.round(mc);
+//            digitalStock = digitalStock.round(mc);
+//            minerRewards = minerRewards.round(mc);
+//        }
 
         if (!senderAddress.getAccount().equals(Seting.BASIS_ADDRESS)) {
             if (senderDigitalStock.compareTo(digitalStock) < 0) {
@@ -454,14 +449,14 @@ public class UtilsBalance {
         BigDecimal recipientDigitalStaking = recipientAddress.getDigitalStakingBalance();
 
         boolean sendTrue = true;
-        MathContext mc = new MathContext(Seting.DECIMAL_PLACES, RoundingMode.HALF_UP);
-
-        if (BasisController.getBlockchainSize() > Seting.START_BLOCK_DECIMAL_PLACES) {
-
-            digitalDollar = digitalDollar.round(mc);
-            digitalStock = digitalStock.round(mc);
-            minerRewards = minerRewards.round(mc);
-        }
+//        MathContext mc = new MathContext(Seting.DECIMAL_PLACES, RoundingMode.HALF_UP);
+//
+//        if (BasisController.getBlockchainSize() > Seting.START_BLOCK_DECIMAL_PLACES) {
+//
+//            digitalDollar = digitalDollar.round(mc);
+//            digitalStock = digitalStock.round(mc);
+//            minerRewards = minerRewards.round(mc);
+//        }
 
         if (!senderAddress.getAccount().equals(Seting.BASIS_ADDRESS)) {
             if (voteEnum.equals(VoteEnum.YES) || voteEnum.equals(VoteEnum.NO)) {

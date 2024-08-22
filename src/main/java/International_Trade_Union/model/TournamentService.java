@@ -249,7 +249,7 @@ public class TournamentService {
     }
 
 
-    @Transactional
+
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
         try {
 

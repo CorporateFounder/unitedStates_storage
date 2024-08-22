@@ -165,6 +165,17 @@ public class TransactionController {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
         for (DtoTransaction transaction : transactions) {
+
+
+                if (transaction.getVoteEnum().equals(VoteEnum.YES) || transaction.getVoteEnum().equals(VoteEnum.NO)) {
+                    if (transaction.getSender().equals(transaction.getCustomer())) {
+                        System.out.println("*************************************");
+                        System.out.println("dtoSender: The sender and recipient address cannot be the same if VoteEnum.YES or NO");
+                        System.out.println("*************************************");
+                       continue;
+                    }
+                }
+
             if(!transaction.getCustomer().equals(BASIS_ADDRESS)){
                 if(transaction.getDigitalDollar() < MINIMUM
                         && transaction.getDigitalStockBalance() < MINIMUM

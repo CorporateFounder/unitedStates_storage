@@ -195,7 +195,7 @@ public class UtilsResolving {
                                 }
                                 List<Block> subBlocks = UtilsJson.jsonToObject(str);
 
-                                if (subBlocks.isEmpty() || subBlocks.size() == 0) {
+                                if (subBlocks == null ||subBlocks.isEmpty() || subBlocks.size() == 0) {
                                     System.out.println("-------------------------------------");
                                     System.out.println("sublocks: " + subBlocks.size());
                                     System.out.println("-------------------------------------");
@@ -378,7 +378,7 @@ public class UtilsResolving {
                                     }
                                     subBlocks = UtilsJson.jsonToObject(str);
 
-                                    if (subBlocks.isEmpty() || subBlocks.size() == 0) {
+                                    if (subBlocks == null ||subBlocks.isEmpty() || subBlocks.size() == 0) {
                                         System.out.println("-------------------------------------");
                                         System.out.println("sublocks: " + subBlocks.size());
                                         System.out.println("-------------------------------------");
@@ -1417,16 +1417,16 @@ public class UtilsResolving {
 
     @Transactional
     public boolean rollBackAddBlock4(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-    java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-    boolean existM = true;
+        java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        boolean existM = true;
 
-    List<String> signs = new ArrayList<>();
-    Map<String, Laws> allLaws = new HashMap<>();
-    List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
-    deleteBlocks = deleteBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-    long threshold = deleteBlocks.get(0).getIndex();
-    if(threshold <= 0 )
-        return false;
+        List<String> signs = new ArrayList<>();
+        Map<String, Laws> allLaws = new HashMap<>();
+        List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
+        deleteBlocks = deleteBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+        long threshold = deleteBlocks.get(0).getIndex();
+        if (threshold <= 0)
+            return false;
 
     File file = Blockchain.indexNameFileBlock((int) threshold, filename);
     if (file == null) {
@@ -1936,8 +1936,7 @@ public class UtilsResolving {
      * методы которые, вычисляют баланс и другие вычисления.
      */
 
-
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         UtilsBalance.setBlockService(blockService);
@@ -1986,6 +1985,7 @@ public class UtilsResolving {
             String stackerror = "";
             for (StackTraceElement stackTraceElement : e.getStackTrace()) {
                 stackerror += stackTraceElement.toString() + "\n";
+
             }
             MyLogger.saveLog("addBlock3: error: " + stackerror);
             return false;

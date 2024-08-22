@@ -14,13 +14,6 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
-/**
- * Класс Аккаунт, хранит данные такие данные.
- * account - public key ECDSA
- * digitalDollarBalance - цифровой доллар (деньги).
- * digitalStockBalance - акции, используется для голосования.
- * digitalStakingBalance - сумма долларов которые зарезервированы для staking (pos).
- **/
 @Data
 public class Account implements Cloneable {
     private String account;

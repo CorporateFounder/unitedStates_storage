@@ -1,11 +1,9 @@
 package International_Trade_Union.entity.entities;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,26 +20,10 @@ public class EntityAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
     private String account;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0.0000000000")
-    @Column(precision = 30, scale = 10)
     private BigDecimal digitalDollarBalance;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0.0000000000")
-    @Column(precision = 30, scale = 10)
     private BigDecimal digitalStockBalance;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0.0000000000")
-    @Column(precision = 30, scale = 10)
     private BigDecimal digitalStakingBalance;
 
     public EntityAccount() {
