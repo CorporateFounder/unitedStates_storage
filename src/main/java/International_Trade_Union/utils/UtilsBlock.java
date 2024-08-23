@@ -423,7 +423,7 @@ public class UtilsBlock {
         int countBasisSendAll = 0;
 
 
-        if(thisBlock.getIndex() > Seting.DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS && UtilsUse.getDuplicateTransactions(thisBlock).size() > 0){
+        if (thisBlock.getIndex() > Seting.DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS && UtilsUse.getDuplicateTransactions(thisBlock).size() > 0) {
             System.out.println("the block contains transactions with duplicate signatures.");
             List<DtoTransaction> dublicates = UtilsUse.getDuplicateTransactions(thisBlock);
             for (int i = 0; i < dublicates.size(); i++) {
@@ -456,12 +456,12 @@ public class UtilsBlock {
             }
         }
 
-        if(thisBlock.getIndex() > ALGORITM_MINING){
+        if (thisBlock.getIndex() > ALGORITM_MINING_2) {
             for (DtoTransaction dtoTransaction : thisBlock.getDtoTransactions()) {
-                if(!dtoTransaction.getCustomer().equals(BASIS_ADDRESS)){
-                    if(dtoTransaction.getDigitalDollar() < MINIMUM
-                    && dtoTransaction.getDigitalStockBalance() < MINIMUM
-                    ){
+                if (!dtoTransaction.getCustomer().equals(BASIS_ADDRESS)) {
+                    if (dtoTransaction.getDigitalDollar() < MINIMUM
+                            && dtoTransaction.getDigitalStockBalance() < MINIMUM
+                    ) {
                         System.out.println("*************************************");
                         System.out.println("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.");
                         System.out.println("index: " + thisBlock.getIndex());
@@ -475,7 +475,7 @@ public class UtilsBlock {
                     double digitalDollar = dtoTransaction.getDigitalDollar();
                     double digitalStock = dtoTransaction.getDigitalStockBalance();
                     double digitalBonus = dtoTransaction.getBonusForMiner();
-                    if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar))){
+                    if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar))) {
                         System.out.println("the number dollar of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
                         MyLogger.saveLog("the number dollar of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
                         MyLogger.saveLog("decimal: "+digitalDollar);
@@ -544,13 +544,18 @@ public class UtilsBlock {
                     money = money < 1 ? 1 : money;
 
                     double moneyFromDif = 0;
+                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions(), thisBlock.getIndex());
                     if (thisBlock.getIndex() > Seting.ALGORITM_MINING) {
-                        moneyFromDif = (thisBlock.getHashCompexity() - 22) / 2;
+                        moneyFromDif = (thisBlock.getHashCompexity() - DIFFICULT_MONEY) / 2;
                         moneyFromDif = moneyFromDif > 0 ? moneyFromDif : 0;
                     }
-                    double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions(), thisBlock.getIndex());
                     minerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD) + moneyFromDif) * money;
                     minerPowerReward = (Seting.V28_REWARD + G + (thisBlock.getHashCompexity() * Seting.V34_MINING_REWARD) + moneyFromDif) * money;
+
+                    if(thisBlock.getIndex() > ALGORITM_MINING_2){
+                        minerReward += moneyFromDif * (MULT + G);
+                        minerPowerReward += moneyFromDif * (MULT + G);
+                    }
 
 
                     if (thisBlock.getIndex() > Seting.START_BLOCK_DECIMAL_PLACES && thisBlock.getIndex() <= ALGORITM_MINING) {
@@ -562,10 +567,7 @@ public class UtilsBlock {
                     if (thisBlock.getIndex() > ALGORITM_MINING) {
                         minerReward = UtilsUse.round(minerReward, SENDING_DECIMAL_PLACES);
                         minerPowerReward = UtilsUse.round(minerPowerReward, SENDING_DECIMAL_PLACES);
-                       }
-                    MyLogger.saveLog("minerReward: "+ minerReward);
-                    MyLogger.saveLog("minerPowerReward: "+ minerPowerReward);
-
+                    }
                 }
                 if (thisBlock.getIndex() == Seting.SPECIAL_BLOCK_FORK && thisBlock.getMinerAddress().equals(Seting.FORK_ADDRESS_SPECIAL)) {
                     minerReward = SPECIAL_FORK_BALANCE;

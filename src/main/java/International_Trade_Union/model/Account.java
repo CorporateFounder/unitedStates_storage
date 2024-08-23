@@ -17,6 +17,8 @@ import java.util.Objects;
 @Data
 public class Account implements Cloneable {
     private String account;
+
+
     private BigDecimal digitalDollarBalance;
     private BigDecimal digitalStockBalance;
     private BigDecimal digitalStakingBalance;
