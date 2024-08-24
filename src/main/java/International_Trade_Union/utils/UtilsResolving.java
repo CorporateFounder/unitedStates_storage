@@ -961,7 +961,9 @@ public class UtilsResolving {
                 return temp;
             }
 
-            System.out.println("different: ");
+            if (emptyList.isEmpty()) {
+                return temp;
+            }
             if (different.isEmpty() && emptyList.isEmpty()) {
                 MyLogger.saveLog("helpResolve5 different: " + different);
                 MyLogger.saveLog("helpResolve5 emptyList: " + emptyList);
@@ -1159,6 +1161,9 @@ public class UtilsResolving {
                 return temp;
             }
 
+            if(emptyList.isEmpty()){
+                return temp;
+            }
             System.out.println("different: ");
             if (different.isEmpty() && emptyList.isEmpty()) {
                 MyLogger.saveLog("helpResolve4 different: " + different);
@@ -1437,7 +1442,7 @@ public class UtilsResolving {
         return existM;
     }
 
-    System.out.println("rollBackAddBlock4: file: " + file.getAbsolutePath());
+    MyLogger.saveLog("rollBackAddBlock4: file: " + file.getAbsolutePath());
 
     List<Block> tempBlock = new ArrayList<>();
     try (Stream<String> lines = Files.lines(file.toPath()).parallel()) {
@@ -1453,7 +1458,6 @@ public class UtilsResolving {
           .collect(Collectors.toList());
     }
 
-//    Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
 
 
         SlidingWindowManager windowManager = SlidingWindowManager.getInstance(Seting.SLIDING_WINDOWS_BALANCE);
@@ -1505,12 +1509,11 @@ public class UtilsResolving {
     System.out.println("tempBlock: index: finish: " + tempBlock.get(tempBlock.size() - 1).getIndex());
     System.out.println("balances size: " + balances.size());
 
-    if (!saveBlocks.isEmpty()) {
         boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         if (!save) {
             existM = false;
         }
-    }
+
 
     return existM;
 }

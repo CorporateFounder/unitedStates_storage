@@ -389,7 +389,7 @@ public class TournamentService {
             //TODO прекратить давать блоки через sub block, если происходит запись
             BasisController.setIsSaveFile(false);
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
 
 
             boolean save = false;

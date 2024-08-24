@@ -501,7 +501,7 @@ public class UtilsBlock {
                     }
                 }
 
-                if(thisBlock.getIndex() > BALANCE_CHEKING) {
+                if(thisBlock.getIndex() > ALGORITM_MINING_2) {
                     if (dtoTransaction.getVoteEnum().equals(VoteEnum.YES) || dtoTransaction.getVoteEnum().equals(VoteEnum.NO)) {
                         if (dtoTransaction.getSender().equals(dtoTransaction.getCustomer())) {
                             System.out.println("*************************************");
