@@ -269,21 +269,8 @@ public class UtilsBalance {
                 BigDecimal digitalStock = null;
                 BigDecimal mine = null;
 
-//                if(block.getIndex() > Seting.FROM_STRING_DOUBLE){
-//                    digitalDollar = new BigDecimal(Double.toString(transaction.getDigitalDollar()));
-//                     digitalStock = new BigDecimal(Double.toString(transaction.getDigitalStockBalance()));
-//                     mine = new BigDecimal(Double.toString(transaction.getBonusForMiner()));
-//                    UtilsBalance.INDEX = block.getIndex();
-//                    sendTrue = UtilsBalance.sendMoneyNew(
-//                            sender,
-//                            customer,
-//                            digitalDollar,
-//                            digitalStock,
-//                            mine,
-//                            transaction.getVoteEnum()
-//                    );
-//
-//                }else {
+
+
                     digitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
@@ -299,7 +286,7 @@ public class UtilsBalance {
 
                     );
 
-//                }
+
 
 
                 //если транзация валидная то записать данн иыезменения в баланс
