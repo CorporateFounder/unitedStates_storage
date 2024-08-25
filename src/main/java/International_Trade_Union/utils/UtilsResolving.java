@@ -1941,7 +1941,7 @@ public class UtilsResolving {
      * методы которые, вычисляют баланс и другие вычисления.
      */
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         UtilsBalance.setBlockService(blockService);
@@ -1952,8 +1952,7 @@ public class UtilsResolving {
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
-        originalBlocks = originalBlocks.stream()
-                .filter(UtilsUse.distinctByKey(Block::getIndex)).sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+        originalBlocks = originalBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
 
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
         long start = UtilsTime.getUniversalTimestamp();
@@ -1970,7 +1969,7 @@ public class UtilsResolving {
             calculateBalance(balances, block, signs);
         }
 //        UtilsJson.saveWindowsToFile(windows, Seting.SLIDING_WINDOWS_BALANCE);
-        windowManager.saveWindowsToFile();
+
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
         // Вызов getLaws один раз для всех блоков
 
@@ -1979,21 +1978,21 @@ public class UtilsResolving {
         try {
             blockService.saveAllBLockF(list);
 
+
             tempBalances = UtilsUse.differentAccount(tempBalances, balances);
             List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
             accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
             start = UtilsTime.getUniversalTimestamp();
             blockService.saveAccountAllF(accountList);
+
             finish = UtilsTime.getUniversalTimestamp();
-        }catch (Exception e){
-            MyLogger.saveLog("addBlock3: error: ", e);
+        } catch (Exception e) {
+
             String stackerror = "";
             for (StackTraceElement stackTraceElement : e.getStackTrace()) {
                 stackerror += stackTraceElement.toString() + "\n";
             }
-            MyLogger.saveLog("addBlock3: error: " + stackerror);
-
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return false;
 
@@ -2014,7 +2013,6 @@ public class UtilsResolving {
         Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
         System.out.println("addBlock 3: time: result: " + result);
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
-
         return true;
     }
 

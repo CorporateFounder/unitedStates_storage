@@ -189,7 +189,7 @@ public interface Seting {
     String H2_DB = testPath + "/server/resources/h2DB/";
 
     String ERROR_FILE = testPath + "/server/resources/error/error.txt";
-    String SLIDING_WINDOWS_BALANCE = "/resources/sWindow/sWindows.txt";
+    String SLIDING_WINDOWS_BALANCE = "/server/resources/sWindow/sWindows.txt";
     //адресса внешних сервисов
     Set<String> ORIGINAL_ADDRESSES = IS_TEST ? Set.of("http://localhost:82"): Set.of("http://194.87.236.238:82");
 

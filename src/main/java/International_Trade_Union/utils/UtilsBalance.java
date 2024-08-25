@@ -23,6 +23,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.setings.Seting.DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS;
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 //wallet
 
@@ -198,7 +199,7 @@ public class UtilsBalance {
                     continue;
                 }
             }
-            else if (sign.contains(base.encode(transaction.getSign()))) {
+            if (sign.contains(base.encode(transaction.getSign())) && block.getIndex() <= DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS) {
                 System.out.println("this transaction signature has already been used and is not valid");
                 continue;
             } else {
@@ -270,7 +271,6 @@ public class UtilsBalance {
                 BigDecimal mine = null;
 
 
-
                     digitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
@@ -285,9 +285,6 @@ public class UtilsBalance {
                             transaction.getVoteEnum()
 
                     );
-
-
-
 
                 //если транзация валидная то записать данн иыезменения в баланс
                 if (sendTrue) {

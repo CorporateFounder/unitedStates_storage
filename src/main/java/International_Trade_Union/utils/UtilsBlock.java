@@ -438,13 +438,13 @@ public class UtilsBlock {
             Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(thisBlock.getDtoTransactions()));
             List<DtoTransaction> transactions = thisBlock.getDtoTransactions()
                     .stream()
-                    .filter(t->!BASIS_ADDRESS.equals(t.getSender()))
+                    .filter(t -> !BASIS_ADDRESS.equals(t.getSender()))
                     .collect(Collectors.toList());
             int transactionsCount = transactions.size();
             List<DtoTransaction> temp = UtilsUse.balanceTransaction(transactions, balances, thisBlock.getIndex());
             int after = temp.size();
 
-           if (after != transactionsCount) {
+            if (after != transactionsCount) {
                 System.out.println("*************************************");
 
                 System.out.println("transactionsCount: " + transactionsCount + "\n");
