@@ -1950,6 +1950,7 @@ public class UtilsResolving {
         List<EntityBlock> list = new ArrayList<>();
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
+
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
         originalBlocks = originalBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());

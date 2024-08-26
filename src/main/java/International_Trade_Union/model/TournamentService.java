@@ -357,7 +357,11 @@ public class TournamentService {
 
 
             Block prevBlock = BasisController.prevBlock();
-
+            if (winner == null) {
+                winner = new ArrayList<>();
+            } else {
+                winner.clear();
+            }
             winner.add(winnerList.get(0));
             if (winner == null || winner.size() == 0 || winner.get(0) == null || winner.get(0).getTimestamp() == null) {
                 System.out.println("--------------------------------------------");
@@ -402,7 +406,7 @@ public class TournamentService {
             UtilsBlock.setBlockService(blockService);
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-            if (winner != null && balances != null) {
+            if (winner != null && balances != null && winner.get(0).getIndex()+1 > BasisController.getBlockchainSize()) {
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));

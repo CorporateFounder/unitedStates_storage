@@ -259,10 +259,6 @@ public interface Seting {
     int v4MeetsDifficulty = 26496;
     int FIXED_BITE = 2;
 
-    int LIMIT_CHEATING = 10;
-    int TRANSACTIONS_COUNT_ADDED = 100;
-    int COUNT_HASH_ZERO = 30446;
-
 
     //изменение алгоритма добычи
     int V28_CHANGE_ALGORITH_DIFF_INDEX = 133750;
@@ -326,7 +322,7 @@ public interface Seting {
     int SLIDING_WINDOW_BALANCE = 100;
 
     int ALGORITM_MINING = 295316;
-    int BALANCE_CHEKING = 297526;
+    int BALANCE_CHEKING = 297563;
     int ALGORITM_MINING_2 = 296583;
     int MULT = 6;
     int DIFFICULT_MONEY = 22;
