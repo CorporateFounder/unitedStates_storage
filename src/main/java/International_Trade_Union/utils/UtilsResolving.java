@@ -1968,7 +1968,6 @@ public class UtilsResolving {
             windowManager.addWindow(block.getIndex(), UtilsUse.balancesClone(balances));
             calculateBalance(balances, block, signs);
         }
-//        UtilsJson.saveWindowsToFile(windows, Seting.SLIDING_WINDOWS_BALANCE);
 
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
         // Вызов getLaws один раз для всех блоков

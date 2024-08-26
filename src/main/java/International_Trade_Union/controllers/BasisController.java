@@ -51,7 +51,12 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 @RestController
 public class BasisController {
 
-
+    @PostConstruct
+    public void init() {
+        Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
+    }
     private BlockService blockService;
 
     @Autowired

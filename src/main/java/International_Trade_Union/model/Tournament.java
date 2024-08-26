@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 @Component
 @Scope("singleton")
 public class Tournament implements Runnable {
+
     @Autowired
     NodeChecker nodeChecker;
 
@@ -45,15 +46,21 @@ public class Tournament implements Runnable {
     @Autowired
     private UtilsResolving utilsResolving;
 
+    @Autowired
+    private BlockService blockService;
     private static final long TOURNAMENT_INTERVAL = 100 * 1000; // 100 секунд в миллисекундах
     private static final long MAX_METHOD_EXECUTION_TIME = 18 * 1000; // 14 секунд в миллисекундах
     private static final long GET_ALL_WINNERS_ADVANCE_TIME = MAX_METHOD_EXECUTION_TIME + 40 * 1000; // 34 секунд в миллисекундах
 
     @PostConstruct
     public void init() {
+        Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
+
     }
 
     private int countDelete = 0;
@@ -70,7 +77,9 @@ public class Tournament implements Runnable {
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
-
+        Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
         tournament.updatingNodeEndBlocks(hosts);
         BasisController.getBlockedNewSendBlock().set(true);
 
@@ -89,7 +98,9 @@ public class Tournament implements Runnable {
 
         while (true) {
 
-
+            Blockchain.setBlockService(blockService);
+            UtilsBalance.setBlockService(blockService);
+            UtilsBlock.setBlockService(blockService);
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);

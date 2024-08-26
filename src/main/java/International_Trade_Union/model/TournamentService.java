@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -32,7 +33,12 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 @Component
 @Scope("singleton")
 public class TournamentService {
-
+    @PostConstruct
+    public void init() {
+        Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
+    }
     @Autowired
     NodeChecker nodeChecker;
     @Autowired
@@ -389,14 +395,17 @@ public class TournamentService {
             //TODO прекратить давать блоки через sub block, если происходит запись
             BasisController.setIsSaveFile(false);
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
 
-
+            Blockchain.setBlockService(blockService);
+            UtilsBalance.setBlockService(blockService);
+            UtilsBlock.setBlockService(blockService);
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null) {
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
 
 
             if (save) {
