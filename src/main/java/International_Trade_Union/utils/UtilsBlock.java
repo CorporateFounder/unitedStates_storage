@@ -515,8 +515,10 @@ public class UtilsBlock {
             }
 
         }
+        List<DtoTransaction> transactions = thisBlock.getDtoTransactions();
+        transactions = transactions.stream().sorted(Comparator.comparing(t->base.encode(t.getSign()))).collect(Collectors.toList());
         finished:
-        for (DtoTransaction transaction : thisBlock.getDtoTransactions()) {
+        for (DtoTransaction transaction : transactions) {
             if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                 double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
                 double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
@@ -526,11 +528,11 @@ public class UtilsBlock {
                     minerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
                     minerPowerReward += thisBlock.getIndex() % 2 == 0 ? 0 : 1;
                 }
-                if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && thisBlock.getIndex() <= Seting.V34_NEW_ALGO){
+                if (thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && thisBlock.getIndex() <= Seting.V34_NEW_ALGO) {
                     long money = (thisBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
                             / (576 * Seting.YEAR);
                     money = (long) (Seting.MULTIPLIER - money);
-                    money = money < 1 ? 1: money;
+                    money = money < 1 ? 1 : money;
 
                     double G = UtilsUse.blocksReward(thisBlock.getDtoTransactions(), previusblock.getDtoTransactions(), thisBlock.getIndex());
                     minerReward = (Seting.V28_REWARD + G) * money;

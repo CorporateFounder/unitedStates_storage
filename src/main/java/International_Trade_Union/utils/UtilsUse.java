@@ -621,7 +621,7 @@ public class UtilsUse {
     }
 
     public static List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions, Map<String, Account> basis, long index) throws IOException {
-
+        Base base = new Base58();
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = new HashMap<>();
         try {
@@ -630,6 +630,7 @@ public class UtilsUse {
             e.printStackTrace();
         }
 
+        transactions = transactions.stream().sorted(Comparator.comparing(t->base.encode(t.getSign()))).collect(Collectors.toList());
 
         for (DtoTransaction transaction : transactions) {
             boolean result = false;
