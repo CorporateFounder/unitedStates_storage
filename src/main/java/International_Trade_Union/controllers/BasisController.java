@@ -594,6 +594,10 @@ public class BasisController {
      */
     @GetMapping("/allAccounts")
     public long accounts() {
+        if (!isSaveFile) {
+            System.out.println("saving file: resolve_from_to_block: sub block");
+            return-1;
+        }
         return blockService.countAccount();
     }
 

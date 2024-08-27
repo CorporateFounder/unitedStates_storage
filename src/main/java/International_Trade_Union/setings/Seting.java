@@ -31,9 +31,7 @@ public interface Seting {
     int ORIGINAL_LIMIT_MIN_VOTE = 1; //(int) (200 * Seting.COUNT_BLOCK_IN_DAY * 1 / 8);
 
 
-    //прямая демократия, сколько голосов нужно, чтобы правило вступило в силу,
-    //без необходимости правительства
-    double ALL_STOCK_VOTE = 1.0;
+
 
 
     //Минимальное значение чтобы Совет Корпоративных Верховных Судей могла избрать Верховного Судью
@@ -322,7 +320,7 @@ public interface Seting {
     int SLIDING_WINDOW_BALANCE = 100;
 
     int ALGORITM_MINING = 295316;
-    int BALANCE_CHEKING = 297563;
+    int BALANCE_CHEKING = 297916;
     int ALGORITM_MINING_2 = 296583;
     int MULT = 6;
     int DIFFICULT_MONEY = 22;

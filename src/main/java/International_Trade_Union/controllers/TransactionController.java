@@ -57,6 +57,10 @@ public class TransactionController {
     public void add(@RequestBody DtoTransaction data) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 //        System.out.println("add transaction: " + data);
         Base base = new Base58();
+        if (!BasisController.isIsSaveFile()) {
+            System.out.println("saving file: resolve_from_to_block: sub block");
+            return;
+        }
         List<DtoTransaction> transactions = AllTransactions.getInstance();
         transactions = transactions.stream().filter(UtilsUse.distinctByKeyString(t -> {
             try {
@@ -92,7 +96,10 @@ public class TransactionController {
 
         List<DtoTransaction> transactions = new ArrayList<>();
         try {
-
+            if (!BasisController.isIsSaveFile()) {
+                System.out.println("saving file: resolve_from_to_block: sub block");
+                return new ArrayList<>();
+            }
 
 
             transactions = AllTransactions.getInstance();

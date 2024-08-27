@@ -1989,10 +1989,8 @@ public class UtilsResolving {
             finish = UtilsTime.getUniversalTimestamp();
         } catch (Exception e) {
 
-            String stackerror = "";
-            for (StackTraceElement stackTraceElement : e.getStackTrace()) {
-                stackerror += stackTraceElement.toString() + "\n";
-            }
+
+            MyLogger.saveLog("error tournament: ", e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return false;
 

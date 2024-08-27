@@ -406,7 +406,7 @@ public class TournamentService {
             UtilsBlock.setBlockService(blockService);
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-            if (winner != null && balances != null && winner.get(0).getIndex()+1 > BasisController.getBlockchainSize()) {
+            if (winner != null && balances != null ) {
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
@@ -436,6 +436,8 @@ public class TournamentService {
                     System.exit(1);
                 }
 
+            }else {
+                MyLogger.saveLog("Tournament addBlock3 has error: " + winner.get(0).getIndex());
             }
 
             BasisController.setIsSaveFile(true);
