@@ -66,7 +66,9 @@ public class UtilsResolving {
 
     public int resolve3(List<HostEndDataShortB> hostsList) {
         BasisController.setUpdating(true);
-
+        Blockchain.setBlockService(blockService);
+        UtilsBalance.setBlockService(blockService);
+        UtilsBlock.setBlockService(blockService);
 
         //удаляет файлы которые хранять заблокированные хосты
 
@@ -469,16 +471,7 @@ public class UtilsResolving {
                                         continue;
                                     }
 
-//                                    BasisController.setShortDataBlockchain(temp);
-//                                    BasisController.setBlockcheinSize((int) temp.getSize());
-//                                    BasisController.setBlockchainValid(temp.isValidation());
-//
-//                                    tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-//                                    BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-//
-//                                    json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-//                                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-                                }
+     }
                             }
                         } else {
 
@@ -562,21 +555,7 @@ public class UtilsResolving {
                             System.out.println("3: sublocks: " + subBlocks.size());
 
 
-//                            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                            MyLogger.saveLog("before UtilsUse.accounts balances");
                             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
-//                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                            MyLogger.saveLog("before UtilsUse.accounts tempBalances");
-                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
-                            sign = new ArrayList<>();
-                            temp = new DataShortBlockchainInformation();
-                            MyLogger.saveLog("before shortCheck");
-                            temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
-//                            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                            MyLogger.saveLog("before UtilsUse.accounts balances");
-                            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
-//                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                            MyLogger.saveLog("before UtilsUse.accounts tempBalances");
                             tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                             sign = new ArrayList<>();
                             if (!local_size_upper) {
@@ -1885,10 +1864,6 @@ public class UtilsResolving {
                             }
 
                             addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                            if (!temp.isValidation()) {
-                                System.out.println("check all file");
-                                temp = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                            }
 
                             BasisController.setShortDataBlockchain(temp);
                             BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
@@ -1966,8 +1941,13 @@ public class UtilsResolving {
 
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
+
             windowManager.addWindow(block.getIndex(), UtilsUse.balancesClone(balances));
-            calculateBalance(balances, block, signs);
+            balances = calculateBalance(balances, block, signs);
+
+            List<EntityBlock> tempList = new ArrayList<>();
+            tempList.add(entityBlock);
+            blockService.saveAllBLockF(tempList);
         }
 
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
@@ -1976,7 +1956,7 @@ public class UtilsResolving {
         long finish = UtilsTime.getUniversalTimestamp();
         System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
         try {
-            blockService.saveAllBLockF(list);
+
 
 
             tempBalances = UtilsUse.differentAccount(tempBalances, balances);
@@ -2124,7 +2104,7 @@ public class UtilsResolving {
         // Вывод информации о завершении метода
         System.out.println("finish: sortPriorityHost: " + resultList);
 
-
+        resultList = resultList.stream().filter(UtilsUse.distinctByKey(HostEndDataShortB::getHost)).collect(Collectors.toList());
         // Возвращение итогового списка
         return resultList;
     }

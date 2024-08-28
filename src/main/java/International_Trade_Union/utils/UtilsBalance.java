@@ -201,14 +201,6 @@ public class UtilsBalance {
                     continue;
                 }
             }
-            if (sign.contains(base.encode(transaction.getSign())) && block.getIndex() <= DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS) {
-                MyLogger.saveLog("this transaction signature has already been used and is not valid");
-                System.out.println("this transaction signature has already been used and is not valid");
-                continue;
-            } else {
-//                    System.out.println("we added new sign transaction");
-                sign.add(base.encode(transaction.getSign()));
-            }
 
             if (transaction.getSender().startsWith(Seting.NAME_LAW_ADDRESS_START)) {
                 System.out.println("law balance cannot be sender");

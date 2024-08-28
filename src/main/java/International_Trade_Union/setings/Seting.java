@@ -7,7 +7,7 @@ import International_Trade_Union.utils.UtilsUse;
 import java.util.Set;
 
 public interface Seting {
-    boolean IS_TEST = false;
+    boolean IS_TEST = true;
     boolean IS_SECURITY = true;
 
     int HUNDRED_PERCENT = 100;
@@ -320,7 +320,7 @@ public interface Seting {
     int SLIDING_WINDOW_BALANCE = 100;
 
     int ALGORITM_MINING = 295316;
-    int BALANCE_CHEKING = 298039;
+    int BALANCE_CHEKING = 298307;
     int ALGORITM_MINING_2 = 296583;
     int MULT = 6;
     int DIFFICULT_MONEY = 22;

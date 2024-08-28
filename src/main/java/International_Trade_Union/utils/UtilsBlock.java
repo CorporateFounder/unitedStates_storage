@@ -266,20 +266,19 @@ public class UtilsBlock {
             return difficulty;
         } else if (latestBlock.getIndex() > Seting.NEW_START_DIFFICULT + 288 && latestBlock.getIndex() < Seting.CHANGE_MEET_DIFFICULTY) {
             difficulty = UtilsDIfficult.getAdjustedDifficulty(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-        } else if(latestBlock.getIndex() >= Seting.CHANGE_MEET_DIFFICULTY && latestBlock.getIndex() < Seting.CHANGE_MEET_DIFFICULTY + 288){
+        } else if (latestBlock.getIndex() >= Seting.CHANGE_MEET_DIFFICULTY && latestBlock.getIndex() < Seting.CHANGE_MEET_DIFFICULTY + 288) {
             difficulty = 3;
-        }else if(latestBlock.getIndex() >= Seting.CHANGE_MEET_DIFFICULTY + 288 && latestBlock.getIndex() < Seting.v3MeetsDifficulty){
+        } else if (latestBlock.getIndex() >= Seting.CHANGE_MEET_DIFFICULTY + 288 && latestBlock.getIndex() < Seting.v3MeetsDifficulty) {
             difficulty = UtilsDIfficult.getAdjustedDifficultyMedian(latestBlock,
                     blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
-        }
-        else if(latestBlock.getIndex() > Seting.v3MeetsDifficulty && latestBlock.getIndex() < Seting.v3MeetsDifficulty + 288){
+        } else if (latestBlock.getIndex() > Seting.v3MeetsDifficulty && latestBlock.getIndex() < Seting.v3MeetsDifficulty + 288) {
             difficulty = 2;
-        }else if(latestBlock.getIndex() >= Seting.v3MeetsDifficulty + 288 &&latestBlock.getIndex() < Seting.v4MeetsDifficulty){
+        } else if (latestBlock.getIndex() >= Seting.v3MeetsDifficulty + 288 && latestBlock.getIndex() < Seting.v4MeetsDifficulty) {
             difficulty = UtilsDIfficult.getAdjustedDifficultyMedian(latestBlock,
                     blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
         } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty && latestBlock.getIndex() < Seting.v4MeetsDifficulty + 288) {
             difficulty = 2;
-        } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty +288 && latestBlock.getIndex() < Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
+        } else if (latestBlock.getIndex() >= Seting.v4MeetsDifficulty + 288 && latestBlock.getIndex() < Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
 
 
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
@@ -292,44 +291,37 @@ public class UtilsBlock {
         }
 
 
-
         ///*****************************************************************************************
         else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX && latestBlock.getIndex() < Seting.V28_CHANGE_ALGORITH_DIFF_INDEX + 288) {
             difficulty = 1;
-        } else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX +288 && latestBlock.getIndex() < Seting.V30_INDEX_ALGO) {
+        } else if (latestBlock.getIndex() >= Seting.V28_CHANGE_ALGORITH_DIFF_INDEX + 288 && latestBlock.getIndex() < Seting.V30_INDEX_ALGO) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v28_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
             } else {
                 difficulty = latestBlock.getHashCompexity();
             }
-        }
-
-        else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO && latestBlock.getIndex() < Seting.V30_INDEX_ALGO + 288) {
+        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO && latestBlock.getIndex() < Seting.V30_INDEX_ALGO + 288) {
 
             difficulty = 1;
-        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO +288 && latestBlock.getIndex() < Seting.V30_INDEX_DIFF) {
+        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO + 288 && latestBlock.getIndex() < Seting.V30_INDEX_DIFF) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v30_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
             } else {
                 difficulty = latestBlock.getHashCompexity();
             }
-        }
-
-        else if (latestBlock.getIndex() >= Seting.V30_INDEX_DIFF && latestBlock.getIndex() < Seting.V30_INDEX_DIFF + 288) {
+        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_DIFF && latestBlock.getIndex() < Seting.V30_INDEX_DIFF + 288) {
 
             difficulty = 1;
-        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO +288 && latestBlock.getIndex() < Seting.V30_INDEX_DIFF) {
+        } else if (latestBlock.getIndex() >= Seting.V30_INDEX_ALGO + 288 && latestBlock.getIndex() < Seting.V30_INDEX_DIFF) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
             } else {
                 difficulty = latestBlock.getHashCompexity();
             }
-        }
-
-        else if (latestBlock.getIndex() >= Seting.V30_1_FIXED_DIFF && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING) {
+        } else if (latestBlock.getIndex() >= Seting.V30_1_FIXED_DIFF && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING) {
 
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
@@ -337,26 +329,19 @@ public class UtilsBlock {
             } else {
                 difficulty = latestBlock.getHashCompexity();
             }
-        }
-
-
-        else if (latestBlock.getIndex() >= Seting.V31_DIFF_END_MINING && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING + 288) {
+        } else if (latestBlock.getIndex() >= Seting.V31_DIFF_END_MINING && latestBlock.getIndex() < Seting.V31_DIFF_END_MINING + 288) {
             System.out.println("algo V31_FIXED_DIFF");
             difficulty = 14;
-        }
-        else if (latestBlock.getIndex() >= Seting.V31_FIX_DIFF && latestBlock.getIndex() <= Seting.V32_FIX_DIFF) {
+        } else if (latestBlock.getIndex() >= Seting.V31_FIX_DIFF && latestBlock.getIndex() <= Seting.V32_FIX_DIFF) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
             } else {
                 difficulty = latestBlock.getHashCompexity();
             }
-        }
-        else if(latestBlock.getIndex() > Seting.V32_FIX_DIFF && latestBlock.getIndex() < Seting.V32_FIX_DIFF + 10){
-            difficulty =16;
-        }
-
-        else if (latestBlock.getIndex() >= Seting.V32_FIX_DIFF + 10 ) {
+        } else if (latestBlock.getIndex() > Seting.V32_FIX_DIFF && latestBlock.getIndex() < Seting.V32_FIX_DIFF + 10) {
+            difficulty = 16;
+        } else if (latestBlock.getIndex() >= Seting.V32_FIX_DIFF + 10) {
             if (latestBlock.getIndex() != 0 && latestBlock.getIndex() % DIFFICULTY_ADJUSTMENT_INTERVAL == 0) {
                 difficulty = UtilsDIfficult.v30_1_changeAlgorith_diff(latestBlock, blocks, BLOCK_GENERATION_INTERVAL, DIFFICULTY_ADJUSTMENT_INTERVAL);
                 //более умеренная модель сложности
@@ -365,8 +350,8 @@ public class UtilsBlock {
             }
         }
 
-        if(latestBlock.getIndex() > Seting.V31_FIX_DIFF){
-            difficulty = difficulty < 11? 11: difficulty;
+        if (latestBlock.getIndex() > Seting.V31_FIX_DIFF) {
+            difficulty = difficulty < 11 ? 11 : difficulty;
         }
 //        if(Seting.IS_TEST && latestBlock.getIndex() >= Seting.TEST_DIFF){
 //            difficulty = 1;
@@ -375,6 +360,7 @@ public class UtilsBlock {
 
         return difficulty == 0 ? 1 : difficulty;
     }
+
     public static boolean validationOneBlock(
             String addressFounder,
             Block previusblock,
@@ -392,23 +378,23 @@ public class UtilsBlock {
 //            return false;
 
         }
-        if(thisBlock.getHashCompexity() < 1){
+        if (thisBlock.getHashCompexity() < 1) {
             System.out.println("wrong: difficulty less 1: " + thisBlock.getHashCompexity());
 //            return false;
         }
-        if(thisBlock == null){
+        if (thisBlock == null) {
             System.out.println("wrong: block is null: ");
 //            return false;
         }
-        if(thisBlock.getHashBlock().isEmpty() || thisBlock.getHashBlock() == null){
+        if (thisBlock.getHashBlock().isEmpty() || thisBlock.getHashBlock() == null) {
             System.out.println("wrong: hash empty or null");
 //            return false;
         }
-        if(thisBlock.getMinerAddress().isEmpty() || thisBlock.getMinerAddress() == null){
+        if (thisBlock.getMinerAddress().isEmpty() || thisBlock.getMinerAddress() == null) {
             System.out.println("wrong: miner address empty or null");
 //            return false;
         }
-        if(thisBlock.getFounderAddress().isEmpty() || thisBlock.getFounderAddress() == null){
+        if (thisBlock.getFounderAddress().isEmpty() || thisBlock.getFounderAddress() == null) {
             System.out.println("wrong: miner address empty or null");
 //            return false;
         }
@@ -450,6 +436,10 @@ public class UtilsBlock {
                 System.out.println("transactionsCount: " + transactionsCount + "\n");
                 System.out.println("after: " + after + "\n");
                 System.out.println("The block contains transactions where the user's balance is insufficient.");
+
+                MyLogger.saveLog("transactionsCount: " + transactionsCount);
+                MyLogger.saveLog("after: " + after);
+                MyLogger.saveLog("The block contains transactions where the user's balance is insufficient.");
                   System.out.println("*************************************");
                 validated = false;
                 return validated;
@@ -466,6 +456,10 @@ public class UtilsBlock {
                         System.out.println("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.");
                         System.out.println("index: " + thisBlock.getIndex());
                         System.out.println("transaction: " + dtoTransaction);
+
+                        MyLogger.saveLog("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.");
+                        MyLogger.saveLog("index: " + thisBlock.getIndex());
+                        MyLogger.saveLog("transaction: " + dtoTransaction);
                         System.out.println("*************************************");
 
 
@@ -624,7 +618,7 @@ public class UtilsBlock {
                     else if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
                         if(thisBlock.getIndex() > START_BLOCK_DECIMAL_PLACES){
                             double epsilon = 1e-9;  // Define a small margin of error
-                            MyLogger.saveLog("before: minerReward: " + minerReward);
+
 
                             double expectedDollar = minerReward / Seting.DOLLAR;
 
@@ -634,10 +628,10 @@ public class UtilsBlock {
                             double actualStock = transaction.getDigitalStockBalance();
 
                             if (thisBlock.getIndex() > ALGORITM_MINING) {
-                                MyLogger.saveLog("before: expectedDollar: " + expectedDollar);
+
                                 expectedDollar = UtilsUse.round(expectedDollar, SENDING_DECIMAL_PLACES);
                                 expectedStock = UtilsUse.round(expectedStock, SENDING_DECIMAL_PLACES);
-                                MyLogger.saveLog("after: expectedDollar: " + expectedDollar);
+
                             }
 
                             if(Math.abs(expectedDollar - actualDollar) > epsilon){

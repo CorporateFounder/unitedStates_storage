@@ -385,7 +385,7 @@ public class TournamentService {
             }
 
 
-            Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
+            Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
             sign = new ArrayList<>();
             //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
             DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
