@@ -1414,83 +1414,81 @@ public class UtilsResolving {
         if (threshold <= 0)
             return false;
 
-    File file = Blockchain.indexNameFileBlock((int) threshold, filename);
-    if (file == null) {
-        System.out.println("rollBackAddBlock4 file:" + file.getAbsolutePath());
-        MyLogger.saveLog("rollBackAddBlock4 file is null:");
-        existM = false;
-        return existM;
-    }
+        File file = Blockchain.indexNameFileBlock((int) threshold, filename);
+        if (file == null) {
+            MyLogger.saveLog("rollBackAddBlock4 file:" + file.getAbsolutePath());
+            existM = false;
+            return existM;
+        }
 
-    MyLogger.saveLog("rollBackAddBlock4: file: " + file.getAbsolutePath());
+        MyLogger.saveLog("rollBackAddBlock4: file: " + file.getAbsolutePath());
 
-    List<Block> tempBlock = new ArrayList<>();
-    try (Stream<String> lines = Files.lines(file.toPath()).parallel()) {
-        tempBlock = lines.map(line -> {
-            try {
-                return UtilsJson.jsonToBLock(line);
-            } catch (JsonProcessingException e) {
-                MyLogger.saveLog("rollBackAddBlock4 JSON processing error: " + e.getMessage());
-                return null;
-            }
-        }).filter(block -> block != null && block.getIndex() < threshold)
-          .sorted(Comparator.comparing(Block::getIndex))
-          .collect(Collectors.toList());
-    }
+        List<Block> tempBlock = new ArrayList<>();
+        try (Stream<String> lines = Files.lines(file.toPath()).parallel()) {
+            tempBlock = lines.map(line -> {
+                        try {
+                            return UtilsJson.jsonToBLock(line);
+                        } catch (JsonProcessingException e) {
+                            return null;
+                        }
+                    }).filter(block -> block != null && block.getIndex() < threshold)
+                    .sorted(Comparator.comparing(Block::getIndex))
+                    .collect(Collectors.toList());
+        }
 
 
 
         SlidingWindowManager windowManager = SlidingWindowManager.getInstance(Seting.SLIDING_WINDOWS_BALANCE);
         // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
 //        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
-
+        try {
         for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
             Block block = deleteBlocks.get(i);
             System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
-                if (windowManager.getWindows().containsKey(Long.valueOf(i))) {
-                    balances.putAll(windowManager.getWindow(Long.valueOf(i)));
-                } else {
-                    balances = rollbackCalculateBalance(balances, block);
-                }
+            if (windowManager.getWindows().containsKey(Long.valueOf(i))) {
+                balances.putAll(windowManager.getWindow(Long.valueOf(i)));
+            } else {
+                balances = rollbackCalculateBalance(balances, block);
+            }
+            blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
 
 
         }
 
-    try {
-        blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
-    }catch (Exception e){
-        MyLogger.saveLog("error: rollBackAddBlock3: ", e);
-        return false;
-    }
+            blockService.deleteEntityBlocksAndRelatedData(threshold);
 
-    System.out.println("UtilsResolving: rollBackAddBlock4: total different balance: " + balances.size());
-    System.out.println("UtilsResolving: rollBackAddBlock4: total original balance: " + balances.size());
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            MyLogger.saveLog("rollback4: ", e);
+            return false;
+        }
 
 
-    blockService.deleteEntityBlocksAndRelatedData(threshold);
 
-    allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-    Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-    UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-    java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-    Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
+        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-    Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
-    tempBlock = tempBlock.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-    UtilsBlock.saveBlocks(tempBlock, filename);
+        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
 
-    System.out.println("addBlock 3: time: result: " + result);
-    System.out.println(":BasisController: addBlock3: finish: " + deleteBlocks.size());
-    System.out.println("deleteBlocks: index: start: " + deleteBlocks.get(deleteBlocks.size() - 1).getIndex());
-    System.out.println("tempBlock: index: start: " + tempBlock.get(0).getIndex());
-    System.out.println("tempBlock: index: finish: " + tempBlock.get(tempBlock.size() - 1).getIndex());
-    System.out.println("balances size: " + balances.size());
+        Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
+        tempBlock = tempBlock.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+        UtilsBlock.saveBlocks(tempBlock, filename);
+
+        System.out.println("addBlock 3: time: result: " + result);
+        System.out.println(":BasisController: addBlock3: finish: " + deleteBlocks.size());
+        System.out.println("deleteBlocks: index: start: " + deleteBlocks.get(deleteBlocks.size() - 1).getIndex());
+        System.out.println("tempBlock: index: start: " + tempBlock.get(0).getIndex());
+        System.out.println("tempBlock: index: finish: " + tempBlock.get(tempBlock.size() - 1).getIndex());
+        System.out.println("balances size: " + balances.size());
 
         boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         if (!save) {
+
             existM = false;
         }
 
@@ -1552,34 +1550,33 @@ public class UtilsResolving {
                 } else {
                     balances = rollbackCalculateBalance(balances, block);
                 }
+                blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
 
             }
+
+            blockService.deleteEntityBlocksAndRelatedData(threshold);
         } catch (Throwable e) {
+            MyLogger.saveLog("error tournament: ", e);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return false;
         }
-        MyLogger.saveLog("rollBackAddBlock3: after rollbackCalculateBalance: ");
+
 //        tempBalances = UtilsUse.differentAccount(tempBalances, balances);
 //        tempBalances = UtilsUse.merge(tempBalances, balances);
-        MyLogger.saveLog("rollBackAddBlock3: after: differentAccount:");
-        List<EntityAccount> accountList = null;
-        try {
-//            accountList = blockService.findByAccountIn(balances);
-//            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
-            blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
 
-        }catch (Exception e){
-            MyLogger.saveLog("error: rollBackAddBlock3: ", e);
-            return false;
-        }
-        MyLogger.saveLog("rollBackAddBlock3: before: deleteEntityBlocksAndRelatedData:");
-        blockService.deleteEntityBlocksAndRelatedData(threshold);
+
+
+
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
         UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-        MyLogger.saveLog("rollBackAddBlock3: before: deleteFileBlockchain:");
+
+        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
+
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         UtilsBlock.saveBlocks(tempBlock, filename);
-        MyLogger.saveLog("rollBackAddBlock3: after: saveBlocks:");
+
         boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         if (!save) {
             existM = false;
@@ -1590,325 +1587,6 @@ public class UtilsResolving {
 
 
 
-
-
-    public int resovle2() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-
-        BasisController.setUpdating(true);
-        int bigSize = 0;
-        try {
-            System.out.println(" :start resolve");
-            utilsMethod();
-
-//            blockchainSize = (int) shortDataBlockchain.getSize();
-
-            //local blockchain size
-            //размер локального блокчейна
-            int blocks_current_size = BasisController.getBlockchainSize();
-
-            System.out.println(" resolve2:local size: " + blocks_current_size);
-
-            //адреса узлов.
-            Set<String> nodesAll = getNodes();
-            //сортирует по приоритетности блокчейны
-            List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
-            System.out.println(":resolve2: size nodes: " + getNodes().size());
-            //goes through all hosts (repositories) in search of the most up-to-date blockchain
-            //проходит по всем хостам(хранилищам) в поисках самого актуального блокчейна
-            for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
-                String s = hostEndDataShortB.getHost();
-                //if the local address matches the host address, it skips
-                //если локальный адрес совпадает с адресом хоста, он пропускает
-                if (BasisController.getExcludedAddresses().contains(s)) {
-                    System.out.println(":its your address or excluded address: " + s);
-                    continue;
-                }
-                try {
-                    //if the address is localhost, it skips
-                    //если адрес локального хоста, он пропускает
-                    if (Seting.IS_TEST == false && (s.contains("localhost") || s.contains("127.0.0.1")))
-                        continue;
-                    String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
-                    Integer size = Integer.valueOf(sizeStr);
-
-                    //здесь устанавливает самый длинный блокчейн.
-                    if (size > bigSize) {
-                        bigSize = size;
-                    }
-                    //if the size from the storage is larger than on the local server, start checking
-                    //если размер с хранилища больше чем на локальном сервере, начать проверку
-                    System.out.println("resolve2 size: " + size + " blocks_current_size: " + blocks_current_size);
-                    String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
-                    System.out.println("jsonGlobalData: " + jsonGlobalData);
-
-                    DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
-                    if (isBig(BasisController.getShortDataBlockchain(), global)) {
-                        System.out.println(":size from address: " + s + " upper than: " + size + ":blocks_current_size " + blocks_current_size);
-                        //Test start algorithm
-                        //600 последних блоков, для подсчета сложности, для последнего блока.
-                        List<Block> lastDiff = new ArrayList<>();
-                        SubBlockchainEntity subBlockchainEntity = null;
-                        String subBlockchainJson = null;
-//                        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-//                        Map<String, Account> tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                        Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
-
-                        //if the local one lags behind the global one by more than PORTION_DOWNLOAD (500 blocks), then you need to download in portions from the storage
-                        //если локальный отстает от глобального больше чем PORTION_DOWNLOAD (500 блоков), то нужно скачивать порциями из хранилища
-                        if (size - blocks_current_size > Seting.PORTION_DOWNLOAD) {
-                            boolean downloadPortion = true;
-                            int finish = blocks_current_size + Seting.PORTION_DOWNLOAD;
-                            int start = blocks_current_size;
-                            //while the difference in the size of the local blockchain is greater than from the host, it will continue to download in portions to download the entire blockchain
-                            //пока разница размера локального блокчейна больше чем с хоста будет продолжаться скачивать порциями, чтобы скачать весь блокчейн
-                            while (downloadPortion) {
-                                //здесь говориться, с какого блока по какой блок скачивать.
-                                subBlockchainEntity = new SubBlockchainEntity(start, finish);
-
-                                System.out.println("1:shortDataBlockchain:  " + BasisController.getShortDataBlockchain());
-                                System.out.println("1:sublockchainEntity: " + subBlockchainEntity);
-                                subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
-                                System.out.println("1:sublockchainJson: " + subBlockchainJson);
-                                List<Block> subBlocks = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
-                                System.out.println("1:download sub block: " + subBlocks.size());
-
-                                finish = (int) subBlocks.get(subBlocks.size() - 1).getIndex() + Seting.PORTION_DOWNLOAD + 1;
-                                start = (int) subBlocks.get(subBlocks.size() - 1).getIndex() + 1; //вот здесь возможно сделать + 2
-
-
-//                                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-
-                                //вычисляет сложность блока, для текущего блока, на основе предыдущих блоков.
-                                //select a block class for the current block, based on previous blocks.
-                                if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
-                                    lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                                            blockService.findBySpecialIndexBetween(
-                                                    (BasisController.prevBlock().getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
-                                                    BasisController.prevBlock().getIndex() + 1
-                                            )
-                                    );
-                                }
-
-
-                                //класс мета данных блокчейна.
-                                DataShortBlockchainInformation temp = new DataShortBlockchainInformation();
-
-                                //загружает баланс всех счетов для текущего блокчейна.
-                                List<String> sign = new ArrayList<>();
-                                if (BasisController.getBlockchainSize() > 1) {
-                                    //проверяет скаченные блоки на целостность
-                                    //checks downloaded blocks for integrity
-                                    temp = Blockchain.shortCheck(
-                                            BasisController.prevBlock(),
-                                            subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
-                                    System.out.println("prevBlock: " + BasisController.prevBlock().getIndex());
-                                }
-
-
-                                System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++");
-                                System.out.println("1: temp: " + temp);
-                                System.out.println("1: blockchainsize: " + BasisController.getBlockchainSize());
-                                System.out.println("1: sublocks: " + subBlocks.size());
-                                System.out.println("1: shortDataBlockchain: " + BasisController.getShortDataBlockchain());
-
-                                System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++");
-                                //если скачанный блокчейн не валидный, то не добавляет в блокчейн, возвращает -10
-                                if (BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
-                                    System.out.println("error resolve 2 in portion upper > 500");
-                                    return -10;
-                                }
-
-                                //вызывает методы, для сохранения списка блоков в текущий блокчейн,
-                                //так же записывает в базу h2, делает перерасчет всех балансов,
-                                //и так же их записывает, а так же записывает другие данные.
-                                addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
-                                if (!temp.isValidation()) {
-                                    System.out.println("check all file");
-                                    //проверить целостность блокчейна всего на кошельке
-                                    //check the integrity of the blockchain of everything on the wallet
-                                    temp = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                                }
-
-                                //добавляет мета данные блокчейна в static переменную, как так
-                                //уже эти мета данные являются актуальными.
-                                //adds capacitor metadata to a static variable like so
-                                //this metadata is already relevant.
-                                BasisController.setShortDataBlockchain(temp);
-                                //размер блокчейна в кошельке.
-                                //the size of the blockchain in the wallet.
-
-                                BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                                //валидность блокчейна в кошельке.
-                                //validity of the blockchain in the wallet.
-                                BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
-//
-                                //получить последний блок из базы данных.
-                                //get the last block from the database.
-                                EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                                //последний блок в локальном сервере.
-                                //last block in the local server.
-                                BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-                                System.out.println("prevBlock: " + BasisController.prevBlock().getIndex() + " shortDataBlockchain: " + BasisController.getShortDataBlockchain());
-                                String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                                //сохранить мета данные блокчейна.
-                                UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-
-                                //если количество новых блоков, относительно локального блокчейна меньше 500,
-                                //то скачать эти блоки и прекратить попытки скачивания с данного узла.
-                                //if the number of new blocks relative to the local blockchain is less than 500,
-                                //then download these blocks and stop trying to download from this node.
-                                if (size - BasisController.prevBlock().getIndex() < Seting.PORTION_DOWNLOAD) {
-                                    downloadPortion = false;
-                                    finish = size;
-                                    subBlockchainEntity = new SubBlockchainEntity(start, finish);
-                                    System.out.println("2:sublockchainEntity: " + subBlockchainEntity);
-                                    subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
-                                    System.out.println("2:sublockchainJson: " + subBlockchainJson);
-                                    subBlocks = UtilsJson.jsonToObject(UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks"));
-                                    System.out.println("2:download sub block: " + subBlocks.size());
-
-//                                    balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                                    balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                                    if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
-                                        lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                                                blockService.findBySpecialIndexBetween(
-                                                        (BasisController.prevBlock().getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
-                                                        BasisController.prevBlock().getIndex() + 1
-                                                )
-                                        );
-                                    }
-
-                                    if (BasisController.getBlockchainSize() > 1) {
-                                        temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
-                                    }
-
-
-                                    System.out.println("2: temp: " + temp);
-                                    System.out.println("2: blockchainsize: " + BasisController.getBlockchainSize());
-                                    System.out.println("2: sublocks: " + subBlocks.size());
-
-                                    if (BasisController.getBlockchainSize() > 1 && !temp.isValidation()) {
-                                        return -10;
-                                    }
-
-                                    //метод, который сохраняет скачанные порции блока, в блокчейн
-                                    addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                                    if (!temp.isValidation()) {
-                                        temp = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                                    }
-                                    BasisController.setShortDataBlockchain(temp);
-                                    BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                                    BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
-//
-                                    tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                                    BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-
-                                    json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                                    UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-                                }
-                            }
-                        } else {
-
-                            //здесь нужно проверить
-                            //If the difference is not greater than PORTION_DOWNLOAD, then downloads once a portion of this difference
-                            //Если разница не больше PORTION_DOWNLOAD, то скачивает один раз порцию эту разницу
-                            subBlockchainEntity = new SubBlockchainEntity(blocks_current_size, size);
-
-                            subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
-
-                            String str = UtilUrl.getObject(subBlockchainJson, s + "/sub-blocks");
-                            if (str.isEmpty() || str.isBlank()) {
-                                System.out.println("-------------------------------------");
-                                System.out.println("sublocks:  str: empty " + str);
-                                System.out.println("-------------------------------------");
-                                continue;
-                            }
-                            List<Block> subBlocks = UtilsJson.jsonToObject(str);
-
-                            if (subBlocks.isEmpty() || subBlocks.size() == 0) {
-                                System.out.println("-------------------------------------");
-                                System.out.println("sublocks: " + subBlocks.size());
-                                System.out.println("-------------------------------------");
-                                continue;
-                            }
-                            System.out.println("3:download sub block: " + subBlocks.size());
-//                            tempBalances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-                            tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-                            List<String> sign = new ArrayList<>();
-
-                            if (BasisController.getBlockchainSize() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
-                                lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                                        blockService.findBySpecialIndexBetween(
-                                                (BasisController.prevBlock().getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
-                                                BasisController.prevBlock().getIndex() + 1
-                                        )
-                                );
-                            }
-
-                            DataShortBlockchainInformation temp = new DataShortBlockchainInformation();
-                            if (BasisController.getBlockchainSize() > 1) {
-                                temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
-                            }
-
-                            System.out.println("3: temp: " + temp);
-                            System.out.println("3: blockchainsize: " + BasisController.getBlockchainSize());
-                            System.out.println("3: sublocks: " + subBlocks.size());
-
-                            if (temp.getSize() > 1 && !temp.isValidation()) {
-                                System.out.println("error resolve 2 in portion upper < 500");
-
-                                return -10;
-                            }
-
-                            addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
-                            BasisController.setShortDataBlockchain(temp);
-                            BasisController.setBlockcheinSize((int) BasisController.getShortDataBlockchain().getSize());
-                            BasisController.setBlockchainValid(BasisController.getShortDataBlockchain().isValidation());
-
-//                            prevBlock = Blockchain.indexFromFile(blockchainSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                            EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-                            BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
-
-                            String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
-                            UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-                        }
-                        System.out.println("size temporaryBlockchain: ");
-                        System.out.println("resolve: temporaryBlockchain: ");
-                    } else {
-                        System.out.println(":BasisController: resove: size less: " + size + " address: " + s);
-                        continue;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("BasisController: resove2: " + e.getMessage());
-                    continue;
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                } catch (CloneNotSupportedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-        } finally {
-
-            BasisController.setUpdating(false);
-            if (BasisController.getBlockchainSize() > bigSize) {
-                return 1;
-            } else if (BasisController.getBlockchainSize() < bigSize) {
-                return -1;
-            } else {
-                return 0;
-            }
-
-        }
-
-
-    }
-
     /**
      * rewrites the blockchain into files and into the h2 database. From here they are called
      * * methods that calculate balance and other calculations.
@@ -1916,13 +1594,14 @@ public class UtilsResolving {
      * методы которые, вычисляют баланс и другие вычисления.
      */
 
+
     @Transactional
     public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         UtilsBalance.setBlockService(blockService);
         Blockchain.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        List<EntityBlock> list = new ArrayList<>();
+
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
 
@@ -1935,38 +1614,32 @@ public class UtilsResolving {
 
         SlidingWindowManager windowManager = SlidingWindowManager.getInstance(Seting.SLIDING_WINDOWS_BALANCE);
 //        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
-
+        try {
+            start = UtilsTime.getUniversalTimestamp();
         for (Block block : originalBlocks) {
             System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
-            list.add(entityBlock);
+
 
             windowManager.addWindow(block.getIndex(), UtilsUse.balancesClone(balances));
             balances = calculateBalance(balances, block, signs);
+
+            tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+            List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
+            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
+
+            blockService.saveAccountAllF(accountList);
 
             List<EntityBlock> tempList = new ArrayList<>();
             tempList.add(entityBlock);
             blockService.saveAllBLockF(tempList);
         }
 
-        list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
         // Вызов getLaws один раз для всех блоков
 
-        long finish = UtilsTime.getUniversalTimestamp();
-        System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
-        try {
 
 
-
-            tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-            List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
-            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
-
-            start = UtilsTime.getUniversalTimestamp();
-            blockService.saveAccountAllF(accountList);
-
-            finish = UtilsTime.getUniversalTimestamp();
         } catch (Exception e) {
 
 
@@ -1975,6 +1648,8 @@ public class UtilsResolving {
             return false;
 
         }
+        long finish = UtilsTime.getUniversalTimestamp();
+        System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
 
         System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
