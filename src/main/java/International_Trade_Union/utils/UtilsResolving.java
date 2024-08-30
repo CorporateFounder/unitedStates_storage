@@ -310,8 +310,6 @@ public class UtilsResolving {
                                 global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                                 temp = new DataShortBlockchainInformation();
                                 sign = new ArrayList<>();
-                                temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
-
 
 //                                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
@@ -325,19 +323,19 @@ public class UtilsResolving {
 //                                tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
                                 tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                                 sign = new ArrayList<>();
-                                if (!local_size_upper) {
+                                if (!local_size_upper && temp.getBigRandomNumber() < global.getBigRandomNumber()) {
                                     System.out.println("===========================");
                                     System.out.println("!local_size_upper: " + !local_size_upper);
                                     System.out.println("===========================");
-                                    temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, false);
+                                    temp = helpResolve4(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
 
                                 }
 
-                                if (local_size_upper) {
+                                if (local_size_upper && temp.getBigRandomNumber() < global.getBigRandomNumber()) {
                                     System.out.println("===========================");
                                     System.out.println("local_size_upper: " + local_size_upper);
                                     System.out.println("===========================");
-                                    temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, false);
+                                    temp = helpResolve5(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
                                 }
 
                                 System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -558,7 +556,7 @@ public class UtilsResolving {
                             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                             tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                             sign = new ArrayList<>();
-                            if (!local_size_upper) {
+                            if (!local_size_upper && temp.getBigRandomNumber() < global.getBigRandomNumber()) {
                                 System.out.println("===========================");
                                 System.out.println("!local_size_upper: " + !local_size_upper);
                                 System.out.println("===========================");
@@ -587,7 +585,7 @@ public class UtilsResolving {
 
                             }
 
-                            if (local_size_upper) {
+                            if (local_size_upper && temp.getBigRandomNumber() < global.getBigRandomNumber()) {
                                 System.out.println("===========================");
                                 System.out.println("local_size_upper: " + local_size_upper);
                                 System.out.println("===========================");
@@ -1596,7 +1594,7 @@ public class UtilsResolving {
 
 
     @Transactional
-    public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public synchronized boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         UtilsBalance.setBlockService(blockService);
         Blockchain.setBlockService(blockService);

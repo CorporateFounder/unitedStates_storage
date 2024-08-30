@@ -5,13 +5,11 @@ import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
-import International_Trade_Union.utils.UtilsAccountToEntityAccount;
-import International_Trade_Union.utils.UtilsBalance;
-import International_Trade_Union.utils.UtilsBlock;
-import International_Trade_Union.utils.UtilsUse;
+import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.VoteEnum;
@@ -167,7 +165,7 @@ public class TransactionController {
     /**
      * Возвращает транзакции, которые имеют достаточно денег на счетах
      */
-    public List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException {
+    public List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
@@ -205,40 +203,30 @@ public class TransactionController {
 
                 BigDecimal transactionBonusForMiner = BigDecimal.valueOf(transaction.getBonusForMiner());
 
-                if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
-                    dtoTransactions.add(transaction);
-                    result = true;
-                } else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.YES)) {
-                    dtoTransactions.add(transaction);
-                    result = true;
-                } else if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.NO)) {
-                    dtoTransactions.add(transaction);
-                    result = true;
-                } else if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.STAKING)) {
-                    dtoTransactions.add(transaction);
-                    result = true;
-                } else if (sender.getDigitalStakingBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0 && transaction.getVoteEnum().equals(VoteEnum.UNSTAKING)) {
-                    dtoTransactions.add(transaction);
-                    result = true;
-                }
-                try {
-                    if (result == true) {
-                        boolean sendtrue = UtilsBalance.sendMoney(
-                                sender,
-                                customer,
-                                BigDecimal.valueOf(transaction.getDigitalDollar()),
-                                BigDecimal.valueOf(transaction.getDigitalStockBalance()),
-                                BigDecimal.valueOf(transaction.getBonusForMiner()),
-                                transaction.getVoteEnum());
-                        if (sendtrue) {
-                            balances.put(sender.getAccount(), sender);
-                            balances.put(customer.getAccount(), customer);
-                        }
+                // Ensure the sender has enough balance for the transaction, including the bonus for the miner
+                if (transaction.getVoteEnum().equals(VoteEnum.YES) || transaction.getVoteEnum().equals(VoteEnum.NO)) {
+                    if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock.add(transactionBonusForMiner)) >= 0 && sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
+                        result = UtilsBalance.sendMoney(sender, customer, transactionDigitalDollar, transactionDigitalStock, transactionBonusForMiner, transaction.getVoteEnum());
                     }
+                } else if (transaction.getVoteEnum().equals(VoteEnum.STAKING) ) {
+                    if (sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
+                        result = UtilsBalance.sendMoney(sender, customer, transactionDigitalDollar, transactionDigitalStock, transactionBonusForMiner, transaction.getVoteEnum());
+                    }
+                }else if (transaction.getVoteEnum().equals(VoteEnum.UNSTAKING) ) {
+                    if (sender.getDigitalStakingBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
+                        result = UtilsBalance.sendMoney(sender, customer, transactionDigitalDollar, transactionDigitalStock, transactionBonusForMiner, transaction.getVoteEnum());
+                    }
+                }
 
+                if (result) {
+                    dtoTransactions.add(transaction);
+                    balances.put(sender.getAccount(), sender);
+                    balances.put(customer.getAccount(), customer);
+                } else {
+                    MyLogger.saveLog("balanceTransaction: transaction: " + transaction);
+                    MyLogger.saveLog("balanceTransaction: json: " + UtilsJson.objToStringJson(transaction));
+                    MyLogger.saveLog("balanceTransaction: sender: " + sender);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
 
             }

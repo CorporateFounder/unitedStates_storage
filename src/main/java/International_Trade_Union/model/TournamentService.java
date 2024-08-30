@@ -255,7 +255,7 @@ public class TournamentService {
     }
 
 
-
+    @Transactional
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
         try {
 
@@ -406,7 +406,8 @@ public class TournamentService {
             UtilsBlock.setBlockService(blockService);
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-            if (winner != null && balances != null ) {
+            if (winner != null && balances != null && BasisController.getBlockchainSize() == winner.get(0).getIndex()) {
+                MyLogger.saveLog("tournament: addBlock3: index: " + winner.get(0).getIndex());
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));

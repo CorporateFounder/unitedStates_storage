@@ -100,7 +100,7 @@ public class ConductorController {
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         Account account = UtilsBalance.getBalance(address, balances);
-        return UtilsUse.round(account.getDigitalDollarBalance(), Seting.DECIMAL_PLACES).doubleValue();
+        return UtilsUse.round(account.getDigitalDollarBalance(), Seting.SENDING_DECIMAL_PLACES).doubleValue();
     }
 
     /**
@@ -118,7 +118,7 @@ public class ConductorController {
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         Account account = UtilsBalance.getBalance(address, balances);
-        return UtilsUse.round(account.getDigitalStockBalance(), Seting.DECIMAL_PLACES).doubleValue();
+        return UtilsUse.round(account.getDigitalStockBalance(), Seting.SENDING_DECIMAL_PLACES).doubleValue();
     }
 
     /**
