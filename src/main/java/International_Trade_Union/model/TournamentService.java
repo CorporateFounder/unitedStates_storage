@@ -186,7 +186,6 @@ public class TournamentService {
     }
 
     public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
-        MyLogger.saveLog("start: getAllWinner");
 
         List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
@@ -251,7 +250,7 @@ public class TournamentService {
             MyLogger.saveLog("getAllWinner: ", e);
         }
 
-        MyLogger.saveLog("finish: getAllWinner");
+
     }
 
 
@@ -406,8 +405,7 @@ public class TournamentService {
             UtilsBlock.setBlockService(blockService);
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-            if (winner != null && balances != null && BasisController.getBlockchainSize() == winner.get(0).getIndex()) {
-                MyLogger.saveLog("tournament: addBlock3: index: " + winner.get(0).getIndex());
+            if (winner != null && balances != null ) {
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));

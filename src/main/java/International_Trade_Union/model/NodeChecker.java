@@ -62,13 +62,8 @@ public class NodeChecker {
         allNodes.addAll(nodes);
 
         for (String address : allNodes) {
-//            try {
                 UtilsAllAddresses.putHost(address);
-//                UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-//            } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
-//                     SignatureException | NoSuchProviderException | InvalidKeyException e) {
-//                MyLogger.saveLog("Error saving address " + address + ": " + e.getMessage());
-//            }
+
         }
     }
 
@@ -99,7 +94,7 @@ public class NodeChecker {
     }
 
     public void initiateProcess(List<HostEndDataShortB> sortPriorityHost) {
-        MyLogger.saveLog("start: initiateProcess");
+
         Set<String> allAddresses = new HashSet<>();
         try {
             // Считать все адреса из файла
@@ -130,13 +125,11 @@ public class NodeChecker {
                                 break;
                             }
                         } catch (java.net.ConnectException e) {
-                            MyLogger.saveLog("Connection refused for " + host.getHost() + " on attempt " + (attempt + 1) + ": " + e.getMessage());
                             synchronized (unresponsiveAddresses) {
                                 unresponsiveAddresses.add(extractHostPort(host.getHost()));
                             }
                             break; // Не нужно повторять попытки, если соединение отказано
                         } catch (Exception e) {
-                            MyLogger.saveLog("Error checking readiness for " + host.getHost() + " on attempt " + (attempt + 1) + ": " + e.getMessage());
                         }
                     }
                     if (!isResponding) {
@@ -150,34 +143,6 @@ public class NodeChecker {
         // Ждем завершения всех проверок
         CompletableFuture.allOf(checkFutures.toArray(new CompletableFuture[0])).join();
 
-        // Логируем недоступные узлы
-        System.out.println("before: " + allAddresses);
-        System.out.println("for delete: " + unresponsiveAddresses);
-
-//        // Нормализуем адреса для удаления
-//        Set<String> normalizedAllAddresses = allAddresses.stream()
-//                .map(this::extractHostPort)
-//                .collect(Collectors.toSet());
-
-//        // Удаляем неответившие узлы из общего списка
-//        allAddresses.removeAll(unresponsiveAddresses);
-
-        // Логируем оставшиеся узлы перед сохранением
-//        MyLogger.saveLog("Remaining addresses: " + allAddresses);
-
-//        // Удаляем файл с адресами
-//        Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-//
-//        // Перезаписываем оставшиеся адреса в файл
-//        allAddresses.forEach(address -> {
-//            try {
-//                UtilsAllAddresses.saveAllAddresses(address, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-//            } catch (IOException | NoSuchAlgorithmException | SignatureException | InvalidKeySpecException |
-//                     NoSuchProviderException | InvalidKeyException e) {
-//                throw new RuntimeException(e);
-//            }
-//        });
-
 
 
         // Ограничиваем количество ожидаемых узлов до 7
@@ -188,7 +153,6 @@ public class NodeChecker {
             return;
         }
 
-        MyLogger.saveLog("Waiting for " + nodesToWait + " nodes to become ready");
 
         CountDownLatch latch = new CountDownLatch(nodesToWait);
 
@@ -216,7 +180,6 @@ public class NodeChecker {
             // Ждем максимум 25 секунд
             boolean completed = latch.await(25, TimeUnit.SECONDS);
             if (!completed) {
-                MyLogger.saveLog("Timeout waiting for nodes to become ready");
             }
         } catch (InterruptedException e) {
             MyLogger.saveLog("Waiting was interrupted: " + e.getMessage());

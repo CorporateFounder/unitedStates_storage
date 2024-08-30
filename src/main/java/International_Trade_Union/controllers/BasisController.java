@@ -1061,10 +1061,10 @@ public class BasisController {
 
                 } else {
                     if (temp.getSize() > shortDataBlockchain.getSize() && temp.getHashCount() > shortDataBlockchain.getHashCount()) {
-                        System.out.println("code error: " + HttpStatus.CONFLICT);
-                        System.out.println("miner: " + account);
-                        MyLogger.saveLog("CONFLICT: " + account + " temp: " + temp);
-                        MyLogger.saveLog("CONFLICT: " + account + " shortDataBlockchain: " + shortDataBlockchain);
+//                        System.out.println("code error: " + HttpStatus.CONFLICT);
+//                        System.out.println("miner: " + account);
+//                        MyLogger.saveLog("CONFLICT: " + account + " temp: " + temp);
+//                        MyLogger.saveLog("CONFLICT: " + account + " shortDataBlockchain: " + shortDataBlockchain);
                         return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
                     }
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);

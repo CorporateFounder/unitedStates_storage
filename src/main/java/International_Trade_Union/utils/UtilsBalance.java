@@ -7,6 +7,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
+
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -24,7 +25,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static International_Trade_Union.setings.Seting.DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS;
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 //wallet
 
@@ -181,12 +181,14 @@ public class UtilsBalance {
 
         Base base = new Base58();
         System.out.println("calculateBalance: index: " + block.getIndex());
+
         int i = (int) block.getIndex();
 
         List<DtoTransaction> transactions = block.getDtoTransactions();
         transactions = transactions.stream()
                 .sorted(Comparator.comparing(t -> base.encode(t.getSign())))
                 .collect(Collectors.toList());
+
 
         int BasisSendCount = 0;
         for (int j = 0; j < transactions.size(); j++) {
@@ -195,7 +197,7 @@ public class UtilsBalance {
             DtoTransaction transaction = transactions.get(j);
             if (blockService != null) {
                 if (blockService.existsBySign(transaction.getSign())) {
-                    MyLogger.saveLog("this transaction signature has already been used and is not valid from db");
+                    MyLogger.saveLog("this transaction signature has already been used and is not valid from db: index: " + block.getIndex() + " signature: " + base.encode(transaction.getSign()));
                     System.out.println("this transaction signature has already been used and is not valid from db");
                     continue;
                 }
@@ -274,7 +276,8 @@ public class UtilsBalance {
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
 
-
+                    MyLogger.saveLog("balanse sender before: " + sender + " index: " + block.getIndex());
+                    MyLogger.saveLog("balanse customer before: " + customer + " index: " + block.getIndex());
                     sendTrue = UtilsBalance.sendMoney(
                             sender,
                             customer,
@@ -289,6 +292,10 @@ public class UtilsBalance {
                 if (sendTrue) {
                     balances.put(sender.getAccount(), sender);
                     balances.put(customer.getAccount(), customer);
+
+                    MyLogger.saveLog("balanse sender after: " + sender + " index: " + block.getIndex());
+                    MyLogger.saveLog("balanse customer after: " + customer + " index: " + block.getIndex());
+
                 }
 
             }
@@ -357,13 +364,16 @@ public class UtilsBalance {
         if (!senderAddress.getAccount().equals(Seting.BASIS_ADDRESS)) {
             if (senderDigitalStock.compareTo(digitalStock) < 0) {
                 System.out.println("less stock");
+                MyLogger.saveLog("less stock:senderDigitalStock " + senderDigitalStock + " digitalStock " + digitalStock );
                 sendTrue = false;
             } else if (recipientAddress.getAccount().equals(Seting.BASIS_ADDRESS)) {
                 System.out.println("Basis cannot be recipient");
+                MyLogger.saveLog("Basis cannot be recipient: " );
                 sendTrue = false;
             } else if (voteEnum.equals(VoteEnum.YES) || voteEnum.equals(VoteEnum.NO)) {
                 if (senderAddress.getAccount().equals(recipientAddress.getAccount())) {
                     System.out.printf("sender %s, recipient %s cannot be equals! Error!%n", senderAddress.getAccount(), recipientAddress.getAccount());
+                    MyLogger.saveLog(String.format("sender %s, recipient %s cannot be equals! Error!%n", senderAddress.getAccount(), recipientAddress.getAccount()));
                     sendTrue = false;
                     return sendTrue;
                 }
@@ -393,6 +403,8 @@ public class UtilsBalance {
                     sendTrue = false;
                     return sendTrue;
                 }
+
+
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar.subtract(digitalDollar));
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking.add(digitalDollar));
                 recipientAddress.setDigitalDollarBalance(senderAddress.getDigitalDollarBalance());
