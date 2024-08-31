@@ -52,7 +52,7 @@ public class TransactionController {
      */
 
     @RequestMapping(method = RequestMethod.POST, value = "/addTransaction", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void add(@RequestBody DtoTransaction data) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+    public void add(@RequestBody DtoTransaction data)  {
 //        System.out.println("add transaction: " + data);
         Base base = new Base58();
         List<DtoTransaction> transactions = AllTransactions.getInstance();
@@ -64,11 +64,16 @@ public class TransactionController {
                 return null; // или другое значение по умолчанию
             }
         })).collect(Collectors.toList());
-        transactions = balanceTransaction(transactions);
-        if (!transactions.contains(data)) {
-            if (!blockService.existsBySign(data.getSign()))
-                AllTransactions.addTransaction(data);
+        try {
+            transactions = balanceTransaction(transactions);
+            if (!transactions.contains(data)) {
+                if (!blockService.existsBySign(data.getSign()))
+                    AllTransactions.addTransaction(data);
+            }
+        }catch (Exception e){
+            MyLogger.saveLog("add ",e);
         }
+
 
         System.out.println("TransactionController: add: " + AllTransactions.getInstance().size());
     }
@@ -202,6 +207,8 @@ public class TransactionController {
                     if (sender.getDigitalStakingBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
                         result = UtilsBalance.sendMoney(sender, customer, transactionDigitalDollar, transactionDigitalStock, transactionBonusForMiner, transaction.getVoteEnum());
                     }
+                }else if(transaction.getVoteEnum().equals(VoteEnum.REMOVE_YOUR_VOICE) && transaction.getCustomer().startsWith("LIBER")){
+                    result = UtilsBalance.sendMoney(sender, customer, transactionDigitalDollar, transactionDigitalStock, transactionBonusForMiner, transaction.getVoteEnum());
                 }
 
 

@@ -32,13 +32,17 @@ public class AllTransactions {
         return UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE);
     }
 
-    public static synchronized List<DtoTransaction> getInstance() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public static synchronized List<DtoTransaction> getInstance()  {
         if (instance == null) {
             instance = new ArrayList<>();
         }
         instance = new ArrayList<>();
-
-        instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
+        try {
+            instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
+        } catch (Exception e){
+            MyLogger.saveLog("getInstance: ", e);
+            return new ArrayList<>();
+        }
         Base base = new Base58();
         instance = instance.stream()
                 .filter(UtilsUse.distinctByKeyString(t -> {
@@ -51,7 +55,13 @@ public class AllTransactions {
                 }))
                 .collect(Collectors.toList());
         instance = instance.stream().filter(t->t!= null).collect(Collectors.toList());
-        sendedTransaction = getInsanceSended();
+        try {
+            sendedTransaction = getInsanceSended();
+        }catch (Exception e){
+            MyLogger.saveLog("getInstance: getInstance: ");
+            return instance;
+        }
+
 
         instance.removeAll(sendedTransaction);
 
