@@ -73,10 +73,10 @@ public class ConductorController {
     public Account account(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
         //TODO если что можно это включить
-        if (!BasisController.isIsSaveFile()) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return new Account();
-        }
+//        if (!BasisController.isIsSaveFile()) {
+//            System.out.println("saving file: resolve_from_to_block: sub block");
+//            return new Account();
+//        }
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         Account account = UtilsBalance.getBalance(address, balances);
@@ -93,10 +93,10 @@ public class ConductorController {
     public Double dollar(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
 
-        if (!BasisController.isIsSaveFile()) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return -1.0;
-        }
+//        if (!BasisController.isIsSaveFile()) {
+//            System.out.println("saving file: resolve_from_to_block: sub block");
+//            return -1.0;
+//        }
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         Account account = UtilsBalance.getBalance(address, balances);
@@ -111,10 +111,10 @@ public class ConductorController {
     public Double stock(@RequestParam String address) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 //        Map<String, Account> balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
 
-        if (!BasisController.isIsSaveFile()) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return -1.0;
-        }
+//        if (!BasisController.isIsSaveFile()) {
+//            System.out.println("saving file: resolve_from_to_block: sub block");
+//            return -1.0;
+//        }
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
         Account account = UtilsBalance.getBalance(address, balances);
@@ -226,10 +226,10 @@ public class ConductorController {
      */
     @GetMapping("/isTransactionAdd")
     public Boolean isTransactionGet(@RequestParam String sign) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        if (!BasisController.isIsSaveFile()) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return false;
-        }
+//        if (!BasisController.isIsSaveFile()) {
+//            System.out.println("saving file: resolve_from_to_block: sub block");
+//            return false;
+//        }
         Base base = new Base58();
         return blockService.existsBySign(base.decode(sign));
 
@@ -239,10 +239,10 @@ public class ConductorController {
     @PostMapping("/TransactionAddBase")
     public DtoTransaction TransactionGetBase(@RequestBody SignRequest request) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return new DtoTransaction();
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return new DtoTransaction();
+//            }
             // Удаление всех пробелов из строки Base64
             String sanitizedSign = request.getSign().replaceAll("\\s+", "");
             // Декодирование строки Base64 в байты
@@ -263,10 +263,10 @@ public class ConductorController {
     @PostMapping("/isTransactionAddBase64")
     public Boolean isTransactionGetBase64(@RequestBody SignRequest request) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return false;
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return false;
+//            }
             // Удаление всех пробелов из строки Base64
             String sanitizedSign = request.getSign().replaceAll("\\s+", "");
             // Декодирование строки Base64 в байты
@@ -285,10 +285,10 @@ public class ConductorController {
     @PostMapping("/TransactionAddBase64")
     public DtoTransaction TransactionGetBase64(@RequestBody SignRequest request) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return new DtoTransaction();
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return new DtoTransaction();
+//            }
             // Удаление всех пробелов из строки Base64
             String sanitizedSign = request.getSign().replaceAll("\\s+", "");
             // Декодирование строки Base64 в байты
@@ -312,10 +312,10 @@ public class ConductorController {
     @ResponseBody
     public Block blockFromHash(@RequestParam String hash) throws IOException {
 
-        if (!BasisController.isIsSaveFile()) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return null;
-        }
+//        if (!BasisController.isIsSaveFile()) {
+//            System.out.println("saving file: resolve_from_to_block: sub block");
+//            return null;
+//        }
 //        return Blockchain.hashFromFile(hash, Seting.ORIGINAL_BLOCKCHAIN_FILE);
         Block block = UtilsBlockToEntityBlock.entityBlockToBlock(
                 blockService.findByHashBlock(hash)
@@ -339,10 +339,10 @@ public class ConductorController {
     @GetMapping ("/findBlocksFromSign64")
     public List<Block> findBlocksFromSign64(@RequestBody SignRequest reques){
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return null;
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return null;
+//            }
             byte[] bytes = Base64.getDecoder().decode(reques.getSign());
             String sign = base58.encode(bytes);
             List<EntityBlock> blocks = blockService.findBlocksByTransactionSign(sign);
@@ -361,10 +361,10 @@ public class ConductorController {
     @ResponseBody
     public Block  block(@RequestParam Integer index) throws IOException {
 
-        if (!BasisController.isIsSaveFile()) {
-            System.out.println("saving file: resolve_from_to_block: sub block");
-            return null;
-        }
+//        if (!BasisController.isIsSaveFile()) {
+//            System.out.println("saving file: resolve_from_to_block: sub block");
+//            return null;
+//        }
         if(index < 0 ){
             index = 0;
         }
@@ -437,10 +437,10 @@ public class ConductorController {
             @RequestParam int to
     ) {
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return null;
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return null;
+//            }
             if (to - from > 500) {
                 to = from + 500;
             }
@@ -459,10 +459,10 @@ public class ConductorController {
             @RequestParam String address
     ) {
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return -1;
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return -1;
+//            }
             return blockService.countSenderTransaction(address);
 
         } catch (Exception e) {
@@ -481,10 +481,10 @@ public class ConductorController {
             @RequestParam String address
     ) {
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return -1;
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return -1;
+//            }
             return blockService.countCustomerTransaction(address);
 
         } catch (Exception e) {
@@ -502,10 +502,10 @@ public class ConductorController {
     public Map<String, Account> addresses() {
         Map<String, Account> accountMap = new HashMap<>();
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return null;
-            }
+//            if (!BasisController.isIsSaveFile()) {
+//                System.out.println("saving file: resolve_from_to_block: sub block");
+//                return null;
+//            }
             accountMap = UtilsAccountToEntityAccount
                     .entityAccountsToMapAccounts(blockService.findAllAccounts());
         } catch (Exception e) {

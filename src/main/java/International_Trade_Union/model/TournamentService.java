@@ -684,9 +684,15 @@ public class TournamentService {
                 try {
                     System.out.println("Получение транзакций с сервера: " + s + ". Время ожидания 45 секунд.");
                     String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
-                    List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
-                    list = utilsTransactions.balanceTransaction(list, blockService);
-                    synchronized(finalInstance) {
+                    List<DtoTransaction> list;
+                    if(!json.isEmpty() ){
+                         list = UtilsJson.jsonToDtoTransactionList(json);
+                        list = utilsTransactions.balanceTransaction(list, blockService);
+
+                    }else {
+                        list = new ArrayList<>();
+                    }
+                     synchronized(finalInstance) {
                         finalInstance.addAll(list);
                     }
                 } catch (IOException | JSONException e) {
