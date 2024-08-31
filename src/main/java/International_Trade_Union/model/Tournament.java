@@ -127,6 +127,7 @@ public class Tournament implements Runnable {
                 Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
 
             } catch (Exception e) {
+                tournament.updatingNodeEndBlocks(hosts);
                 handleException(e);
             } finally {
                 NodeController.setNotReady();
