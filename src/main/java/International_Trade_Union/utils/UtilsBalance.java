@@ -276,8 +276,8 @@ public class UtilsBalance {
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
 
-                    MyLogger.saveLog("balanse sender before: " + sender + " index: " + block.getIndex());
-                    MyLogger.saveLog("balanse customer before: " + customer + " index: " + block.getIndex());
+//                    MyLogger.saveLog("balanse sender before: " + sender + " index: " + block.getIndex());
+//                    MyLogger.saveLog("balanse customer before: " + customer + " index: " + block.getIndex());
                     sendTrue = UtilsBalance.sendMoney(
                             sender,
                             customer,
@@ -293,8 +293,8 @@ public class UtilsBalance {
                     balances.put(sender.getAccount(), sender);
                     balances.put(customer.getAccount(), customer);
 
-                    MyLogger.saveLog("balanse sender after: " + sender + " index: " + block.getIndex());
-                    MyLogger.saveLog("balanse customer after: " + customer + " index: " + block.getIndex());
+//                    MyLogger.saveLog("balanse sender after: " + sender + " index: " + block.getIndex());
+//                    MyLogger.saveLog("balanse customer after: " + customer + " index: " + block.getIndex());
 
                 }
 

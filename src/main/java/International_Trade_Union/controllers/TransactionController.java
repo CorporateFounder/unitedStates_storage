@@ -94,11 +94,6 @@ public class TransactionController {
 
         List<DtoTransaction> transactions = new ArrayList<>();
         try {
-            if (!BasisController.isIsSaveFile()) {
-                System.out.println("saving file: resolve_from_to_block: sub block");
-                return new ArrayList<>();
-            }
-
 
             transactions = AllTransactions.getInstance();
             transactions = getTransactions(transactions);
@@ -172,14 +167,6 @@ public class TransactionController {
         for (DtoTransaction transaction : transactions) {
 
 
-                if (transaction.getVoteEnum().equals(VoteEnum.YES) || transaction.getVoteEnum().equals(VoteEnum.NO)) {
-                    if (transaction.getSender().equals(transaction.getCustomer())) {
-                        System.out.println("*************************************");
-                        System.out.println("dtoSender: The sender and recipient address cannot be the same if VoteEnum.YES or NO");
-                        System.out.println("*************************************");
-                       continue;
-                    }
-                }
 
             if(!transaction.getCustomer().equals(BASIS_ADDRESS)){
                 if(transaction.getDigitalDollar() < MINIMUM
