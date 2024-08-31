@@ -2,6 +2,7 @@ package International_Trade_Union.model;
 
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.controllers.NodeController;
+import International_Trade_Union.controllers.TransactionsForController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
@@ -48,6 +49,9 @@ public class Tournament implements Runnable {
 
     @Autowired
     private BlockService blockService;
+
+    @Autowired
+    TransactionsForController transactionsForController;
     private static final long TOURNAMENT_INTERVAL = 100 * 1000; // 100 секунд в миллисекундах
     private static final long MAX_METHOD_EXECUTION_TIME = 18 * 1000; // 14 секунд в миллисекундах
     private static final long GET_ALL_WINNERS_ADVANCE_TIME = MAX_METHOD_EXECUTION_TIME + 40 * 1000; // 34 секунд в миллисекундах
@@ -101,6 +105,7 @@ public class Tournament implements Runnable {
             Blockchain.setBlockService(blockService);
             UtilsBalance.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
+            transactionsForController.calculateTransactionForGeting();
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
