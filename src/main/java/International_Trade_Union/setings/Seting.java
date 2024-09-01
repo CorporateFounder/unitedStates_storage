@@ -324,4 +324,6 @@ public interface Seting {
     int ALGORITM_MINING_2 = 296583;
     int MULT = 6;
     int DIFFICULT_MONEY = 22;
+
+    int ONLY_SUM_BALANCE = 299845;
 }

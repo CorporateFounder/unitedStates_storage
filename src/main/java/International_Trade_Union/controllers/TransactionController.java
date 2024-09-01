@@ -64,6 +64,8 @@ public class TransactionController {
                 return null; // или другое значение по умолчанию
             }
         })).collect(Collectors.toList());
+
+
         try {
             transactions = balanceTransaction(transactions);
             if (!transactions.contains(data)) {
