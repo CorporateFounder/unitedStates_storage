@@ -60,7 +60,6 @@ International_Trade_Union\utils\HashPrinter.class
 International_Trade_Union\utils\UtilsAccountToEntityAccount.class
 International_Trade_Union\vote\CurrentLawVotesEndBalance.class
 International_Trade_Union\utils\DomainConfiguration.class
-International_Trade_Union\controllers\TransactionsForController.class
 International_Trade_Union\model\NodeChecker.class
 International_Trade_Union\model\User.class
 International_Trade_Union\CorporateCharterDraft\ArticleSixBillOfRightsDraft.class
