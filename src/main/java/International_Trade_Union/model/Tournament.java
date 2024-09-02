@@ -9,6 +9,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
+
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
@@ -38,6 +39,8 @@ import java.util.stream.Collectors;
 @Scope("singleton")
 public class Tournament implements Runnable {
 
+    @Autowired
+    AllTransactions allTransactions;
     @Autowired
     NodeChecker nodeChecker;
 
@@ -113,7 +116,7 @@ public class Tournament implements Runnable {
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
                 tournament.tournament(hosts);
                 tournament.updatingNodeEndBlocks(hosts);
-                AllTransactions.addTransaction(tournament.getInstance());
+                allTransactions.addAllTransactions(tournament.getInstance());
                 BasisController.getBlockedNewSendBlock().set(true);
                 tournament.getCheckSyncTime();
 
