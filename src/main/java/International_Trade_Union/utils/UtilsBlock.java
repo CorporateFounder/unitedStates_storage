@@ -10,6 +10,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
+import International_Trade_Union.model.SlidingWindowManager;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -421,7 +422,10 @@ public class UtilsBlock {
         }
 
         if (thisBlock.getIndex() > BALANCE_CHEKING) {
-            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(thisBlock.getDtoTransactions()));
+//            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(thisBlock.getDtoTransactions()));
+           SlidingWindowManager windowManager =  SlidingWindowManager.getInstance(SLIDING_WINDOWS_BALANCE);
+            Map<String, Account> balances = windowManager.getWindow(previusblock.getIndex());
+            balances = UtilsBalance.calculateBalance(balances, previusblock, new ArrayList<>());
             List<DtoTransaction> transactions = thisBlock.getDtoTransactions()
                     .stream()
                     .filter(t -> !BASIS_ADDRESS.equals(t.getSender()))
