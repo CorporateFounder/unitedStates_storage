@@ -66,7 +66,7 @@ public class Tournament implements Runnable {
 
     }
 
-    private int countDelete = 0;
+
     @Override
     public void run() {
         BasisController.getBlockedNewSendBlock().set(false);
@@ -107,7 +107,6 @@ public class Tournament implements Runnable {
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
-                long nextGetAllWinnersStartTime = nextTournamentStartTime - GET_ALL_WINNERS_ADVANCE_TIME;
 
                 // Wait until it's time to start getAllWinner
                 waitUntil(nextTournamentStartTime);
@@ -120,11 +119,6 @@ public class Tournament implements Runnable {
                 BasisController.getBlockedNewSendBlock().set(true);
                 tournament.getCheckSyncTime();
 
-                countDelete++;
-                if(countDelete == 3){
-                    countDelete = 0;
-                    Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                }
 
                 // Sleep until the next tournament interval
                 Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
@@ -154,13 +148,6 @@ public class Tournament implements Runnable {
         return nextTournamentStartTime;
     }
 
-    private void logTimeUpdate(String process, long scheduledTime, long currentTime) {
-        System.out.println("----------------------------------------------------");
-        System.out.println("Process: " + process);
-        System.out.println("Scheduled time: " + scheduledTime);
-        System.out.println("Current time: " + currentTime);
-        System.out.println("----------------------------------------------------");
-    }
 
     private void handleException(Exception e) {
         e.printStackTrace();

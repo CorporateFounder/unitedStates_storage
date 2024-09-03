@@ -275,9 +275,6 @@ public class UtilsBalance {
                     digitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
-
-//                    MyLogger.saveLog("balanse sender before: " + sender + " index: " + block.getIndex());
-//                    MyLogger.saveLog("balanse customer before: " + customer + " index: " + block.getIndex());
                     sendTrue = UtilsBalance.sendMoney(
                             sender,
                             customer,
@@ -293,14 +290,13 @@ public class UtilsBalance {
                     balances.put(sender.getAccount(), sender);
                     balances.put(customer.getAccount(), customer);
 
-//                    MyLogger.saveLog("balanse sender after: " + sender + " index: " + block.getIndex());
-//                    MyLogger.saveLog("balanse customer after: " + customer + " index: " + block.getIndex());
 
                 }
 
             }
 
         }
+
 
 
 //        System.out.println("finish calculateBalance");
@@ -364,7 +360,7 @@ public class UtilsBalance {
         if (!senderAddress.getAccount().equals(Seting.BASIS_ADDRESS)) {
             if (senderDigitalStock.compareTo(digitalStock) < 0) {
                 System.out.println("less stock");
-                MyLogger.saveLog("less stock:senderDigitalStock " + senderDigitalStock + " digitalStock " + digitalStock );
+                MyLogger.saveLog("less stock:senderDigitalStock " + senderDigitalStock + " digitalStock " + digitalStock + " sender: " + senderAddress );
                 sendTrue = false;
             } else if (recipientAddress.getAccount().equals(Seting.BASIS_ADDRESS)) {
                 System.out.println("Basis cannot be recipient");
