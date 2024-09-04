@@ -1335,6 +1335,7 @@ public class UtilsResolving {
 
             if (windowManager.getWindows().containsKey(Long.valueOf(i))) {
                 balances.putAll(windowManager.getWindow(Long.valueOf(i)));
+                windowManager.remove(Long.valueOf(i));
             } else {
                 balances = rollbackCalculateBalance(balances, block);
             }
@@ -1429,7 +1430,7 @@ public class UtilsResolving {
                 Block block = deleteBlocks.get(i);
                 if (windowManager.getWindows().containsKey(Long.valueOf(i))) {
                     balances.putAll(windowManager.getWindow(Long.valueOf(i)));
-
+                    windowManager.remove(Long.valueOf(i));
 
                 } else {
                     balances = rollbackCalculateBalance(balances, block);
@@ -1455,7 +1456,7 @@ public class UtilsResolving {
         UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
         java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
+
 
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         UtilsBlock.saveBlocks(tempBlock, filename);
@@ -1526,12 +1527,13 @@ public class UtilsResolving {
             blockService.saveAccountAllF(accountList);
 
             finish = UtilsTime.getUniversalTimestamp();
-        } catch (Exception e) {
+        } catch (Throwable e) {
 
             String stackerror = "";
             for (StackTraceElement stackTraceElement : e.getStackTrace()) {
                 stackerror += stackTraceElement.toString() + "\n";
             }
+            windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return false;
 
@@ -1540,7 +1542,7 @@ public class UtilsResolving {
         System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
         System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
-        windowManager.saveWindowsToFile();
+
         UtilsBlock.saveBlocks(originalBlocks, filename);
         allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
@@ -1552,6 +1554,7 @@ public class UtilsResolving {
         Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
         System.out.println("addBlock 3: time: result: " + result);
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
+        windowManager.saveWindowsToFile();
         return true;
     }
 
