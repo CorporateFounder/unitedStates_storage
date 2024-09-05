@@ -317,7 +317,7 @@ public interface Seting {
 
     int SENDING_DECIMAL_PLACES = 2;
 
-    int SLIDING_WINDOW_BALANCE = 100;
+    int SLIDING_WINDOW_BALANCE = 200;
 
     int ALGORITM_MINING = 295316;
     int BALANCE_CHEKING = 300664;
