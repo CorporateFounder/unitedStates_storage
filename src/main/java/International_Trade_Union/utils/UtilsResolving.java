@@ -1456,7 +1456,7 @@ public class UtilsResolving {
         UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
         java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-
+        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
 
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         UtilsBlock.saveBlocks(tempBlock, filename);
@@ -1527,7 +1527,7 @@ public class UtilsResolving {
             blockService.saveAccountAllF(accountList);
 
             finish = UtilsTime.getUniversalTimestamp();
-        } catch (Throwable e) {
+        } catch (Exception e) {
 
             String stackerror = "";
             for (StackTraceElement stackTraceElement : e.getStackTrace()) {

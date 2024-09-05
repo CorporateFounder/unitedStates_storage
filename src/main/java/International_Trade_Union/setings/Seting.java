@@ -305,7 +305,7 @@ public interface Seting {
 
 
     int IS_BIG_DIFFERENT = 20;
-    int DUPLICATE_INDEX = 300735;
+    int DUPLICATE_INDEX = 243927;
 
     int DECIMAL_PLACES = 10;
     int START_BLOCK_DECIMAL_PLACES = 268765;
