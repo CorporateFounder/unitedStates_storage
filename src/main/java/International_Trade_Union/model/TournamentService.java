@@ -33,11 +33,14 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 @Component
 @Scope("singleton")
 public class TournamentService {
+    @Autowired
+    SlidingWindowManager slidingWindowManager;
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
+        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
     }
     @Autowired
     NodeChecker nodeChecker;
@@ -299,6 +302,7 @@ public class TournamentService {
             UtilsBalance.setBlockService(blockService);
             Blockchain.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
+            UtilsBlock.setSlidingWindowManager(slidingWindowManager);
 
 //            System.out.println("different time: " + timeDifference);
 
@@ -403,12 +407,23 @@ public class TournamentService {
             Blockchain.setBlockService(blockService);
             UtilsBalance.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
+            UtilsBlock.setSlidingWindowManager(slidingWindowManager);
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null ) {
-                SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
 
-                save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, windowManager);
+                for (Block block : winner) {
+                    // Собираем список адресов из блока
+                    List<String> accountIds = slidingWindowManager.getAccountIdsFromBlock(block);
+
+                    // Получаем балансы по списку аккаунтов
+                    Map<String, Account> restoredBalances = slidingWindowManager.getBalancesForAccounts(accountIds, block.getIndex());
+
+                    // Восстанавливаем данные в общую карту балансов
+                    balances.putAll(restoredBalances);
+                }
+
+                save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, slidingWindowManager);
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
 

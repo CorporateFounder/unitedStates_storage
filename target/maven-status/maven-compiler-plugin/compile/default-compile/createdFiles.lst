@@ -19,7 +19,6 @@ International_Trade_Union\entity\repository\EntityBlockRepository.class
 International_Trade_Union\entity\InfoDificultyBlockchain.class
 International_Trade_Union\entity\DataForTransaction.class
 International_Trade_Union\about_us_engDraft\AboutUsEngDraft.class
-International_Trade_Union\model\SlidingWindowManager$2.class
 International_Trade_Union\vote\CurrentLawVotesAverage.class
 International_Trade_Union\governments\Directors.class
 International_Trade_Union\model\Tournament.class
@@ -40,6 +39,7 @@ International_Trade_Union\model\Keys.class
 International_Trade_Union\governments\CompareObject.class
 International_Trade_Union\utils\UtilsSecurity.class
 International_Trade_Union\utils\GoogleTime.class
+International_Trade_Union\entity\repository\SlidingWindowBalanceRepository.class
 International_Trade_Union\model\SlidingWindowManager.class
 International_Trade_Union\model\CreateAccount.class
 International_Trade_Union\originalCorporateCharter\OriginalPreambleEng.class
@@ -47,7 +47,6 @@ International_Trade_Union\utils\UtilsJson$4.class
 International_Trade_Union\entity\blockchain\Blockchain$2.class
 International_Trade_Union\vote\Vote.class
 International_Trade_Union\entity\blockchain\Blockchain.class
-International_Trade_Union\model\SlidingWindowManager$1.class
 International_Trade_Union\entity\blockchain\Blockchain$8.class
 International_Trade_Union\setings\Seting.class
 International_Trade_Union\CorporateCharterDraft\ArticleTwoSpecialPositionDraft.class
@@ -77,6 +76,7 @@ International_Trade_Union\utils\UtilsBalance.class
 International_Trade_Union\exception\NotValidTransactionException.class
 International_Trade_Union\model\LiteVersionWiner.class
 International_Trade_Union\controllers\config\BlockchainFactoryEnum.class
+International_Trade_Union\entity\entities\SlidingWindowBalanceEntity.class
 International_Trade_Union\model\comparator\HostEndDataShortBComparator.class
 International_Trade_Union\entity\services\BlockService.class
 International_Trade_Union\network\Transactions.class

@@ -51,11 +51,14 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 @RestController
 public class BasisController {
 
+    @Autowired
+    SlidingWindowManager slidingWindowManager;
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
+        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
     }
     private BlockService blockService;
 
@@ -66,6 +69,7 @@ public class BasisController {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
+        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
     }
 
 
@@ -946,6 +950,7 @@ public class BasisController {
             UtilsBalance.setBlockService(blockService);
             Blockchain.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
+            UtilsBlock.setSlidingWindowManager(slidingWindowManager);
 
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
             System.out.println("isSave: " + isSaveFile);

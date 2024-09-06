@@ -3,6 +3,7 @@ package International_Trade_Union.controllers;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.NodeState;
+import International_Trade_Union.model.SlidingWindowManager;
 import International_Trade_Union.utils.UtilsBalance;
 import International_Trade_Union.utils.UtilsBlock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ import javax.annotation.PostConstruct;
 public class NodeController {
     @Autowired
     BlockService blockService;
+
+    @Autowired
+    SlidingWindowManager slidingWindowManager;
     private static final NodeState nodeState = new NodeState("not_ready");
 
     @GetMapping("/confirmReadiness")
@@ -28,6 +32,7 @@ public class NodeController {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
+        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
 
     }
 
