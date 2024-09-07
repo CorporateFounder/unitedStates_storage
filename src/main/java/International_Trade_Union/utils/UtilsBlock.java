@@ -1,7 +1,7 @@
 package International_Trade_Union.utils;
 
 
-import International_Trade_Union.controllers.BasisController;
+
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
@@ -10,6 +10,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
+
 import International_Trade_Union.model.SlidingWindowManager;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
@@ -22,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -37,15 +37,6 @@ public class UtilsBlock {
 
 
     private static BlockService blockService;
-    private static SlidingWindowManager slidingWindowManager;
-
-    public static SlidingWindowManager getSlidingWindowManager() {
-        return slidingWindowManager;
-    }
-
-    public static void setSlidingWindowManager(SlidingWindowManager slidingWindowManager) {
-        UtilsBlock.slidingWindowManager = slidingWindowManager;
-    }
 
     public static BlockService getBlockService() {
         return blockService;
@@ -111,7 +102,9 @@ public class UtilsBlock {
         UtilsFileSaveRead.saves(jsons, nextFile, true);
     }
 
-    /**Записывает блок в файл, если файл больше 10 мегабайт, создает новый файл с новым идентификационным номером.*/
+    /**
+     * Записывает блок в файл, если файл больше 10 мегабайт, создает новый файл с новым идентификационным номером.
+     */
     public static void saveBLock(Block block, String filename) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         int fileLimit = Seting.SIZE_FILE_LIMIT * 1024 * 1024;
 
@@ -432,10 +425,9 @@ public class UtilsBlock {
 
         if (thisBlock.getIndex() > BALANCE_CHEKING) {
 //            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(thisBlock.getDtoTransactions()));
+           SlidingWindowManager windowManager =  SlidingWindowManager.loadInstance(SLIDING_WINDOWS_BALANCE);
 
-            List<String> accountIds = slidingWindowManager.getAccountIdsFromBlock(previusblock);
-            // Получаем балансы по списку аккаунтов
-            Map<String, Account> balances  = slidingWindowManager.getBalancesForAccounts(accountIds, previusblock.getIndex());
+           Map<String, Account> balances = windowManager.getWindow(previusblock.getIndex());
 
            if(balances == null){
                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(previusblock.getDtoTransactions()));
@@ -460,11 +452,7 @@ public class UtilsBlock {
                 System.out.println("transactionsCount: " + transactionsCount + "\n");
                 System.out.println("after: " + after + "\n");
                 System.out.println("The block contains transactions where the user's balance is insufficient.");
-
-                MyLogger.saveLog("transactionsCount: " + transactionsCount);
-                MyLogger.saveLog("after: " + after);
-                MyLogger.saveLog("The block contains transactions where the user's balance is insufficient.");
-                  System.out.println("*************************************");
+                System.out.println("*************************************");
                 validated = false;
                 return validated;
             }
@@ -473,16 +461,6 @@ public class UtilsBlock {
 
         if (thisBlock.getIndex() > ALGORITM_MINING_2) {
             for (DtoTransaction dtoTransaction : thisBlock.getDtoTransactions()) {
-
-                if (thisBlock.getIndex() > VOTE_ENUM_CONTAIN) {
-                    if (!EnumSet.allOf(VoteEnum.class).contains(dtoTransaction.getVoteEnum())) {
-                        // Значение не существует в перечислении
-                        System.out.println("Enum value does not exist in VoteEnum");
-                        MyLogger.saveLog("Enum value does not exist in VoteEnum");
-                        validated = false;
-                        return validated;
-                    }
-                }
                 if (!dtoTransaction.getCustomer().equals(BASIS_ADDRESS)) {
                     if (dtoTransaction.getDigitalDollar() < MINIMUM
                             && dtoTransaction.getDigitalStockBalance() < MINIMUM
@@ -491,12 +469,13 @@ public class UtilsBlock {
                         System.out.println("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.");
                         System.out.println("index: " + thisBlock.getIndex());
                         System.out.println("transaction: " + dtoTransaction);
+                        System.out.println("*************************************");
 
+                        MyLogger.saveLog("************************************");
                         MyLogger.saveLog("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.");
                         MyLogger.saveLog("index: " + thisBlock.getIndex());
                         MyLogger.saveLog("transaction: " + dtoTransaction);
-                        System.out.println("*************************************");
-
+                        MyLogger.saveLog("************************************");
 
                         validated = false;
                         return validated;
@@ -506,35 +485,28 @@ public class UtilsBlock {
                     double digitalBonus = dtoTransaction.getBonusForMiner();
                     if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar))) {
                         System.out.println("the number dollar of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
-                        MyLogger.saveLog("the number dollar of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
-                        MyLogger.saveLog("decimal: "+digitalDollar);
-                        MyLogger.saveLog("transaction: " + dtoTransaction);
                         validated = false;
                         return validated;
                     }
-                    if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalStock))){
+                    if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalStock))) {
                         System.out.println("the number stock of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
-                        MyLogger.saveLog("the number stock of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
-                        MyLogger.saveLog("decimal: "+digitalStock);
-                        MyLogger.saveLog("transaction: " + dtoTransaction);
                         validated = false;
                         return validated;
                     }
-                    if(!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalBonus))){
+                    if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalBonus))) {
                         System.out.println("the number bonus of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
-                        MyLogger.saveLog("the number bonus of decimal places exceeds ." + Seting.SENDING_DECIMAL_PLACES);
-                        MyLogger.saveLog("decimal: "+digitalBonus);
-                        MyLogger.saveLog("transaction: " + dtoTransaction);
                         validated = false;
                         return validated;
                     }
                 }
 
-                if(thisBlock.getIndex() > ALGORITM_MINING_2) {
+                if (thisBlock.getIndex() > ALGORITM_MINING_2) {
                     if (dtoTransaction.getVoteEnum().equals(VoteEnum.YES) || dtoTransaction.getVoteEnum().equals(VoteEnum.NO)) {
                         if (dtoTransaction.getSender().equals(dtoTransaction.getCustomer())) {
                             System.out.println("*************************************");
                             System.out.println("dtoSender: The sender and recipient address cannot be the same if VoteEnum.YES or NO");
+                            System.out.println("transaction: : " + dtoTransaction);
+                            System.out.println("index block: " + thisBlock.getIndex());
                             System.out.println("*************************************");
                             validated = false;
                             return validated;
@@ -612,6 +584,13 @@ public class UtilsBlock {
                         && thisBlock.getIndex() > 1) {
                     System.out.println("wrong transaction: reward miner wrong digital dollar: " + minerReward + " index: " + thisBlock.getIndex());
                     System.out.println("sendmoney " + transaction.getDigitalDollar());
+
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                    UtilsFileSaveRead.save("If a transaction is not a voting transaction, it cannot transfer less than 0.01 of both a dollar and shares at the same time.", ERROR_FILE, true);
+                    UtilsFileSaveRead.save("wrong transaction: reward miner wrong digital dollar: " + minerReward + " index: " + thisBlock.getIndex(), ERROR_FILE, true);
+                    UtilsFileSaveRead.save("sendmoney " + transaction.getDigitalDollar(), ERROR_FILE, true);
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                     validated = false;
                     break;
                 }
@@ -621,6 +600,12 @@ public class UtilsBlock {
                         && thisBlock.getIndex() > 1) {
                     System.out.println("wrong transaction: reward miner wrong digital stock: " + minerPowerReward + " need: " + transaction.getDigitalStockBalance());
                     System.out.println(transaction);
+
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                    UtilsFileSaveRead.save("wrong transaction: reward miner wrong digital stock: " + minerPowerReward + " need: " + transaction.getDigitalStockBalance(), ERROR_FILE, true);
+                    UtilsFileSaveRead.save(transaction.jsonString(), ERROR_FILE, true);
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                     validated = false;
                     break;
                 }
@@ -638,6 +623,16 @@ public class UtilsBlock {
                                         + transaction.getDigitalStockBalance()
                                         + " difficult: " + thisBlock.getHashCompexity()
                                         + " founder: " + addressFounder);
+
+
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                                UtilsFileSaveRead.save("wrong reward founder: index: " + thisBlock.getIndex()
+                                        + ":reward dollar: " + transaction.getDigitalDollar() + ": reward stock: "
+                                        + transaction.getDigitalStockBalance()
+                                        + " difficult: " + thisBlock.getHashCompexity()
+                                        + " founder: " + addressFounder, ERROR_FILE, true);
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                                 validated = false;
                                 break;
                             }
@@ -646,62 +641,80 @@ public class UtilsBlock {
                                 System.out.println("wrong reward founder: index: " + thisBlock.getIndex()
                                         + ":reward dollar: " + transaction.getDigitalDollar() + ": reward stock: "
                                         + transaction.getDigitalStockBalance() + " difficult: " + thisBlock.getHashCompexity());
+
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                                UtilsFileSaveRead.save("wrong reward founder: index: " + thisBlock.getIndex()
+                                        + ":reward dollar: " + transaction.getDigitalDollar() + ": reward stock: "
+                                        + transaction.getDigitalStockBalance() + " difficult: " + thisBlock.getHashCompexity(), ERROR_FILE, true);
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                                 validated = false;
                                 break;
                             }
                         }
 
-                    }
-                    else if(thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX){
-                        if(thisBlock.getIndex() > START_BLOCK_DECIMAL_PLACES){
+                    } else if (thisBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
+                        if (thisBlock.getIndex() > START_BLOCK_DECIMAL_PLACES) {
                             double epsilon = 1e-9;  // Define a small margin of error
-
-
                             double expectedDollar = minerReward / Seting.DOLLAR;
-
-
                             double actualDollar = transaction.getDigitalDollar();
                             double expectedStock = minerPowerReward / Seting.STOCK;
                             double actualStock = transaction.getDigitalStockBalance();
 
                             if (thisBlock.getIndex() > ALGORITM_MINING) {
-
                                 expectedDollar = UtilsUse.round(expectedDollar, SENDING_DECIMAL_PLACES);
                                 expectedStock = UtilsUse.round(expectedStock, SENDING_DECIMAL_PLACES);
-
                             }
 
-                            if(Math.abs(expectedDollar - actualDollar) > epsilon){
+                            if (Math.abs(expectedDollar - actualDollar) > epsilon) {
                                 System.out.printf("wrong founder reward dollar: index: %d, expected: %.10f, dollar actual: %.10f\n",
                                         thisBlock.getIndex(), expectedDollar, actualDollar);
-                                MyLogger.saveLog(String.format("wrong founder reward dollar: index: %d, expected: %.10f, dollar actual: %.10f\n",
-                                        thisBlock.getIndex(), expectedDollar, actualDollar));
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                                UtilsFileSaveRead.save(String.format("1. wrong founder reward dollar: index: %d, expected: %.10f, dollar actual: %.10f\n",
+                                        thisBlock.getIndex(), expectedDollar, actualDollar), ERROR_FILE, true);
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                                 validated = false;
                                 break;
                             }
 
-                            if(Math.abs(expectedStock - actualStock) > epsilon){
+                            if (Math.abs(expectedStock - actualStock) > epsilon) {
                                 System.out.printf("wrong founder reward stock: index: %d, expected: %.10f, stock actual: %.10f\n",
                                         thisBlock.getIndex(), expectedStock, actualStock);
 
-                                MyLogger.saveLog(String.format("wrong founder reward stock: index: %d, expected: %.10f, stock actual: %.10f\n",
-                                        thisBlock.getIndex(), expectedStock, actualStock));
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                                UtilsFileSaveRead.save(String.format("1. wrong founder reward stock: index: %d, expected: %.10f, stock actual: %.10f\n",
+                                        thisBlock.getIndex(), expectedStock, actualStock), ERROR_FILE, true);
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                                 validated = false;
                                 break;
                             }
-                        }
-                        else {
-                            if(transaction.getDigitalDollar() < minerReward/Seting.DOLLAR || transaction.getDigitalDollar() > minerReward){
+                        } else {
+                            if (transaction.getDigitalDollar() < minerReward / Seting.DOLLAR || transaction.getDigitalDollar() > minerReward) {
                                 System.out.printf("wrong founder reward dollar: index: %d, " +
                                                 " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
-                                        (minerReward/Seting.DOLLAR), transaction.getDigitalDollar());
+                                        (minerReward / Seting.DOLLAR), transaction.getDigitalDollar());
+
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                                UtilsFileSaveRead.save(String.format("2. wrong founder reward dollar: index: %d, " +
+                                                " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
+                                        (minerReward / Seting.DOLLAR), transaction.getDigitalDollar()), ERROR_FILE, true);
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                                 validated = false;
                                 break;
                             }
-                            if (transaction.getDigitalStockBalance() < minerPowerReward/Seting.STOCK || transaction.getDigitalStockBalance() > minerPowerReward){
+                            if (transaction.getDigitalStockBalance() < minerPowerReward / Seting.STOCK || transaction.getDigitalStockBalance() > minerPowerReward) {
                                 System.out.printf("wrong founder reward stock: index: %d, " +
                                                 " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
-                                        (minerPowerReward/Seting.STOCK), transaction.getDigitalStockBalance());
+                                        (minerPowerReward / Seting.STOCK), transaction.getDigitalStockBalance());
+
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                                UtilsFileSaveRead.save(String.format("2. wrong founder reward stock: index: %d, " +
+                                                " expected : %f, dollar actual: %f: ", thisBlock.getIndex(),
+                                        (minerPowerReward / Seting.STOCK), transaction.getDigitalStockBalance()), ERROR_FILE, true);
+                                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
                                 validated = false;
                                 break;
                             }
@@ -719,24 +732,38 @@ public class UtilsBlock {
 
                 if (countBasisSendFounder > 2 && thisBlock.getIndex() > 1) {
                     System.out.println("basis sender send for founder uper one: " + countBasisSendFounder);
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                    UtilsFileSaveRead.save("basis sender send for founder uper one: " + countBasisSendFounder, ERROR_FILE, true);
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
+
                     validated = false;
                     break;
                 }
 
                 if (countBasisSendAll > 1 && thisBlock.getIndex() > 1) {
                     System.out.println("basis sender send uper two: " + countBasisSendAll + " block index: " + thisBlock.getIndex());
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                    UtilsFileSaveRead.save("basis sender send uper two: " + countBasisSendAll + " block index: " + thisBlock.getIndex(), ERROR_FILE, true);
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                     validated = false;
                     break;
                 }
             } else if (!transaction.verify()) {
                 System.out.println("wrong transaction: " + transaction + " verify: " + transaction.verify());
+
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                UtilsFileSaveRead.save("wrong transaction: " + transaction + " verify: " + transaction.verify(), ERROR_FILE, true);
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                 validated = false;
                 break finished;
             }
 
-            if(thisBlock.getIndex() > Seting.DUPLICATE_INDEX ){
-                if(blockService != null){
-                    if(blockService.existsBySign(transaction.getSign())){
+            if (thisBlock.getIndex() > Seting.DUPLICATE_INDEX) {
+                if (blockService != null) {
+                    if (blockService.existsBySign(transaction.getSign())) {
                         System.out.println("=====================================");
                         System.out.println("has duplicate transaction");
                         System.out.println("sign: " + base.encode(transaction.getSign()));
@@ -750,6 +777,10 @@ public class UtilsBlock {
                             System.out.println("dto:getDigitalStockBalance " + dtoTransaction.getDigitalStockBalance());
                         }
 
+                        UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                        UtilsFileSaveRead.save("has duplicate transaction", ERROR_FILE, true);
+                        UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                         System.out.println("=====================================");
                         validated = false;
                         break finished;
@@ -762,24 +793,32 @@ public class UtilsBlock {
         String target = BlockchainDifficulty.calculateTarget(thisBlock.getHashCompexity());
         BigInteger bigTarget = BlockchainDifficulty.calculateTargetV30(thisBlock.getHashCompexity());
         if (!UtilsUse.chooseComplexity(thisBlock.getHashBlock(), thisBlock.getHashCompexity(), thisBlock.getIndex(), target, bigTarget)) {
-            System.out.println("does't start hash with 0");
+            System.out.println("wrong difficulty hash");
 
             System.out.println("this block hash: " + thisBlock.getHashBlock());
 
+            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+            UtilsFileSaveRead.save("wrong difficulty hash", ERROR_FILE, true);
+            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
 
             return false;
         }
 
         if (thisBlock.getIndex() > Seting.v4MeetsDifficulty && thisBlock.getIndex() < Seting.V34_NEW_ALGO) {
             long diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-            if (thisBlock.getHashCompexity() != diff ) {
+            if (thisBlock.getHashCompexity() != diff) {
                 System.out.println("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
                         + diff);
                 System.out.println("wrong difficult");
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                UtilsFileSaveRead.save("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
+                        + diff, ERROR_FILE, true);
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
                 return false;
             }
         } else if (thisBlock.getHashCompexity() >= Seting.V34_NEW_ALGO) {
-            if(Seting.IS_TEST == false && thisBlock.getHashCompexity() < Seting.V34_MIN_DIFF){
+            if (Seting.IS_TEST == false && thisBlock.getHashCompexity() < Seting.V34_MIN_DIFF) {
                 System.out.printf("your diff %d, less than it %d\n", thisBlock.getHashCompexity(),
                         Seting.V34_MIN_DIFF);
             }
@@ -791,6 +830,11 @@ public class UtilsBlock {
             System.out.println("actual: " + thisBlock.getHashBlock());
             System.out.println("expected: " + thisBlock.hashForTransaction());
             System.out.println("miner address: " + thisBlock.getMinerAddress());
+            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+            UtilsFileSaveRead.save("false hash added wrong hash", ERROR_FILE, true);
+            UtilsFileSaveRead.save("expected: " + thisBlock.hashForTransaction(), ERROR_FILE, true);
+            UtilsFileSaveRead.save("miner address: ", ERROR_FILE, true);
+            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
 
             return false;
         }
@@ -805,6 +849,13 @@ public class UtilsBlock {
             System.out.println("previusblock: " + previusblock.getIndex());
             System.out.println("wrong chain hash");
             System.out.println("-------------------------------------------------------");
+
+            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+            UtilsFileSaveRead.save("Blockchain is invalid, expected: " + recordedPrevHash + " actual: " + actualPrevHash, ERROR_FILE, true);
+            UtilsFileSaveRead.save("expected: " + thisBlock.hashForTransaction(), ERROR_FILE, true);
+            UtilsFileSaveRead.save("miner address: ", ERROR_FILE, true);
+            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
             return false;
         }
 
@@ -819,7 +870,7 @@ public class UtilsBlock {
 
         long timeDifferenceSeconds = (thisBlock.getTimestamp().getTime() - previusblock.getTimestamp().getTime()) / 1000;
 
-        if(IS_SECURITY == true && thisBlock.getIndex() >= Seting.TIME_CHECK_BLOCK){
+        if (IS_SECURITY == true && thisBlock.getIndex() >= Seting.TIME_CHECK_BLOCK) {
             long actualTime = UtilsTime.getUniversalTimestamp() / 1000L;
             if (timeDifferenceSeconds < 100 || timeDifferenceSeconds > actualTime) {
                 // Время thisBlock не соответствует условиям
@@ -839,7 +890,6 @@ public class UtilsBlock {
     public static void deleteFiles() {
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-//        UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BOARD_0F_SHAREHOLDERS_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_BALANCE_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE);
         UtilsFileSaveRead.deleteAllFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);

@@ -39,14 +39,12 @@ public class ConductorController {
     @Autowired
     BlockService blockService;
 
-    @Autowired
-    SlidingWindowManager slidingWindowManager;
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
+
 
     }
     @Autowired
@@ -515,5 +513,7 @@ public class ConductorController {
         }
         return accountMap;
     }
+
+
 
 }

@@ -1,21 +1,20 @@
 package International_Trade_Union.utils;
 
+import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
+import International_Trade_Union.entity.EntityChain;
 import International_Trade_Union.entity.InfoDemerageMoney;
 import International_Trade_Union.entity.InfoDificultyBlockchain;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
+import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.model.Account;
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.vote.CurrentLawVotes;
 import International_Trade_Union.vote.CurrentLawVotesEndBalance;
+import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
+import International_Trade_Union.vote.Laws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
-import International_Trade_Union.entity.EntityChain;
-import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.model.Account;
-import International_Trade_Union.vote.CurrentLawVotes;
-import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
-import International_Trade_Union.vote.Laws;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -25,8 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 public class UtilsJson {
     private static ObjectMapper mapper = new ObjectMapper();
+
+
     public static String objToStringJson(Object object) throws IOException {
 
         StringWriter writer = new StringWriter();

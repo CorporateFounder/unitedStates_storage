@@ -8,7 +8,6 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 
-import International_Trade_Union.model.SlidingWindowManager;
 import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
@@ -42,15 +41,11 @@ public class TransactionController {
     @Autowired
     AllTransactions allTransactions;
 
-    @Autowired
-    SlidingWindowManager slidingWindowManager;
-
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
     }
 
     public TransactionController() {

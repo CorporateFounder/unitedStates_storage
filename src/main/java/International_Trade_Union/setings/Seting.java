@@ -317,7 +317,8 @@ public interface Seting {
 
     int SENDING_DECIMAL_PLACES = 2;
 
-    int SLIDING_WINDOW_BALANCE = 200;
+    int SLIDING_WINDOW_BALANCE = 25;
+
 
     int ALGORITM_MINING = 295316;
     int BALANCE_CHEKING = 300664;
@@ -326,5 +327,5 @@ public interface Seting {
     int DIFFICULT_MONEY = 22;
 
     int ONLY_SUM_BALANCE = 299845;
-    int VOTE_ENUM_CONTAIN = 300681;
+
 }

@@ -54,7 +54,6 @@ D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\vote\LawEligibleForParliamentaryApproval.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\CorporateCharter.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\repository\EntityBlockRepository.java
-D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\entities\SlidingWindowBalanceEntity.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\logger\MemoryMonitoringAspect.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\model\Keys.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\ArticleThreeJudiciaryEngDraft.java
@@ -73,7 +72,6 @@ D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\PreambleEngDraft.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\controllers\config\BLockchainFactory.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\entities\EntityLaws.java
-D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\repository\SlidingWindowBalanceRepository.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\CorporateCharterEngDraft\ArticleFiveCharterSupremacyEngDraft.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\entity\services\BlockService.java
 D:\unitedStates_storage-master\unitedStates_storage\src\main\java\International_Trade_Union\utils\DomainConfiguration.java

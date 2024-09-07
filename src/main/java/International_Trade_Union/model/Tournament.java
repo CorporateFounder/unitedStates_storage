@@ -45,9 +45,6 @@ public class Tournament implements Runnable {
     NodeChecker nodeChecker;
 
     @Autowired
-    SlidingWindowManager slidingWindowManager;
-
-    @Autowired
     private TournamentService tournament;
     @Autowired
     private UtilsResolving utilsResolving;
@@ -63,8 +60,6 @@ public class Tournament implements Runnable {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
-
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
@@ -88,7 +83,7 @@ public class Tournament implements Runnable {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
+
         tournament.updatingNodeEndBlocks(hosts);
         BasisController.getBlockedNewSendBlock().set(true);
 
@@ -110,7 +105,7 @@ public class Tournament implements Runnable {
             Blockchain.setBlockService(blockService);
             UtilsBalance.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
-            UtilsBlock.setSlidingWindowManager(slidingWindowManager);
+
             try {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);

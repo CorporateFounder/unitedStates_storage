@@ -55,14 +55,13 @@ public class UtilsResolving {
     @Autowired
     BlockService blockService;
 
-    @Autowired
-    SlidingWindowManager slidingWindowManager;
+
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
+
     }
     @Autowired
     DomainConfiguration domainConfiguration;
@@ -72,7 +71,7 @@ public class UtilsResolving {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
+
 
         //удаляет файлы которые хранять заблокированные хосты
 
@@ -272,22 +271,8 @@ public class UtilsResolving {
                                         System.out.println("first: " + subBlocks.get(1).getIndex());
                                         System.out.println("temp: " + temp);
                                     }
-                                    slidingWindowManager.clearTemporaryWindow();
-
-                                    for (Block block : subBlocks) {
-                                        // Собираем список адресов из блока
-                                        List<String> accountIds = slidingWindowManager.getAccountIdsFromBlock(block);
-
-                                        // Получаем балансы по списку аккаунтов
-                                        Map<String, Account> restoredBalances = slidingWindowManager.getBalancesForAccounts(accountIds, block.getIndex());
-
-                                        // Восстанавливаем данные в общую карту балансов
-                                        balances.putAll(restoredBalances);
-                                    }
-
-
-
-                                    boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, slidingWindowManager);
+                                    SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
+                                    boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, windowManager);
                                     temp = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                                     if (!temp.isValidation()) {
                                         System.out.println("error validation: " + temp);
@@ -804,11 +789,10 @@ public class UtilsResolving {
             throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException,
             InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //TODO сначала найти блок откуда начинается ответление и докуда
-        MyLogger.saveLog("start helpResolve5");
+
         Map<String, Account> tempBalance = UtilsUse.balancesClone(tempBalances);
 
         if (BasisController.getShortDataBlockchain().getSize() > 1 && !temp.isValidation()) {
-            MyLogger.saveLog("helpResolve5 !temp.isValidation(): " + !temp.isValidation());
             System.out.println("__________________________________________________________");
 
             List<Block> emptyList = new ArrayList<>();
@@ -862,9 +846,7 @@ public class UtilsResolving {
 
             } catch (Exception e) {
                 System.out.println("******************************");
-                System.out.println("helpresolve5 1: address: " + s);
-                e.printStackTrace();
-                MyLogger.saveLog("helpResolve5:  926:: error", e);
+                System.out.println("connecting exeption helpresolve5: address: " + s);
                 System.out.println("******************************");
                 return temp;
             }
@@ -873,8 +855,6 @@ public class UtilsResolving {
                 return temp;
             }
             if (different.isEmpty() && emptyList.isEmpty()) {
-                MyLogger.saveLog("helpResolve5 different: " + different);
-                MyLogger.saveLog("helpResolve5 emptyList: " + emptyList);
                 return temp;
             }
 
@@ -892,9 +872,8 @@ public class UtilsResolving {
             different = different.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
-
-            MyLogger.saveLog("helpResolve5 before: rollBackShortCheck");
             temp = Blockchain.rollBackShortCheck(different, BasisController.getShortDataBlockchain(), tempBalance, sign);
+
             if (!emptyList.isEmpty()) {
 
 
@@ -905,10 +884,14 @@ public class UtilsResolving {
                     tempPrevBlock = block;
                 }
             }
-            MyLogger.saveLog("helpResolve5: temp: " + temp);
+
+
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
                 System.out.println("host: " + s);
+                String expectedJson = "global: " + UtilsJson.objToStringJson(global);
+                String actualJson = "actual: " + UtilsJson.objToStringJson(temp);
+                UtilsFileSaveRead.save(expectedJson + "\n " + actualJson, Seting.ERROR_FILE, true);
                 UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 temp.setValidation(false);
                 return temp;
@@ -920,9 +903,9 @@ public class UtilsResolving {
                 System.out.println("------------------------------------------");
                 System.out.println("rollback 5");
                 try {
-                    MyLogger.saveLog("rollBackAddBlock4 before");
+                    System.out.println("before roll back emptyList: " + emptyList.size());
+
                     boolean result = rollBackAddBlock4(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    MyLogger.saveLog("rollBackAddBlock4 after: " + result);
                     if (result) {
                         BasisController.setShortDataBlockchain(temp);
                         BasisController.setBlockcheinSize((int) temp.getSize());
@@ -933,6 +916,7 @@ public class UtilsResolving {
                         BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
                         String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                         UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
                         return temp;
                     }
 
@@ -948,7 +932,7 @@ public class UtilsResolving {
                     System.out.println("******************************");
                     System.out.println("helpresolve5: address: " + s);
                     e.printStackTrace();
-                    MyLogger.saveLog("helpResolve5:  1033: ", e);
+//                    MyLogger.saveLog("helpResolve5:  1033: ", e);
                     System.out.println("******************************");
                 }
                 System.out.println("------------------------------------------");
@@ -968,23 +952,16 @@ public class UtilsResolving {
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
                 System.out.println("host: " + s);
+                String expectedJson = "global: " + UtilsJson.objToStringJson(global);
+                String actualJson = "actual: " + UtilsJson.objToStringJson(temp);
+                UtilsFileSaveRead.save(expectedJson + "\n " + actualJson, Seting.ERROR_FILE, true);
+
                 UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 temp.setValidation(false);
                 return temp;
             }
-            slidingWindowManager.clearTemporaryWindow();
-
-            for (Block block : subBlocks) {
-                // Собираем список адресов из блока
-                List<String> accountIds = slidingWindowManager.getAccountIdsFromBlock(block);
-
-                // Получаем балансы по списку аккаунтов
-                Map<String, Account> restoredBalances = slidingWindowManager.getBalancesForAccounts(accountIds, block.getIndex());
-
-                // Восстанавливаем данные в общую карту балансов
-                balances.putAll(restoredBalances);
-            }
-            boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, slidingWindowManager);
+            SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
+            boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, windowManager);
             if (save) {
                 BasisController.setShortDataBlockchain(temp);
                 BasisController.setBlockcheinSize((int) temp.getSize());
@@ -1018,11 +995,10 @@ public class UtilsResolving {
             throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException,
             InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //TODO сначала найти блок откуда начинается ответление и докуда
-        MyLogger.saveLog("start helpResolve4");
+
         Map<String, Account> tempBalance = UtilsUse.balancesClone(tempBalances);
 
         if (BasisController.getShortDataBlockchain().getSize() > 1 && !temp.isValidation()) {
-            MyLogger.saveLog("helpResolve4 !temp.isValidation(): " + !temp.isValidation());
             System.out.println("__________________________________________________________");
 
             List<Block> emptyList = new ArrayList<>();
@@ -1047,7 +1023,7 @@ public class UtilsResolving {
 
                     blockList = blockList.stream().sorted(Comparator.comparing(Block::getIndex).reversed()).collect(Collectors.toList());
                     for (Block block : blockList) {
-                        System.out.println("helpResolve4:1136: block index: " + block.getIndex());
+                        System.out.println("helpResolve4: block index: " + block.getIndex());
 
                         if (block.getIndex() > BasisController.getBlockchainSize() - 1) {
                             System.out.println("helpResolve4 :download blocks: " + block.getIndex() +
@@ -1085,8 +1061,6 @@ public class UtilsResolving {
             }
             System.out.println("different: ");
             if (different.isEmpty() && emptyList.isEmpty()) {
-                MyLogger.saveLog("helpResolve4 different: " + different);
-                MyLogger.saveLog("helpResolve4 emptyList: " + emptyList);
                 return temp;
             }
 
@@ -1096,13 +1070,13 @@ public class UtilsResolving {
             tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(different, blockService)));
             tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(emptyList, blockService)));
             tempBalance.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
+
             System.out.println("shortDataBlockchain: " + BasisController.getShortDataBlockchain());
             System.out.println("rollback temp: " + temp);
+
             different = different.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
-
-            MyLogger.saveLog("helpResolve4 before: rollBackShortCheck");
             temp = Blockchain.rollBackShortCheck(different, BasisController.getShortDataBlockchain(), tempBalance, sign);
 
             //TODO проверить если данные совпадают с ожидаемыми global, то произвести запись
@@ -1114,29 +1088,16 @@ public class UtilsResolving {
                 temp = Blockchain.shortCheck(tempPrevBlock, tempList, temp, lastDiff, tempBalance, sign);
                 tempPrevBlock = block;
             }
-            MyLogger.saveLog("helpResolve4: temp: " + temp);
+
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
+                String expectedJson = "global: " + UtilsJson.objToStringJson(global);
+                String actualJson = "actual: " + UtilsJson.objToStringJson(temp);
+                UtilsFileSaveRead.save(expectedJson + "\n " + actualJson, Seting.ERROR_FILE, true);
 
-                MyLogger.saveLog("helpResolve4: isSmall(global, temp): " + isSmall(global, temp));
-                MyLogger.saveLog("helpResolve4: global: " + global);
-                MyLogger.saveLog("helpResolve4: temp: " + temp);
-                if (different != null) {
-                    MyLogger.saveLog("helpResolve4: different: 0 " + different.get(0).getIndex() + " hash: " + different.get(0).getHashBlock());
-                    MyLogger.saveLog("helpResolve4: different: size-1 " + different.get(different.size() - 1).getIndex() +
-                            " hash: " + different.get(different.size() - 1).getHashBlock());
-
-                }
-                if (emptyList != null) {
-                    MyLogger.saveLog("helpResolve4: emptyList: 0 " + emptyList.get(0).getIndex() + " hash: " + emptyList.get(0).getHashBlock());
-                    MyLogger.saveLog("helpResolve4: emptyList: size-1 " + emptyList.get(emptyList.size() - 1).getIndex() +
-                            " hash: " + emptyList.get(emptyList.size() - 1).getHashBlock());
-
-                }
-                System.out.println("host: " + s);
                 UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                temp.setValidation(false);
 
+                temp.setValidation(false);
                 return temp;
             }
 
@@ -1146,9 +1107,9 @@ public class UtilsResolving {
                 System.out.println("------------------------------------------");
                 System.out.println("rollback");
                 try {
-                    MyLogger.saveLog("rollBackAddBlock3 before");
+
                     boolean result = rollBackAddBlock3(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-                    MyLogger.saveLog("rollBackAddBlock3 after: " + result);
+
                     if (result) {
                         BasisController.setShortDataBlockchain(temp);
                         BasisController.setBlockcheinSize((int) temp.getSize());
@@ -1175,7 +1136,7 @@ public class UtilsResolving {
                     System.out.println("******************************");
                     System.out.println("elpresolve4: address: " + s);
                     e.printStackTrace();
-                    MyLogger.saveLog("helpResolve4:  1274:error: ", e);
+//                    MyLogger.saveLog("helpResolve4:  1274:error: ", e );
 
                     System.out.println("******************************");
                 }
@@ -1184,7 +1145,6 @@ public class UtilsResolving {
                 System.out.println("------------------------------------------");
             } else {
 
-                MyLogger.saveLog("rollBackAddBlock3 finish: temp: " + temp);
                 return temp;
             }
 
@@ -1197,25 +1157,17 @@ public class UtilsResolving {
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
                 System.out.println("host: " + s);
-                MyLogger.saveLog("isSmall wrong: " + s);
+                String expectedJson = "global: " + UtilsJson.objToStringJson(global);
+                String actualJson = "actual: " + UtilsJson.objToStringJson(temp);
+                UtilsFileSaveRead.save(expectedJson + "\n " + actualJson, Seting.ERROR_FILE, true);
+
                 UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 temp.setValidation(false);
                 return temp;
             }
 
-            slidingWindowManager.clearTemporaryWindow();
-
-            for (Block block : subBlocks) {
-                // Собираем список адресов из блока
-                List<String> accountIds = slidingWindowManager.getAccountIdsFromBlock(block);
-
-                // Получаем балансы по списку аккаунтов
-                Map<String, Account> restoredBalances = slidingWindowManager.getBalancesForAccounts(accountIds, block.getIndex());
-
-                // Восстанавливаем данные в общую карту балансов
-                balances.putAll(restoredBalances);
-            }
-            boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, slidingWindowManager);
+            SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
+            boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, windowManager);
             if (save) {
                 BasisController.setShortDataBlockchain(temp);
                 BasisController.setBlockcheinSize((int) temp.getSize());
@@ -1276,26 +1228,22 @@ public class UtilsResolving {
 //    Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
 
 
-
+        SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
         // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
 //        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
-        slidingWindowManager.clearTemporaryWindow();
+
         for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
             Block block = deleteBlocks.get(i);
-            Long blockIndex = block.getIndex();
+            System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
-            List<String> accountIds = slidingWindowManager.getAccountIdsFromBlock(block); // Собираем список адресов из блока
-
-            // Проверяем наличие данных в скользящем окне
-            if (slidingWindowManager.containsWindow(blockIndex)) {
-                // Получаем балансы по списку аккаунтов
-                Map<String, Account> restoredBalances = slidingWindowManager.getBalancesForAccounts(accountIds, blockIndex);
-                balances.putAll(restoredBalances); // Восстанавливаем данные
-                slidingWindowManager.remove(blockIndex); // Удаляем окно после восстановления
+            if (windowManager.getWindows().containsKey(Long.valueOf(i))) {
+                balances.putAll(windowManager.getWindow(Long.valueOf(i)));
+                windowManager.remove(Long.valueOf(i));
             } else {
-                // Пересчитываем баланс вручную, если данных нет
                 balances = rollbackCalculateBalance(balances, block);
             }
+
+
         }
         try {
 
@@ -1330,7 +1278,7 @@ public class UtilsResolving {
         System.out.println("balances size: " + balances.size());
 
 
-        boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, slidingWindowManager);
+        boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, windowManager);
         if (!save) {
             existM = false;
             MyLogger.saveLog("error rollback4: tempBlock index 0: " + tempBlock.get(0).getIndex());
@@ -1378,26 +1326,19 @@ public class UtilsResolving {
         }
 
         // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
-
+        SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
 //        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
         try {
-            slidingWindowManager.clearTemporaryWindow();
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
                 Block block = deleteBlocks.get(i);
-                Long blockIndex = block.getIndex();
+                if (windowManager.getWindows().containsKey(Long.valueOf(i))) {
+                    balances.putAll(windowManager.getWindow(Long.valueOf(i)));
+                    windowManager.remove(Long.valueOf(i));
 
-                List<String> accountIds = slidingWindowManager.getAccountIdsFromBlock(block); // Собираем список адресов из блока
-
-                // Проверяем наличие данных в скользящем окне
-                if (slidingWindowManager.containsWindow(blockIndex)) {
-                    // Получаем балансы по списку аккаунтов
-                    Map<String, Account> restoredBalances = slidingWindowManager.getBalancesForAccounts(accountIds, blockIndex);
-                    balances.putAll(restoredBalances); // Восстанавливаем данные
-                    slidingWindowManager.remove(blockIndex); // Удаляем окно после восстановления
                 } else {
-                    // Пересчитываем баланс вручную, если данных нет
                     balances = rollbackCalculateBalance(balances, block);
                 }
+
             }
 
             blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
@@ -1423,7 +1364,7 @@ public class UtilsResolving {
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         UtilsBlock.saveBlocks(tempBlock, filename);
 
-        boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, slidingWindowManager);
+        boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, windowManager);
         if (!save) {
             existM = false;
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -1449,7 +1390,6 @@ public class UtilsResolving {
         UtilsBalance.setBlockService(blockService);
         Blockchain.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
-        UtilsBlock.setSlidingWindowManager(slidingWindowManager);
         List<EntityBlock> list = new ArrayList<>();
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
@@ -1468,10 +1408,11 @@ public class UtilsResolving {
 
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
+            Map<String, Account> clone = UtilsUse.balancesClone(balances);
+            List<EntityAccount> accounts = UtilsUse.mergeAccounts(clone, blockService.findAllAccounts());
+            Map<String, Account> allAccounts = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(accounts);
 
-            Map<String, Account> clone =UtilsUse.balancesClone(balances);
-
-            windowManager.addWindow(block.getIndex(), clone);
+            windowManager.addWindow(block.getIndex(), allAccounts);
             calculateBalance(balances, block, signs);
         }
 //        UtilsJson.saveWindowsToFile(windows, Seting.SLIDING_WINDOWS_BALANCE);
