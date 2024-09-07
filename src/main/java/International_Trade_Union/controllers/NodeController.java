@@ -17,8 +17,6 @@ public class NodeController {
     @Autowired
     BlockService blockService;
 
-    @Autowired
-    SlidingWindowManager slidingWindowManager;
     private static final NodeState nodeState = new NodeState("not_ready");
 
     @GetMapping("/confirmReadiness")
