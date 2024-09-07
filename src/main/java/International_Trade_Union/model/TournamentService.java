@@ -222,8 +222,7 @@ public class TournamentService {
 
                     DataShortBlockchainInformation temp = Blockchain.shortCheck(
                             BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
-                            new ArrayList<>(), tempBalances, sign
-                    );
+                            new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances));
 
                     if (temp.isValidation()) {
                         MyLogger.saveLog("Block is valid: " + block.getIndex() + " s: " + s);
@@ -387,7 +386,7 @@ public class TournamentService {
             Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
             sign = new ArrayList<>();
             //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
-            DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign);
+            DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, UtilsUse.balancesClone(tempBalances));
 
             if (temp == null || !temp.isValidation()) {
                 System.out.println("wrong validation short: " + temp);

@@ -115,17 +115,7 @@ public class BasisController {
             }
 
 
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeySpecException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SignatureException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
             throw new RuntimeException(e);
         }
     }
@@ -850,8 +840,7 @@ public class BasisController {
 //        return Blockchain.subFromFileBing(start,finish, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             System.out.println("finish sub: " + finish);
             System.out.println("******************************************************");
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
-                 NoSuchProviderException | InvalidKeyException e) {
+        } catch (IOException e) {
             System.out.println("exception sub");
             return new ArrayList<>();
 
@@ -1031,7 +1020,8 @@ public class BasisController {
                 List<String> sign = new ArrayList<>();
                 Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(addlist, blockService));
                 tempBalances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
-                DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+
+                DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign, UtilsUse.balancesClone(tempBalances));// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
                 System.out.println("original: " + shortDataBlockchain);

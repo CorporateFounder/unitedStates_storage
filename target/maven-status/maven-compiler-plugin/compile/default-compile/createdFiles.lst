@@ -48,7 +48,6 @@ International_Trade_Union\entity\blockchain\Blockchain$2.class
 International_Trade_Union\vote\Vote.class
 International_Trade_Union\entity\blockchain\Blockchain.class
 International_Trade_Union\model\SlidingWindowManager$1.class
-International_Trade_Union\entity\blockchain\Blockchain$8.class
 International_Trade_Union\setings\Seting.class
 International_Trade_Union\CorporateCharterDraft\ArticleTwoSpecialPositionDraft.class
 International_Trade_Union\utils\BlockchainDifficulty.class

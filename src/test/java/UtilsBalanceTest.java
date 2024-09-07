@@ -5,6 +5,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.utils.UtilsBalance;
 import International_Trade_Union.utils.UtilsJson;
+import International_Trade_Union.utils.UtilsUse;
 import International_Trade_Union.vote.VoteEnum;
 import org.junit.Assert;
 import org.junit.Test;
@@ -97,7 +98,7 @@ public class UtilsBalanceTest {
         for (int i = 0; i < blocks.size(); i++) {
             List<Block> temp = new ArrayList<>();
             temp.add(blocks.get(i));
-            dataShortBlockchainInformation = Blockchain.shortCheck(prev, temp, dataShortBlockchainInformation, new ArrayList<>(),  balance, sign);
+            dataShortBlockchainInformation = Blockchain.shortCheck(prev, temp, dataShortBlockchainInformation, new ArrayList<>(),  balance, sign, UtilsUse.balancesClone(balance));
             prev = blocks.get(i);
         }
 
