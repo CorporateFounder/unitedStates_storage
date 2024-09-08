@@ -405,9 +405,8 @@ public class TournamentService {
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null ) {
-                SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
 
-                save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, windowManager);
+                save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
 

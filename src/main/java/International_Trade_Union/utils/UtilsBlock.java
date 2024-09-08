@@ -1,31 +1,30 @@
 package International_Trade_Union.utils;
 
 
-import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
+import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
+import International_Trade_Union.entity.blockchain.Blockchain;
+import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
-import International_Trade_Union.model.Mining;
 
-import International_Trade_Union.model.SlidingWindowManager;
+import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
-import International_Trade_Union.entity.blockchain.Blockchain;
-import International_Trade_Union.entity.blockchain.block.Block;
-import International_Trade_Union.setings.Seting;
-
-
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -422,27 +421,22 @@ public class UtilsBlock {
         }
 
         if (thisBlock.getIndex() > BALANCE_CHEKING) {
-//            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(thisBlock.getDtoTransactions()));
-//           SlidingWindowManager windowManager =  SlidingWindowManager.loadInstance(SLIDING_WINDOWS_BALANCE);
+            Map<String, Account> balances = balance;
 
-//           Map<String, Account> balances = windowManager.getWindow(previusblock.getIndex());
            List<Block> tempBlock = new ArrayList<>();
            tempBlock.add(previusblock);
            tempBlock.add(thisBlock);
-            Map<String, Account> balances = UtilsBalance.rollbackCalculateBalance(balance, previusblock);
 
 
            if(balances == null){
                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(previusblock.getDtoTransactions()));
                MyLogger.saveLog("validation balance from SlidingWingdowManager null: " + balances);
            }
-            balances = UtilsBalance.calculateBalance(balances, previusblock, new ArrayList<>());
             if(balances == null){
                 MyLogger.saveLog("2 validation balance from SlidingWingdowManager null: " + balances);
             }
             List<DtoTransaction> transactions = thisBlock.getDtoTransactions()
                     .stream()
-                    .filter(t -> !BASIS_ADDRESS.equals(t.getSender()))
                     .collect(Collectors.toList());
             int transactionsCount = transactions.size();
             List<DtoTransaction> temp = UtilsUse.balanceTransaction(transactions, balances, thisBlock.getIndex());

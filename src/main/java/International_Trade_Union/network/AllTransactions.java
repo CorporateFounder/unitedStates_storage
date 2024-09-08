@@ -25,6 +25,7 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -105,6 +106,8 @@ public class AllTransactions {
                 .collect(Collectors.toList());
 
         // Проверка на валидность количества знаков после запятой
+
+
         List<DtoTransaction> validTransactions = new ArrayList<>();
         for (DtoTransaction dtoTransaction : filteredTransactions) {
             double digitalDollar = dtoTransaction.getDigitalDollar();
@@ -133,16 +136,21 @@ public class AllTransactions {
     private List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         List<DtoTransaction> dtoTransactions = new ArrayList<>();
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
-
+        // Создаём EnumSet из всех возможных значений VoteEnum
+        EnumSet<VoteEnum> voteSet = EnumSet.allOf(VoteEnum.class);
         for (DtoTransaction transaction : transactions) {
             // Проверка минимального порога для транзакций, не связанных с голосованием
-            if (!transaction.getCustomer().equals(Seting.BASIS_ADDRESS)) {
+            if (!transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                 if (transaction.getDigitalDollar() < Seting.MINIMUM && transaction.getDigitalStockBalance() < Seting.MINIMUM) {
                     System.out.println("Transaction does not meet minimum criteria: " + transaction);
                     continue;
                 }
             }
-
+            if (!voteSet.contains(transaction.getVoteEnum())) {
+                System.out.println("Value is not contained in VoteEnum enum");
+                MyLogger.saveLog("Value is not contained in VoteEnum enum");
+                continue;
+            }
             boolean result = false;
             if (balances.containsKey(transaction.getSender())) {
                 Account sender = balances.get(transaction.getSender());
@@ -151,13 +159,30 @@ public class AllTransactions {
                 BigDecimal transactionDigitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                 BigDecimal transactionBonusForMiner = BigDecimal.valueOf(transaction.getBonusForMiner());
 
-                // Ensure the sender has enough balance for the transaction, including the bonus for the miner
-                if (transaction.getVoteEnum().equals(VoteEnum.YES) || transaction.getVoteEnum().equals(VoteEnum.NO)) {
-                    if(sender.getAccount().equals(customer.getAccount())){
+                // Check for null or negative values in transaction amounts and sender's balances
+                if ((transactionDigitalDollar == null || transactionDigitalStock == null || transactionBonusForMiner == null ||
+                        sender.getDigitalDollarBalance() == null || sender.getDigitalStockBalance() == null ||
+                        transactionDigitalDollar.compareTo(BigDecimal.ZERO) < 0 ||
+                        transactionDigitalStock.compareTo(BigDecimal.ZERO) < 0 ||
+                        transactionBonusForMiner.compareTo(BigDecimal.ZERO) < 0 ||
+                        sender.getDigitalDollarBalance().compareTo(BigDecimal.ZERO) < 0 ||
+                        sender.getDigitalStockBalance().compareTo(BigDecimal.ZERO) < 0) && !Seting.BASIS_ADDRESS.equals(transaction.getSender())) {
+                    MyLogger.saveLog("balanceTransaction: transactionDigitalDollar: " + transactionDigitalDollar);
+                    MyLogger.saveLog("balanceTransaction: sender.getDigitalDollarBalance(): " + sender.getDigitalDollarBalance());
+                    MyLogger.saveLog("balanceTransaction: transactionDigitalStock: " + transactionDigitalStock);
+                    MyLogger.saveLog("balanceTransaction: transactionBonusForMiner: " + transactionBonusForMiner);
+                    MyLogger.saveLog("balanceTransaction: sender.getDigitalStockBalance(): " + sender.getDigitalStockBalance());
+
+                    continue;
+                }
+
+                if (Seting.BASIS_ADDRESS.equals(transaction.getSender())) {
+                    result = UtilsBalance.sendMoney(sender, customer, transactionDigitalDollar, transactionDigitalStock, transactionBonusForMiner, transaction.getVoteEnum());// Ensure the sender has enough balance for the transaction, including the bonus for the miner
+                } else if (transaction.getVoteEnum().equals(VoteEnum.YES) || transaction.getVoteEnum().equals(VoteEnum.NO)) {
+                    if (sender.getAccount().equals(customer.getAccount())) {
                         continue;
                     }
-                    if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock) >= 0 &&
-                            sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
+                    if (sender.getDigitalStockBalance().compareTo(transactionDigitalStock) >= 0 && sender.getDigitalDollarBalance().compareTo(transactionDigitalDollar.add(transactionBonusForMiner)) >= 0) {
                         result = UtilsBalance.sendMoney(sender, customer, transactionDigitalDollar, transactionDigitalStock, transactionBonusForMiner, transaction.getVoteEnum());
                     }
                 } else if (transaction.getVoteEnum().equals(VoteEnum.STAKING) && sender.getAccount().equals(customer.getAccount())) {
@@ -177,9 +202,9 @@ public class AllTransactions {
                     balances.put(sender.getAccount(), sender);
                     balances.put(customer.getAccount(), customer);
                 } else {
-                    MyLogger.saveLog("balanceTransaction: transaction: " + transaction);
-                    MyLogger.saveLog("balanceTransaction: json: " + UtilsJson.objToStringJson(transaction));
-                    MyLogger.saveLog("balanceTransaction: sender: " + sender);
+                    MyLogger.saveLog("balanceTransaction balanceTransaction: transaction: " + transaction);
+                    MyLogger.saveLog("balanceTransaction balanceTransaction: json: " + UtilsJson.objToStringJson(transaction));
+                    MyLogger.saveLog("balanceTransaction balanceTransaction: sender: " + sender);
                 }
             }
         }
