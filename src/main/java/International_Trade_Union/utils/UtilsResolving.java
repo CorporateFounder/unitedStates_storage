@@ -524,6 +524,7 @@ public class UtilsResolving {
 
 
                             tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
+                            Map<String, Account> validationBalance = UtilsUse.balancesClone(tempBalances);
 
                             if (tempBalances == null || tempBalances.isEmpty()) {
                                 continue;
@@ -540,7 +541,7 @@ public class UtilsResolving {
                             }
 
                             DataShortBlockchainInformation temp = new DataShortBlockchainInformation();
-                            temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, UtilsUse.balancesClone(balances));
+                            temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, validationBalance);
 
                             jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
                             if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
