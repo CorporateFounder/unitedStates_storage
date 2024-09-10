@@ -915,7 +915,16 @@ public class UtilsResolving {
                 try {
                     System.out.println("before roll back emptyList: " + emptyList.size());
 
-                    boolean result = rollBackAddBlock4(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                    boolean save;
+                    boolean result = true;
+                    Map<String, Account> tempBalanc = rollBackAddBlock4(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                    if(tempBalanc.size() > 0){
+                        result = addBlock3(emptyList, tempBalanc, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+
+                    }else {
+                        result = false;
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    }
                     if (result) {
                         BasisController.setShortDataBlockchain(temp);
                         BasisController.setBlockcheinSize((int) temp.getSize());
@@ -1124,21 +1133,24 @@ public class UtilsResolving {
                 System.out.println("------------------------------------------");
                 System.out.println("rollback");
                 try {
+                    boolean save;
+                    boolean result = true;
+                    Map<String, Account> tempBalanc = rollBackAddBlock3(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                    if(tempBalanc.size() > 0){
+                        result = addBlock3(emptyList, tempBalanc, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
-                    boolean result = rollBackAddBlock3(different, emptyList, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-
+                    }else {
+                        result = false;
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    }
                     if (result) {
                         BasisController.setShortDataBlockchain(temp);
                         BasisController.setBlockcheinSize((int) temp.getSize());
                         BasisController.setBlockchainValid(temp.isValidation());
-
                         EntityBlock tempBlock = blockService.findBySpecialIndex(BasisController.getBlockchainSize() - 1);
-
-
                         BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
                         String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                         UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
-
                     }
 
 
@@ -1153,15 +1165,12 @@ public class UtilsResolving {
                     System.out.println("******************************");
                     System.out.println("elpresolve4: address: " + s);
                     e.printStackTrace();
-//                    MyLogger.saveLog("helpResolve4:  1274:error: ", e );
-
                     System.out.println("******************************");
                 }
                 System.out.println("------------------------------------------");
                 System.out.println("helpResolve4: temp: " + temp);
                 System.out.println("------------------------------------------");
             } else {
-
                 return temp;
             }
 
@@ -1207,7 +1216,7 @@ public class UtilsResolving {
 
 
     @Transactional
-    public boolean rollBackAddBlock4(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public Map<String, Account> rollBackAddBlock4(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         boolean existM = true;
 
@@ -1217,13 +1226,13 @@ public class UtilsResolving {
         deleteBlocks = deleteBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
         long threshold = deleteBlocks.get(0).getIndex();
         if (threshold <= 0)
-            return false;
+            return new HashMap<>();
 
         File file = Blockchain.indexNameFileBlock((int) threshold, filename);
         if (file == null) {
             System.out.println("rollBackAddBlock4 file:" + file.getAbsolutePath());
             existM = false;
-            return existM;
+            return new HashMap<>();
         }
 
         System.out.println("rollBackAddBlock4: file: " + file.getAbsolutePath());
@@ -1241,18 +1250,10 @@ public class UtilsResolving {
                     .collect(Collectors.toList());
         }
 
-//    Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
-
-
-        SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
-        // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
-//        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
 
         for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
             Block block = deleteBlocks.get(i);
             System.out.println("rollBackAddBlock4 :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
-
-
             balances = rollbackCalculateBalance(balances, block);
 
 
@@ -1265,11 +1266,8 @@ public class UtilsResolving {
 
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return false;
+            return new HashMap<>();
         }
-
-
-
 
         allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
@@ -1291,38 +1289,32 @@ public class UtilsResolving {
         System.out.println("balances size: " + balances.size());
 
 
-        boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        if (!save) {
-            existM = false;
-            MyLogger.saveLog("error rollback4: tempBlock index 0: " + tempBlock.get(0).getIndex());
-            MyLogger.saveLog("error rollback4: saveBlocks index 0: " + saveBlocks.get(0).getIndex());
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-        }
 
 
-        return existM;
+
+        return balances;
     }
 
 
     @Transactional
-    public boolean rollBackAddBlock3(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public Map<String, Account> rollBackAddBlock3(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         boolean existM = true;
-
+        MyLogger.saveLog("start: rollBackAddBlock3");
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
         deleteBlocks = deleteBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
         long threshold = deleteBlocks.get(0).getIndex();
         if (threshold <= 0) {
 
-            return false;
+            return new HashMap<>();
         }
 
         File file = Blockchain.indexNameFileBlock((int) threshold, filename);
 
         if (file == null) {
-            existM = false;
-            return existM;
+
+            return new HashMap<>();
         }
 
         List<Block> tempBlock = Collections.synchronizedList(new ArrayList<>());
@@ -1338,19 +1330,13 @@ public class UtilsResolving {
             });
         }
 
-        // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
-        SlidingWindowManager windowManager = SlidingWindowManager.loadInstance(Seting.SLIDING_WINDOWS_BALANCE);
-//        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
         try {
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
                 Block block = deleteBlocks.get(i);
-
                 balances = rollbackCalculateBalance(balances, block);
-
             }
 
             blockService.saveAccountAllF(UtilsAccountToEntityAccount.accountsToEntityAccounts(balances));
-
             blockService.deleteEntityBlocksAndRelatedData(threshold);
 
         } catch (Throwable e) {
@@ -1358,7 +1344,7 @@ public class UtilsResolving {
             MyLogger.saveLog("error rollback4: tempBlock index 0: " + tempBlock.get(0).getIndex());
             MyLogger.saveLog("error rollback4: saveBlocks index 0: " + saveBlocks.get(0).getIndex());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return false;
+            return new HashMap<>();
         }
 
 
@@ -1367,18 +1353,13 @@ public class UtilsResolving {
         UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
         java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
 
         Blockchain.deleteFileBlockchain(Integer.parseInt(file.getName().replace(".txt", "")), Seting.ORIGINAL_BLOCKCHAIN_FILE);
         UtilsBlock.saveBlocks(tempBlock, filename);
 
-        boolean save = addBlock3(saveBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
-        if (!save) {
-            existM = false;
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-        }
-//        MyLogger.saveLog("rollBackAddBlock3 finish");
-        return existM;
+
+        MyLogger.saveLog("rollBackAddBlock3 finish");
+        return balances;
     }
 
 
