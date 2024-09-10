@@ -327,5 +327,5 @@ public interface Seting {
     int DIFFICULT_MONEY = 22;
 
     int ONLY_SUM_BALANCE = 299845;
-
+    int CHECK_DUBLICATE_IN_DB_BLOCK = 287773;
 }

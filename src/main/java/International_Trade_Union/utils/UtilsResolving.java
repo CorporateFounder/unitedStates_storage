@@ -1411,31 +1411,29 @@ public class UtilsResolving {
 
 
 //        Map<Long, Map<String, Account>> windows = UtilsJson.loadWindowsFromFile(Seting.SLIDING_WINDOWS_BALANCE);
-        try {
-            for (Block block : originalBlocks) {
-                System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
+        for (Block block : originalBlocks) {
+            System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
-                EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
-                list.add(entityBlock);
-                calculateBalance(balances, block, signs);
-                blockService.saveAllBLockF(list);
-                list = new ArrayList<>();
-
-
-                tempBalances = UtilsUse.differentAccount(tempBalances, balances);
-                List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
-                accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
-
-                start = UtilsTime.getUniversalTimestamp();
-                blockService.saveAccountAllF(accountList);
-
-            }
+            EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
+            list.add(entityBlock);
+            calculateBalance(balances, block, signs);
+        }
 //        UtilsJson.saveWindowsToFile(windows, Seting.SLIDING_WINDOWS_BALANCE);
+        list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
+        // Вызов getLaws один раз для всех блоков
 
-//        list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
-            // Вызов getLaws один раз для всех блоков
+        long finish = UtilsTime.getUniversalTimestamp();
+        System.out.println("UtilsResolving: addBlock3: for: time different: " + UtilsTime.differentMillSecondTime(start, finish));
+        try {
+            blockService.saveAllBLockF(list);
 
+            tempBalances = UtilsUse.differentAccount(tempBalances, balances);
+            List<EntityAccount> accountList = blockService.findByAccountIn(tempBalances);
+            accountList = UtilsUse.mergeAccounts(tempBalances, accountList);
 
+            start = UtilsTime.getUniversalTimestamp();
+            blockService.saveAccountAllF(accountList);
+            finish = UtilsTime.getUniversalTimestamp();
         } catch (Exception e) {
 
             String stackerror = "";
@@ -1447,7 +1445,7 @@ public class UtilsResolving {
 
         }
 
-
+        System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
         System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
 
