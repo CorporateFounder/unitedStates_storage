@@ -7,6 +7,7 @@ import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
+
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -712,7 +713,6 @@ public class UtilsUse {
                     balances.put(sender.getAccount(), sender);
                     balances.put(customer.getAccount(), customer);
                 } else {
-                    MyLogger.saveLog("balanceTransaction: transaction: " + transaction);
                     MyLogger.saveLog("balanceTransaction: json: " + UtilsJson.objToStringJson(transaction));
                     MyLogger.saveLog("balanceTransaction: sender: " + sender);
                     MyLogger.saveLog("balanceTransaction: index: " + index);

@@ -199,6 +199,7 @@ public class Blockchain implements Cloneable {
                 transactions += block.getDtoTransactions().size();
 
                 balances = UtilsBalance.calculateBalance(balances, block, sign);
+                balanceForValidation = UtilsUse.balancesClone(balances);
 
                 if (!validation) {
                     System.out.println("false shortCheck");

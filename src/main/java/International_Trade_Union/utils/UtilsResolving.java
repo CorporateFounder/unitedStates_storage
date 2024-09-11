@@ -1220,6 +1220,7 @@ public class UtilsResolving {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         boolean existM = true;
 
+        MyLogger.saveLog("start rollBackAddBlock4");
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
@@ -1290,7 +1291,7 @@ public class UtilsResolving {
 
 
 
-
+        MyLogger.saveLog("start rollBackAddBlock4");
 
         return balances;
     }
@@ -1358,7 +1359,7 @@ public class UtilsResolving {
         UtilsBlock.saveBlocks(tempBlock, filename);
 
 
-        MyLogger.saveLog("rollBackAddBlock3 finish");
+        MyLogger.saveLog(" finish rollBackAddBlock3 ");
         return balances;
     }
 

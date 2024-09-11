@@ -399,9 +399,7 @@ public class TournamentService {
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
 
-            Blockchain.setBlockService(blockService);
-            UtilsBalance.setBlockService(blockService);
-            UtilsBlock.setBlockService(blockService);
+
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null ) {

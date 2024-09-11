@@ -123,20 +123,7 @@ public class UtilsBalance {
                 BigDecimal digitalStock = null;
                 BigDecimal mine = null;
 
-//                if(block.getIndex() > Seting.FROM_STRING_DOUBLE){
-//                    digitalDollar = new BigDecimal(Double.toString(transaction.getDigitalDollar()));
-//                    digitalStock = new BigDecimal(Double.toString(transaction.getDigitalStockBalance()));
-//                    mine = new BigDecimal(Double.toString(transaction.getBonusForMiner()));
-//                    UtilsBalance.INDEX = block.getIndex();
-//                    sendTrue = UtilsBalance.rollBackSendMoneyNew(
-//                            sender,
-//                            customer,
-//                            digitalDollar,
-//                            digitalStock,
-//                            mine,
-//                            transaction.getVoteEnum()
-//                    );
-//                }else {
+
                     digitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
@@ -149,8 +136,6 @@ public class UtilsBalance {
                             mine,
                             transaction.getVoteEnum()
                     );
-//                }
-
 
 
 
@@ -206,6 +191,7 @@ public class UtilsBalance {
                 }else {
                     if(sign.contains(base.encode(transaction.getSign()))){
                         System.out.println("this transaction signature has already been used and is not valid from list");
+                        MyLogger.saveLog("this transaction signature has already been used and is not valid from list: index: " + block.getIndex() + " signature: " + base.encode(transaction.getSign()));
                         continue;
                     }else {
                         sign.add(base.encode(transaction.getSign()));
