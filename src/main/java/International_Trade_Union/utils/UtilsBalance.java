@@ -140,6 +140,8 @@ public class UtilsBalance {
 
 
 
+
+
                 //если транзация валидная то записать данн иыезменения в баланс
                 if (sendTrue) {
                     balances.put(sender.getAccount(), sender);
@@ -182,6 +184,10 @@ public class UtilsBalance {
         for (int j = 0; j < transactions.size(); j++) {
 
 
+
+            //здесь идет проверка по подписи, сначала проверяется, была ли эта подпись в базе данных для
+            //транзакции, если ее нет, то проверяется во временном списке, который был предоставлен
+            //если нет, то в список добавляется эта подпись и продолжается процедура.
             DtoTransaction transaction = transactions.get(j);
             if (blockService != null) {
                 if (blockService.existsBySign(transaction.getSign())) {
@@ -191,7 +197,6 @@ public class UtilsBalance {
                 }else {
                     if(sign.contains(base.encode(transaction.getSign()))){
                         System.out.println("this transaction signature has already been used and is not valid from list");
-                        MyLogger.saveLog("this transaction signature has already been used and is not valid from list: index: " + block.getIndex() + " signature: " + base.encode(transaction.getSign()));
                         continue;
                     }else {
                         sign.add(base.encode(transaction.getSign()));
@@ -206,6 +211,8 @@ public class UtilsBalance {
             Account sender = getBalance(transaction.getSender(), balances);
             Account customer = getBalance(transaction.getCustomer(), balances);
             if (transaction.verify()) {
+                //BASIS_ADDRESS это специальный адрес, который отправляет награду шахтеру и основателю в каждом
+                //блоке должна быть 1 транзакция награда шахтеру, и 1 основателю.
                 if (transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                     BasisSendCount++;
                     if (sender.getAccount().equals(Seting.BASIS_ADDRESS) && BasisSendCount > 2) {
@@ -271,6 +278,8 @@ public class UtilsBalance {
                     digitalDollar = BigDecimal.valueOf(transaction.getDigitalDollar());
                     digitalStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
                     mine = BigDecimal.valueOf(transaction.getBonusForMiner());
+
+                    //здесь идет подсчет баланса, если правильно, то потом это фиксируется.
                     sendTrue = UtilsBalance.sendMoney(
                             sender,
                             customer,
@@ -428,7 +437,7 @@ public class UtilsBalance {
         BigDecimal senderDigitalStaking = senderAddress.getDigitalStakingBalance();
         BigDecimal recipientDigitalDollar = recipientAddress.getDigitalDollarBalance();
         BigDecimal recipientDigitalStock = recipientAddress.getDigitalStockBalance();
-        BigDecimal recipientDigitalStaking = recipientAddress.getDigitalStakingBalance();
+
 
         boolean sendTrue = true;
 
@@ -453,29 +462,13 @@ public class UtilsBalance {
 
             } else if (voteEnum.equals(VoteEnum.STAKING)) {
                 System.out.println("STAKING: ");
-                if (senderDigitalStaking.compareTo(digitalDollar.add(minerRewards)) < 0) {
-                    System.out.println("less dollar");
-                    System.out.println("sender: " + senderAddress);
-                    System.out.println("minerRewards: " + minerRewards);
 
-                    sendTrue = false;
-                    return sendTrue;
-                }
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar.add(digitalDollar));
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking.subtract(digitalDollar));
                 recipientAddress.setDigitalDollarBalance(senderAddress.getDigitalDollarBalance());
                 recipientAddress.setDigitalStakingBalance(senderAddress.getDigitalStakingBalance());
             } else if (voteEnum.equals(VoteEnum.UNSTAKING)) {
-                System.out.println("UNSTAKING");
 
-                if (senderDigitalDollar.compareTo(digitalDollar.add(minerRewards)) < 0) {
-                    System.out.println("less dollar");
-                    System.out.println("sender: " + senderAddress);
-                    System.out.println("minerRewards: " + minerRewards);
-
-                    sendTrue = false;
-                    return sendTrue;
-                }
                 senderAddress.setDigitalDollarBalance(senderDigitalDollar.subtract(digitalDollar));
                 senderAddress.setDigitalStakingBalance(senderDigitalStaking.add(digitalDollar));
                 recipientAddress.setDigitalDollarBalance(senderAddress.getDigitalDollarBalance());
