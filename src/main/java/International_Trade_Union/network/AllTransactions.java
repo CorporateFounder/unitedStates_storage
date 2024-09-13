@@ -139,6 +139,10 @@ public class AllTransactions {
         // Создаём EnumSet из всех возможных значений VoteEnum
         EnumSet<VoteEnum> voteSet = EnumSet.allOf(VoteEnum.class);
         for (DtoTransaction transaction : transactions) {
+            if(!transaction.verify()){
+                System.out.println("the transaction has an incorrect signature: " + transaction);
+                continue;
+            }
             // Проверка минимального порога для транзакций, не связанных с голосованием
             if (!transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                 if (transaction.getDigitalDollar() < Seting.MINIMUM && transaction.getDigitalStockBalance() < Seting.MINIMUM) {
