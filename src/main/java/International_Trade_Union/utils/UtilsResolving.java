@@ -17,6 +17,8 @@ import International_Trade_Union.model.Mining;
 import International_Trade_Union.model.SlidingWindowManager;
 import International_Trade_Union.model.comparator.HostEndDataShortBComparator;
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.utils.base.Base;
+import International_Trade_Union.utils.base.Base58;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
@@ -259,7 +261,7 @@ public class UtilsResolving {
                                     //проверяет скаченные блоки на целостность
                                     //checks downloaded blocks for integrity
                                     Map<String, Account> balanceForValid = UtilsUse.balancesClone(balances);
-                                    temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValid);
+                                    temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValid, new ArrayList<>());
                                     System.out.println("prevBlock: " + BasisController.prevBlock().getIndex());
                                 } else {
 
@@ -275,7 +277,7 @@ public class UtilsResolving {
                                     }
 
                                     //записывает блоки в базу данных
-                                    boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                                    boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
                                     temp = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
                                     if (!temp.isValidation()) {
                                         System.out.println("error validation: " + temp);
@@ -326,7 +328,7 @@ public class UtilsResolving {
                                 Map<String, Account> balanceForValidation = UtilsUse.balancesClone(balances);
 
                                 //вычисляет мета данные, и делает проверку целостности блокчейна, если блокчейн правильный то это записывается в мета данных
-                                temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation);
+                                temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>());
 
                                 //получает баланс с базы данных h2, локально из счетов в блоке.
                                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
@@ -431,7 +433,7 @@ public class UtilsResolving {
                                     temp = new DataShortBlockchainInformation();
                                     balanceForValidation = UtilsUse.balancesClone(balances);
                                     //подсчет мета данных и проверка целостности блокчейна, скачиваемого из сервера.
-                                    temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation);
+                                    temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>());
 
 
                                     System.out.println("2: temp: " + temp);
@@ -535,7 +537,7 @@ public class UtilsResolving {
                             }
 
                             DataShortBlockchainInformation temp = new DataShortBlockchainInformation();
-                            temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, validationBalance);
+                            temp = Blockchain.shortCheck(BasisController.prevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, validationBalance, new ArrayList<>());
 
                             jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
                             if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
@@ -561,17 +563,6 @@ public class UtilsResolving {
                                 System.out.println("===========================");
                                 System.out.println("!local_size_upper: " + !local_size_upper);
                                 System.out.println("===========================");
-                                MyLogger.saveLog("before helpresolve4: "
-                                        + "temp: " + temp
-                                        + " global: " + global
-                                        + " s: " + s
-                                        + " last Diff: " + lastDiff
-                                        + " tempBalances: " + tempBalances.size()
-                                        + " sign: " + sign.size()
-                                        + " balances: " + balances.size()
-                                        + " subBlocks: " + subBlocks.size()
-                                        + " checking true");
-
                                 temp = helpResolve(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
                                 MyLogger.saveLog("after helpresolve4: "
                                         + "temp: " + temp
@@ -797,7 +788,7 @@ public class UtilsResolving {
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
 
             //откатываем мета данные
-            temp = Blockchain.rollBackShortCheck(different, BasisController.getShortDataBlockchain(), tempBalance, sign);
+            temp = Blockchain.rollBackShortCheck(different, BasisController.getShortDataBlockchain(), tempBalance);
             //баланс для валидации мета данных, этот список баланса используется для проверки, достаточно ли было денег у отправителей
             //во время отправки денег.
             Map<String, Account> balanceForValidation = UtilsUse.balancesClone(balances);
@@ -812,10 +803,17 @@ public class UtilsResolving {
 
             //здесь подсчитывает целостность мета данных, а также целостность блокчейна, так же balanceForValidation используется
             //для проверки достаточно ли баланса было у отправителей в блоках.
+            Base base = new Base58();
+            List<String> signaturesNotTakenIntoAccount = new ArrayList<>();
+            for (Block block : different) {
+                List<String> tempSign = block.getDtoTransactions().stream().map(t->base.encode(t.getSign())).collect(Collectors.toList());
+                signaturesNotTakenIntoAccount.addAll(tempSign);
+            }
+
             for (Block block : emptyList) {
                 List<Block> tempList = new ArrayList<>();
                 tempList.add(block);
-                temp = Blockchain.shortCheck(tempPrevBlock, tempList, temp, lastDiff, tempBalance, sign, balanceForValidation);
+                temp = Blockchain.shortCheck(tempPrevBlock, tempList, temp, lastDiff, tempBalance, sign, balanceForValidation, signaturesNotTakenIntoAccount);
                 tempPrevBlock = block;
             }
 
@@ -848,7 +846,7 @@ public class UtilsResolving {
                     if (tempBalanc.size() > 0) {
                         //если метод rollBackAddBlock3 откатил балансы, то он сохранит этот список балансов с изменениями,
                         //а так же список блоков.
-                        result = addBlock3(emptyList, tempBalanc, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+                        result = addBlock3(emptyList, tempBalanc, Seting.ORIGINAL_BLOCKCHAIN_FILE, signaturesNotTakenIntoAccount);
 
                     } else {
                         result = false;
@@ -864,6 +862,8 @@ public class UtilsResolving {
                         BasisController.setPrevBlock(UtilsBlockToEntityBlock.entityBlockToBlock(tempBlock));
                         String json = UtilsJson.objToStringJson(BasisController.getShortDataBlockchain());
                         UtilsFileSaveRead.save(json, Seting.TEMPORARY_BLOCKCHAIN_FILE, false);
+
+                        return temp;
                     }
 
 
@@ -907,7 +907,7 @@ public class UtilsResolving {
                 return temp;
             }
 
-            boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
             if (save) {
                 BasisController.setShortDataBlockchain(temp);
                 BasisController.setBlockcheinSize((int) temp.getSize());
@@ -1021,7 +1021,7 @@ public class UtilsResolving {
 
 
     @Transactional
-    public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
+    public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename, List<String> signaturesNotTakenIntoAccount) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
         UtilsBalance.setBlockService(blockService);
         Blockchain.setBlockService(blockService);
@@ -1043,7 +1043,7 @@ public class UtilsResolving {
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
             //посчитывает баланс на основе блока
-            calculateBalance(balances, block, signs);
+            calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
         }
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
 

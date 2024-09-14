@@ -1,6 +1,7 @@
 package International_Trade_Union.model;
 
 
+
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
@@ -81,23 +82,7 @@ public class Mining {
         //start test
 
 
-//        //папка чтобы проверить есть ли
-//        File folder = new File(filename);
-//        List<String> files = new ArrayList<>();
-//        for (File file : folder.listFiles()) {
-//            if(!file.isDirectory()){
-//                files.add(file.getAbsolutePath());
-//            }
-//        }
-//
-//        if (files.size() > 0 ){
-//            File file = new File(files.get(files.size()-1));
-//            if(file.exists() && file.length() > 0){
-//                balances = SaveBalances.readLineObject(filename);
-//            }
-//
-//        }
-//
+
 
         balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
         if (balances == null) {
@@ -107,7 +92,7 @@ public class Mining {
         Block block;
         if (blockchain != null && blockchain.sizeBlockhain() > 0) {
             block = blockchain.getBlock(blockchain.sizeBlockhain() - 1);
-            balances = UtilsBalance.calculateBalance(balances, block, signs);
+            balances = UtilsBalance.calculateBalance(balances, block, signs, new ArrayList<>());
             //test
             Map<String, Laws> allLaws = new HashMap<>();
 
@@ -170,6 +155,11 @@ public class Mining {
                         }
                     }
 
+                    try {
+                        forAdd = UtilsUse.balanceTransaction(forAdd, balances, index);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     //NAME_LAW_ADDRESS_START если адресс  означает правила выбранные сетью
                     if (transaction.getCustomer().startsWith(Seting.NAME_LAW_ADDRESS_START) && !balances.containsKey(transaction.getCustomer())) {
                         //если в названия закона совпадает с корпоративными должностями, то закон является действительным только когда
@@ -363,11 +353,6 @@ public class Mining {
             }
         })).collect(Collectors.toList());
 
-        try {
-            forAdd = UtilsUse.balanceTransaction(forAdd, balances, index);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         forAdd = forAdd.stream().filter(t -> t != null).collect(Collectors.toList());
         forAdd = forAdd.stream().sorted(Comparator.comparing(t->base.encode(t.getSign()))).collect(Collectors.toList());
         Block block = new Block(forAdd, prevBlock.getHashBlock(), minner.getAccount(), addressFounrder, difficulty, index);
