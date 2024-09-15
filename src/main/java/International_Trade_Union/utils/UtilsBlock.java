@@ -788,7 +788,7 @@ public class UtilsBlock {
                         System.out.println("=====================================");
                         validated = false;
                         break finished;
-                    }else if(thisBlock.getIndex() > Seting.CHECK_DUBLICATE_IN_DB_BLOCK && signs.contains(base.encode(transaction.getSign())) && !SignaturesNotTakenIntoAccount.contains(transaction.getSign())) {
+                    }else if(thisBlock.getIndex() > Seting.CHECK_DUBLICATE_IN_DB_BLOCK && signs.contains(base.encode(transaction.getSign()))) {
                         MyLogger.saveLog("the transaction already exists in the blockchain: " + base.encode(transaction.getSign()) + " index: " + thisBlock.getIndex());
                         validated = false;
                         break  finished;

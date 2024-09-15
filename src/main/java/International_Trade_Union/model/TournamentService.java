@@ -253,13 +253,9 @@ public class TournamentService {
     }
 
 
-    @Transactional
-    public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
-        try {
 
-        }catch (Exception e){
-            MyLogger.saveLog("tournament: ", e);
-        }
+    public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
+
         // Сначала вызываем getAllWinner
         getAllWinner(hostEndDataShortBS);
 
@@ -403,10 +399,14 @@ public class TournamentService {
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null ) {
-
+                MyLogger.saveLog("---------------------------------");
+                MyLogger.saveLog("before balance: " + balances);
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
+                MyLogger.saveLog("after balance: " + balances);
+                MyLogger.saveLog("winner size: " + winner.size());
+                MyLogger.saveLog("winner: " + winner);
+                MyLogger.saveLog("---------------------------------");
             }
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
 
 
             if (save) {
@@ -436,6 +436,7 @@ public class TournamentService {
             }else {
                 MyLogger.saveLog("Tournament addBlock3 has error: " + winner.get(0).getIndex());
             }
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
 
             BasisController.setIsSaveFile(true);
 
