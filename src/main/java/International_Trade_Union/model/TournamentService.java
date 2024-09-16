@@ -330,8 +330,6 @@ public class TournamentService {
             System.out.println("tournament: winner: " + winner.size());
             Map<String, Account> balances = new HashMap<>();
 
-//                balances = SaveBalances.readLineObject(Seting.ORIGINAL_BALANCE_FILE);
-//                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
             BasisController.setIsSaveFile(false);
 
@@ -367,7 +365,7 @@ public class TournamentService {
 
 
             List<Block> lastDiff = new ArrayList<>();
-            List<String> sign = new ArrayList<>();
+
 
             if (prevBlock.getIndex() < Seting.V34_NEW_ALGO) {
                 lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
@@ -380,7 +378,7 @@ public class TournamentService {
 
 
             Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
-            sign = new ArrayList<>();
+            List<String> sign = new ArrayList<>();
             //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
             DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
 

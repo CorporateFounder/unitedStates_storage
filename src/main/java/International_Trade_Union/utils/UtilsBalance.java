@@ -197,6 +197,7 @@ public class UtilsBalance {
                     continue;
                 }else {
                     if(sign.contains(base.encode(transaction.getSign()))){
+                        MyLogger.saveLog("this transaction signature has already been used and is not valid from signList: index: " + block.getIndex() + " signature: " + base.encode(transaction.getSign()));
                         System.out.println("this transaction signature has already been used and is not valid from list");
                         continue;
                     }else {
@@ -344,8 +345,6 @@ public class UtilsBalance {
     public static boolean sendMoney(Account senderAddress, Account recipientAddress, double digitalDollar, double digitalReputation, double minerRewards, long index) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
         return sendMoney(senderAddress, recipientAddress, BigDecimal.valueOf(digitalDollar), BigDecimal.valueOf(digitalReputation), BigDecimal.valueOf(minerRewards), VoteEnum.YES);
-
-
     }
 
     /**
