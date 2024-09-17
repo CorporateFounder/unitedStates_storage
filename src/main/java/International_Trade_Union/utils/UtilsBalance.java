@@ -25,6 +25,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.setings.Seting.CHECK_DUBLICATE_IN_DB_BLOCK;
 import static International_Trade_Union.setings.Seting.SPECIAL_FORK_BALANCE;
 //wallet
 
@@ -190,7 +191,7 @@ public class UtilsBalance {
             //транзакции, если ее нет, то проверяется во временном списке, который был предоставлен
             //если нет, то в список добавляется эта подпись и продолжается процедура.
             DtoTransaction transaction = transactions.get(j);
-            if (blockService != null) {
+            if (blockService != null && block.getIndex() <= CHECK_DUBLICATE_IN_DB_BLOCK) {
                 if (blockService.existsBySign(transaction.getSign()) && !signaturesNotTakenIntoAccount.contains(base.encode(transaction.getSign()))) {
                     MyLogger.saveLog("this transaction signature has already been used and is not valid from db: index: " + block.getIndex() + " signature: " + base.encode(transaction.getSign()));
                     System.out.println("this transaction signature has already been used and is not valid from db");
@@ -203,6 +204,14 @@ public class UtilsBalance {
                     }else {
                         sign.add(base.encode(transaction.getSign()));
                     }
+                }
+            }else {
+                if(sign.contains(base.encode(transaction.getSign()))){
+                    MyLogger.saveLog("this transaction signature has already been used and is not valid from signList: index: " + block.getIndex() + " signature: " + base.encode(transaction.getSign()));
+                    System.out.println("this transaction signature has already been used and is not valid from list");
+                    continue;
+                }else {
+                    sign.add(base.encode(transaction.getSign()));
                 }
             }
 
@@ -297,7 +306,6 @@ public class UtilsBalance {
                     balances.put(sender.getAccount(), sender);
                     balances.put(customer.getAccount(), customer);
 
-
                 }
 
             }
@@ -345,6 +353,8 @@ public class UtilsBalance {
     public static boolean sendMoney(Account senderAddress, Account recipientAddress, double digitalDollar, double digitalReputation, double minerRewards, long index) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
         return sendMoney(senderAddress, recipientAddress, BigDecimal.valueOf(digitalDollar), BigDecimal.valueOf(digitalReputation), BigDecimal.valueOf(minerRewards), VoteEnum.YES);
+
+
     }
 
     /**
