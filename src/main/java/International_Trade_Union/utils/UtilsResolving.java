@@ -995,6 +995,7 @@ public class UtilsResolving {
      */
 
 
+
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename, List<String> signaturesNotTakenIntoAccount) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
