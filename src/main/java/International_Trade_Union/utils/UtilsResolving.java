@@ -560,49 +560,25 @@ public class UtilsResolving {
                             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                             tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                             sign = new ArrayList<>();
-                            if (!local_size_upper ) {
+                            if (!local_size_upper) {
                                 System.out.println("===========================");
                                 System.out.println("!local_size_upper: " + !local_size_upper);
                                 System.out.println("===========================");
                                 temp = helpResolve(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
-                                MyLogger.saveLog("after helpresolve4: "
-                                        + "temp: " + temp
-                                        + " global: " + global
-                                        + " s: " + s
-                                        + " last Diff: " + lastDiff
-                                        + " tempBalances: " + tempBalances.size()
-                                        + " sign: " + sign.size()
-                                        + " balances: " + balances.size()
-                                        + " subBlocks: " + subBlocks.size()
-                                        + " checking true");
+                                MyLogger.saveLog("!local_size_upper temp: after" + temp);
+                                MyLogger.saveLog("!local_size_upper global: after" + global);
+
+
 
                             }
 
-                            if (local_size_upper ) {
+                            if (local_size_upper) {
                                 System.out.println("===========================");
                                 System.out.println("local_size_upper: " + local_size_upper);
                                 System.out.println("===========================");
-                                MyLogger.saveLog("before helpresolve5: "
-                                        + "temp: " + temp
-                                        + " global: " + global
-                                        + " s: " + s
-                                        + " last Diff: " + lastDiff
-                                        + " tempBalances: " + tempBalances.size()
-                                        + " sign: " + sign.size()
-                                        + " balances: " + balances.size()
-                                        + " subBlocks: " + subBlocks.size()
-                                        + " checking true");
                                 temp = helpResolve(temp, global, s, lastDiff, tempBalances, sign, balances, subBlocks, true);
-                                MyLogger.saveLog("after helpresolve5: "
-                                        + "temp: " + temp
-                                        + " global: " + global
-                                        + " s: " + s
-                                        + " last Diff: " + lastDiff
-                                        + " tempBalances: " + tempBalances.size()
-                                        + " sign: " + sign.size()
-                                        + " balances: " + balances.size()
-                                        + " subBlocks: " + subBlocks.size()
-                                        + " checking true");
+                                MyLogger.saveLog("local_size_upper temp: after" + temp);
+                                MyLogger.saveLog("local_size_upper global: after" + global);
                             }
 
 
@@ -654,8 +630,7 @@ public class UtilsResolving {
     public boolean isBig(
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
-        if (global.getSize() >= actual.getSize() - Seting.IS_BIG_DIFFERENT
-                && global.getBigRandomNumber() > actual.getBigRandomNumber()) {
+        if (global.getBigRandomNumber() > actual.getBigRandomNumber()) {
             return true;
         }
         return false;
@@ -667,7 +642,6 @@ public class UtilsResolving {
         if (
                 actual.getSize() < expected.getSize()
                         || actual.getBigRandomNumber() < expected.getBigRandomNumber()
-                        || actual.getTransactions() < expected.getTransactions()
         ) {
             return true;
         }
