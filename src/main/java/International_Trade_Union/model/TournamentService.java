@@ -397,13 +397,7 @@ public class TournamentService {
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null ) {
-                MyLogger.saveLog("---------------------------------");
-                MyLogger.saveLog("before balance: " + balances);
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
-                MyLogger.saveLog("after balance: " + balances);
-                MyLogger.saveLog("winner size: " + winner.size());
-                MyLogger.saveLog("winner: " + winner);
-                MyLogger.saveLog("---------------------------------");
             }
 
 

@@ -907,7 +907,7 @@ public class UtilsResolving {
     @Transactional
     public Map<String, Account> rollBackAddBlock3(List<Block> deleteBlocks, List<Block> saveBlocks, Map<String, Account> balances, String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
 
-        MyLogger.saveLog("start: rollBackAddBlock3");
+        MyLogger.saveLog("start: rollBackAddBlock3: " + deleteBlocks.get(0).getIndex());
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
