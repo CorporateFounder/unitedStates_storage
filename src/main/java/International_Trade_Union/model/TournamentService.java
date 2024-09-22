@@ -186,7 +186,6 @@ public class TournamentService {
     }
 
     public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
-
         List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
             try {
@@ -195,19 +194,39 @@ public class TournamentService {
                     return;
                 }
 
-                String json = UtilUrl.readJsonFromUrl(s + "/winnerList");
-                if (json.isEmpty() || json.isBlank()) {
+                CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return UtilUrl.readJsonFromUrl(s + "/winnerList");
+                    } catch (IOException | JSONException e) {
+                        MyLogger.saveLog("Error reading winnerList from " + s);
+                        MyLogger.saveLog(e.toString());
+                        return "";
+                    }
+                });
+
+                CompletableFuture<String> prevBlockFuture = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return UtilUrl.readJsonFromUrl(s + "/prevBlock");
+                    } catch (IOException | JSONException e) {
+                        MyLogger.saveLog("Error reading prevBlock from " + s);
+                        MyLogger.saveLog(e.toString());
+                        return "";
+                    }
+                });
+
+                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(winnerListFuture, prevBlockFuture);
+                combinedFuture.join();
+
+                String winnerListJson = winnerListFuture.get();
+                String prevBlockJson = prevBlockFuture.get();
+
+                if (winnerListJson.isEmpty() || winnerListJson.isBlank() || prevBlockJson.isEmpty() || prevBlockJson.isBlank()) {
                     return;
                 }
 
-                List<Block> blocks = UtilsJson.jsonToObject(json);
+                List<Block> blocks = UtilsJson.jsonToObject(winnerListJson);
+                Block prevBlock = UtilsJson.jsonToBLock(prevBlockJson);
 
-                json = UtilUrl.readJsonFromUrl(s + "/prevBlock");
-                if (json.isEmpty() || json.isBlank()) {
-                    return;
-                }
-
-                Block prevBlock = UtilsJson.jsonToBLock(json);
                 if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
                     blocks.add(prevBlock);
                 }
@@ -233,9 +252,6 @@ public class TournamentService {
                         }
                     }
                 }
-            } catch (IOException | JSONException e) {
-                MyLogger.saveLog("cannot connect to " + s);
-                MyLogger.saveLog(e.toString());
             } catch (Exception e) {
                 MyLogger.saveLog("Unexpected error: " + s);
                 MyLogger.saveLog(e.toString());
@@ -248,11 +264,7 @@ public class TournamentService {
         } catch (InterruptedException | ExecutionException e) {
             MyLogger.saveLog("getAllWinner: ", e);
         }
-
-
     }
-
-
 
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
 
