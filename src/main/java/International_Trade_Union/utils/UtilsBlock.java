@@ -756,7 +756,7 @@ public class UtilsBlock {
                     validated = false;
                     break;
                 }
-            } else if (verify) {
+            } else if (!verify) {
                 System.out.println("wrong transaction: " + transaction + " verify: " + verify);
 
                 UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
