@@ -794,9 +794,10 @@ public class UtilsResolving {
 
             //блокирует хосты серверов, которые намерено или случайно соврали о своей ценности.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
-                String expectedJson = "global: " + UtilsJson.objToStringJson(global);
-                String actualJson = "actual: " + UtilsJson.objToStringJson(temp);
-                UtilsFileSaveRead.save(expectedJson + "\n " + actualJson, Seting.ERROR_FILE, true);
+
+                String expectedJson = "is small roll back global: " + UtilsJson.objToStringJson(global);
+                String actualJson = "is small roll back actual: " + UtilsJson.objToStringJson(temp);
+                UtilsFileSaveRead.save(expectedJson + "\n " + actualJson + "\n host: " + s, Seting.ERROR_FILE, true);
 
                 UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
 
@@ -872,9 +873,9 @@ public class UtilsResolving {
 
             //TODO проверка теперь будет происходит уже сразу и при скачивании.
             if (Seting.IS_SECURITY == true && checking && isSmall(global, temp)) {
-                System.out.println("host: " + s);
-                String expectedJson = "global: " + UtilsJson.objToStringJson(global);
-                String actualJson = "actual: " + UtilsJson.objToStringJson(temp);
+                System.out.println("is small host: " + s);
+                String expectedJson = "is small global: " + UtilsJson.objToStringJson(global);
+                String actualJson = "is small actual: " + UtilsJson.objToStringJson(temp);
                 UtilsFileSaveRead.save(expectedJson + "\n " + actualJson, Seting.ERROR_FILE, true);
 
                 UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
