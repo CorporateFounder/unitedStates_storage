@@ -524,6 +524,7 @@ public class UtilsBlock {
         transactions = transactions.stream().sorted(Comparator.comparing(t->base.encode(t.getSign()))).collect(Collectors.toList());
         finished:
         for (DtoTransaction transaction : transactions) {
+            boolean verify = transaction.verify();
             if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                 double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
                 double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
@@ -728,6 +729,7 @@ public class UtilsBlock {
 
                 }
 
+
                 if (transaction.getSender().equals(Seting.BASIS_ADDRESS) &&
                         !transaction.getCustomer().equals(addressFounder)) {
                     countBasisSendAll += 1;
@@ -754,11 +756,11 @@ public class UtilsBlock {
                     validated = false;
                     break;
                 }
-            } else if (!transaction.verify()) {
-                System.out.println("wrong transaction: " + transaction + " verify: " + transaction.verify());
+            } else if (verify) {
+                System.out.println("wrong transaction: " + transaction + " verify: " + verify);
 
                 UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
-                UtilsFileSaveRead.save("wrong transaction: " + transaction + " verify: " + transaction.verify(), ERROR_FILE, true);
+                UtilsFileSaveRead.save("wrong transaction: " + transaction + " verify: " + verify, ERROR_FILE, true);
                 UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
 
                 validated = false;

@@ -403,12 +403,13 @@ public class TournamentService {
             //TODO прекратить давать блоки через sub block, если происходит запись
             BasisController.setIsSaveFile(false);
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
+
 
 
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null ) {
+                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
             }
 
