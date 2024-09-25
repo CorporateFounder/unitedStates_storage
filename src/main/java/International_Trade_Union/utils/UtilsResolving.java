@@ -1042,17 +1042,7 @@ public class UtilsResolving {
             //записывает блоки в базу данных
             blockService.saveAllBLockF(list);
             finish = UtilsTime.getUniversalTimestamp();
-        } catch (Exception e) {
 
-            String stackerror = "";
-            for (StackTraceElement stackTraceElement : e.getStackTrace()) {
-                stackerror += stackTraceElement.toString() + "\n";
-            }
-            MyLogger.saveLog("stackerror: " + stackerror);
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return false;
-
-        }
 
         System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
         System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
@@ -1071,6 +1061,17 @@ public class UtilsResolving {
         Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
         System.out.println("addBlock 3: time: result: " + result);
         System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
+        } catch (Exception e) {
+
+            String stackerror = "";
+            for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+                stackerror += stackTraceElement.toString() + "\n";
+            }
+            MyLogger.saveLog("stackerror: " + stackerror);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return false;
+
+        }
         return true;
     }
 
