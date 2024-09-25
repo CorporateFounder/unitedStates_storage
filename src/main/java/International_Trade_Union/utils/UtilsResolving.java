@@ -68,6 +68,7 @@ public class UtilsResolving {
     @Autowired
     DomainConfiguration domainConfiguration;
 
+    @Transactional
     public int resolve3(List<HostEndDataShortB> hostsList) {
         BasisController.setUpdating(true);
 
@@ -398,7 +399,7 @@ public class UtilsResolving {
                                     }
                                     subBlocks = UtilsJson.jsonToObject(str);
 
-                                    if (subBlocks == null ||subBlocks.isEmpty() || subBlocks.size() == 0) {
+                                    if (subBlocks == null || subBlocks.isEmpty() || subBlocks.size() == 0) {
                                         System.out.println("-------------------------------------");
                                         System.out.println("sublocks: " + subBlocks.size());
                                         System.out.println("-------------------------------------");
@@ -446,7 +447,7 @@ public class UtilsResolving {
                                     balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                                     tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
                                     sign = new ArrayList<>();
-                                    if (!local_size_upper ) {
+                                    if (!local_size_upper) {
                                         System.out.println("===========================");
                                         System.out.println("!local_size_upper: " + !local_size_upper);
                                         System.out.println("===========================");
@@ -454,7 +455,7 @@ public class UtilsResolving {
 
                                     }
 
-                                    if (local_size_upper ) {
+                                    if (local_size_upper) {
                                         System.out.println("===========================");
                                         System.out.println("local_size_upper: " + local_size_upper);
                                         System.out.println("===========================");
@@ -569,7 +570,6 @@ public class UtilsResolving {
                                 MyLogger.saveLog("!local_size_upper global: after" + global);
 
 
-
                             }
 
                             if (local_size_upper) {
@@ -647,8 +647,6 @@ public class UtilsResolving {
         }
         return false;
     }
-
-
 
 
     /**
@@ -738,7 +736,7 @@ public class UtilsResolving {
                 return temp;
             }
 
-            if(emptyList.isEmpty()){
+            if (emptyList.isEmpty()) {
                 return temp;
             }
             System.out.println("different: ");
@@ -781,7 +779,7 @@ public class UtilsResolving {
             Base base = new Base58();
             List<String> signaturesNotTakenIntoAccount = new ArrayList<>();
             for (Block block : different) {
-                List<String> tempSign = block.getDtoTransactions().stream().map(t->base.encode(t.getSign())).collect(Collectors.toList());
+                List<String> tempSign = block.getDtoTransactions().stream().map(t -> base.encode(t.getSign())).collect(Collectors.toList());
                 signaturesNotTakenIntoAccount.addAll(tempSign);
             }
 
@@ -950,7 +948,12 @@ public class UtilsResolving {
             //откатывает баланс, исходя из блоков предназначенных для удаления.
             for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
                 Block block = deleteBlocks.get(i);
+                MyLogger.saveLog("----------------------------------");
+                MyLogger.saveLog("rollBackAddBlock3 index: " + block.getIndex());
+                MyLogger.saveLog("balance before: " + balances);
                 balances = rollbackCalculateBalance(balances, block);
+                MyLogger.saveLog("after before: " + balances);
+                MyLogger.saveLog("----------------------------------");
             }
 
 
@@ -996,7 +999,6 @@ public class UtilsResolving {
      */
 
 
-
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename, List<String> signaturesNotTakenIntoAccount) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
@@ -1020,7 +1022,12 @@ public class UtilsResolving {
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
             //посчитывает баланс на основе блока
-           balances =  calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
+            MyLogger.saveLog("----------------------------------");
+            MyLogger.saveLog("addBlock index: " + block.getIndex());
+            MyLogger.saveLog("balance before: " + balances);
+            balances = calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
+            MyLogger.saveLog("after before: " + balances);
+            MyLogger.saveLog("----------------------------------");
         }
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
 
@@ -1044,23 +1051,23 @@ public class UtilsResolving {
             finish = UtilsTime.getUniversalTimestamp();
 
 
-        System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
-        System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
-        System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
+            System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
+            System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
+            System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
 
-        //записывает блок в базу данных
+            //записывает блок в базу данных
 
-        UtilsBlock.saveBlocks(originalBlocks, filename);
-        allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
-        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+            UtilsBlock.saveBlocks(originalBlocks, filename);
+            allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+            allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+            Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+            UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
 
-        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
-        System.out.println("addBlock 3: time: result: " + result);
-        System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
+            java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+            Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
+            System.out.println("addBlock 3: time: result: " + result);
+            System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
         } catch (Exception e) {
 
             String stackerror = "";
