@@ -313,9 +313,9 @@ public interface Seting {
     int NEW_ALGO_MINING = 286892;
     int DUBLICATE_IN_ONE_BLOCK_TRANSACTIONS = 287971;
 
-    double MINIMUM = 0.01;
+    double MINIMUM = 0.00000001;
 
-    int SENDING_DECIMAL_PLACES = 2;
+    int SENDING_DECIMAL_PLACES = 8;
 
     int SLIDING_WINDOW_BALANCE = 25;
 

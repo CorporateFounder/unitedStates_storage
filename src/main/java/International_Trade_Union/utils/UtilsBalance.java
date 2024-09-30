@@ -213,7 +213,15 @@ public class UtilsBalance {
             }
             Account sender = getBalance(transaction.getSender(), balances);
             Account customer = getBalance(transaction.getCustomer(), balances);
-            if (transaction.verify()) {
+            boolean verifyTransaction = transaction.verify();
+            if (verifyTransaction == false){
+                String json = UtilsJson.objToStringJson(transaction);
+                DtoTransaction tempTransaction = UtilsJson.jsonToDtoTransaction(json);
+                verifyTransaction = tempTransaction.verify();
+                MyLogger.saveLog("repeat Transaction: verify" + verifyTransaction + "json: " + json + " index: "  + block.getIndex());
+
+            }
+            if (verifyTransaction) {
                 //BASIS_ADDRESS это специальный адрес, который отправляет награду шахтеру и основателю в каждом
                 //блоке должна быть 1 транзакция награда шахтеру, и 1 основателю.
                 if (transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
@@ -300,6 +308,20 @@ public class UtilsBalance {
 
                 }
 
+            }
+            else {
+                MyLogger.saveLog("------------------------------------");
+
+                MyLogger.saveLog("wrong transaction calculateBalance: verify: " + verifyTransaction );
+                MyLogger.saveLog("wrong transaction calculateBalance: verify repeat: " + transaction.verify());
+                MyLogger.saveLog("wrong transaction calculateBalance: transaction: " + transaction);
+                MyLogger.saveLog("wrong transaction calculateBalance: transaction json: " + UtilsJson.objToStringJson(transaction));
+                MyLogger.saveLog("wrong transaction calculateBalance: block: " + block);
+                String json = UtilsJson.objToStringJson(transaction);
+                DtoTransaction transaction1 = UtilsJson.jsonToDtoTransaction(json);
+                MyLogger.saveLog("verify after json: " + transaction1.verify());
+                MyLogger.saveLog("verify after json: " + transaction1);
+                MyLogger.saveLog("------------------------------------");
             }
 
         }

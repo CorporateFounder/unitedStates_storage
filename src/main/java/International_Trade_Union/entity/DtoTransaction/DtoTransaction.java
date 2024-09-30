@@ -1,6 +1,5 @@
 package International_Trade_Union.entity.DtoTransaction;
 
-import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsJson;
 import International_Trade_Union.utils.UtilsSecurity;
 import International_Trade_Union.utils.UtilsUse;
@@ -61,8 +60,7 @@ public class DtoTransaction implements Comparable<DtoTransaction>{
             System.out.println("wrong dto transaction sender or customer blank? or dollar, reputation or reward less then 0");
             return false;
         }
-        if(Seting.BASIS_ADDRESS.equals(publicKey))
-            return true;
+
         return UtilsSecurity.verify(sha, sign, publicKey);
     }
 

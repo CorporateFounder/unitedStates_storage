@@ -525,6 +525,12 @@ public class UtilsBlock {
         finished:
         for (DtoTransaction transaction : transactions) {
             boolean verify = transaction.verify();
+            if (verify == false){
+                String json = UtilsJson.objToStringJson(transaction);
+                DtoTransaction tempTransaction = UtilsJson.jsonToDtoTransaction(json);
+                verify = tempTransaction.verify();
+                MyLogger.saveLog("repeat Transaction: verify" + verify + "json: " + json + " index: "  + thisBlock.getIndex());
+            }
             if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
                 double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
                 double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
@@ -759,9 +765,9 @@ public class UtilsBlock {
             } else if (!verify) {
                 System.out.println("wrong transaction: " + transaction + " verify: " + verify);
 
-                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
-                UtilsFileSaveRead.save("wrong transaction: " + transaction + " verify: " + verify, ERROR_FILE, true);
-                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                MyLogger.saveLog("************************************");
+                MyLogger.saveLog("wrong transaction: " + transaction + " verify: " + verify + " index: " + thisBlock.getIndex());
+                MyLogger.saveLog("************************************");
 
                 validated = false;
                 break finished;
@@ -769,7 +775,6 @@ public class UtilsBlock {
 
             if (thisBlock.getIndex() > Seting.DUPLICATE_INDEX) {
                 if (blockService != null) {
-
 
                     if (blockService.existsBySign(transaction.getSign()) && !SignaturesNotTakenIntoAccount.contains(base.encode(transaction.getSign()))) {
                         System.out.println("=====================================");

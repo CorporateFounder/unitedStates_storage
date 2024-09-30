@@ -820,11 +820,13 @@ public class UtilsResolving {
                     if (tempBalanc.size() > 0) {
                         //если метод rollBackAddBlock3 откатил балансы, то он сохранит этот список балансов с изменениями,
                         //а так же список блоков.
+                        MyLogger.saveLog("addBllock3 from rollback: ");
                         result = addBlock3(emptyList, tempBalanc, Seting.ORIGINAL_BLOCKCHAIN_FILE, signaturesNotTakenIntoAccount);
 
                     } else {
                         result = false;
                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                        MyLogger.saveLog("wrong: addblock3 from rollback");
                     }
 
                     //если сохранение произошло успешно, то мета данные так же записываются успешно
@@ -849,10 +851,7 @@ public class UtilsResolving {
                     System.out.println("different finish index: " + different.get(different.size() - 1).getIndex());
                     System.out.println("------------------------------------------");
                 } catch (Exception e) {
-                    System.out.println("******************************");
-                    System.out.println("elpresolve4: address: " + s);
-                    e.printStackTrace();
-                    System.out.println("******************************");
+                    MyLogger.saveLog("error helpResolve: ", e);
                 }
                 System.out.println("------------------------------------------");
                 System.out.println("helpResolve4: temp: " + temp);
@@ -1022,12 +1021,8 @@ public class UtilsResolving {
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
             //посчитывает баланс на основе блока
-            MyLogger.saveLog("----------------------------------");
-            MyLogger.saveLog("addBlock index: " + block.getIndex());
-            MyLogger.saveLog("balance before: " + balances);
             balances = calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
-            MyLogger.saveLog("after before: " + balances);
-            MyLogger.saveLog("----------------------------------");
+
         }
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
 

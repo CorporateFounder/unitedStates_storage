@@ -134,7 +134,7 @@ public class AllTransactions {
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
 
         return UtilsUse.balanceTransaction(validTransactions, UtilsUse.balancesClone(balances), BasisController.getBlockchainSize()-1);
-//        return balanceTransaction(validTransactions);
+
     }
 
     private List<DtoTransaction> balanceTransaction(List<DtoTransaction> transactions) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
