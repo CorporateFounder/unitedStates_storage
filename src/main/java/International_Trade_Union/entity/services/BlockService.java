@@ -23,10 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -140,17 +137,20 @@ public class BlockService {
     }
 
     public List<EntityAccount> findBYAccountString(List<String> accounts) throws IOException {
+        if (accounts == null || accounts.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<EntityAccount> entityAccounts = new ArrayList<>();
         try {
-            accounts = accounts.stream().filter(t->t != null).collect(Collectors.toList());
+            accounts = accounts.stream().filter(Objects::nonNull).collect(Collectors.toList());
+            if (accounts.isEmpty()) {
+                return entityAccounts;
+            }
             entityAccounts = entityAccountRepository.findByAccountIn(accounts);
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new IOException("findBYAccountString: error: save: ", e);
-
         }
-
         return entityAccounts;
     }
 
