@@ -278,8 +278,6 @@ public class UtilsResolving {
                                         System.out.println("temp: " + temp);
                                     }
 
-                                    subBlocks = subBlocks.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
-
                                     //записывает блоки в базу данных
                                     boolean save = addBlock3(subBlocks, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
                                     temp = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
@@ -651,6 +649,8 @@ public class UtilsResolving {
     }
 
 
+
+
     /**
      * метод срабатывает если высотка локального блокчейна меньше или равно относительно глобального сервера
      */
@@ -666,7 +666,6 @@ public class UtilsResolving {
             throws CloneNotSupportedException, IOException, NoSuchAlgorithmException, SignatureException,
             InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         //TODO сначала найти блок откуда начинается ответление и докуда
-        subBlocks = subBlocks.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
 
         Map<String, Account> tempBalance = UtilsUse.balancesClone(tempBalances);
 
@@ -739,7 +738,7 @@ public class UtilsResolving {
                 return temp;
             }
 
-            if (emptyList.isEmpty()) {
+            if(emptyList.isEmpty()){
                 return temp;
             }
             System.out.println("different: ");
@@ -761,9 +760,6 @@ public class UtilsResolving {
             //сортируем блоки по возрастанию
             different = different.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-            different = different.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
-            different = different.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
-
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
 
             //откатываем мета данные
@@ -1004,6 +1000,7 @@ public class UtilsResolving {
      */
 
 
+
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public boolean addBlock3(List<Block> originalBlocks, Map<String, Account> balances, String filename, List<String> signaturesNotTakenIntoAccount) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         java.sql.Timestamp lastIndex = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
@@ -1020,7 +1017,6 @@ public class UtilsResolving {
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
         long start = UtilsTime.getUniversalTimestamp();
 
-       originalBlocks = originalBlocks.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
 
         for (Block block : originalBlocks) {
             System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
@@ -1055,25 +1051,6 @@ public class UtilsResolving {
             //записывает блоки в базу данных
             blockService.saveAllBLockF(list);
             finish = UtilsTime.getUniversalTimestamp();
-
-
-            System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
-            System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
-            System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
-
-            //записывает блок в базу данных
-
-            UtilsBlock.saveBlocks(originalBlocks, filename);
-            allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
-            allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-            Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-            UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-
-            java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
-            Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
-            System.out.println("addBlock 3: time: result: " + result);
-            System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
         } catch (Exception e) {
 
             String stackerror = "";
@@ -1085,6 +1062,24 @@ public class UtilsResolving {
             return false;
 
         }
+
+        System.out.println("UtilsResolving: addBlock3: time save accounts: " + UtilsTime.differentMillSecondTime(start, finish));
+        System.out.println("UtilsResolving: addBlock3: total different balance: " + tempBalances.size());
+        System.out.println("UtilsResolving: addBlock3: total original balance: " + balances.size());
+
+        //записывает блок в базу данных
+
+        UtilsBlock.saveBlocks(originalBlocks, filename);
+        allLaws = UtilsLaws.getLaws(originalBlocks, Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
+        allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+
+        Mining.deleteFiles(Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+        UtilsLaws.saveCurrentsLaws(allLawsWithBalance, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
+
+        java.sql.Timestamp actualTime = new java.sql.Timestamp(UtilsTime.getUniversalTimestamp());
+        Long result = actualTime.toInstant().until(lastIndex.toInstant(), ChronoUnit.MILLIS);
+        System.out.println("addBlock 3: time: result: " + result);
+        System.out.println(":BasisController: addBlock3: finish: " + originalBlocks.size());
         return true;
     }
 
