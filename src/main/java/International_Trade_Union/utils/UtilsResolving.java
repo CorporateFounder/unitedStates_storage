@@ -210,6 +210,7 @@ public class UtilsResolving {
                                     continue;
                                 }
                                 List<Block> subBlocks = UtilsJson.jsonToObject(str);
+                                subBlocks = subBlocks.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
                                 //если порция блоков пустая, то пропускается.
                                 if (subBlocks.isEmpty() || subBlocks.size() == 0) {
                                     System.out.println("-------------------------------------");
@@ -398,6 +399,7 @@ public class UtilsResolving {
                                         continue;
                                     }
                                     subBlocks = UtilsJson.jsonToObject(str);
+                                    subBlocks = subBlocks.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
 
                                     if (subBlocks == null || subBlocks.isEmpty() || subBlocks.size() == 0) {
                                         System.out.println("-------------------------------------");
@@ -510,6 +512,8 @@ public class UtilsResolving {
                                 continue;
                             }
                             List<Block> subBlocks = UtilsJson.jsonToObject(str);
+                            subBlocks = subBlocks.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+
 
                             if (subBlocks == null || subBlocks.isEmpty() || subBlocks.size() == 0) {
                                 System.out.println("-------------------------------------");
@@ -758,8 +762,8 @@ public class UtilsResolving {
             System.out.println("rollback temp: " + temp);
 
             //сортируем блоки по возрастанию
-            different = different.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
-            emptyList = emptyList.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+            different = different.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+            emptyList = emptyList.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
             Block tempPrevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(blockService.findBySpecialIndex(different.get(0).getIndex() - 1));
 
             //откатываем мета данные
@@ -1012,7 +1016,7 @@ public class UtilsResolving {
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
 
-        originalBlocks = originalBlocks.stream().sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
+        originalBlocks = originalBlocks.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).sorted(Comparator.comparing(Block::getIndex)).collect(Collectors.toList());
 
         Map<String, Account> tempBalances = UtilsUse.balancesClone(balances);
         long start = UtilsTime.getUniversalTimestamp();
