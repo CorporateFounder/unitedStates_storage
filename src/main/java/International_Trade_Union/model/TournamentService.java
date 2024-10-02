@@ -410,6 +410,7 @@ public class TournamentService {
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null ) {
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
+                winner = winner.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
             }
 
