@@ -1028,12 +1028,12 @@ public class UtilsResolving {
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
             //посчитывает баланс на основе блока
-//            MyLogger.saveLog("----------------------------------");
-//            MyLogger.saveLog("addBlock index: " + block.getIndex());
-//            MyLogger.saveLog("balance before: " + balances);
+            MyLogger.saveLog("----------------------------------");
+            MyLogger.saveLog("addBlock index: " + block.getIndex());
+            MyLogger.saveLog("balance before: " + balances);
             balances = calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
-//            MyLogger.saveLog("after before: " + balances);
-//            MyLogger.saveLog("----------------------------------");
+            MyLogger.saveLog("after before: " + balances);
+            MyLogger.saveLog("----------------------------------");
         }
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
 
