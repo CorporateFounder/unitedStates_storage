@@ -216,6 +216,7 @@ public class UtilsBalance {
             boolean verifyTransaction = transaction.verify();
             if (verifyTransaction == false){
                 String json = UtilsJson.objToStringJson(transaction);
+                MyLogger.saveLog("verifyTransaction failed" + verifyTransaction + "json: " + json + " index: "  + block.getIndex());
                 DtoTransaction tempTransaction = UtilsJson.jsonToDtoTransaction(json);
                 verifyTransaction = tempTransaction.verify();
                 MyLogger.saveLog("repeat Transaction: verify" + verifyTransaction + "json: " + json + " index: "  + block.getIndex());
@@ -227,7 +228,7 @@ public class UtilsBalance {
                     if(verifyTransaction == true)
                         break;
                 }
-
+//
             }
             if (verifyTransaction) {
                 //BASIS_ADDRESS это специальный адрес, который отправляет награду шахтеру и основателю в каждом
