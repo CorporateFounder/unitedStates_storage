@@ -13,6 +13,7 @@ import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.*;
 
+import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
@@ -39,6 +40,8 @@ public class ConductorController {
     @Autowired
     BlockService blockService;
 
+    @Autowired
+    AllTransactions allTransactions;
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
@@ -62,6 +65,109 @@ public class ConductorController {
 
 
 
+    @PostMapping("/statusTransaction64")
+    public StatusTransaction statusTransaction64(@RequestBody SignRequest signRequest){
+        StatusTransaction statusTransaction = new StatusTransaction();
+        try {
+            if (!BasisController.isIsSaveFile()) {
+                System.out.println("saving file: resolve_from_to_block: sub block");
+                statusTransaction.setStatus("updating information");
+                return statusTransaction;
+            }
+            // Удаление всех пробелов из строки Base64
+            String sanitizedSign = signRequest.getSign().replaceAll("\\s+", "");
+            // Декодирование строки Base64 в байты
+            byte[] decodedBytes = Base64.getDecoder().decode(sanitizedSign);
+            // Преобразование байтов в строку Base58
+            String base58Sign = base58.encode(decodedBytes);
+            // Проверка наличия в базе данных по строке Base58
+            if(base58Sign == null){
+                statusTransaction.setStatus("Incorrect signature");
+                return statusTransaction;
+            }
+
+            boolean addTransaction = false;
+            boolean transaction_pending = false;
+            try {
+                 addTransaction = blockService.findBySign(base58Sign) != null;
+                 List<DtoTransaction> transactions = allTransactions.getTransactions();
+                transaction_pending = transactions.stream()
+                        .filter(t->base58.encode(t.getSign())
+                                .equals(base58Sign))
+                        .collect(Collectors.toList()).size() > 0;
+                if(addTransaction){
+                    statusTransaction.setStatus("success");
+                    return statusTransaction;
+                }
+                else if(transaction_pending){
+                    statusTransaction.setStatus("pending");
+                    return statusTransaction;
+                }else {
+                    statusTransaction.setStatus("absent");
+                    return statusTransaction;
+                }
+
+            } catch (IOException e) {
+                statusTransaction.setStatus(e.getMessage());
+                return statusTransaction;
+            }
+        } catch (IllegalArgumentException e) {
+            statusTransaction.setStatus("IllegalArgumentException");
+            return statusTransaction;
+        }
+    }
+
+
+    @PostMapping("/statusTransaction58")
+    public StatusTransaction statusTransaction65(@RequestBody SignRequest signRequest){
+        StatusTransaction statusTransaction = new StatusTransaction();
+        try {
+            if (!BasisController.isIsSaveFile()) {
+                System.out.println("saving file: resolve_from_to_block: sub block");
+                statusTransaction.setStatus("updating information");
+                return statusTransaction;
+            }
+            // Удаление всех пробелов из строки Base64
+            String sanitizedSign = signRequest.getSign().replaceAll("\\s+", "");
+
+            // Преобразование байтов в строку Base58
+            String base58Sign = sanitizedSign;
+            // Проверка наличия в базе данных по строке Base58
+            if(base58Sign == null){
+                statusTransaction.setStatus("Incorrect signature");
+                return statusTransaction;
+            }
+
+            boolean addTransaction = false;
+            boolean transaction_pending = false;
+            try {
+                 addTransaction = blockService.findBySign(base58Sign) != null;
+                 List<DtoTransaction> transactions = allTransactions.getTransactions();
+                transaction_pending = transactions.stream()
+                        .filter(t->base58.encode(t.getSign())
+                                .equals(base58Sign))
+                        .collect(Collectors.toList()).size() > 0;
+                if(addTransaction){
+                    statusTransaction.setStatus("success");
+                    return statusTransaction;
+                }
+                else if(transaction_pending){
+                    statusTransaction.setStatus("pending");
+                    return statusTransaction;
+                }else {
+                    statusTransaction.setStatus("absent");
+                    return statusTransaction;
+                }
+
+            } catch (IOException e) {
+                statusTransaction.setStatus(e.getMessage());
+                return statusTransaction;
+            }
+        } catch (IllegalArgumentException e) {
+            statusTransaction.setStatus("IllegalArgumentException");
+            return statusTransaction;
+        }
+    }
 
     /**
      *получить полный баланс адреса, по публичному ключу адреса.
