@@ -317,6 +317,11 @@ public interface Seting {
 
     int SENDING_DECIMAL_PLACES = 8;
 
+
+    int SENDING_DECIMAL_PLACES_2 = 2;
+    double MINIMUM_2 = 0.01;
+    int CHANGE_DECIMAL_2_INDEX = 321739;
+
     int SLIDING_WINDOW_BALANCE = 25;
 
 
@@ -328,4 +333,9 @@ public interface Seting {
 
     int ONLY_SUM_BALANCE = 299845;
     int CHECK_DUBLICATE_IN_DB_BLOCK = 287773;
+
+    int MONEY_MILTON_FRIDMAN_INDEX = 326840;
+    double MONEY_MILTON_FRIDMAN = 20;
+    double PERCENT_MONEY_MILTON_FRIMDAN = 1.04;
+    int MILTON_MONEY_DAY = 400;
 }

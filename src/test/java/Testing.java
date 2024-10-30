@@ -53,6 +53,22 @@ public class Testing {
      return UtilsUse.sha256hash(jsonString());
 
      }*/
+
+    @Test
+    public void block() throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        BigDecimal money =BigDecimal.valueOf(200);
+        Block block = UtilsJson.jsonToBLock("{\"dtoTransactions\":[{\"sender\":\"faErFrDnBhfSfNnj1hYjxydKNH28cRw1PBwDQEXH3QsJ\",\"customer\":\"nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43\",\"digitalDollar\":35.38,\"digitalStockBalance\":35.38,\"laws\":{\"packetLawName\":null,\"laws\":null,\"hashLaw\":null},\"bonusForMiner\":0.0,\"voteEnum\":\"YES\",\"sign\":\"MEQCIAVpifvnWhOx+7878Ry5adN1dhmOfwkmddRROrs++DjbAiBcwXQVaDa3QY/MkaXJt3EkPTUHNwZRN8z9nSECFEqFkw==\"},{\"sender\":\"faErFrDnBhfSfNnj1hYjxydKNH28cRw1PBwDQEXH3QsJ\",\"customer\":\"243kiLx69wNtpBYh7NTimcJdqUzu6ZRAUf8KJuydhjEsi\",\"digitalDollar\":353.8,\"digitalStockBalance\":353.8,\"laws\":{\"packetLawName\":null,\"laws\":null,\"hashLaw\":null},\"bonusForMiner\":0.0,\"voteEnum\":\"YES\",\"sign\":\"MEQCIHICM/fhkvx+rQEsZ6bt88kvuwbH9F4Q49B4E9LTZ0ksAiAQp2Cq3Qv1aSZDVS0xk3W1Sds3J+F5hvc6DZRN1uFtYA==\"},{\"sender\":\"jcqrb3nW1kYLAEYcuzfKFrCeoX2WCTnXq4sH2Rr3fQrE\",\"customer\":\"bZyM2pkbTHNUDbV9Z53u9rWu8TChhPkppdGWg3up7JSg\",\"digitalDollar\":1.111,\"digitalStockBalance\":0.0,\"laws\":{\"packetLawName\":\"\",\"laws\":[],\"hashLaw\":\"\"},\"bonusForMiner\":0.0,\"voteEnum\":\"YES\",\"sign\":\"MEUCIQDCCt6i5vEk8wxrCVS4OICbfv+fF6X3QImjB4sB4g+3xwIgAhWHz7vOx/VPbefGNnQ5+gLlsrWgKB78yrrdjam1qc4=\"}],\"previousHash\":\"0d05ca4c80440002c0c369ac05448903983c0d88064b48c4080808120d64180c\",\"minerAddress\":\"243kiLx69wNtpBYh7NTimcJdqUzu6ZRAUf8KJuydhjEsi\",\"founderAddress\":\"nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43\",\"randomNumberProof\":2702159802066160,\"minerRewards\":0.0,\"hashCompexity\":21,\"timestamp\":1730195015000,\"index\":321433,\"hashBlock\":\"4e260ae0242b49832155061602083084c4005074955844040230c1192001208b\"}\n");
+        Account sender = new Account("jcqrb3nW1kYLAEYcuzfKFrCeoX2WCTnXq4sH2Rr3fQrE", money, money, money );
+        Account Customer = new Account("bZyM2pkbTHNUDbV9Z53u9rWu8TChhPkppdGWg3up7JSg", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        Account miner = new Account("243kiLx69wNtpBYh7NTimcJdqUzu6ZRAUf8KJuydhjEsi", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        Map<String, Account> balances = new HashMap<>();
+        balances.put(sender.getAccount(), sender);
+        balances.put(Customer.getAccount(), Customer);
+        balances.put(miner.getAccount(), miner);
+        UtilsBalance.calculateBalance(balances, block, new ArrayList<>(), new ArrayList<>());
+        balances.entrySet().stream().forEach(System.out::println);
+
+    }
     @Test
     public void getTransactionCountTest() throws IOException, JSONException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         DtoTransaction transaction = new DtoTransaction();

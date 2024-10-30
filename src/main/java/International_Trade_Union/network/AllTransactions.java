@@ -115,15 +115,15 @@ public class AllTransactions {
             double digitalStock = dtoTransaction.getDigitalStockBalance();
             double digitalBonus = dtoTransaction.getBonusForMiner();
 
-            if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar))) {
+            if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar), BasisController.getBlockchainSize())) {
                 System.out.println("The number of decimal places for digitalDollar exceeds " + Seting.SENDING_DECIMAL_PLACES);
                 continue;
             }
-            if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalStock))) {
+            if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalStock), BasisController.getBlockchainSize())) {
                 System.out.println("The number of decimal places for digitalStock exceeds " + Seting.SENDING_DECIMAL_PLACES);
                 continue;
             }
-            if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalBonus))) {
+            if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalBonus), BasisController.getBlockchainSize())) {
                 System.out.println("The number of decimal places for digitalBonus exceeds " + Seting.SENDING_DECIMAL_PLACES);
                 continue;
             }
