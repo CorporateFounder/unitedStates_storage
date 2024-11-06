@@ -1,7 +1,6 @@
 package International_Trade_Union.model;
 
 
-
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.controllers.config.BLockchainFactory;
 import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
@@ -282,9 +281,10 @@ public class Mining {
                 digitalReputationForMiner += moneyFromDif * (MULT + G);
             }
 
+
             //фридман модель рост в 4%
-            minerRewards = UtilsUse.calculateMinedMoneyFridman(index, minerRewards);
-            digitalReputationForMiner = UtilsUse.calculateMinedMoneyFridman(index, digitalReputationForMiner);
+            minerRewards = UtilsUse.calculateMinedMoneyFridman(index, minerRewards, difficulty, G);
+            digitalReputationForMiner = UtilsUse.calculateMinedMoneyFridman(index, digitalReputationForMiner, difficulty, G);
 
             founderReward = minerRewards / Seting.DOLLAR;
             founderDigigtalReputationReward = digitalReputationForMiner / Seting.STOCK;
