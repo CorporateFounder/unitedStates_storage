@@ -133,7 +133,10 @@ public class AllTransactions {
         // Проверка баланса и других логических проверок
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
 
-        return UtilsUse.balanceTransaction(validTransactions, UtilsUse.balancesClone(balances), BasisController.getBlockchainSize()-1);
+        List<DtoTransaction> result = UtilsUse.balanceTransaction(validTransactions, UtilsUse.balancesClone(balances), BasisController.getBlockchainSize()-1);
+        instance.clear();
+        instance.addAll(result);
+        return result;
 
     }
 

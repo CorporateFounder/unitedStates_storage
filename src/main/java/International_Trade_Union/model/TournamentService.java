@@ -140,7 +140,7 @@ public class TournamentService {
 
     public void getCheckSyncTime(){
         List<HostEndDataShortB> sortPriorityHost = null;
-        MyLogger.saveLog("start: getCheckSyncTime");
+
 
         try {
             Set<String> nodesAll = getNodes();
@@ -192,7 +192,7 @@ public class TournamentService {
             MyLogger.saveLog("getCheckSyncTime: ", e);
         }
 
-        MyLogger.saveLog("finish: getCheckSyncTime");
+
     }
 
     public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
@@ -576,11 +576,7 @@ public class TournamentService {
 //                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 //                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
             result = utilsResolving.resolve3(hostEndDataShortBS);
-            MyLogger.saveLog("start: updatingNodeEndBlocks: result: " + result);
-//                long afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory after: resolve3" + afterMemory);
-//                MyLogger.saveLog("memory result resolve3: " + (afterMemory - beforeMemory));
-            System.out.println("finish updating --------------------------------------------");
+          System.out.println("finish updating --------------------------------------------");
 
 
             //TODO отправка своего хоста
