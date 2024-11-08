@@ -1,5 +1,6 @@
 package International_Trade_Union.controllers;
 
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.json.JSONException;

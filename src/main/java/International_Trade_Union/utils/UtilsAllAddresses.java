@@ -1,6 +1,7 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.setings.Seting;
 import org.springframework.beans.factory.annotation.Autowired;
 
