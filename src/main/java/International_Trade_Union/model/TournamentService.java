@@ -40,7 +40,6 @@ public class TournamentService {
         UtilsBlock.setBlockService(blockService);
     }
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     @Autowired
     NodeChecker nodeChecker;
     @Autowired
@@ -108,15 +107,7 @@ public class TournamentService {
 
         return winner;
     }
-    private void deleteBlockedHosts() {
-        try {
-            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-            System.out.println("Заблокированные хосты успешно удалены.");
-        } catch (Exception e) {
-            System.err.println("Ошибка при удалении заблокированных хостов: " + e.getMessage());
-            MyLogger.saveLog("TournamentService: ", e);
-        }
-    }
+
 
     public List<LiteVersionWiner> blockToLiteVersion(List<Block> list, Map<String, Account> balances) {
         List<LiteVersionWiner> list1 = new ArrayList<>();
@@ -287,8 +278,6 @@ public class TournamentService {
         // Затем вызываем initiateProcess
         nodeChecker.initiateProcess(hostEndDataShortBS);
 
-        // Запланировать задачу удаления каждые 500 секунд с начальной задержкой 0
-        scheduler.scheduleAtFixedRate(this::deleteBlockedHosts, 0, Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND, TimeUnit.SECONDS);
 
         try {
             List<Block> list = BasisController.getWinnerList();

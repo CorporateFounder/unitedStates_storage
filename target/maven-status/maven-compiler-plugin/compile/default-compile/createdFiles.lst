@@ -136,6 +136,7 @@ International_Trade_Union\utils\base\Base.class
 International_Trade_Union\utils\UtilsTime.class
 International_Trade_Union\utils\UtilsJson$2.class
 International_Trade_Union\logger\MemoryMonitoringAspect.class
+International_Trade_Union\utils\TimeSyncManager.class
 International_Trade_Union\utils\UtilsCurrentLawVotesEndBalance.class
 International_Trade_Union\entity\blockchain\Blockchain$4.class
 International_Trade_Union\entity\entities\EntityBlock.class

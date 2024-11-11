@@ -28,6 +28,9 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,7 +66,13 @@ public class ConductorController {
     }
 
 
-
+    @GetMapping("/time")
+    @ResponseBody
+    public String time() {
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(formatter);
+    }
 
     @PostMapping("/statusTransaction64")
     public StatusTransaction statusTransaction64(@RequestBody SignRequest signRequest){

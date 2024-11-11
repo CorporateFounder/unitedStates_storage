@@ -31,13 +31,13 @@ import java.sql.Timestamp;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Component
 @Scope("singleton")
 public class Tournament implements Runnable {
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Autowired
     AllTransactions allTransactions;
@@ -60,12 +60,39 @@ public class Tournament implements Runnable {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
+
+        // Первоначальная синхронизация времени при запуске
+        try {
+            TimeSyncManager.syncTime();
+            System.out.println("Время успешно синхронизировано при запуске.");
+        } catch (Exception e) {
+            System.err.println("Ошибка синхронизации времени при запуске: " + e.getMessage());
+        }
+
+        // Запуск потока для основного цикла турнира
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
 
+        // Ежедневная синхронизация времени (каждые 24 часа)
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                TimeSyncManager.syncTime();
+                System.out.println("Время успешно синхронизировано.");
+            } catch (Exception e) {
+                System.err.println("Ошибка при ежедневной синхронизации времени: " + e.getMessage());
+            }
+        }, 24, 24, TimeUnit.HOURS); // Интервал - каждые 24 часа
     }
-
+    private void deleteBlockedHosts() {
+        try {
+            Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+            System.out.println("Заблокированные хосты успешно удалены.");
+        } catch (Exception e) {
+            System.err.println("Ошибка при удалении заблокированных хостов: " + e.getMessage());
+            MyLogger.saveLog("TournamentService: ", e);
+        }
+    }
 
     @Override
     public void run() {
@@ -101,6 +128,9 @@ public class Tournament implements Runnable {
         }
 
         while (true) {
+
+            // Запланировать задачу удаления каждые 500 секунд с начальной задержкой 0
+            scheduler.scheduleAtFixedRate(this::deleteBlockedHosts, 0, Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND, TimeUnit.SECONDS);
 
             Blockchain.setBlockService(blockService);
             UtilsBalance.setBlockService(blockService);
