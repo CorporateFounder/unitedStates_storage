@@ -2,6 +2,8 @@ package International_Trade_Union.network;
 
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
+import International_Trade_Union.entity.entities.EntityBlock;
+import International_Trade_Union.entity.entities.EntityDtoTransaction;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
@@ -49,7 +51,10 @@ public class AllTransactions {
     public List<DtoTransaction> getTransactions() {
         lock.lock();
         try {
-            return validateAndFilterTransactions(new ArrayList<>(instance));
+           List<DtoTransaction> dtoTransactions = validateAndFilterTransactions(new ArrayList<>(instance));
+            instance.clear();
+            instance.addAll(dtoTransactions);
+            return dtoTransactions;
         }catch (Exception e){
             MyLogger.saveLog("allTransactions error: ", e);
             return new CopyOnWriteArrayList<>();
@@ -133,10 +138,7 @@ public class AllTransactions {
         // Проверка баланса и других логических проверок
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
 
-        List<DtoTransaction> result = UtilsUse.balanceTransaction(validTransactions, UtilsUse.balancesClone(balances), BasisController.getBlockchainSize()-1);
-        instance.clear();
-        instance.addAll(result);
-        return result;
+        return UtilsUse.balanceTransaction(validTransactions, UtilsUse.balancesClone(balances), BasisController.getBlockchainSize()-1);
 
     }
 
