@@ -438,7 +438,7 @@ public class ConductorController {
         return block;
     }
 
-    @GetMapping ("/findBlocksFromSign58")
+    @PostMapping ("/findBlocksFromSign58")
     public List<Block> findBlocksFromSign58(@RequestBody SignRequest reques){
         try {
             List<EntityBlock> blocks = blockService.findBlocksByTransactionSign(reques.getSign());
@@ -451,7 +451,7 @@ public class ConductorController {
 
     }
 
-    @GetMapping ("/findBlocksFromSign64")
+    @PostMapping ("/findBlocksFromSign64")
     public List<Block> findBlocksFromSign64(@RequestBody SignRequest reques){
         try {
             if (!BasisController.isIsSaveFile()) {
