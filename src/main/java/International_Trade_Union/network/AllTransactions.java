@@ -119,6 +119,10 @@ public class AllTransactions {
             double digitalDollar = dtoTransaction.getDigitalDollar();
             double digitalStock = dtoTransaction.getDigitalStockBalance();
             double digitalBonus = dtoTransaction.getBonusForMiner();
+            if(dtoTransaction.verify() == false){
+                System.out.println("wrong transaction: " + dtoTransaction.verify());
+                continue;
+            }
             if(dtoTransaction.getSender() == null || dtoTransaction.getSender().isEmpty()){
                 System.out.println("sender is empty or null");
                 continue;
