@@ -119,7 +119,17 @@ public class AllTransactions {
             double digitalDollar = dtoTransaction.getDigitalDollar();
             double digitalStock = dtoTransaction.getDigitalStockBalance();
             double digitalBonus = dtoTransaction.getBonusForMiner();
-
+            if(dtoTransaction.getSender() == null || dtoTransaction.getSender().isEmpty()){
+                System.out.println("sender is empty or null");
+                continue;
+            }if(dtoTransaction.getCustomer() == null || dtoTransaction.getCustomer().isEmpty()){
+                System.out.println("sender is empty or null");
+                continue;
+            }
+            if(dtoTransaction.getSign() == null || base.encode(dtoTransaction.getSign()).isEmpty()){
+                System.out.println("sign empty or wrong");
+                continue;
+            }
             if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar), BasisController.getBlockchainSize())) {
                 System.out.println("The number of decimal places for digitalDollar exceeds " + Seting.SENDING_DECIMAL_PLACES);
                 continue;
