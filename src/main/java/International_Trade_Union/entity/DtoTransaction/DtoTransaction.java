@@ -1,5 +1,7 @@
 package International_Trade_Union.entity.DtoTransaction;
 
+import International_Trade_Union.logger.MyLogger;
+import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.UtilsJson;
 import International_Trade_Union.utils.UtilsSecurity;
 import International_Trade_Union.utils.UtilsUse;
@@ -16,7 +18,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -49,7 +50,7 @@ public class DtoTransaction implements Comparable<DtoTransaction>{
     }
 
     //TODO возможно стоит перевести проверку подписи в отдельный utils, под вопросом!!
-    public boolean verify() throws IOException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
+    public boolean verify()  {
         Base base = new Base58();
         byte[] pub = base.decode(sender);
         BCECPublicKey publicKey = (BCECPublicKey) UtilsSecurity.decodeKey(pub);
@@ -60,8 +61,26 @@ public class DtoTransaction implements Comparable<DtoTransaction>{
             System.out.println("wrong dto transaction sender or customer blank? or dollar, reputation or reward less then 0");
             return false;
         }
+        if(Seting.BASIS_ADDRESS.equals(publicKey))
+            return true;
+        try {
+            return UtilsSecurity.verify(sha, sign, publicKey);
+        } catch (NoSuchAlgorithmException e) {
+            MyLogger.saveLog("NoSuchAlgorithmException dto.verify");
+            return false;
 
-        return UtilsSecurity.verify(sha, sign, publicKey);
+        } catch (NoSuchProviderException e) {
+            MyLogger.saveLog("NoSuchProviderException dto.verify");
+            return false;
+
+        } catch (InvalidKeyException e) {
+            MyLogger.saveLog("InvalidKeyException dto.verify");
+            return false;
+
+        } catch (SignatureException e) {
+            MyLogger.saveLog("InvalidKeyException dto.verify");
+            return false;
+        }
     }
 
     public String toSign(){

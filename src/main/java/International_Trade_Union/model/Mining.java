@@ -125,7 +125,7 @@ public class Mining {
         //проверяет целостность транзакции, что они подписаны правильно
         cicle:
         for (DtoTransaction transaction : listTransactions) {
-            try {
+
                 if (transaction.verify()) {
 
                     Account account = balances.get(transaction.getSender());
@@ -211,10 +211,7 @@ public class Mining {
                     }
 
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                continue;
-            }
+
         }
 
         long difficulty = UtilsBlock.difficulty(blockchain, blockGenerationInterval, DIFFICULTY_ADJUSTMENT_INTERVAL);
