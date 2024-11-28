@@ -140,9 +140,10 @@ public class Tournament implements Runnable {
                 long currentTime = UtilsTime.getUniversalTimestamp();
                 long nextTournamentStartTime = getNextTournamentStartTime(currentTime);
 
-                // Wait until it's time to start getAllWinner
+                // Ждем, пока не наступит время начала турнира
                 waitUntil(nextTournamentStartTime);
-                // Start getAllWinner
+
+                // Начинаем турнир
                 BasisController.getBlockedNewSendBlock().set(false);
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
                 tournament.tournament(hosts);
@@ -151,13 +152,21 @@ public class Tournament implements Runnable {
                 BasisController.getBlockedNewSendBlock().set(true);
                 tournament.getCheckSyncTime();
 
+                // Вычисляем время до следующего турнира
+                long currentTimeAfterTournament = UtilsTime.getUniversalTimestamp();
+                long sleepTime = TOURNAMENT_INTERVAL - (currentTimeAfterTournament - nextTournamentStartTime);
 
-                // Sleep until the next tournament interval
-                Thread.sleep(TOURNAMENT_INTERVAL - (UtilsTime.getUniversalTimestamp() - nextTournamentStartTime));
+                if (sleepTime > 0) {
+                    System.out.println("Sleeping for " + sleepTime + " milliseconds until next tournament.");
+                    Thread.sleep(sleepTime);
+                } else {
+                    System.out.println("Negative or zero sleep time: " + sleepTime + ". Skipping sleep and proceeding to next iteration.");
+                }
 
             } catch (Exception e) {
-                handleException(e);
                 tournament.updatingNodeEndBlocks(hosts);
+                handleException(e);
+
             } finally {
                 NodeController.setNotReady();
                 BasisController.setIsSaveFile(true);
@@ -166,20 +175,34 @@ public class Tournament implements Runnable {
         }
     }
 
-    private void waitUntil(long targetTime) throws InterruptedException {
+     private void waitUntil(long targetTime) throws InterruptedException {
         long currentTime = UtilsTime.getUniversalTimestamp();
-        if (currentTime < targetTime) {
-            Thread.sleep(targetTime - currentTime);
+        long sleepTime = targetTime - currentTime;
+        if (sleepTime > 0) {
+            System.out.println("Waiting for " + sleepTime + " milliseconds.");
+            Thread.sleep(sleepTime);
+        } else {
+            System.out.println("No need to wait. Current time (" + currentTime + ") has already passed target time (" + targetTime + ").");
         }
     }
 
-    private long getNextTournamentStartTime(long currentTime) {
-        long referenceTime = 0; // Начало эпохи (1 января 1970 года, 00:00:00 UTC)
-        long timeSinceReference = currentTime - referenceTime;
-        long nextTournamentStartTime = referenceTime + ((timeSinceReference / TOURNAMENT_INTERVAL) + 1) * TOURNAMENT_INTERVAL;
+     private long getNextTournamentStartTime(long currentTime) {
+        if (TOURNAMENT_INTERVAL <= 0) {
+            throw new IllegalArgumentException("TOURNAMENT_INTERVAL must be positive");
+        }
+
+        // Вычисляем количество интервалов, прошедших с начала эпохи
+        long intervalsPassed = currentTime / TOURNAMENT_INTERVAL;
+        long nextTournamentStartTime = (intervalsPassed + 1) * TOURNAMENT_INTERVAL;
+
+        // Логирование для отладки
+        System.out.println("Current Time: " + currentTime);
+        System.out.println("TOURNAMENT_INTERVAL: " + TOURNAMENT_INTERVAL);
+        System.out.println("Intervals Passed: " + intervalsPassed);
+        System.out.println("Next Tournament Start Time: " + nextTournamentStartTime);
+
         return nextTournamentStartTime;
     }
-
 
     private void handleException(Exception e) {
         e.printStackTrace();
@@ -191,5 +214,6 @@ public class Tournament implements Runnable {
             BasisController.getWinnerList().clear();
         }
     }
+
 
 }

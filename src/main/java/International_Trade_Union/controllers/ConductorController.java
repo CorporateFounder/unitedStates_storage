@@ -22,7 +22,9 @@ import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.VoteEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -236,104 +238,7 @@ public class ConductorController {
         return UtilsUse.round(account.getDigitalStockBalance(), Seting.SENDING_DECIMAL_PLACES).doubleValue();
     }
 
-    /**
-     * send dollar or stock (if return wrong-its not sending, if return sign its success)
-     * (send to global node)
-     */
-//    @GetMapping("/sendCoin")
-//    @ResponseBody
-//    public String send(@RequestParam String sender,
-//                       @RequestParam String recipient,
-//                       @RequestParam(defaultValue = "0.0") Double dollar,
-//                       @RequestParam(defaultValue = "0.0") Double stock,
-//                       @RequestParam(defaultValue = "0.0") Double reward,
-//                       @RequestParam String password) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, IOException, SignatureException, InvalidKeyException {
-//        Base base = new Base58();
-//        String result = "false";
-//
-//        dollar = UtilsUse.round(dollar, Seting.DECIMAL_PLACES);
-//        stock = UtilsUse.round(stock, Seting.DECIMAL_PLACES);
-//        reward = UtilsUse.round(reward, Seting.DECIMAL_PLACES);
-//        if (dollar == null || dollar < 0.0)
-//            dollar = 0.0;
-//
-//        if (stock == null || stock < 0.0)
-//            stock = 0.0;
-//
-//        if (reward == null || reward < 0.0)
-//            reward = 0.0;
-//
-//        Laws laws = new Laws();
-//        laws.setLaws(new ArrayList<>());
-//        laws.setHashLaw("");
-//        laws.setPacketLawName("");
-//        DtoTransaction dtoTransaction = new DtoTransaction(
-//                sender,
-//                recipient,
-//                dollar,
-//                stock,
-//                laws,
-//                reward,
-//                VoteEnum.YES);
-//        PrivateKey privateKey = UtilsSecurity.privateBytToPrivateKey(base.decode(password));
-//        byte[] sign = UtilsSecurity.sign(privateKey, dtoTransaction.toSign());
-//        System.out.println("Main Controller: new transaction: vote: " + VoteEnum.YES);
-//        dtoTransaction.setSign(sign);
-//        Directors directors = new Directors();
-//        System.out.println("sender: " + sender);
-//        System.out.println("recipient: " + recipient);
-//        System.out.println("dollar: " + dollar + ": class: " + dollar.getClass());
-//        System.out.println("stock: " + stock + ": class: " + stock.getClass());
-//        System.out.println("reward: " + reward + ": class: " + reward.getClass());
-//        System.out.println("password: " + password);
-//        System.out.println("sign: " + dtoTransaction.toSign());
-//        System.out.println("verify: " + dtoTransaction.verify());
-//
-//        if (dtoTransaction.verify()) {
-//
-//            //если в названия закона совпадает с корпоративными должностями, то закон является действительным только когда
-//            //отправитель совпадает с законом
-//            List<String> corporateSeniorPositions = directors.getDirectors().stream()
-//                    .map(t -> t.getName()).collect(Collectors.toList());
-//            System.out.println("LawsController: create_law: " + laws.getPacketLawName() + "contains: " + corporateSeniorPositions.contains(laws.getPacketLawName()));
-//            if (corporateSeniorPositions.contains(laws.getPacketLawName()) && !UtilsGovernment.checkPostionSenderEqualsLaw(sender, laws)) {
-//                System.out.println("sending" + "wrong transaction: Position to be equals whith send");
-//                return result;
-//            }
-//            result = base.encode(dtoTransaction.getSign());
-//
-//            String str = base.encode(dtoTransaction.getSign());
-//            System.out.println("sign: " + str);
-//            AllTransactions.addTransaction(dtoTransaction);
-//            String jsonDto = UtilsJson.objToStringJson(dtoTransaction);
-//            Set<String> nodesAll = getNodes();
-//            List<HostEndDataShortB> sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
-//
-//            for (HostEndDataShortB hostEndDataShortB :sortPriorityHost) {
-//
-//                String original = hostEndDataShortB.getHost();
-//                String url = hostEndDataShortB.getHost() + "/addTransaction";
-//                //если адресс совпадает с внутреним хостом, то не отправляет самому себе
-//                if (BasisController.getExcludedAddresses().contains(url)) {
-//                    System.out.println("MainController: its your address or excluded address: " + url);
-//                    continue;
-//                }
-//                try {
-//                    //отправка в сеть
-//                    UtilUrl.sendPost(jsonDto, url);
-//
-//                } catch (Exception e) {
-//                    System.out.println("exception discover: " + original);
-//
-//                }
-//            }
-//
-//
-//        } else
-//            return result;
-//        return result;
-//
-//    }
+
 
     /**
      * whether the transaction was added to the blockchain, find with sign
@@ -629,6 +534,30 @@ public class ConductorController {
         return accountMap;
     }
 
+    @GetMapping("/getBlocksBySenderInRange")
+    public List<EntityBlock> getBlocksBySender(
+            @RequestParam long from,
+            @RequestParam long to,
+            @RequestParam String sender) {
+        try {
+            return blockService.findBlocksBySpecialIndexRangeAndSender(from, to, sender);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
+    }
 
+    @GetMapping("/findBlocksBySenderInRange")
+    public List<EntityBlock> getBlocksByCustomer(
+            @RequestParam long from,
+            @RequestParam long to,
+            @RequestParam String customer) {
+        try {
+            return blockService.findBlocksBySpecialIndexRangeAndCustomer(from, to, customer);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
+    }
 
 }
