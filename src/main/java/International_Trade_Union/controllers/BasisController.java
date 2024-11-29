@@ -950,8 +950,6 @@ public class BasisController {
             }
 
             List<Block> blocks = sendBlocksEndInfo.getList();
-            Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(blocks, blockService));
-
             ///последовательность временных меток
             if (prevBlock.getTimestamp().getTime() > blocks.get(blocks.size() - 1).getTimestamp().getTime()) {
                 System.out.println("wrong time: prev uper now");
@@ -977,10 +975,6 @@ public class BasisController {
                     return new ResponseEntity<>("FALSE", HttpStatus.OK);
                 }
                 System.out.println("account: " + addressMiner);
-                Account account = balances.get(addressMiner);
-                if (account == null) {
-                    account = new Account(addressMiner, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
-                }
 
 
                 Timestamp actualTime = new Timestamp(UtilsTime.getUniversalTimestamp());
@@ -1046,7 +1040,7 @@ public class BasisController {
                 } else {
                     if (temp.getSize() > shortDataBlockchain.getSize()) {
                         System.out.println("code error: " + HttpStatus.CONFLICT);
-                        System.out.println("miner: " + account);
+
 //                        MyLogger.saveLog("CONFLICT: " + account + " temp: " + temp);
 //                        MyLogger.saveLog("CONFLICT: " + account + " shortDataBlockchain: " + shortDataBlockchain);
                         return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
