@@ -929,7 +929,7 @@ public class BasisController {
      * метод добавляет блоки в список ожидания, после чего их них уже формируется кандидаты и победитель
      */
     @PostMapping("/nodes/resolve_from_to_block")
-    public synchronized ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
+    public  ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
         try {
 
             if(!blockedNewSendBlock.get()){
