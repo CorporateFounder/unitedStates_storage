@@ -1222,7 +1222,7 @@ public class UtilsResolving {
         System.out.println("-----------------------------------");
     }
 
-    public int sendAllBlocksToStorage(List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    public int sendAllBlocksToStorage(List<Block> blocks)  {
         System.out.println(new Date() + ":BasisController: sendAllBlocksToStorage: start: ");
         int blocksCurrentSize = (int) blocks.get(blocks.size() - 1).getIndex() + 1;
         System.out.println(":BasisController: sendAllBlocksToStorage: ");
@@ -1255,8 +1255,8 @@ public class UtilsResolving {
                     System.out.println(":response: " + response + " address: " + s);
 
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println(":exception resolve_from_to_block: " + s);
+
+                    System.out.println(":exception resolve_from_to_block: " + s + " e " + e.getMessage());
                 }
             }, executor);
             futures.add(future);

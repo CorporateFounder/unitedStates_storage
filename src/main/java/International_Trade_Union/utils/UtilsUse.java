@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static International_Trade_Union.setings.Seting.SENDING_DECIMAL_PLACES;
 import static International_Trade_Union.setings.Seting.SENDING_DECIMAL_PLACES_2;
@@ -576,19 +577,15 @@ public class UtilsUse {
     }
 
 
-    public static List<EntityAccount> accounts(List<Block> blocks, BlockService blockService) throws IOException {
-        List<String> accounts = new ArrayList<>();
-        for (Block block : blocks) {
-            for (DtoTransaction transaction : block.getDtoTransactions()) {
-                if (transaction.getSender() != null && !transaction.getSender().isBlank())
-                    accounts.add(transaction.getSender());
+  public static List<EntityAccount> accounts(List<Block> blocks, BlockService blockService) throws IOException {
+    Set<String> accountSet = blocks.stream()
+        .flatMap(block -> block.getDtoTransactions().stream())
+        .flatMap(transaction -> Stream.of(transaction.getSender(), transaction.getCustomer()))
+        .filter(account -> account != null && !account.isBlank())
+        .collect(Collectors.toSet()); // Используем Set для устранения дубликатов
 
-                if (transaction.getCustomer() != null && !transaction.getCustomer().isBlank())
-                    accounts.add(transaction.getCustomer());
-            }
-        }
-        return blockService.findBYAccountString(accounts);
-    }
+    return blockService.findBYAccountString(new ArrayList<>(accountSet));
+}
 
     public static BigDecimal truncateAndRound(BigDecimal value) {
         return value.setScale(SENDING_DECIMAL_PLACES_2, RoundingMode.DOWN);

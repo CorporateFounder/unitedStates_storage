@@ -161,7 +161,7 @@ public class Blockchain implements Cloneable {
             System.out.println("shortCheck: blocks size: " + blocks.size() +
                     " 0: " + blocks.get(0).getIndex() + " blocks size: " + blocks.get(blocks.size() - 1).getIndex());
             System.out.println("shortCheck: blockList: size: " + blockList.size());
-            System.out.println("shortCheck: tempList: size: " + tempList.size());
+
 
             List<String> signs = new ArrayList<>();
             for (Block block : blocks) {

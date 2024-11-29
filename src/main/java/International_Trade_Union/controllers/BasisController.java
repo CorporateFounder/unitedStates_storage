@@ -59,6 +59,7 @@ public class BasisController {
         UtilsBlock.setBlockService(blockService);
 
     }
+
     private BlockService blockService;
 
     @Autowired
@@ -98,7 +99,7 @@ public class BasisController {
             prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
 
-            if(blockcheinSize < Seting.V34_NEW_ALGO){
+            if (blockcheinSize < Seting.V34_NEW_ALGO) {
                 if (blockcheinSize > 600) {
                     dificultyOneBlock = UtilsBlock.difficulty(Blockchain.subFromFile(
                                     blockcheinSize - 600, blockcheinSize, Seting.ORIGINAL_BLOCKCHAIN_FILE),
@@ -110,7 +111,7 @@ public class BasisController {
                             Seting.BLOCK_GENERATION_INTERVAL,
                             Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
                 }
-            }else {
+            } else {
                 dificultyOneBlock = prevBlock().getHashCompexity();
             }
 
@@ -119,6 +120,7 @@ public class BasisController {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Каждые 100 секунд происходить турнир для отбора победителя.
      */
@@ -371,8 +373,6 @@ public class BasisController {
     private static double totalTransactionsSumDllar = 0.0;
 
 
-
-
     /**
      * Все акаунты
      */
@@ -589,7 +589,7 @@ public class BasisController {
     public long accounts() {
         if (!isSaveFile) {
             System.out.println("saving file: resolve_from_to_block: sub block");
-            return-1;
+            return -1;
         }
         return blockService.countAccount();
     }
@@ -745,8 +745,6 @@ public class BasisController {
 
         return nodes;
     }
-
-
 
 
     public BasisController() {
@@ -917,7 +915,6 @@ public class BasisController {
     }
 
 
-
     @GetMapping("/prevBlock")
     @ResponseBody
     public Block getPrevBlock() {
@@ -929,15 +926,18 @@ public class BasisController {
      * метод добавляет блоки в список ожидания, после чего их них уже формируется кандидаты и победитель
      */
     @PostMapping("/nodes/resolve_from_to_block")
-    public  ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
+    public ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
         try {
 
-            if(!blockedNewSendBlock.get()){
+            if (!blockedNewSendBlock.get()) {
                 return new ResponseEntity<>("START SYNCHORNIZATION", HttpStatus.OK);
             }
-            UtilsBalance.setBlockService(blockService);
-            Blockchain.setBlockService(blockService);
-            UtilsBlock.setBlockService(blockService);
+            if (UtilsBalance.getBlockService() == null)
+                UtilsBalance.setBlockService(blockService);
+            if (Blockchain.getBlockService() == null)
+                Blockchain.setBlockService(blockService);
+            if (UtilsBlock.getBlockService() == null)
+                UtilsBlock.setBlockService(blockService);
 
 
             System.out.println("start resolve_from_to_block: " + sendBlocksEndInfo.getList().get(0).getMinerAddress());
@@ -970,9 +970,9 @@ public class BasisController {
 
                 List<Block> addlist = Blockchain.clone(0, blocks.size(), blocks);
 
-                if(addlist.isEmpty()
+                if (addlist.isEmpty()
                         || addlist.get(0).getIndex() != BasisController.getBlockchainSize()
-                 || winnerList.contains(addlist)){
+                        || winnerList.contains(addlist)) {
                     MyLogger.saveLog("this block has in system: ");
                     return new ResponseEntity<>("FALSE", HttpStatus.OK);
                 }
@@ -1001,15 +1001,6 @@ public class BasisController {
                 }
                 List<Block> lastDiff = new ArrayList<>();
 
-                if (prevBlock().getIndex() < Seting.V34_NEW_ALGO) {
-                    lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-                            blockService.findBySpecialIndexBetween(
-                                    (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
-                                    prevBlock.getIndex() + 1
-                            )
-                    );
-                }
-
 
                 //удаление транзакций
                 if (prevBlock.getIndex() % 288 == 0)
@@ -1019,7 +1010,6 @@ public class BasisController {
 
                 List<String> sign = new ArrayList<>();
                 Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(addlist, blockService));
-                tempBalances.putAll(UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(lastDiff, blockService)));
 
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
@@ -1230,11 +1220,9 @@ public class BasisController {
     }
 
 
-
-
     @GetMapping("/timentp")
     @ResponseBody
-    public Long timentp(){
+    public Long timentp() {
         return UtilsTime.getUniversalTimestamp();
     }
 }
