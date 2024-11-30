@@ -44,6 +44,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
@@ -927,6 +928,7 @@ public class BasisController {
      */
     @PostMapping("/nodes/resolve_from_to_block")
     public ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
+        ReentrantLock lock = new ReentrantLock();
         try {
 
             if (!blockedNewSendBlock.get()) {
@@ -1003,8 +1005,10 @@ public class BasisController {
                     Mining.deleteFiles(Seting.ORIGINAL_ALL_SENDED_TRANSACTION_FILE);
 
                 List<String> sign = new ArrayList<>();
-                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(addlist, blockService));
 
+                lock.lock();
+                Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(addlist, blockService));
+                lock.unlock();;
                 DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -1077,7 +1081,9 @@ public class BasisController {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
-
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
                 System.out.println("finish resolve_from_to_block");
             }
 
@@ -1087,7 +1093,9 @@ public class BasisController {
             isSaveFile = true;
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {
-
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
             System.out.println("finish resolve_from_to_block");
         }
     }

@@ -8,6 +8,7 @@ import International_Trade_Union.entity.repository.EntityAccountRepository;
 import International_Trade_Union.entity.repository.EntityBlockRepository;
 import International_Trade_Union.entity.repository.EntityDtoTransactionRepository;
 import International_Trade_Union.entity.repository.EntityLawsRepository;
+import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.utils.UtilsBlockToEntityBlock;
 import International_Trade_Union.utils.base.Base;
@@ -149,7 +150,8 @@ public class BlockService {
             entityAccounts = entityAccountRepository.findByAccountIn(accounts);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IOException("findBYAccountString: error: save: ", e);
+            MyLogger.saveLog("findBYAccountString: error: " + e.toString() + " messsage: " + e.getMessage());
+            throw new IOException("findBYAccountString: error: : ", e);
         }
         return entityAccounts;
     }
