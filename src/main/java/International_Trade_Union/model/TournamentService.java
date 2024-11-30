@@ -499,8 +499,10 @@ public class TournamentService {
             }
             if (BasisController.getWinnerList() == null) {
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+                BasisController.setSizeWinnerList(0);
             } else {
                 BasisController.getWinnerList().clear();
+                BasisController.setSizeWinnerList(0);
             }
 
 
@@ -621,13 +623,6 @@ public class TournamentService {
                 }
 
             }
-//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory after: for (String s : node) " + afterMemory);
-//                MyLogger.saveLog("memory result for (String s : node) " + (afterMemory - beforeMemory));
-
-
-//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory before: clear: " + beforeMemory);
             if (winner == null) {
                 winner = new ArrayList<>();
             } else {
@@ -650,8 +645,10 @@ public class TournamentService {
             }
             if (BasisController.getWinnerList() == null) {
                 BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+                BasisController.setSizeWinnerList(0);
             } else {
                 BasisController.getWinnerList().clear();
+                BasisController.setSizeWinnerList(0);
             }
 
 //                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();

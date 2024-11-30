@@ -44,6 +44,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -144,41 +145,69 @@ public class BasisController {
      * список кандидатов с данного сервера в качестве победителей
      */
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
+    private static AtomicInteger sizeWinnerList = new AtomicInteger(0);
+    private static final ReentrantLock lock = new ReentrantLock();
 
+    public static AtomicInteger getSizeWinnerList() {
+        return sizeWinnerList;
+    }
+
+    public static void setSizeWinnerList(int size) {
+        sizeWinnerList.set(size);
+    }
     @GetMapping("/winnerList")
     @ResponseBody
     public String winnerList() {
         String json = "";
         try {
-            List<Block> list = BasisController.getWinnerList();
-            Map<String, Account> balances = new HashMap<>();
+            // Получаем текущий список победителей
+            List<Block> currentWinnerList = BasisController.getWinnerList();
 
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
-
-            Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
-            // Обеспечение наличия всех аккаунтов в finalBalances
-            list.forEach(block -> finalBalances.computeIfAbsent(block.getMinerAddress(), address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
-
-            List<Block> winnerList = new ArrayList<>();
-
-            if (list.isEmpty()) {
-                return json = UtilsJson.objToStringJson(winnerList);
+            // Быстрая проверка без блокировки
+            if (sizeWinnerList.get() == currentWinnerList.size()) {
+                return UtilsJson.objToStringJson(winnerList.get(0)); // возвращаем кешированный результат
             }
 
+            // Синхронизация только на обновление кеша
+            if (lock.tryLock()) { // Пытаемся захватить блокировку
+                try {
+                    // Повторная проверка в случае обновления другими потоками
+                    if (sizeWinnerList.get() == currentWinnerList.size()) {
+                        return UtilsJson.objToStringJson(winnerList); // возвращаем кешированный результат
+                    }
 
-            List<Block> tempWinner = TournamentService.sortWinner(finalBalances, list);
+                    // Логика обновления winnerList
+                    Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
+                            UtilsUse.accounts(currentWinnerList, blockService));
 
+                    Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
 
-            List<Block> winner = new ArrayList<>();
-            winner.add(tempWinner.get(0));
+                    currentWinnerList.forEach(block ->
+                            finalBalances.computeIfAbsent(block.getMinerAddress(),
+                                    address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO))
+                    );
 
-            json = UtilsJson.objToStringJson(winner);
+                    List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList);
+
+                    // Обновляем кеш
+                    winnerList.clear();
+                    winnerList.addAll(tempWinner);
+                    sizeWinnerList.set(currentWinnerList.size());
+
+                    // Сериализуем первый элемент списка
+                    json = UtilsJson.objToStringJson(tempWinner.isEmpty() ? new ArrayList<>() : tempWinner.get(0));
+                } finally {
+                    lock.unlock(); // Освобождаем блокировку в любом случае
+                }
+            } else {
+                // Если блокировка занята другим потоком, возвращаем текущий кеш
+                json = UtilsJson.objToStringJson(winnerList);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return json;
     }
-
 
     private static boolean updating;
     /**
@@ -1006,6 +1035,23 @@ public class BasisController {
 
                 List<String> sign = new ArrayList<>();
 
+                Block checkBlock = addlist.get(0);
+                long timeDifferenceSeconds = (checkBlock.getTimestamp().getTime() - prevBlock().getTimestamp().getTime()) / 1000;
+                long actualTimeCheck = UtilsTime.getUniversalTimestamp() / 1000L;
+                if (!checkBlock.getPreviousHash().equals(prevBlock.getHashBlock())
+                        || checkBlock.getHashCompexity() < Seting.V34_MIN_DIFF
+                        || timeDifferenceSeconds < 100
+                        || timeDifferenceSeconds > actualTimeCheck
+                        || !checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())) {
+                    System.out.println("wrong block");
+                    MyLogger.saveLog("wrong block: resolve_from_to_block: "
+                            + !checkBlock.getPreviousHash().equals(prevBlock.getHashBlock() + ":" +
+                            (checkBlock.getHashCompexity() < Seting.V34_MIN_DIFF)) + ":" +
+                            (timeDifferenceSeconds < 100) + ":" +
+                            ( timeDifferenceSeconds > actualTimeCheck) + ":" +
+                            (!checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())));
+                    return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
+                }
 
                 Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(addlist, blockService));
 

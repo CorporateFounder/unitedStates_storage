@@ -32,6 +32,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
@@ -210,8 +211,10 @@ public class Tournament implements Runnable {
         BasisController.setWinnerList(null);
         if (BasisController.getWinnerList() == null) {
             BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+            BasisController.setSizeWinnerList(0);
         } else {
             BasisController.getWinnerList().clear();
+            BasisController.setSizeWinnerList(0);
         }
     }
 
