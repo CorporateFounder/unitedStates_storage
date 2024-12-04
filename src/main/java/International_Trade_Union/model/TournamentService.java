@@ -186,8 +186,12 @@ public class TournamentService {
 
     }
 
-    public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
-        List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
+   public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
+    // Временное потокобезопасное множество для хранения уникальных блоков
+    Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
+
+    List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream()
+        .map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
             try {
                 if (BasisController.getExcludedAddresses().contains(s)) {
@@ -238,34 +242,41 @@ public class TournamentService {
                     List<Block> tempBlock = new ArrayList<>();
                     tempBlock.add(block);
 
-                    Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(tempBlock, blockService));
+                    Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
+                        UtilsUse.accounts(tempBlock, blockService));
 
                     DataShortBlockchainInformation temp = Blockchain.shortCheck(
-                            BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
-                            new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
+                        BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
+                        new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
 
                     if (temp.isValidation()) {
                         MyLogger.saveLog("Block is valid: " + block.getIndex() + " s: " + s);
-                        synchronized (BasisController.getWinnerList()) {
-                            if (!BasisController.getWinnerList().contains(block)) {
-                                BasisController.getWinnerList().add(block);
-                            }
-                        }
+                        tempWinnerSet.add(block); // Потокобезопасное добавление в временное множество
                     }
                 }
             } catch (Exception e) {
                 MyLogger.saveLog("Unexpected error: " + s);
                 MyLogger.saveLog(e.toString());
             }
-        })).collect(Collectors.toList());
+        }))
+        .collect(Collectors.toList());
 
-        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        try {
-            allOf.get();
-        } catch (InterruptedException | ExecutionException e) {
-            MyLogger.saveLog("getAllWinner: ", e);
-        }
+    CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    try {
+        allOf.get();
+    } catch (InterruptedException | ExecutionException e) {
+        MyLogger.saveLog("getAllWinner: ", e);
     }
+
+    // Перед выходом обновляем winnerList атомарно
+       synchronized (BasisController.getWinnerList()) {
+           for (Block block : tempWinnerSet) {
+               if (!BasisController.getWinnerList().contains(block)) {
+                   BasisController.getWinnerList().add(block);
+               }
+           }
+       }
+}
 
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
 

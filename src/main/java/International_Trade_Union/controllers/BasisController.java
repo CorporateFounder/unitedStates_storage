@@ -201,7 +201,7 @@ public class BasisController {
                 }
             } else {
                 // Если блокировка занята другим потоком, возвращаем текущий кеш
-                json = UtilsJson.objToStringJson(winnerList);
+                json = UtilsJson.objToStringJson(winnerList.get(0));
             }
         } catch (Exception e) {
             e.printStackTrace();
