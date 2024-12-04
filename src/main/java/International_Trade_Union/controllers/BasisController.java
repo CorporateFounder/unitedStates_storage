@@ -158,56 +158,101 @@ public class BasisController {
     @GetMapping("/winnerList")
     @ResponseBody
     public String winnerList() {
-        String json = "";
         try {
             // Получаем текущий список победителей
             List<Block> currentWinnerList = BasisController.getWinnerList();
+            CopyOnWriteArrayList<Block> tempList = new CopyOnWriteArrayList<>();
 
-            // Быстрая проверка без блокировки
-            if (sizeWinnerList.get() == currentWinnerList.size()) {
-                return UtilsJson.objToStringJson(winnerList.get(0)); // возвращаем кешированный результат
+            // Быстрая проверка кэша
+            if (isCacheValid(currentWinnerList)) {
+                tempList.add(winnerList.get(0));
+                return UtilsJson.objToStringJson(tempList);
             }
 
-            // Синхронизация только на обновление кеша
-            if (lock.tryLock()) { // Пытаемся захватить блокировку
+            // Попытка захватить блокировку для обновления
+            if (lock.tryLock()) {
                 try {
-                    // Повторная проверка в случае обновления другими потоками
-                    if (sizeWinnerList.get() == currentWinnerList.size()) {
-                        return UtilsJson.objToStringJson(winnerList); // возвращаем кешированный результат
+                    // Повторная проверка после захвата блокировки
+                    if (!isCacheValid(currentWinnerList)) {
+                        updateWinnerListCache(currentWinnerList);
                     }
-
-                    // Логика обновления winnerList
-                    Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
-                            UtilsUse.accounts(currentWinnerList, blockService));
-
-                    Map<String, Account> finalBalances = UtilsUse.balancesClone(balances);
-
-                    currentWinnerList.forEach(block ->
-                            finalBalances.computeIfAbsent(block.getMinerAddress(),
-                                    address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO))
-                    );
-
-                    List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList);
-
-                    // Обновляем кеш
-                    winnerList.clear();
-                    winnerList.addAll(tempWinner);
-                    sizeWinnerList.set(currentWinnerList.size());
-
-                    // Сериализуем первый элемент списка
-                    json = UtilsJson.objToStringJson(tempWinner.isEmpty() ? new ArrayList<>() : tempWinner.get(0));
                 } finally {
-                    lock.unlock(); // Освобождаем блокировку в любом случае
+                    lock.unlock(); // Освобождаем блокировку
                 }
-            } else {
-                // Если блокировка занята другим потоком, возвращаем текущий кеш
-                json = UtilsJson.objToStringJson(winnerList.get(0));
             }
-        } catch (Exception e) {
+
+            // После обновления или если блокировка недоступна, возвращаем результат
+            if (!winnerList.isEmpty()) {
+                tempList.add(winnerList.get(0));
+            }
+            return UtilsJson.objToStringJson(tempList);
+        } catch (IOException e) {
+            MyLogger.saveLog("Error serializing JSON: " + e.getMessage());
             e.printStackTrace();
+            return fallbackJson();
+        } catch (Exception e) {
+            MyLogger.saveLog("Unexpected error in winnerList method: " + e.getMessage());
+            e.printStackTrace();
+            return fallbackJson();
         }
-        return json;
     }
+
+    // Возвращает JSON пустого массива в случае ошибки
+    private String fallbackJson() {
+        try {
+            return UtilsJson.objToStringJson(new CopyOnWriteArrayList<>());
+        } catch (IOException e) {
+            MyLogger.saveLog("Error serializing fallback JSON: " + e.getMessage());
+            e.printStackTrace();
+            return "[]"; // Последний уровень защиты: возвращаем строку с пустым массивом
+        }
+    }
+
+    // Проверяет, актуален ли кэш
+    private boolean isCacheValid(List<Block> currentWinnerList) {
+        return sizeWinnerList.get() == currentWinnerList.size() && !winnerList.isEmpty();
+    }
+
+    // Обновляет кэш winnerList
+    private void updateWinnerListCache(List<Block> currentWinnerList) {
+        Map<String, Account> balances;
+        try {
+            // Обработка IOException при получении accounts
+            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
+                    UtilsUse.accounts(currentWinnerList, blockService));
+        } catch (IOException e) {
+            MyLogger.saveLog("Error fetching accounts: " + e.getMessage());
+            e.printStackTrace();
+            return; // Прекращаем обновление кэша, если невозможно получить accounts
+        }
+
+        Map<String, Account> finalBalances;
+        try {
+            // Обработка CloneNotSupportedException при клонировании balances
+            finalBalances = UtilsUse.balancesClone(balances);
+        } catch (CloneNotSupportedException e) {
+            MyLogger.saveLog("Error cloning balances: " + e.getMessage());
+            e.printStackTrace();
+            return; // Прекращаем обновление кэша, если невозможно клонировать balances
+        }
+
+        // Добавляем недостающие записи в finalBalances
+        currentWinnerList.forEach(block -> finalBalances.computeIfAbsent(
+                block.getMinerAddress(),
+                address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+        ));
+
+        // Сортировка победителей
+        List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList);
+
+        // Обновляем кэш
+        synchronized (winnerList) {
+            winnerList.clear();
+            winnerList.addAll(tempWinner);
+        }
+        sizeWinnerList.set(currentWinnerList.size());
+    }
+
 
     private static boolean updating;
     /**
@@ -1109,7 +1154,12 @@ public class BasisController {
 
 
                     winnerList.addAll(addlist);
+
                     utilsResolving.sendAllBlocksToStorage(addlist);
+//                    Block block = UtilsJson.jsonToBLock(winnerList());
+//                    List<Block> list = new ArrayList<>();
+//                    list.add(block);
+//                    utilsResolving.sendAllBlocksToStorage(list);
 
                     //прибавить к общей сумме денег
 
