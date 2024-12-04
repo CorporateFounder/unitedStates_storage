@@ -95,14 +95,6 @@ public class NodeChecker {
 
     public void initiateProcess(List<HostEndDataShortB> sortPriorityHost) {
 
-        Set<String> allAddresses = new HashSet<>();
-        try {
-            // Считать все адреса из файла
-            allAddresses = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
-                 NoSuchProviderException | InvalidKeyException e) {
-            return;
-        }
 
         // Потокобезопасный список для доступных узлов
         List<HostEndDataShortB> availableHosts = Collections.synchronizedList(new ArrayList<>());

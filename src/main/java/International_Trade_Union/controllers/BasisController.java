@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 import java.math.BigDecimal;
+import java.net.URL;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
@@ -155,6 +156,7 @@ public class BasisController {
     public static void setSizeWinnerList(int size) {
         sizeWinnerList.set(size);
     }
+
     @GetMapping("/winnerList")
     @ResponseBody
     public String winnerList() {
@@ -776,7 +778,10 @@ public class BasisController {
             nodes.addAll(temporary);
 
             nodes = nodes.stream()
-                    .filter(t -> !t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+                    .filter(t -> !t.isBlank())
+                    .map(t -> t.replaceAll("\"", ""))
+                    .filter(BasisController::isValidUrl) // фильтрация некорректных URL
+                    .collect(Collectors.toSet());
 
             Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
             nodes.removeAll(bloked);
@@ -792,6 +797,23 @@ public class BasisController {
         return nodes;
     }
 
+    private static boolean isValidUrl(String url) {
+        try {
+            URL netUrl = new URL(url);
+            netUrl.toURI();
+
+            // Проверяем, что хост не 0.0.0.0
+            String host = netUrl.getHost();
+            if (host.equals("0.0.0.0")) {
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            System.err.println("Invalid URL: " + url + " - " + e.getMessage());
+            return false;
+        }
+    }
+
     @GetMapping("/getNodes")
     @ResponseBody
     public Set<String> getAllNodes() {
@@ -805,7 +827,11 @@ public class BasisController {
             nodes.addAll((new HashSet<>(temporary)));
 
             nodes = nodes.stream()
-                    .filter(t -> !t.isBlank()).map(t -> t.replaceAll("\"", "")).collect(Collectors.toSet());
+                    .filter(t -> !t.isBlank())
+                    .map(t -> t.replaceAll("\"", ""))
+                    .filter(BasisController::isValidUrl)
+                    .collect(Collectors.toSet());
+
 
             Set<String> bloked = UtilsAllAddresses.readLineObject(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
             nodes.removeAll((new HashSet<>(bloked)));
@@ -1093,7 +1119,7 @@ public class BasisController {
                             + !checkBlock.getPreviousHash().equals(prevBlock.getHashBlock() + ":" +
                             (checkBlock.getHashCompexity() < Seting.V34_MIN_DIFF)) + ":" +
                             (timeDifferenceSeconds < 100) + ":" +
-                            ( timeDifferenceSeconds > actualTimeCheck) + ":" +
+                            (timeDifferenceSeconds > actualTimeCheck) + ":" +
                             (!checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())));
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
                 }
@@ -1156,10 +1182,7 @@ public class BasisController {
                     winnerList.addAll(addlist);
 
                     utilsResolving.sendAllBlocksToStorage(addlist);
-//                    Block block = UtilsJson.jsonToBLock(winnerList());
-//                    List<Block> list = new ArrayList<>();
-//                    list.add(block);
-//                    utilsResolving.sendAllBlocksToStorage(list);
+                    utilsResolving.sendAllBlocksToStorage(UtilsJson.jsonToObject(winnerList()));
 
                     //прибавить к общей сумме денег
 
@@ -1198,6 +1221,10 @@ public class BasisController {
 
         try {
 
+            if (BasisController.getNodes().contains(urlAddrress.getAddress())) {
+                return;
+            }
+
             for (String s : BasisController.getNodes()) {
                 String original = s;
                 String url = s + "/nodes/register";
@@ -1220,11 +1247,11 @@ public class BasisController {
                     .map(t -> t.replaceAll("\\\\", ""))
                     .collect(Collectors.toSet());
             nodes.add(urlAddrress.getAddress());
-//            BasisController.setNodes(nodes);
 
             Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
             nodes.stream().forEach(t -> {
                 try {
+
                     UtilsAllAddresses.saveAllAddresses(t, Seting.ORIGINAL_POOL_URL_ADDRESS_FILE);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
