@@ -1182,7 +1182,7 @@ public class BasisController {
                     winnerList.addAll(addlist);
 
                     utilsResolving.sendAllBlocksToStorage(addlist);
-                    utilsResolving.sendAllBlocksToStorage(UtilsJson.jsonToObject(winnerList()));
+//                    utilsResolving.sendAllBlocksToStorage(UtilsJson.jsonToObject(winnerList()));
 
                     //прибавить к общей сумме денег
 

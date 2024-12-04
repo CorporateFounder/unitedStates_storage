@@ -384,15 +384,6 @@ public class TournamentService {
             List<Block> lastDiff = new ArrayList<>();
 
 
-//            if (prevBlock.getIndex() < Seting.V34_NEW_ALGO) {
-//                lastDiff = UtilsBlockToEntityBlock.entityBlocksToBlocks(
-//                        blockService.findBySpecialIndexBetween(
-//                                (prevBlock.getIndex() + 1) - Seting.PORTION_BLOCK_TO_COMPLEXCITY,
-//                                prevBlock.getIndex() + 1
-//                        )
-//                );
-//            }
-
 
             Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
             List<String> sign = new ArrayList<>();
