@@ -1224,48 +1224,32 @@ public class UtilsResolving {
 
     public int sendAllBlocksToStorage(List<Block> blocks) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         System.out.println(new Date() + ":BasisController: sendAllBlocksToStorage: start: ");
+
         int blocksCurrentSize = (int) blocks.get(blocks.size() - 1).getIndex() + 1;
         System.out.println(":BasisController: sendAllBlocksToStorage: ");
+
+        // Получаем список узлов и сортируем их
         Set<String> nodesAll = getNodes();
         List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
 
+        // Убираем исключенные адреса и удаляем дубли
+        Set<String> processedAddresses = new HashSet<>();
+        List<HostEndDataShortB> uniqueHosts = sortPriorityHost.stream()
+                .filter(host -> !BasisController.getExcludedAddresses().contains(host.getHost()))
+                .filter(host -> processedAddresses.add(host.getHost())) // фильтруем дубли
+                .collect(Collectors.toList());
+
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        List<CompletableFuture<Void>> futures = uniqueHosts.stream()
+                .map(host -> processNodeAsync(host, blocks, blocksCurrentSize, executor))
+                .collect(Collectors.toList());
 
-        for (HostEndDataShortB hostEndDataShortB : sortPriorityHost) {
-            String s = hostEndDataShortB.getHost();
-            if (BasisController.getExcludedAddresses().contains(s)) {
-                System.out.println(":its your address or excluded address: " + s);
-                continue;
-            }
-
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                try {
-                    System.out.println(":BasisController:resolve conflicts: address: " + s + "/size");
-                    String sizeStr = UtilUrl.readJsonFromUrl(s + "/size");
-                    Integer size = Integer.valueOf(sizeStr);
-                    System.out.println(":BasisController: send: local size: " + blocksCurrentSize + " global size: " + size);
-
-                    List<Block> fromToTempBlock = new ArrayList<>(blocks);
-                    SendBlocksEndInfo infoBlocks = new SendBlocksEndInfo(Seting.VERSION, fromToTempBlock);
-                    String jsonFromTo = UtilsJson.objToStringJson(infoBlocks);
-
-                    String urlFrom = s + "/nodes/resolve_from_to_block";
-                    int response = UtilUrl.sendPost(jsonFromTo, urlFrom);
-                    System.out.println(":response: " + response + " address: " + s);
-
-                } catch (Exception e) {
-
-                    System.out.println(":exception resolve_from_to_block: " + s + " e " + e.getMessage());
-                }
-            }, executor);
-            futures.add(future);
-        }
-
+        // Дожидаемся завершения всех операций
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allFutures.join();
         executor.shutdown();
 
+        // Логика сравнения размеров блокчейна
         int bigsize = 0; // Возможно, вам нужно изменить способ определения значения bigsize
         if (BasisController.getBlockchainSize() > bigsize) {
             return 1;
@@ -1277,6 +1261,30 @@ public class UtilsResolving {
             return -4;
         }
     }
+
+    private CompletableFuture<Void> processNodeAsync(HostEndDataShortB host, List<Block> blocks, int blocksCurrentSize, ExecutorService executor) {
+        return CompletableFuture.runAsync(() -> {
+            String address = host.getHost();
+            try {
+                System.out.println(":BasisController:resolve conflicts: address: " + address + "/size");
+                String sizeStr = UtilUrl.readJsonFromUrl(address + "/size");
+                Integer size = Integer.valueOf(sizeStr);
+                System.out.println(":BasisController: send: local size: " + blocksCurrentSize + " global size: " + size);
+
+                List<Block> fromToTempBlock = new ArrayList<>(blocks);
+                SendBlocksEndInfo infoBlocks = new SendBlocksEndInfo(Seting.VERSION, fromToTempBlock);
+                String jsonFromTo = UtilsJson.objToStringJson(infoBlocks);
+
+                String urlFrom = address + "/nodes/resolve_from_to_block";
+                int response = UtilUrl.sendPost(jsonFromTo, urlFrom);
+                System.out.println(":response: " + response + " address: " + address);
+
+            } catch (Exception e) {
+                System.out.println(":exception resolve_from_to_block: " + address + " e " + e.getMessage());
+            }
+        }, executor);
+    }
+
 
 
 }

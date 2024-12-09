@@ -118,7 +118,8 @@ public class Mining {
         //получение транзакций с сети
         List<DtoTransaction> listTransactions = transactionList;
         Base base = new Base58();
-        transactionList = transactionList.stream().sorted(Comparator.comparing(t -> base.encode(t.getSign()))).collect(Collectors.toList());
+        transactionList = transactionList.stream()
+                .filter(t->t.getSign() != null &&!base.encode(t.getSign()).isEmpty()).sorted(Comparator.comparing(t -> base.encode(t.getSign()))).collect(Collectors.toList());
         //определение валидных транзакций
         List<DtoTransaction> forAdd = new ArrayList<>();
 
@@ -126,6 +127,10 @@ public class Mining {
         cicle:
         for (DtoTransaction transaction : listTransactions) {
 
+                if(transaction.getSign() == null || base.encode(transaction.getSign()).isEmpty()){
+                    System.out.println("sign empty or wrong");
+                    continue;
+                }
                 if (transaction.verify()) {
 
                     Account account = balances.get(transaction.getSender());
@@ -142,6 +147,14 @@ public class Mining {
                         if (index >= CHANGE_DECIMAL_2_INDEX) {
                             decimal = SENDING_DECIMAL_PLACES_2;
                         }
+                        if(transaction.getSender() == null || transaction.getSender().isEmpty()){
+                            System.out.println("sender is empty or null");
+                            continue;
+                        }if(transaction.getCustomer() == null || transaction.getCustomer().isEmpty()){
+                            System.out.println("sender is empty or null");
+                            continue;
+                        }
+
                         if (!UtilsUse.isTransactionValid(BigDecimal.valueOf(digitalDollar), index)) {
                             System.out.println("the number dollar of decimal places exceeds ." + decimal);
                             continue;
@@ -226,6 +239,7 @@ public class Mining {
         double minerRewards = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
         double digitalReputationForMiner = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
 
+
         //доход основателя
         double founderReward = Seting.DIGITAL_DOLLAR_FOUNDER_REWARDS_BEFORE;
         double founderDigigtalReputationReward = Seting.DIGITAL_REPUTATION_FOUNDER_REWARDS_BEFORE;
@@ -259,12 +273,24 @@ public class Mining {
             founderDigigtalReputationReward = digitalReputationForMiner / Seting.STOCK;
         }
         if (index >= Seting.V34_NEW_ALGO) {
+
+            int day = 576;
+            int period = YEAR;
+            int mulptipleperiod = MULTIPLIER;
+            if(index > OPTIMAL_SCORE_INDEX){
+                day = 432;
+                period = 120;
+                mulptipleperiod = MULTIPLIER2;
+            }
+
             long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                    / (576 * Seting.YEAR);
-            money = (long) (Seting.MULTIPLIER - money);
+                    / (day *period);
+            money = (long) (mulptipleperiod - money);
             money = money < 1 ? 1 : money;
+
             double moneyFromDif = 0;
             double G = UtilsUse.blocksReward(forAdd, prevBlock.getDtoTransactions(), index);
+
             if (index > Seting.ALGORITM_MINING) {
                 moneyFromDif = (difficulty - DIFFICULT_MONEY) / 2;
                 moneyFromDif = moneyFromDif > 0 ? moneyFromDif : 0;
@@ -278,10 +304,22 @@ public class Mining {
                 digitalReputationForMiner += moneyFromDif * (MULT + G);
             }
 
-
-            //фридман модель рост в 4%
+            int multiplier = 0;
+            if(index > OPTIMAL_SCORE_INDEX){
+                minerRewards = 0;
+                digitalReputationForMiner = 0;
+                multiplier = (int) money;
+            }
+            //фридман модель рост в 0.005%
             minerRewards = UtilsUse.calculateMinedMoneyFridman(index, minerRewards, difficulty, G);
             digitalReputationForMiner = UtilsUse.calculateMinedMoneyFridman(index, digitalReputationForMiner, difficulty, G);
+
+            if(index > OPTIMAL_SCORE_INDEX){
+                minerRewards *= multiplier;
+                digitalReputationForMiner *= multiplier;
+            }
+
+
 
             founderReward = minerRewards / Seting.DOLLAR;
             founderDigigtalReputationReward = digitalReputationForMiner / Seting.STOCK;

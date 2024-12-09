@@ -67,10 +67,11 @@ public class TournamentService {
         this.winnerDiff = winnerDiff;
     }
 
-    public static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list) {
+    public  static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list, long M) {
         //TODO start test ---------------------------------------------------------
         // Получение big random значения для блока
-        Function<Block, Integer> bigRandomValue = block -> bigRandomWinner(block, finalBalances.get(block.getMinerAddress()));
+
+        Function<Block, Integer> bigRandomValue = block -> bigRandomWinner(block, finalBalances.get(block.getMinerAddress()), (int) M);
 
 // Создание компаратора с учетом big random, hashComplexity, staking и transactionCount
         Comparator<Block> blockComparator = Comparator
@@ -90,26 +91,10 @@ public class TournamentService {
         //TODO finish test ---------------------------------------------------------
     }
 
-    public static Block selectWinner(List<Block> candidates, Map<String, Account> list) {
-        Block winner = null;
-        int highestValue = 0;
-
-        for (Block candidate : candidates) {
-            // Использование bigRandomWinner для генерации случайного числа для кандидата
-            int candidateValue = bigRandomWinner(candidate, list.get(candidate.getMinerAddress()));
-
-            // Проверка, является ли текущий кандидат победителем
-            if (candidateValue > highestValue) {
-                highestValue = candidateValue;
-                winner = candidate;
-            }
-        }
-
-        return winner;
-    }
 
 
-    public List<LiteVersionWiner> blockToLiteVersion(List<Block> list, Map<String, Account> balances) {
+
+    public List<LiteVersionWiner> blockToLiteVersion(List<Block> list, Map<String, Account> balances, long M) {
         List<LiteVersionWiner> list1 = new ArrayList<>();
         for (Block block : list) {
             Account account = balances.get(block.getMinerAddress());
@@ -121,7 +106,7 @@ public class TournamentService {
                     block.getHashBlock(),
                     block.getDtoTransactions().size(),
                     account.getDigitalStakingBalance().doubleValue(),
-                    bigRandomWinner(block, account),
+                    bigRandomWinner(block, account, (int) M),
                     block.getHashCompexity()
             );
             list1.add(liteVersionWiner);
@@ -308,6 +293,7 @@ public class TournamentService {
                 System.out.println("-----------------------");
                 return;
             }
+
             UtilsBalance.setBlockService(blockService);
             Blockchain.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
@@ -344,6 +330,11 @@ public class TournamentService {
             }
 
 
+            int M = 0;
+            if (list.get(0).getIndex() > Seting.OPTIMAL_SCORE_INDEX)
+                M = Math.toIntExact(blockService.findModeHashComplexityInRange(list.get(0).getIndex()));
+
+
             System.out.println("tournament: winner: " + winner.size());
             Map<String, Account> balances = new HashMap<>();
 
@@ -362,7 +353,7 @@ public class TournamentService {
             }
 
 
-            winnerList = sortWinner(finalBalances, list);
+            winnerList = sortWinner(finalBalances, list, M);
 
 
             Block prevBlock = BasisController.prevBlock();
@@ -442,7 +433,7 @@ public class TournamentService {
 
             BasisController.setIsSaveFile(true);
 
-            BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+            BasisController.setAllWiners(blockToLiteVersion(winnerList, balances, M));
             BasisController.getCountTransactionsWiner().clear();
             BasisController.getStakingWiners().clear();
             BasisController.getBigRandomWiner().clear();
@@ -452,12 +443,12 @@ public class TournamentService {
             BasisController.setBigRandomWiner(null);
             BasisController.setPowerWiners(null);
 
-            BasisController.setCountTransactionsWiner(blockToLiteVersion(new ArrayList<>(), balances));
-            BasisController.setStakingWiners(blockToLiteVersion(new ArrayList<>(), balances));
-            BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances));
+            BasisController.setCountTransactionsWiner(blockToLiteVersion(new ArrayList<>(), balances, M));
+            BasisController.setStakingWiners(blockToLiteVersion(new ArrayList<>(), balances, M));
+            BasisController.setBigRandomWiner(blockToLiteVersion(winner, balances, M));
 
-            BasisController.setPowerWiners(blockToLiteVersion(new ArrayList<>(), balances));
-            if (winner.get(0).getIndex() % 576 == 0) {
+            BasisController.setPowerWiners(blockToLiteVersion(new ArrayList<>(), balances, M));
+            if (winner.get(0).getIndex() % 432 == 0) {
                 BasisController.setTotalTransactionsDays(0);
                 BasisController.setTotalTransactionsSumDllar(0);
             }
@@ -518,38 +509,38 @@ public class TournamentService {
         } catch (IOException e) {
             System.out.println("TournamentService: IOException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: ", e);
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e );
 
         } catch (NoSuchAlgorithmException e) {
             System.out.println("TournamentService: NoSuchAlgorithmException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: ", e);
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e);
 
         } catch (InvalidKeySpecException e) {
             System.out.println("TournamentService: InvalidKeySpecException");
 
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: ", e);
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e);
 
         } catch (SignatureException e) {
             System.out.println("TournamentService: SignatureException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: ", e);
+            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " ", e);
 
         } catch (NoSuchProviderException e) {
             System.out.println("TournamentService: NoSuchProviderException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: ", e);
+            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " ", e);
 
         } catch (InvalidKeyException e) {
             System.out.println("TournamentService: InvalidKeyException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: ", e);
+            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " ", e);
 
         } catch (CloneNotSupportedException e) {
             System.out.println("TournamentService: CloneNotSupportedException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: ", e);
+            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " " , e);
 
         } finally {
             NodeController.setNotReady();

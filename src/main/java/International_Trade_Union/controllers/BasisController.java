@@ -49,6 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.setings.Seting.*;
+import static International_Trade_Union.setings.Seting.MULTIPLIER2;
 import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 
 @RestController
@@ -121,8 +123,19 @@ public class BasisController {
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        } catch (SignatureException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
         }
     }
+
 
     /**
      * Каждые 100 секунд происходить турнир для отбора победителя.
@@ -243,9 +256,12 @@ public class BasisController {
                 block.getMinerAddress(),
                 address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
         ));
-
+        long M = 0;
+        if (currentWinnerList.get(0).getIndex() > Seting.OPTIMAL_SCORE_INDEX)
+            M = Math.toIntExact(blockService.findModeHashComplexityInRange(currentWinnerList.get(0).getIndex()));
+        long finalM = M;
         // Сортировка победителей
-        List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList);
+        List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList, M);
 
         // Обновляем кэш
         synchronized (winnerList) {
@@ -328,7 +344,6 @@ public class BasisController {
      */
     @GetMapping("/allwinners")
     @ResponseBody
-
     public String allWinners() {
         String json = "";
         try {
@@ -711,13 +726,20 @@ public class BasisController {
      */
     @GetMapping("/multiplier")
     public long multiplier() {
-        long money = Seting.MULTIPLIER;
-        if (prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
-            money = (prevBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                    / (576 * Seting.YEAR);
-            money = (long) (Seting.MULTIPLIER - money);
-            money = money < 1 ? 1 : money;
+        long index = prevBlock.getIndex();
+        int day = 576;
+        int period = YEAR;
+        int mulptipleperiod = MULTIPLIER;
+        if(index > OPTIMAL_SCORE_INDEX){
+            day = 432;
+            period = 120;
+            mulptipleperiod = MULTIPLIER2;
         }
+
+        long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                / (day *period);
+        money = (long) (mulptipleperiod - money);
+        money = money < 1 ? 1 : money;
         return money;
     }
 
@@ -728,14 +750,29 @@ public class BasisController {
      */
     @GetMapping("/dayReduce")
     public long daysReduce() {
+
+
+        long index = prevBlock.getIndex();
+        int day = 576;
+        int period = YEAR;
+        int mulptipleperiod = MULTIPLIER;
+        if(index > OPTIMAL_SCORE_INDEX){
+            day = 432;
+            period = 120;
+            mulptipleperiod = MULTIPLIER2;
+        }
+
+        long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
+                / (day *period);
+        money = (long) (mulptipleperiod - money);
+        money = money < 1 ? 1 : money;
         long reduceDays = 0;
         if (prevBlock.getIndex() > Seting.V28_CHANGE_ALGORITH_DIFF_INDEX) {
-            int blocksPerDay = 576;
             int blocksSinceReduction = (int) ((prevBlock.getIndex() - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                    % (blocksPerDay * Seting.YEAR));
+                    % (day * period));
 
             // Оставшиеся блоки до следующего снижения
-            reduceDays = (blocksPerDay * Seting.YEAR) - blocksSinceReduction;
+            reduceDays = (day * period) - blocksSinceReduction;
 
         }
         return reduceDays;

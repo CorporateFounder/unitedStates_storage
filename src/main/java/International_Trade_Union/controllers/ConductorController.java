@@ -1,6 +1,5 @@
 package International_Trade_Union.controllers;
 
-import International_Trade_Union.controllers.config.BlockchainFactoryEnum;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
@@ -8,8 +7,6 @@ import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.entities.EntityDtoTransaction;
 import International_Trade_Union.entity.entities.SignRequest;
 import International_Trade_Union.entity.services.BlockService;
-import International_Trade_Union.governments.Directors;
-import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.*;
 
@@ -18,9 +15,6 @@ import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
-import International_Trade_Union.vote.Laws;
-import International_Trade_Union.vote.VoteEnum;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -34,13 +28,15 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
-import static International_Trade_Union.controllers.BasisController.getNodes;
 
 @RestController
 public class ConductorController {
 
+    private static final ReentrantLock lock = new ReentrantLock();
+    private static int prevIndex = 0;
+    private static long M;
 
     @Autowired
     BlockService blockService;
@@ -558,6 +554,38 @@ public class ConductorController {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
+    }
+
+
+
+    @GetMapping("/mode")
+    @ResponseBody
+    public String mode(@RequestParam int index) {
+        int blockchainSize = BasisController.getBlockchainSize();
+
+        if (index <= Seting.OPTIMAL_SCORE_INDEX) {
+            return "0";
+        }
+
+        if (index > blockchainSize - 1) {
+            return "Cannot be calculated because it is greater than the current height";
+        }
+
+        lock.lock();
+        try {
+            if (prevIndex <= 0) {
+                prevIndex = blockchainSize - 1;
+            }
+
+            if (prevIndex != blockchainSize - 1) {
+                M = blockService.findModeHashComplexityInRange(index);
+                prevIndex = blockchainSize - 1;
+            }
+        } finally {
+            lock.unlock();
+        }
+
+        return Long.toString(M);
     }
 
 }
