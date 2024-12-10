@@ -264,7 +264,7 @@ public interface Seting {
 
     //мультипликатор
     int MULTIPLIER = 29;
-    int MULTIPLIER2 = 65;
+    int MULTIPLIER2 = 35;
     int STANDART_FOR_TARGET = 100;
     int DOLLAR = 10;
     int STOCK = 10;
