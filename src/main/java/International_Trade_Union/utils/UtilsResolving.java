@@ -1117,15 +1117,19 @@ public class UtilsResolving {
         Set<String> modifiedHosts = new HashSet<>(hosts);
         modifiedHosts.addAll(Seting.ORIGINAL_ADDRESSES);
 
-        // Отбираем случайные 10 хостов
+        // Идентифицируем собственный адрес
+        String myHost = domainConfiguration.getPubllc_domain();
+
+      // Отбираем случайные 10 хостов, исключая свой собственный
         Set<String> selectedHosts = modifiedHosts.stream()
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        listHost -> {
-                            Collections.shuffle(listHost);
-                            return listHost.stream().limit(RANDOM_HOSTS).collect(Collectors.toSet());
-                        }
-                ));
+        .filter(host -> !host.equals(myHost)) // Исключить собственный адрес
+        .collect(Collectors.collectingAndThen(
+                Collectors.toList(),
+                listHost -> {
+                    Collections.shuffle(listHost);
+                    return listHost.stream().limit(RANDOM_HOSTS).collect(Collectors.toSet());
+                }
+        ));
 
 
         List<CompletableFuture<HostEndDataShortB>> futures = new ArrayList<>(); // Список для хранения CompletableFuture

@@ -31,7 +31,7 @@ public class TimeSyncManager {
             runCommand(command);
         }
 
-        System.out.println("Время успешно синхронизировано на " + (osName.contains("win") ? "Windows" : "Linux") + ".");
+        System.out.println("Time successfully synchronized on " + (osName.contains("win") ? "Windows" : "Linux") + ".");
     }
 
     private static void runCommand(String command) throws Exception {
@@ -44,12 +44,5 @@ public class TimeSyncManager {
         process.waitFor();
     }
 
-    public static void main(String[] args) {
-        try {
-            syncTime();
-        } catch (Exception e) {
-            System.err.println("Ошибка синхронизации времени: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+
 }

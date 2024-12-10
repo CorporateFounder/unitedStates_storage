@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.UNITED_STATES_CORPORATION_OF_HUMANITY</groupId>
 	<artifactId>unitedStates</artifactId>
-	<version>0.0.385-SNAPSHOT</version>
+	<version>0.0.387-SNAPSHOT</version>
 	<name>unitedStates</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -133,6 +133,11 @@
 			<version>3.8.0</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
