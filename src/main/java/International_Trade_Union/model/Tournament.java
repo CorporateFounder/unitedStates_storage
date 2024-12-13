@@ -79,18 +79,18 @@ public class Tournament implements Runnable {
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 TimeSyncManager.syncTime();
-                System.out.println("Время успешно синхронизировано.");
+                System.out.println("Time has been successfully synchronized.");
             } catch (Exception e) {
-                System.err.println("Ошибка при ежедневной синхронизации времени: " + e.getMessage());
+                System.err.println("Error during daily time synchronization: " + e.getMessage());
             }
         }, 24, 24, TimeUnit.HOURS); // Интервал - каждые 24 часа
     }
     private void deleteBlockedHosts() {
         try {
             Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-            System.out.println("Заблокированные хосты успешно удалены.");
+            System.out.println("Blocked hosts have been successfully removed.");
         } catch (Exception e) {
-            System.err.println("Ошибка при удалении заблокированных хостов: " + e.getMessage());
+            System.err.println("Error while deleting blocked hosts: " + e.getMessage());
             MyLogger.saveLog("TournamentService: ", e);
         }
     }

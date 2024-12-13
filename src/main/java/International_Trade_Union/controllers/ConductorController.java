@@ -3,6 +3,7 @@ package International_Trade_Union.controllers;
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.entities.EntityDtoTransaction;
 import International_Trade_Union.entity.entities.SignRequest;
@@ -190,9 +191,17 @@ public class ConductorController {
             System.out.println("saving file: resolve_from_to_block: sub block");
             return new Account();
         }
-        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
-        Account account = UtilsBalance.getBalance(address, balances);
+        EntityAccount entityAccount  = new EntityAccount();
+        try {
+            entityAccount = blockService.findByAccount(address);
+        }catch (Exception e){
+            MyLogger.saveLog("account address: " + e.getMessage());
+            return new Account();
+        }
+//        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+
+        Account account = UtilsAccountToEntityAccount.entityAccountToAccount(entityAccount);
 
         return account;
     }
@@ -210,9 +219,18 @@ public class ConductorController {
             System.out.println("saving file: resolve_from_to_block: sub block");
             return -1.0;
         }
-        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+        EntityAccount entityAccount  = new EntityAccount();
+        try {
+            entityAccount = blockService.findByAccount(address);
+        }catch (Exception e){
+            MyLogger.saveLog("account address: " + e.getMessage());
+            return Double.valueOf(-1);
+        }
+//        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
-        Account account = UtilsBalance.getBalance(address, balances);
+        Account account = UtilsAccountToEntityAccount.entityAccountToAccount(entityAccount);
+
+
         return UtilsUse.round(account.getDigitalDollarBalance(), Seting.SENDING_DECIMAL_PLACES).doubleValue();
     }
 
@@ -228,9 +246,18 @@ public class ConductorController {
             System.out.println("saving file: resolve_from_to_block: sub block");
             return -1.0;
         }
-        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+        EntityAccount entityAccount  = new EntityAccount();
+        try {
+            entityAccount = blockService.findByAccount(address);
+        }catch (Exception e){
+            MyLogger.saveLog("account address: " + e.getMessage());
+            return Double.valueOf(-1);
+        }
+//        Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
-        Account account = UtilsBalance.getBalance(address, balances);
+        Account account = UtilsAccountToEntityAccount.entityAccountToAccount(entityAccount);
+
+
         return UtilsUse.round(account.getDigitalStockBalance(), Seting.SENDING_DECIMAL_PLACES).doubleValue();
     }
 
