@@ -63,8 +63,8 @@ public class UtilUrl {
     public static String readJsonFromUrl(String url) throws IOException, JSONException {
         URL url1 = new URL(url);
         URLConnection conn = url1.openConnection();
-        conn.setConnectTimeout(9000); // Устанавливаем таймаут соединения в 6 секунд
-        conn.setReadTimeout(7000); // Устанавливаем таймаут чтения в 6 секунд
+        conn.setConnectTimeout(10000); // Устанавливаем таймаут соединения в 6 секунд
+        conn.setReadTimeout(15000); // Устанавливаем таймаут чтения в 6 секунд
         InputStream is = conn.getInputStream();
         BufferedReader rd = null;
         try {

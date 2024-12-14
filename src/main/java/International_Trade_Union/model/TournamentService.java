@@ -171,109 +171,107 @@ public class TournamentService {
 
     }
 
-public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
-    // Временное потокобезопасное множество для хранения уникальных блоков
-    Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
-
-    // Создаём список задач
-    List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream()
-        .map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
-            String s = hostEndDataShortB.getHost();
+    private String fetchDataWithRetries(String url, int maxRetries) {
+        for (int attempt = 0; attempt < maxRetries; attempt++) {
             try {
-                if (BasisController.getExcludedAddresses().contains(s)) {
-                    System.out.println(":its your address or excluded address: " + s);
-                    return;
-                }
-
-                // Запрос данных с таймаутами
-                CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
+                return UtilUrl.readJsonFromUrl(url);
+            } catch (IOException | JSONException e) {
+                MyLogger.saveLog("Error fetching data from " + url + ": " + e.getMessage());
+                if (attempt < maxRetries - 1) {
                     try {
-                        return UtilUrl.readJsonFromUrl(s + "/winnerList");
-                    } catch (IOException | JSONException e) {
-                        MyLogger.saveLog("Error reading winnerList from " + s);
-                        MyLogger.saveLog(e.toString());
-                        return "";
-                    }
-                });
-
-                CompletableFuture<String> prevBlockFuture = CompletableFuture.supplyAsync(() -> {
-                    try {
-                        return UtilUrl.readJsonFromUrl(s + "/prevBlock");
-                    } catch (IOException | JSONException e) {
-                        MyLogger.saveLog("Error reading prevBlock from " + s);
-                        MyLogger.saveLog(e.toString());
-                        return "";
-                    }
-                });
-
-                // Ожидание завершения двух запросов
-                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(winnerListFuture, prevBlockFuture);
-                try {
-                    combinedFuture.join();
-                } catch (Exception e) {
-                    MyLogger.saveLog("Error waiting for combined future: " + s);
-                    return;
-                }
-
-                String winnerListJson = winnerListFuture.getNow("");
-                String prevBlockJson = prevBlockFuture.getNow("");
-
-                if (winnerListJson.isEmpty() || prevBlockJson.isEmpty()) {
-                    return;
-                }
-
-                List<Block> blocks = UtilsJson.jsonToObject(winnerListJson);
-                Block prevBlock = UtilsJson.jsonToBLock(prevBlockJson);
-
-                if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
-                    blocks.add(prevBlock);
-                }
-
-                for (Block block : blocks) {
-                    MyLogger.saveLog("Processing block with index: " + block.getIndex());
-                    List<String> sign = new ArrayList<>();
-                    List<Block> tempBlock = new ArrayList<>();
-                    tempBlock.add(block);
-
-                    Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
-                        UtilsUse.accounts(tempBlock, blockService));
-
-                    DataShortBlockchainInformation temp = Blockchain.shortCheck(
-                        BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
-                        new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
-
-                    if (temp.isValidation()) {
-                        MyLogger.saveLog("Block is valid: " + block.getIndex() + " s: " + s);
-                        tempWinnerSet.add(block); // Потокобезопасное добавление в временное множество
+                        Thread.sleep((long) Math.pow(2, attempt) * 1000); // Экспоненциальная задержка
+                    } catch (InterruptedException ignored) {
                     }
                 }
-            } catch (Exception e) {
-                MyLogger.saveLog("Unexpected error for host: " + s);
-                MyLogger.saveLog(e.toString());
-            }
-        }))
-        .collect(Collectors.toList());
-
-    // Ограничиваем общее время выполнения всех задач
-    CompletableFuture<Void> allOf = CompletableFuture
-        .allOf(futures.toArray(new CompletableFuture[0]))
-        .orTimeout(32, TimeUnit.SECONDS); // Таймаут для всех задач вместе
-
-    try {
-        allOf.join(); // Ждём завершения всех задач
-    } catch (Exception e) {
-        MyLogger.saveLog("Error in getAllWinner: " + e);
-    }
-
-    // Перед выходом обновляем winnerList атомарно
-    synchronized (BasisController.getWinnerList()) {
-        for (Block block : tempWinnerSet) {
-            if (!BasisController.getWinnerList().contains(block)) {
-                BasisController.getWinnerList().add(block);
             }
         }
+        return ""; // Возвращаем пустую строку, если запросы не удались
     }
-}
+
+
+    public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
+        Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
+        ExecutorService executor = Executors.newFixedThreadPool(Math.min(hostEndDataShortBS.size(), 10));
+
+        List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream()
+                .map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
+                    String s = hostEndDataShortB.getHost();
+                    try {
+                        if (BasisController.getExcludedAddresses().contains(s)) {
+                            MyLogger.saveLog(":its your address or excluded address: " + s);
+                            return;
+                        }
+
+                        // Параллельные запросы с повторными попытками
+                        String winnerListJson = fetchDataWithRetries(s + "/winnerList", 3);
+                        String prevBlockJson = fetchDataWithRetries(s + "/prevBlock", 3);
+
+                        if (winnerListJson.isEmpty() || prevBlockJson.isEmpty()) {
+                            return;
+                        }
+
+                        List<Block> blocks = UtilsJson.jsonToObject(winnerListJson);
+                        Block prevBlock = UtilsJson.jsonToBLock(prevBlockJson);
+
+                        if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
+                            blocks.add(prevBlock);
+                        }
+
+                        blocks.forEach(block -> validateAndAddBlock(block, tempWinnerSet, s));
+
+                    } catch (Exception e) {
+                        MyLogger.saveLog("Unexpected error for host: " + s + ": " + e.getMessage());
+                    }
+                }, executor))
+                .collect(Collectors.toList());
+
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .orTimeout(60, TimeUnit.SECONDS) // Таймаут для всех задач
+                    .join();
+        } catch (Exception e) {
+            MyLogger.saveLog("Timeout or error in getAllWinner: " + e.getMessage());
+        }
+
+        synchronized (BasisController.getWinnerList()) {
+            tempWinnerSet.forEach(block -> {
+                if (!BasisController.getWinnerList().contains(block)) {
+                    BasisController.getWinnerList().add(block);
+                }
+            });
+        }
+
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                MyLogger.saveLog("Executor did not terminate in time");
+            }
+        } catch (InterruptedException e) {
+            MyLogger.saveLog("Executor termination interrupted: " + e.getMessage());
+        }
+    }
+
+    private void validateAndAddBlock(Block block, Set<Block> tempWinnerSet, String host) {
+        try {
+            List<String> sign = new ArrayList<>();
+            List<Block> tempBlock = new ArrayList<>();
+            tempBlock.add(block);
+
+            Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
+                    UtilsUse.accounts(tempBlock, blockService));
+
+            DataShortBlockchainInformation temp = Blockchain.shortCheck(
+                    BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
+                    new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
+
+            if (temp.isValidation()) {
+                MyLogger.saveLog("Block is valid: " + block.getIndex() + " from host: " + host);
+                tempWinnerSet.add(block);
+            }
+        } catch (Exception e) {
+            MyLogger.saveLog("Error validating block with index: " + block.getIndex() + " from host: " + host + ": " + e.getMessage());
+        }
+    }
 
 
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
