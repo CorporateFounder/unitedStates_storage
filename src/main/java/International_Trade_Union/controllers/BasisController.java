@@ -1242,7 +1242,7 @@ public class BasisController {
         } catch (Exception e) {
             e.printStackTrace();
             MyLogger.saveLog("resolve_conflict: ", e);
-            isSaveFile = true;
+
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {
 

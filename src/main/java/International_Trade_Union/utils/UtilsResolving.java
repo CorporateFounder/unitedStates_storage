@@ -597,13 +597,12 @@ public class UtilsResolving {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    MyLogger.saveLog("resolve3: error: ", e);
-                    MyLogger.saveLog("resolve3: error: ", e);
+                    MyLogger.saveLog("resolve3: error: "  + hostEndDataShortB.getHost(), e);
                     String stack = "";
                     for (StackTraceElement stack1 : e.getStackTrace()) {
                         stack += stack1.toString() + "\n";
                     }
-                    MyLogger.saveLog("resolve3: stack error: " + stack);
+
 
 
                     continue;

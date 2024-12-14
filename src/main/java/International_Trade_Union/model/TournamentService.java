@@ -242,13 +242,13 @@ public class TournamentService {
         }
 
         // Перед выходом обновляем winnerList атомарно
-        synchronized (BasisController.getWinnerList()) {
+
             for (Block block : tempWinnerSet) {
                 if (!BasisController.getWinnerList().contains(block)) {
                     BasisController.getWinnerList().add(block);
                 }
             }
-        }
+        
     }
 
     private void validateAndAddBlock(Block block, Set<Block> tempWinnerSet, String host) {
