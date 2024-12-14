@@ -171,10 +171,11 @@ public class TournamentService {
 
     }
 
-   public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
+public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
     // Временное потокобезопасное множество для хранения уникальных блоков
     Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
 
+    // Создаём список задач
     List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream()
         .map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
@@ -184,6 +185,7 @@ public class TournamentService {
                     return;
                 }
 
+                // Запрос данных с таймаутами
                 CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
                     try {
                         return UtilUrl.readJsonFromUrl(s + "/winnerList");
@@ -204,13 +206,19 @@ public class TournamentService {
                     }
                 });
 
+                // Ожидание завершения двух запросов
                 CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(winnerListFuture, prevBlockFuture);
-                combinedFuture.join();
+                try {
+                    combinedFuture.join();
+                } catch (Exception e) {
+                    MyLogger.saveLog("Error waiting for combined future: " + s);
+                    return;
+                }
 
-                String winnerListJson = winnerListFuture.get();
-                String prevBlockJson = prevBlockFuture.get();
+                String winnerListJson = winnerListFuture.getNow("");
+                String prevBlockJson = prevBlockFuture.getNow("");
 
-                if (winnerListJson.isEmpty() || winnerListJson.isBlank() || prevBlockJson.isEmpty() || prevBlockJson.isBlank()) {
+                if (winnerListJson.isEmpty() || prevBlockJson.isEmpty()) {
                     return;
                 }
 
@@ -240,27 +248,31 @@ public class TournamentService {
                     }
                 }
             } catch (Exception e) {
-                MyLogger.saveLog("Unexpected error: " + s);
+                MyLogger.saveLog("Unexpected error for host: " + s);
                 MyLogger.saveLog(e.toString());
             }
         }))
         .collect(Collectors.toList());
 
-    CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    // Ограничиваем общее время выполнения всех задач
+    CompletableFuture<Void> allOf = CompletableFuture
+        .allOf(futures.toArray(new CompletableFuture[0]))
+        .orTimeout(32, TimeUnit.SECONDS); // Таймаут для всех задач вместе
+
     try {
-        allOf.get();
-    } catch (InterruptedException | ExecutionException e) {
-        MyLogger.saveLog("getAllWinner: ", e);
+        allOf.join(); // Ждём завершения всех задач
+    } catch (Exception e) {
+        MyLogger.saveLog("Error in getAllWinner: " + e);
     }
 
     // Перед выходом обновляем winnerList атомарно
-       synchronized (BasisController.getWinnerList()) {
-           for (Block block : tempWinnerSet) {
-               if (!BasisController.getWinnerList().contains(block)) {
-                   BasisController.getWinnerList().add(block);
-               }
-           }
-       }
+    synchronized (BasisController.getWinnerList()) {
+        for (Block block : tempWinnerSet) {
+            if (!BasisController.getWinnerList().contains(block)) {
+                BasisController.getWinnerList().add(block);
+            }
+        }
+    }
 }
 
 
