@@ -171,28 +171,11 @@ public class TournamentService {
 
     }
 
-    private String fetchDataWithRetries(String url, int maxRetries) {
-        for (int attempt = 0; attempt < maxRetries; attempt++) {
-            try {
-                return UtilUrl.readJsonFromUrl(url);
-            } catch (IOException | JSONException e) {
-                MyLogger.saveLog("Error fetching data from " + url + ": " + e.getMessage());
-                if (attempt < maxRetries - 1) {
-                    try {
-                        Thread.sleep((long) Math.pow(2, attempt) * 1000); // Экспоненциальная задержка
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            }
-        }
-        return ""; // Возвращаем пустую строку, если запросы не удались
-    }
-
-
     public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
+        // Временное потокобезопасное множество для хранения уникальных блоков
         Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
-        ExecutorService executor = Executors.newFixedThreadPool(Math.min(hostEndDataShortBS.size(), 10));
 
+        // Создаём список задач
         List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream()
                 .map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
                     String s = hostEndDataShortB.getHost();
@@ -202,9 +185,29 @@ public class TournamentService {
                             return;
                         }
 
-                        // Параллельные запросы с повторными попытками
-                        String winnerListJson = fetchDataWithRetries(s + "/winnerList", 3);
-                        String prevBlockJson = fetchDataWithRetries(s + "/prevBlock", 3);
+                        CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
+                            try {
+                                return UtilUrl.readJsonFromUrl(s + "/winnerList");
+                            } catch (IOException | JSONException e) {
+                                MyLogger.saveLog("Error reading winnerList from " + s + ": " + e.getMessage());
+                                return "";
+                            }
+                        });
+
+                        CompletableFuture<String> prevBlockFuture = CompletableFuture.supplyAsync(() -> {
+                            try {
+                                return UtilUrl.readJsonFromUrl(s + "/prevBlock");
+                            } catch (IOException | JSONException e) {
+                                MyLogger.saveLog("Error reading prevBlock from " + s + ": " + e.getMessage());
+                                return "";
+                            }
+                        });
+
+                        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(winnerListFuture, prevBlockFuture);
+                        combinedFuture.join();
+
+                        String winnerListJson = winnerListFuture.getNow("");
+                        String prevBlockJson = prevBlockFuture.getNow("");
 
                         if (winnerListJson.isEmpty() || prevBlockJson.isEmpty()) {
                             return;
@@ -217,37 +220,34 @@ public class TournamentService {
                             blocks.add(prevBlock);
                         }
 
-                        blocks.forEach(block -> validateAndAddBlock(block, tempWinnerSet, s));
-
+                        for (Block block : blocks) {
+                            MyLogger.saveLog("Processing block with index: " + block.getIndex());
+                            validateAndAddBlock(block, tempWinnerSet, s);
+                        }
                     } catch (Exception e) {
                         MyLogger.saveLog("Unexpected error for host: " + s + ": " + e.getMessage());
                     }
-                }, executor))
+                }))
                 .collect(Collectors.toList());
 
+        // Ограничиваем общее время выполнения всех задач
+        CompletableFuture<Void> allOf = CompletableFuture
+                .allOf(futures.toArray(new CompletableFuture[0]))
+                .orTimeout(32, TimeUnit.SECONDS); // Ограничение времени в 32 секунды
+
         try {
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                    .orTimeout(60, TimeUnit.SECONDS) // Таймаут для всех задач
-                    .join();
+            allOf.join(); // Ждём завершения всех задач
         } catch (Exception e) {
-            MyLogger.saveLog("Timeout or error in getAllWinner: " + e.getMessage());
+            MyLogger.saveLog("Unexpected error in getAllWinner: " + e.getMessage());
         }
 
+        // Перед выходом обновляем winnerList атомарно
         synchronized (BasisController.getWinnerList()) {
-            tempWinnerSet.forEach(block -> {
+            for (Block block : tempWinnerSet) {
                 if (!BasisController.getWinnerList().contains(block)) {
                     BasisController.getWinnerList().add(block);
                 }
-            });
-        }
-
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                MyLogger.saveLog("Executor did not terminate in time");
             }
-        } catch (InterruptedException e) {
-            MyLogger.saveLog("Executor termination interrupted: " + e.getMessage());
         }
     }
 
