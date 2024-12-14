@@ -230,6 +230,7 @@ public class BasisController {
 
     // Обновляет кэш winnerList
     private void updateWinnerListCache(List<Block> currentWinnerList) {
+        long timeBefore = UtilsTime.getUniversalTimestamp();
         Map<String, Account> balances;
         try {
             // Обработка IOException при получении accounts
@@ -259,7 +260,7 @@ public class BasisController {
         long M = 0;
         if (currentWinnerList.get(0).getIndex() > Seting.OPTIMAL_SCORE_INDEX)
             M = Math.toIntExact(blockService.findModeHashComplexityInRange(currentWinnerList.get(0).getIndex()));
-        long finalM = M;
+
         // Сортировка победителей
         List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList, M);
 
@@ -269,6 +270,8 @@ public class BasisController {
             winnerList.addAll(tempWinner);
         }
         sizeWinnerList.set(currentWinnerList.size());
+        long timeAfter = UtilsTime.getUniversalTimestamp();
+        MyLogger.saveLog("updateWinnerListCache: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
     }
 
 
@@ -1147,8 +1150,7 @@ public class BasisController {
                         || timeDifferenceSeconds < 100
                         || timeDifferenceSeconds > actualTimeCheck
                         || !checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())) {
-                    System.out.println("wrong block");
-                    MyLogger.saveLog("wrong block: resolve_from_to_block: "
+                    System.out.println("wrong block: resolve_from_to_block: "
                             + !checkBlock.getPreviousHash().equals(prevBlock.getHashBlock() + ":" +
                             (checkBlock.getHashCompexity() < Seting.V34_MIN_DIFF)) + ":" +
                             (timeDifferenceSeconds < 100) + ":" +

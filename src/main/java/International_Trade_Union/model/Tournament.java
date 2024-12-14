@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 public class Tournament implements Runnable {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
+    boolean fileBlockedDeleted = false;
     @Autowired
     AllTransactions allTransactions;
     @Autowired
@@ -85,6 +86,7 @@ public class Tournament implements Runnable {
             }
         }, 24, 24, TimeUnit.HOURS); // Интервал - каждые 24 часа
     }
+
     private void deleteBlockedHosts() {
         try {
             Mining.deleteFiles(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
@@ -128,10 +130,14 @@ public class Tournament implements Runnable {
             return;
         }
 
+
+        scheduler.scheduleAtFixedRate(this::deleteBlockedHosts, 0, Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND, TimeUnit.SECONDS);
+        fileBlockedDeleted = false;
+
         while (true) {
 
             // Запланировать задачу удаления каждые 500 секунд с начальной задержкой 0
-            scheduler.scheduleAtFixedRate(this::deleteBlockedHosts, 0, Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND, TimeUnit.SECONDS);
+
 
             Blockchain.setBlockService(blockService);
             UtilsBalance.setBlockService(blockService);
@@ -149,6 +155,7 @@ public class Tournament implements Runnable {
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
                 tournament.tournament(hosts);
                 tournament.updatingNodeEndBlocks(hosts);
+
                 allTransactions.addAllTransactions(tournament.getInstance());
                 BasisController.getBlockedNewSendBlock().set(true);
                 tournament.getCheckSyncTime();
@@ -176,7 +183,7 @@ public class Tournament implements Runnable {
         }
     }
 
-     private void waitUntil(long targetTime) throws InterruptedException {
+    private void waitUntil(long targetTime) throws InterruptedException {
         long currentTime = UtilsTime.getUniversalTimestamp();
         long sleepTime = targetTime - currentTime;
         if (sleepTime > 0) {
@@ -187,7 +194,7 @@ public class Tournament implements Runnable {
         }
     }
 
-     private long getNextTournamentStartTime(long currentTime) {
+    private long getNextTournamentStartTime(long currentTime) {
         if (TOURNAMENT_INTERVAL <= 0) {
             throw new IllegalArgumentException("TOURNAMENT_INTERVAL must be positive");
         }

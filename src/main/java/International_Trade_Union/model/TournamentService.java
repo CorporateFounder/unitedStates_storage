@@ -172,111 +172,127 @@ public class TournamentService {
     }
 
    public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
-    // Временное потокобезопасное множество для хранения уникальных блоков
     Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
+    ExecutorService executor = Executors.newFixedThreadPool(Math.min(hostEndDataShortBS.size(), 10));
 
-    List<CompletableFuture<Void>> futures = hostEndDataShortBS.stream()
-        .map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
-            String s = hostEndDataShortB.getHost();
+    List<Future<?>> futures = new ArrayList<>();
+    for (HostEndDataShortB hostData : hostEndDataShortBS) {
+        futures.add(executor.submit(() -> {
+            String s = hostData.getHost();
+            if (BasisController.getExcludedAddresses().contains(s)) return;
+
+            CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
+                try {
+                    return UtilUrl.readJsonFromUrl(s + "/winnerList");
+                } catch (Exception e) {
+                    MyLogger.saveLog("Error reading winnerList from " + s + ": " + e);
+                    return "";
+                }
+            }, executor);
+
+            CompletableFuture<String> prevBlockFuture = CompletableFuture.supplyAsync(() -> {
+                try {
+                    return UtilUrl.readJsonFromUrl(s + "/prevBlock");
+                } catch (Exception e) {
+                    MyLogger.saveLog("Error reading prevBlock from " + s + ": " + e);
+                    return "";
+                }
+            }, executor);
+
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(winnerListFuture, prevBlockFuture);
+
             try {
-                if (BasisController.getExcludedAddresses().contains(s)) {
-                    System.out.println(":its your address or excluded address: " + s);
-                    return;
-                }
-
-                CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
-                    try {
-                        return UtilUrl.readJsonFromUrl(s + "/winnerList");
-                    } catch (IOException | JSONException e) {
-                        MyLogger.saveLog("Error reading winnerList from " + s);
-                        MyLogger.saveLog(e.toString());
-                        return "";
-                    }
-                });
-
-                CompletableFuture<String> prevBlockFuture = CompletableFuture.supplyAsync(() -> {
-                    try {
-                        return UtilUrl.readJsonFromUrl(s + "/prevBlock");
-                    } catch (IOException | JSONException e) {
-                        MyLogger.saveLog("Error reading prevBlock from " + s);
-                        MyLogger.saveLog(e.toString());
-                        return "";
-                    }
-                });
-
-                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(winnerListFuture, prevBlockFuture);
                 combinedFuture.join();
+                String winnerListJson = winnerListFuture.getNow("");
+                String prevBlockJson = prevBlockFuture.getNow("");
 
-                String winnerListJson = winnerListFuture.get();
-                String prevBlockJson = prevBlockFuture.get();
-
-                if (winnerListJson.isEmpty() || winnerListJson.isBlank() || prevBlockJson.isEmpty() || prevBlockJson.isBlank()) {
-                    return;
-                }
+                if (winnerListJson.isBlank() || prevBlockJson.isBlank()) return;
 
                 List<Block> blocks = UtilsJson.jsonToObject(winnerListJson);
                 Block prevBlock = UtilsJson.jsonToBLock(prevBlockJson);
-
                 if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
                     blocks.add(prevBlock);
                 }
 
+                // Предварительное создание коллекций, чтобы не создавать их на каждую итерацию
+                List<Block> singleBlockList = new ArrayList<>(1);
+                List<String> sign = new ArrayList<>();
+                List<Block> emptyBlocks = new ArrayList<>();
+                List<String> emptyStrings = new ArrayList<>();
+
                 for (Block block : blocks) {
                     MyLogger.saveLog("Processing block with index: " + block.getIndex());
-                    List<String> sign = new ArrayList<>();
-                    List<Block> tempBlock = new ArrayList<>();
-                    tempBlock.add(block);
+
+                    singleBlockList.clear();
+                    singleBlockList.add(block);
 
                     Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
-                        UtilsUse.accounts(tempBlock, blockService));
+                        UtilsUse.accounts(singleBlockList, blockService));
 
                     DataShortBlockchainInformation temp = Blockchain.shortCheck(
-                        BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
-                        new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
+                        BasisController.prevBlock(),
+                        singleBlockList,
+                        BasisController.getShortDataBlockchain(),
+                        emptyBlocks,
+                        tempBalances,
+                        sign,
+                        UtilsUse.balancesClone(tempBalances),
+                        emptyStrings
+                    );
 
                     if (temp.isValidation()) {
                         MyLogger.saveLog("Block is valid: " + block.getIndex() + " s: " + s);
-                        tempWinnerSet.add(block); // Потокобезопасное добавление в временное множество
+                        tempWinnerSet.add(block);
                     }
                 }
-            } catch (Exception e) {
-                MyLogger.saveLog("Unexpected error: " + s);
-                MyLogger.saveLog(e.toString());
-            }
-        }))
-        .collect(Collectors.toList());
 
-    CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-    try {
-        allOf.get();
-    } catch (InterruptedException | ExecutionException e) {
-        MyLogger.saveLog("getAllWinner: ", e);
+            } catch (Exception e) {
+                MyLogger.saveLog("Timeout or error for host " + s + ": " + e);
+            }
+        }));
     }
 
-    // Перед выходом обновляем winnerList атомарно
-       synchronized (BasisController.getWinnerList()) {
-           for (Block block : tempWinnerSet) {
-               if (!BasisController.getWinnerList().contains(block)) {
-                   BasisController.getWinnerList().add(block);
-               }
-           }
-       }
+    for (Future<?> f : futures) {
+        try {
+            f.get();
+        } catch (Exception ignore) {}
+    }
+
+    executor.shutdown();
+
+    synchronized (BasisController.getWinnerList()) {
+        for (Block block : tempWinnerSet) {
+            if (!BasisController.getWinnerList().contains(block)) {
+                BasisController.getWinnerList().add(block);
+            }
+        }
+    }
 }
+
 
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
 
+        long timeBefore = UtilsTime.getUniversalTimestamp();
         // Сначала вызываем getAllWinner
         getAllWinner(hostEndDataShortBS);
+        long timeAfter = UtilsTime.getUniversalTimestamp();
+        MyLogger.saveLog("getAllWinner: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
 
         // Меняем состояние на "готов"
         NodeController.setReady();
 
+        timeBefore = UtilsTime.getUniversalTimestamp();
         // Затем вызываем initiateProcess
         nodeChecker.initiateProcess(hostEndDataShortBS);
-
+        timeAfter = UtilsTime.getUniversalTimestamp();
+        MyLogger.saveLog("initiateProcess: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
 
         try {
+            timeBefore = UtilsTime.getUniversalTimestamp();
             List<Block> list = BasisController.getWinnerList();
+            timeAfter = UtilsTime.getUniversalTimestamp();
+            MyLogger.saveLog("getWinnerList: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
+
             list = list.stream()
                     .filter(t -> t.getIndex() == BasisController.getBlockchainSize())
                     .filter(UtilsUse.distinctByKey(Block::getHashBlock))
