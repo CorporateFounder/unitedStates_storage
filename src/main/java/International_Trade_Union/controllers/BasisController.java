@@ -265,10 +265,9 @@ public class BasisController {
         List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList, M);
 
         // Обновляем кэш
-        synchronized (winnerList) {
-            winnerList.clear();
-            winnerList.addAll(tempWinner);
-        }
+        winnerList.clear();
+        winnerList.addAll(tempWinner);
+
         sizeWinnerList.set(currentWinnerList.size());
 //        long timeAfter = UtilsTime.getUniversalTimestamp();
 //        MyLogger.saveLog("updateWinnerListCache: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
@@ -733,14 +732,14 @@ public class BasisController {
         int day = 576;
         int period = YEAR;
         int mulptipleperiod = MULTIPLIER;
-        if(index > OPTIMAL_SCORE_INDEX){
+        if (index > OPTIMAL_SCORE_INDEX) {
             day = 432;
             period = 120;
             mulptipleperiod = MULTIPLIER2;
         }
 
         long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                / (day *period);
+                / (day * period);
         money = (long) (mulptipleperiod - money);
         money = money < 1 ? 1 : money;
         return money;
@@ -759,14 +758,14 @@ public class BasisController {
         int day = 576;
         int period = YEAR;
         int mulptipleperiod = MULTIPLIER;
-        if(index > OPTIMAL_SCORE_INDEX){
+        if (index > OPTIMAL_SCORE_INDEX) {
             day = 432;
             period = 120;
             mulptipleperiod = MULTIPLIER2;
         }
 
         long money = (index - Seting.V28_CHANGE_ALGORITH_DIFF_INDEX)
-                / (day *period);
+                / (day * period);
         money = (long) (mulptipleperiod - money);
         money = money < 1 ? 1 : money;
         long reduceDays = 0;

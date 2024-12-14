@@ -233,7 +233,7 @@ public class TournamentService {
         // Ограничиваем общее время выполнения всех задач
         CompletableFuture<Void> allOf = CompletableFuture
                 .allOf(futures.toArray(new CompletableFuture[0]))
-                .orTimeout(32, TimeUnit.SECONDS); // Ограничение времени в 32 секунды
+                .orTimeout(36, TimeUnit.SECONDS); // Ограничение времени в 32 секунды
 
         try {
             allOf.join(); // Ждём завершения всех задач
@@ -248,7 +248,7 @@ public class TournamentService {
                     BasisController.getWinnerList().add(block);
                 }
             }
-        
+
     }
 
     private void validateAndAddBlock(Block block, Set<Block> tempWinnerSet, String host) {
@@ -408,7 +408,7 @@ public class TournamentService {
 
             System.out.println("save winner: " + winner.size() + " balances: " + balances.size());
             //TODO прекратить давать блоки через sub block, если происходит запись
-            BasisController.setIsSaveFile(false);
+
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
 
