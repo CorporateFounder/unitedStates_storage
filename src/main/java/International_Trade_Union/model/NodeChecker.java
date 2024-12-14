@@ -93,93 +93,92 @@ public class NodeChecker {
         return new HashSet<>(responsiveNodes);
     }
 
-  public void initiateProcess(List<HostEndDataShortB> sortPriorityHost) {
-    List<HostEndDataShortB> availableHosts = Collections.synchronizedList(new ArrayList<>());
-    Set<String> unresponsiveAddresses = Collections.synchronizedSet(new HashSet<>());
+    public void initiateProcess(List<HostEndDataShortB> sortPriorityHost) {
 
-    ExecutorService executor = Executors.newFixedThreadPool(Math.min(sortPriorityHost.size(), 10));
 
-    List<Future<?>> checkFutures = new ArrayList<>();
-    for (HostEndDataShortB host : sortPriorityHost) {
-        checkFutures.add(executor.submit(() -> {
-            boolean isResponding = false;
-            for (int attempt = 0; attempt < 3; attempt++) {
-                try {
-                    String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 4000);
-                    isResponding = true;
-                    if ("ready".equals(response)) {
-                        synchronized (availableHosts) {
-                            availableHosts.add(host);
+        // Потокобезопасный список для доступных узлов
+        List<HostEndDataShortB> availableHosts = Collections.synchronizedList(new ArrayList<>());
+
+        // Потокобезопасное множество для недоступных узлов
+        Set<String> unresponsiveAddresses = Collections.synchronizedSet(new HashSet<>());
+
+        // Проверяем состояние всех узлов
+        List<CompletableFuture<Void>> checkFutures = sortPriorityHost.stream()
+                .map(host -> CompletableFuture.runAsync(() -> {
+                    boolean isResponding = false;
+                    for (int attempt = 0; attempt < 3; attempt++) {
+                        try {
+                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
+                            isResponding = true;
+                            if ("ready".equals(response)) {
+                                synchronized (availableHosts) {
+                                    availableHosts.add(host);
+                                }
+                                break;
+                            }
+                        } catch (java.net.ConnectException e) {
+                            synchronized (unresponsiveAddresses) {
+                                unresponsiveAddresses.add(extractHostPort(host.getHost()));
+                            }
+                            break; // Не нужно повторять попытки, если соединение отказано
+                        } catch (Exception e) {
                         }
-                        break;
                     }
-                } catch (java.net.ConnectException e) {
-                    synchronized (unresponsiveAddresses) {
-                        unresponsiveAddresses.add(extractHostPort(host.getHost()));
+                    if (!isResponding) {
+                        synchronized (unresponsiveAddresses) {
+                            unresponsiveAddresses.add(extractHostPort(host.getHost()));
+                        }
                     }
-                    break;
-                } catch (Exception e) {
-                }
-            }
-            if (!isResponding) {
-                synchronized (unresponsiveAddresses) {
-                    unresponsiveAddresses.add(extractHostPort(host.getHost()));
-                }
-            }
-        }));
-    }
+                }))
+                .collect(Collectors.toList());
 
-    for (Future<?> f : checkFutures) {
+        // Ждем завершения всех проверок
+        CompletableFuture.allOf(checkFutures.toArray(new CompletableFuture[0])).join();
+
+
+
+        // Ограничиваем количество ожидаемых узлов до 7
+        int nodesToWait = Math.min(availableHosts.size(), 7);
+
+        if (nodesToWait == 0) {
+            MyLogger.saveLog("No nodes to wait for, all are ready or unreachable");
+            return;
+        }
+
+
+        CountDownLatch latch = new CountDownLatch(nodesToWait);
+
+        // Теперь ждем, пока неготовые узлы станут готовыми
+        List<CompletableFuture<Void>> waitFutures = availableHosts.stream()
+                .map(host -> CompletableFuture.runAsync(() -> {
+                    while (true) {
+                        try {
+                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
+                            if ("ready".equals(response)) {
+                                latch.countDown();
+                                break;
+                            }
+                            Thread.sleep(1000); // Пауза перед следующей проверкой
+                        } catch (Exception e) {
+                            MyLogger.saveLog("Error waiting for readiness of " + host.getHost() + ": " + e.getMessage());
+                            latch.countDown(); // Уменьшаем счетчик, если узел стал недоступен
+                            break;
+                        }
+                    }
+                }))
+                .collect(Collectors.toList());
+
         try {
-            f.get();
-        } catch (Exception ignore) {
-        }
-    }
-
-    int nodesToWait = Math.min(availableHosts.size(), 7);
-    if (nodesToWait == 0) {
-        MyLogger.saveLog("No nodes to wait for, all are ready or unreachable");
-        executor.shutdown();
-        return;
-    }
-
-    CountDownLatch latch = new CountDownLatch(nodesToWait);
-    int maxAttempts = 5;
-
-    for (HostEndDataShortB host : availableHosts) {
-        executor.submit(() -> {
-            for (int attempt = 0; attempt < maxAttempts; attempt++) {
-                try {
-                    String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
-                    if ("ready".equals(response)) {
-                        latch.countDown();
-                        return;
-                    }
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                    MyLogger.saveLog("Error waiting for readiness of " + host.getHost() + ": " + e.getMessage());
-                    latch.countDown();
-                    return;
-                }
+            // Ждем максимум 25 секунд
+            boolean completed = latch.await(15, TimeUnit.SECONDS);
+            if (!completed) {
             }
-            // Если за maxAttempts не дождались готовности, уменьшаем счетчик
-            latch.countDown();
-        });
-    }
-
-    try {
-        boolean completed = latch.await(9, TimeUnit.SECONDS);
-        if (!completed) {
-            MyLogger.saveLog("Not all nodes became ready within 9 seconds");
+        } catch (InterruptedException e) {
+            MyLogger.saveLog("Waiting was interrupted: " + e.getMessage());
         }
-    } catch (InterruptedException e) {
-        MyLogger.saveLog("Waiting was interrupted: " + e.getMessage());
+
+        MyLogger.saveLog("finish: initiateProcess");
     }
-
-    executor.shutdown();
-    MyLogger.saveLog("finish: initiateProcess");
-}
-
 
     public String extractHostPort(String url) {
         try {
