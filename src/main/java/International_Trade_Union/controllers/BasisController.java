@@ -230,7 +230,7 @@ public class BasisController {
 
     // Обновляет кэш winnerList
     private void updateWinnerListCache(List<Block> currentWinnerList) {
-        long timeBefore = UtilsTime.getUniversalTimestamp();
+//        long timeBefore = UtilsTime.getUniversalTimestamp();
         Map<String, Account> balances;
         try {
             // Обработка IOException при получении accounts
@@ -270,8 +270,8 @@ public class BasisController {
             winnerList.addAll(tempWinner);
         }
         sizeWinnerList.set(currentWinnerList.size());
-        long timeAfter = UtilsTime.getUniversalTimestamp();
-        MyLogger.saveLog("updateWinnerListCache: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
+//        long timeAfter = UtilsTime.getUniversalTimestamp();
+//        MyLogger.saveLog("updateWinnerListCache: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
     }
 
 
