@@ -1109,7 +1109,7 @@ public class BasisController {
                 if (addlist.isEmpty()
                         || addlist.get(0).getIndex() != BasisController.getBlockchainSize()
                         || winnerList.contains(addlist)) {
-                    MyLogger.saveLog("this block has in system: ");
+                    System.out.println("this block has in system: ");
                     return new ResponseEntity<>("FALSE", HttpStatus.OK);
                 }
                 System.out.println("account: " + addressMiner);

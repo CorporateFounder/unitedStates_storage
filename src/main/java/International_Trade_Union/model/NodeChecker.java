@@ -145,9 +145,9 @@ public class NodeChecker {
         // Ждём готовности доступных узлов
         List<CompletableFuture<Void>> waitFutures = availableHosts.stream()
                 .map(host -> CompletableFuture.runAsync(() -> {
-                    for (int attempt = 0; attempt < 3; attempt++) { // Максимум 15 попыток
+                    for (int attempt = 0; attempt < 4; attempt++) { // Максимум 15 попыток
                         try {
-                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 2000);
+                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 4000);
                             if ("ready".equals(response)) {
                                 latch.countDown();
                                 return;
@@ -163,7 +163,7 @@ public class NodeChecker {
                 .collect(Collectors.toList());
 
         try {
-            boolean completed = latch.await(15, TimeUnit.SECONDS);
+            boolean completed = latch.await(20, TimeUnit.SECONDS);
             if (!completed) {
                 MyLogger.saveLog("Not all nodes became ready within 15 seconds");
             }
