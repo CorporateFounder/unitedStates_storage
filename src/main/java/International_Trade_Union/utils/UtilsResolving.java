@@ -11,10 +11,7 @@ import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
-import International_Trade_Union.model.Account;
-import International_Trade_Union.model.HostEndDataShortB;
-import International_Trade_Union.model.Mining;
-import International_Trade_Union.model.SlidingWindowManager;
+import International_Trade_Union.model.*;
 import International_Trade_Union.model.comparator.HostEndDataShortBComparator;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
@@ -101,7 +98,7 @@ public class UtilsResolving {
             //сортирует по приоритетности блокчейны
             Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
             Set<String> nodesAll = getNodes();
-            List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
+
             Set<String> newAddress = newHostsLoop(hostsList.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
 //            newAddress.remove(nodesAll);
 
@@ -1217,8 +1214,8 @@ public class UtilsResolving {
         System.out.println(":BasisController: sendAllBlocksToStorage: ");
 
         // Получаем список узлов и сортируем их
-        Set<String> nodesAll = getNodes();
-        List<HostEndDataShortB> sortPriorityHost = sortPriorityHost(nodesAll);
+
+        List<HostEndDataShortB> sortPriorityHost = Tournament.hostsG;
 
         // Убираем исключенные адреса и удаляем дубли
         Set<String> processedAddresses = new HashSet<>();

@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 @Component
 @Scope("singleton")
 public class Tournament implements Runnable {
+    public static List<HostEndDataShortB> hostsG = new ArrayList<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     boolean fileBlockedDeleted = false;
@@ -103,6 +104,7 @@ public class Tournament implements Runnable {
         // 1. Получаем исходный список узлов
         Set<String> nodes = BasisController.getNodes();
         List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(nodes);
+        hostsG = hosts;
         try {
             nodeChecker.checkNodes(utilsResolving);
         } catch (InterruptedException e) {
@@ -153,6 +155,7 @@ public class Tournament implements Runnable {
                 // Начинаем турнир
                 BasisController.getBlockedNewSendBlock().set(false);
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
+                hostsG = hosts;
                 tournament.tournament(hosts);
                 tournament.updatingNodeEndBlocks(hosts);
 
