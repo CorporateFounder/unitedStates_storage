@@ -1151,7 +1151,7 @@ public class UtilsResolving {
             List<HostEndDataShortB> resultList = futures.stream()
                     .map(future -> {
                         try {
-                            return future.get(9, TimeUnit.SECONDS); // Таймаут для каждой задачи
+                            return future.get(36, TimeUnit.SECONDS); // Таймаут для каждой задачи
                         } catch (Exception e) {
                             logError("Timeout or error for future", e);
                             return null;
