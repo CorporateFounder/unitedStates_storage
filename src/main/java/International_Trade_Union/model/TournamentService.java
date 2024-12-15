@@ -114,13 +114,13 @@ public class TournamentService {
         return list1;
     }
 
-    public void getCheckSyncTime(){
+    public void getCheckSyncTime( List<HostEndDataShortB> hosts){
         List<HostEndDataShortB> sortPriorityHost = null;
 
 
         try {
-            Set<String> nodesAll = getNodes();
-            sortPriorityHost = utilsResolving.sortPriorityHost(nodesAll);
+
+            sortPriorityHost = hosts;
         } catch (Exception e) {
             MyLogger.saveLog("getCheckSyncTime: ", e);
             return;
@@ -678,60 +678,34 @@ public class TournamentService {
 
 
     }
-    public List<DtoTransaction> getInstance() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        List<DtoTransaction> instance = new ArrayList<>();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        for (HostEndDataShortB hostEndDataShortB : utilsResolving.sortPriorityHost(BasisController.getNodes())) {
-            String s = hostEndDataShortB.getHost();
-            final List<DtoTransaction> finalInstance = instance; // Создаем final-копию instance
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                try {
-                    System.out.println("Получение транзакций с сервера: " + s + ". Время ожидания 45 секунд.");
-                    String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
-                    List<DtoTransaction> list;
-                    if(!json.isEmpty() ){
-                         list = UtilsJson.jsonToDtoTransactionList(json);
-                        list = utilsTransactions.balanceTransaction(list, blockService);
-
-                    }else {
-                        list = new ArrayList<>();
+    public List<DtoTransaction> getInstance(List<HostEndDataShortB> hosts) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        // Асинхронная обработка для получения транзакций с каждого хоста
+        List<CompletableFuture<List<DtoTransaction>>> futures = hosts.stream()
+                .map(hostEndDataShortB -> CompletableFuture.supplyAsync(() -> {
+                    String host = hostEndDataShortB.getHost();
+                    try {
+                        System.out.println("Получение транзакций с сервера: " + host + ". Время ожидания 45 секунд.");
+                        String json = UtilUrl.readJsonFromUrl(host + "/getTransactions");
+                        if (!json.isEmpty()) {
+                            List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
+                            return utilsTransactions.balanceTransaction(list, blockService);
+                        }
+                    } catch (IOException | JSONException e) {
+                        System.out.println("Ошибка при получении транзакций с сервера " + host + ": " + e.getMessage());
                     }
-                     synchronized(finalInstance) {
-                        finalInstance.addAll(list);
-                    }
-                } catch (IOException | JSONException e) {
-                    System.out.println("Ошибка при получении транзакций с сервера " + s + ": " + e.getMessage());
-                }
-            });
-            futures.add(future);
-        }
+                    return new ArrayList<DtoTransaction>();
+                }))
+                .toList();
 
-        // Дожидаемся завершения всех CompletableFuture
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        allFutures.join();
+        // Сбор всех результатов
+        List<DtoTransaction> instance = futures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
 
-        // Добавляем транзакции из локального хранилища и удаляем дубликаты
+        // Добавление транзакций из локального хранилища и удаление дубликатов
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
-        instance = instance.stream().distinct().collect(Collectors.toList());
-
-        return instance;
-    }
-
-
-
-
-
-
-    private boolean confirmReadiness(String host) {
-        try {
-            String response = UtilUrl.readJsonFromUrl(host + "/confirmReadiness", 2000); // Таймаут 2 секунды
-            return "ready".equals(response);
-        } catch (IOException | JSONException e) {
-            MyLogger.saveLog("cannot connect to " + host);
-            MyLogger.saveLog(e.toString());
-            return false;
-        }
+        return instance.stream().distinct().collect(Collectors.toList());
     }
 
 

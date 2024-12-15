@@ -39,10 +39,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1109,26 +1106,34 @@ public class UtilsResolving {
      * Записывает Блоки и баланс во временный файл.
      */
     public List<HostEndDataShortB> sortPriorityHost(Set<String> hosts) {
+        // Уникальные хосты с добавлением оригинальных адресов
         Set<String> modifiedHosts = new HashSet<>(hosts);
         modifiedHosts.addAll(Seting.ORIGINAL_ADDRESSES);
 
-        String myHost = domainConfiguration.getPubllc_domain();
+        String myHost = domainConfiguration.getPubllc_domain(); // Используем адрес без нормализации
 
-        // Выбираем случайные 7 хостов, исключая собственный
+        // Выбор случайных хостов, исключая собственный
         List<String> selectedHosts = modifiedHosts.stream()
-                .filter(host -> !host.equals(myHost))
+                .filter(host -> !host.equals(myHost)) // Исключаем свой хост
                 .collect(Collectors.collectingAndThen(
                         Collectors.toList(),
                         list -> {
                             Collections.shuffle(list);
-                            return list.stream().limit(RANDOM_HOSTS).toList();
+                            return list.stream().limit(Math.min(RANDOM_HOSTS, list.size())).toList();
                         }
                 ));
 
-        // Пул потоков для управления параллельными задачами
-        ExecutorService executor = Executors.newFixedThreadPool(Math.min(selectedHosts.size(), 10));
+        // Потокобезопасный набор для отслеживания обработанных узлов
+        Set<String> processedHosts = ConcurrentHashMap.newKeySet();
 
+        // Пул потоков с динамическим размером
+        ExecutorService executor = Executors.newFixedThreadPool(
+                Math.min(selectedHosts.size(), Runtime.getRuntime().availableProcessors())
+        );
+
+        // Асинхронная обработка узлов
         List<CompletableFuture<HostEndDataShortB>> futures = selectedHosts.stream()
+                .filter(processedHosts::add) // Обрабатываем каждый узел только один раз
                 .map(host -> CompletableFuture.supplyAsync(() -> {
                     try {
                         DataShortBlockchainInformation global = fetchDataShortBlockchainInformation(host);
@@ -1139,42 +1144,43 @@ public class UtilsResolving {
                         logError("Error while retrieving data for host: " + host, e);
                     }
                     return null;
-                }, executor))
+                }, executor).orTimeout(15, TimeUnit.SECONDS)) // Таймаут для каждой задачи
                 .toList();
 
         try {
-            // Ждём завершения всех задач
-            List<HostEndDataShortB> resultList = futures.stream()
+            // Ожидание завершения всех задач
+            return futures.stream()
                     .map(future -> {
                         try {
-                            return future.get(36, TimeUnit.SECONDS); // Таймаут для каждой задачи
+                            return future.get(); // Получаем результат асинхронной задачи
                         } catch (Exception e) {
-                            logError("Timeout or error for future", e);
+                            logError("Error while processing future", e);
                             return null;
                         }
                     })
-                    .filter(Objects::nonNull) // Убираем null-результаты
-                    .filter(UtilsUse.distinctByKey(HostEndDataShortB::getHost)) // Фильтрация уникальных
-                    .sorted(new HostEndDataShortBComparator()) // Сортировка
+                    .filter(Objects::nonNull) // Убираем null-значения
+                    .sorted(new HostEndDataShortBComparator()) // Сортировка результатов
                     .toList();
-
-            System.out.println("finish: sortPriorityHost: " + resultList);
-
-            return resultList;
         } finally {
-            executor.shutdown(); // Завершаем пул потоков
+            // Корректное завершение пула потоков
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(36, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
-    // Метод для получения данных из источника
     private DataShortBlockchainInformation fetchDataShortBlockchainInformation(String host) throws IOException, JSONException {
-        // Загрузка JSON данных с URL
         String jsonGlobalData = UtilUrl.readJsonFromUrl(host + "/datashort");
-        // Вывод загруженных данных
-        System.out.println("jsonGlobalData: " + jsonGlobalData);
-        // Преобразование JSON данных в объект
         return UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
     }
+
+
 
     //скачивает хосты из других узлов
     public Set<String> newHosts(String host) throws JSONException, IOException {
@@ -1210,7 +1216,7 @@ public class UtilsResolving {
         System.out.println(new Date() + ":BasisController: sendAllBlocksToStorage: start: ");
 
         int blocksCurrentSize = (int) blocks.get(blocks.size() - 1).getIndex() + 1;
-        System.out.println(":BasisController: sendAllBlocksToStorage: ");
+        System.out.println(":BasisController: start sendAllBlocksToStorage: hash: " + blocks.get(0).getHashBlock());
 
         // Получаем список узлов и сортируем их
 
@@ -1232,7 +1238,7 @@ public class UtilsResolving {
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allFutures.join();
         executor.shutdown();
-
+        System.out.println(":BasisController: finish: sendAllBlocksToStorage: hash: " + blocks.get(0).getHashBlock());
         // Логика сравнения размеров блокчейна
         int bigsize = 0; // Возможно, вам нужно изменить способ определения значения bigsize
         if (BasisController.getBlockchainSize() > bigsize) {
@@ -1250,10 +1256,9 @@ public class UtilsResolving {
         return CompletableFuture.runAsync(() -> {
             String address = host.getHost();
             try {
-                System.out.println(":BasisController:resolve conflicts: address: " + address + "/size");
+
                 String sizeStr = UtilUrl.readJsonFromUrl(address + "/size");
                 Integer size = Integer.valueOf(sizeStr);
-                System.out.println(":BasisController: send: local size: " + blocksCurrentSize + " global size: " + size);
 
                 List<Block> fromToTempBlock = new ArrayList<>(blocks);
                 SendBlocksEndInfo infoBlocks = new SendBlocksEndInfo(Seting.VERSION, fromToTempBlock);
@@ -1261,6 +1266,7 @@ public class UtilsResolving {
 
                 String urlFrom = address + "/nodes/resolve_from_to_block";
                 int response = UtilUrl.sendPost(jsonFromTo, urlFrom);
+                System.out.println(":BasisController: send: block: hash: " + blocks.get(0).getHashBlock() + " host: " + host.getHost());
                 System.out.println(":response: " + response + " address: " + address);
 
             } catch (Exception e) {
@@ -1268,6 +1274,7 @@ public class UtilsResolving {
             }
         }, executor);
     }
+
 
 
 

@@ -153,15 +153,15 @@ public class Tournament implements Runnable {
                 waitUntil(nextTournamentStartTime);
 
                 // Начинаем турнир
-                BasisController.getBlockedNewSendBlock().set(false);
+
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
                 hostsG = hosts;
+                BasisController.getBlockedNewSendBlock().set(false);
                 tournament.tournament(hosts);
                 tournament.updatingNodeEndBlocks(hosts);
-
-                allTransactions.addAllTransactions(tournament.getInstance());
+                allTransactions.addAllTransactions(tournament.getInstance(hosts));
                 BasisController.getBlockedNewSendBlock().set(true);
-                tournament.getCheckSyncTime();
+                tournament.getCheckSyncTime(hosts);
 
                 // Вычисляем время до следующего турнира
                 long currentTimeAfterTournament = UtilsTime.getUniversalTimestamp();
