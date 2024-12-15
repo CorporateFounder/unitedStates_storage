@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 @Component
 public class NodeChecker {
 
+
     private static final int CHECK_TIMEOUT = 4000; // Таймаут для проверки узла в миллисекундах
 
     public void checkNodes(UtilsResolving utilsResolving) throws InterruptedException, ExecutionException {
