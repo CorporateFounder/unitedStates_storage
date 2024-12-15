@@ -77,36 +77,6 @@ public class Mining {
         Mining.isMiningStop = isMiningStop;
     }
 
-    public Map<String, Account> getBalances(String filename, Blockchain blockchain, Map<String, Account> balances, List<String> signs) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
-        //start test
-
-
-        balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
-        if (balances == null) {
-            balances = new HashMap<>();
-        }
-
-        Block block;
-        if (blockchain != null && blockchain.sizeBlockhain() > 0) {
-            block = blockchain.getBlock(blockchain.sizeBlockhain() - 1);
-            balances = UtilsBalance.calculateBalance(balances, block, signs, new ArrayList<>());
-            //test
-            Map<String, Laws> allLaws = new HashMap<>();
-
-            allLaws = UtilsLaws.getLaws(blockchain.subBlock(blockchain.sizeBlockhain() - Seting.LAW_MONTH_VOTE, blockchain.sizeBlockhain()), Seting.ORIGINAL_ALL_CORPORATION_LAWS_FILE, allLaws);
-
-
-            //получает все созданные когда либо законы
-
-
-            //возвращает все законы с голосами проголосовавшими за них
-            List<LawEligibleForParliamentaryApproval> allLawsWithBalance = UtilsLaws.getCurrentLaws(allLaws, balances, Seting.ORIGINAL_ALL_CORPORATION_LAWS_WITH_BALANCE_FILE);
-        }
-
-
-        return balances;
-    }
-
     public static void deleteFiles(String fileDelit) {
         UtilsFileSaveRead.deleteAllFiles(fileDelit);
     }

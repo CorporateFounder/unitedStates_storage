@@ -63,6 +63,42 @@ public class UtilsResolving {
     @Autowired
     DomainConfiguration domainConfiguration;
 
+
+    public Map<String, DataShortBlockchainInformation> fetchDataFromHosts(List<HostEndDataShortB> hostsList) {
+        ExecutorService executorService = Executors.newFixedThreadPool(10); // Настройка пула потоков
+        Map<String, DataShortBlockchainInformation> hostDataMap = new ConcurrentHashMap<>();
+
+        // Асинхронная обработка узлов
+        List<CompletableFuture<Void>> futures = hostsList.stream()
+                .map(host -> CompletableFuture.runAsync(() -> {
+                    String s = host.getHost();
+                    try {
+                        // Получаем мета-данные
+                        String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
+                        System.out.println("jsonGlobalData for host " + s + ": " + jsonGlobalData);
+
+                        // Проверяем на пустоту
+                        if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
+                            System.out.println("jsonGlobalData is empty for host: " + s);
+                            return;
+                        }
+
+                        // Конвертируем в объект
+                        DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
+                        hostDataMap.put(s, global); // Сохраняем в Map
+                    } catch (Exception e) {
+                        System.err.println("Error fetching data from host " + s + ": " + e.getMessage());
+                    }
+                }, executorService))
+                .collect(Collectors.toList());
+
+        // Ожидание завершения всех задач
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        executorService.shutdown(); // Завершаем пул потоков
+        return hostDataMap;
+    }
+
     @Transactional
     public int resolve3(List<HostEndDataShortB> hostsList) {
         BasisController.setUpdating(true);
@@ -92,23 +128,25 @@ public class UtilsResolving {
             //goes through all hosts (repositories) in search of the most up-to-date blockchain
             //проходит по всем хостам(хранилищам) в поисках самого актуального блокчейна
 
-            //сортирует по приоритетности блокчейны
-            Map<HostEndDataShortB, List<Block>> tempBestBlock = new HashMap<>();
-            Set<String> nodesAll = getNodes();
 
             Set<String> newAddress = newHostsLoop(hostsList.stream().map(t -> t.getHost()).collect(Collectors.toSet()));
-//            newAddress.remove(nodesAll);
 
             for (String s : newAddress) {
                 UtilsAllAddresses.putHost(s);
             }
 
 
+            Map<String, DataShortBlockchainInformation> hostDataMap = fetchDataFromHosts(hostsList);
+            // Теперь можно сортировать или работать с узлами по `bigRandomNumber`
+            List<Map.Entry<String, DataShortBlockchainInformation>> sortedHosts = hostDataMap.entrySet().stream()
+                    .sorted((entry1, entry2) -> Integer.compare(entry2.getValue().getBigRandomNumber(), entry1.getValue().getBigRandomNumber()))
+                    .collect(Collectors.toList());
             //Проходит по всем хостам, в поисках, где количество big random больше
             //P.S. на кошельке подключается только к своему хосту и обновляется только у него
+            boolean isFirst = true;
             hostContinue:
-            for (HostEndDataShortB hostEndDataShortB : hostsList) {
-                String s = hostEndDataShortB.getHost();
+            for (Map.Entry<String, DataShortBlockchainInformation> entry : sortedHosts) {
+                String s = entry.getKey();
 
                 //if the local address matches the host address, it skips
                 //если локальный адрес совпадает с адресом хоста, он пропускает
@@ -132,17 +170,25 @@ public class UtilsResolving {
                     }
 
                     //скачиваем мета данные с сервера
-                    String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
-                    System.out.println("jsonGlobalData: " + jsonGlobalData);
-                    //если мета данные сервера пустные, то он пропускает этот сервер
-                    if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
-                        System.out.println("*********************************************************");
-                        System.out.println("jsonGlobalData: error: " + jsonGlobalData);
-                        System.out.println("*********************************************************");
-                        continue;
+                    String jsonGlobalData = "";
+                    DataShortBlockchainInformation global = new DataShortBlockchainInformation();
+                    if(isFirst){
+                        global = entry.getValue();
+                        isFirst = false;
+                    }else {
+                        UtilUrl.readJsonFromUrl(s + "/datashort");
+                        System.out.println("jsonGlobalData: " + jsonGlobalData);
+                        //если мета данные сервера пустные, то он пропускает этот сервер
+                        if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
+                            System.out.println("*********************************************************");
+                            System.out.println("jsonGlobalData: error: " + jsonGlobalData);
+                            System.out.println("*********************************************************");
+                            continue;
+                        }
+                        global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
                     }
                     //мета данные с сервера
-                    DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
+
 //
                     System.out.println("resolve3 size: " + size + " blocks_current_size: " + blocks_current_size);
 
@@ -222,7 +268,7 @@ public class UtilsResolving {
                                 if (Seting.IS_SECURITY == true && subBlocks.size() < Seting.PORTION_DOWNLOAD) {
                                     System.out.println("Blocked host: " + subBlocks.size());
                                     //TODO записывать сюда заблокированные хосты
-                                    UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                                    UtilsAllAddresses.saveAllAddresses(entry.getKey(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                                     continue hostContinue;
                                 }
 
@@ -465,12 +511,12 @@ public class UtilsResolving {
 
                                         System.out.println("-------------------------------------------------");
                                         System.out.println("Blocked host: ");
-                                        System.out.println("expected host: " + hostEndDataShortB.getDataShortBlockchainInformation());
-                                        System.out.println("host: " + hostEndDataShortB.getHost());
+                                        System.out.println("expected host: " + entry.getValue());
+                                        System.out.println("host: " + entry.getKey());
 
                                         System.out.println("-------------------------------------------------");
-                                        UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                                        continue;
+                                        UtilsAllAddresses.saveAllAddresses(entry.getKey(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                                        continue hostContinue;
                                     }
 
                                 }
@@ -582,7 +628,7 @@ public class UtilsResolving {
 
 
                             if (!temp.isValidation()) {
-                                continue;
+                                continue hostContinue;
                             }
 
                         }
@@ -594,7 +640,7 @@ public class UtilsResolving {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    MyLogger.saveLog("resolve3: error: "  + hostEndDataShortB.getHost(), e);
+                    MyLogger.saveLog("resolve3: error: "  + entry.getKey(), e);
                     String stack = "";
                     for (StackTraceElement stack1 : e.getStackTrace()) {
                         stack += stack1.toString() + "\n";

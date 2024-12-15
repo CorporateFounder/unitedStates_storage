@@ -573,101 +573,56 @@ public class TournamentService {
     public void updatingNodeEndBlocks(List<HostEndDataShortB> hostEndDataShortBS) {
         int result = -10;
         try {
-
             MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
 
-            //TODO здесь будет скачиваться обновление
-//                long beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory before: resolve3" + beforeMemory);
+            // Обновление через utilsResolving
             result = utilsResolving.resolve3(hostEndDataShortBS);
-          System.out.println("finish updating --------------------------------------------");
+            System.out.println("finish updating --------------------------------------------");
 
-
-            //TODO отправка своего хоста
+            // Отправка собственного хоста
             System.out.println("sending host --------------------------------------------");
-            System.out.println("updatingNodeEndBlocks: send my host");
-//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory before: getNodes: " + beforeMemory);
             Set<String> nodes = BasisController.getNodes();
-//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory after: getNodes: " + afterMemory);
-//                MyLogger.saveLog("memory result getNodes: " + (afterMemory - beforeMemory));
-
             System.out.println("tournament nodes: " + nodes);
             System.out.println("my host: " + myHost);
-            System.out.println("domain configuration: " + domainConfiguration);
-//
-//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory before: sendAddress: " + beforeMemory);
             UtilsAllAddresses.sendAddress(nodes, myHost);
-//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory after: sendAddress: " + afterMemory);
-//                MyLogger.saveLog("memory result sendAddress: " + (afterMemory - beforeMemory));
-
             System.out.println("finish sending host --------------------------------------------");
-            //TODO отправка скачивание всех хостов
+
+            // Скачивание всех хостов
             System.out.println("download host --------------------------------------------");
-            System.out.println("download host");
             Set<String> node = BasisController.getNodes();
             node.remove(myHost.getHost());
-//
-//                beforeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory before: for (String s : node): " + beforeMemory);
-            for (String s : node) {
-                try {
-                    if (s == null || s.isBlank())
-                        continue;
 
-                    System.out.println("updating");
-                    Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(s + "/getNodes"));
+            // Параллельная обработка узлов
+            List<CompletableFuture<Void>> futures = node.stream()
+                    .filter(s -> s != null && !s.isBlank()) // Удаляем пустые строки и null
+                    .map(s -> CompletableFuture.runAsync(() -> {
+                        try {
+                            System.out.println("updating: " + s);
+                            Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(s + "/getNodes"));
 
-                    if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
-                        System.out.println(":its your address or excluded address: " + s);
-                        continue;
-                    }
-                    for (String s1 : tempNode) {
-                        System.out.println("put host: s1:  " + s1);
-                        UtilsAllAddresses.putHost(s1);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("updatingNodeEndBlocks: host not worked: " + s);
-                    continue;
-                }
+                            if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
+                                System.out.println(":its your address or excluded address: " + s);
+                                return;
+                            }
 
-            }
-            if (winner == null) {
-                winner = new ArrayList<>();
-            } else {
-                winner.clear();
-            }
-            if (winnerDiff == null) {
-                winnerDiff = new ArrayList<>();
-            } else {
-                winnerDiff.clear();
-            }
-            if (winnerCountTransaction == null) {
-                winnerCountTransaction = new ArrayList<>();
-            } else {
-                winnerCountTransaction.clear();
-            }
-            if (winnerStaking == null) {
-                winnerStaking = new ArrayList<>();
-            } else {
-                winnerStaking.clear();
-            }
-            if (BasisController.getWinnerList() == null) {
-                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-                BasisController.setSizeWinnerList(0);
-            } else {
-                BasisController.getWinnerList().clear();
-                BasisController.setSizeWinnerList(0);
-            }
+                            tempNode.forEach(s1 -> {
+                                System.out.println("put host: s1: " + s1);
+                                UtilsAllAddresses.putHost(s1);
+                            });
+                        } catch (Exception e) {
+                            System.err.println("updatingNodeEndBlocks: host not worked: " + s);
+                            e.printStackTrace();
+                        }
+                    }))
+                    .toList();
 
-//                afterMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-//                MyLogger.saveLog("memory after: clear " + afterMemory);
-//                MyLogger.saveLog("memory result clear " + (afterMemory - beforeMemory));
+            // Ожидание завершения всех задач
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            allFutures.join(); // Дождаться завершения всех задач
+            System.out.println("All hosts updated in parallel.");
 
+            // Очистка списков победителей
+            clearWinners();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -675,10 +630,30 @@ public class TournamentService {
         } finally {
             BasisController.setIsSaveFile(true);
         }
-
-
     }
-    public List<DtoTransaction> getInstance(List<HostEndDataShortB> hosts) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+
+    // Очистка списков победителей
+    private void clearWinners() {
+        if (winner == null) winner = new ArrayList<>();
+        else winner.clear();
+
+        if (winnerDiff == null) winnerDiff = new ArrayList<>();
+        else winnerDiff.clear();
+
+        if (winnerCountTransaction == null) winnerCountTransaction = new ArrayList<>();
+        else winnerCountTransaction.clear();
+
+        if (winnerStaking == null) winnerStaking = new ArrayList<>();
+        else winnerStaking.clear();
+
+        if (BasisController.getWinnerList() == null) {
+            BasisController.setWinnerList(new CopyOnWriteArrayList<>());
+            BasisController.setSizeWinnerList(0);
+        } else {
+            BasisController.getWinnerList().clear();
+            BasisController.setSizeWinnerList(0);
+        }
+    }    public List<DtoTransaction> getInstance(List<HostEndDataShortB> hosts) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         // Асинхронная обработка для получения транзакций с каждого хоста
         List<CompletableFuture<List<DtoTransaction>>> futures = hosts.stream()
                 .map(hostEndDataShortB -> CompletableFuture.supplyAsync(() -> {
