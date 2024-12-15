@@ -1107,7 +1107,7 @@ public class BasisController {
 
                 if (addlist.isEmpty()
                         || addlist.get(0).getIndex() != BasisController.getBlockchainSize()
-                        || winnerList.contains(addlist)) {
+                        || winnerList.contains(addlist.get(0))) {
                     System.out.println("this block has in system: ");
                     return new ResponseEntity<>("FALSE", HttpStatus.OK);
                 }
@@ -1218,6 +1218,7 @@ public class BasisController {
 
                     utilsResolving.sendAllBlocksToStorage(addlist);
                     List<Block> blockList = UtilsJson.jsonToObject(winnerList());
+
                     if (blockList.size() > 0)
                         utilsResolving.sendAllBlocksToStorage(blockList);
 

@@ -569,65 +569,69 @@ public class TournamentService {
 
     }
 
+    public void sendAndPutHost(Set<String> nodes){
+        // Отправка собственного хоста
+        System.out.println("sending host --------------------------------------------");
+        MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
+        System.out.println("tournament nodes: " + nodes);
+        System.out.println("my host: " + myHost);
+        try {
+            UtilsAllAddresses.sendAddress(nodes, myHost);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("finish sending host --------------------------------------------");
+
+        // Скачивание всех хостов
+        System.out.println("download host --------------------------------------------");
+
+        nodes.remove(myHost.getHost());
+
+        // Параллельная обработка узлов
+        List<CompletableFuture<Void>> futures = nodes.stream()
+                .filter(s -> s != null && !s.isBlank()) // Удаляем пустые строки и null
+                .map(s -> CompletableFuture.runAsync(() -> {
+                    try {
+                        System.out.println("updating: " + s);
+                        Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(s + "/getNodes"));
+
+                        if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
+                            System.out.println(":its your address or excluded address: " + s);
+                            return;
+                        }
+
+                        tempNode.forEach(s1 -> {
+                            System.out.println("put host: s1: " + s1);
+                            UtilsAllAddresses.putHost(s1);
+                        });
+                    } catch (Exception e) {
+                        System.err.println("updatingNodeEndBlocks: host not worked: " + s);
+                        e.printStackTrace();
+                    }
+                }))
+                .toList();
+
+        // Ожидание завершения всех задач
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allFutures.join(); // Дождаться завершения всех задач
+        System.out.println("All hosts updated in parallel.");
+    }
 
     public void updatingNodeEndBlocks(List<HostEndDataShortB> hostEndDataShortBS) {
         int result = -10;
         try {
-            MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
+
 
             // Обновление через utilsResolving
             result = utilsResolving.resolve3(hostEndDataShortBS);
             System.out.println("finish updating --------------------------------------------");
 
-            // Отправка собственного хоста
-            System.out.println("sending host --------------------------------------------");
-            Set<String> nodes = BasisController.getNodes();
-            System.out.println("tournament nodes: " + nodes);
-            System.out.println("my host: " + myHost);
-            UtilsAllAddresses.sendAddress(nodes, myHost);
-            System.out.println("finish sending host --------------------------------------------");
-
-            // Скачивание всех хостов
-            System.out.println("download host --------------------------------------------");
-            Set<String> node = BasisController.getNodes();
-            node.remove(myHost.getHost());
-
-            // Параллельная обработка узлов
-            List<CompletableFuture<Void>> futures = node.stream()
-                    .filter(s -> s != null && !s.isBlank()) // Удаляем пустые строки и null
-                    .map(s -> CompletableFuture.runAsync(() -> {
-                        try {
-                            System.out.println("updating: " + s);
-                            Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(s + "/getNodes"));
-
-                            if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
-                                System.out.println(":its your address or excluded address: " + s);
-                                return;
-                            }
-
-                            tempNode.forEach(s1 -> {
-                                System.out.println("put host: s1: " + s1);
-                                UtilsAllAddresses.putHost(s1);
-                            });
-                        } catch (Exception e) {
-                            System.err.println("updatingNodeEndBlocks: host not worked: " + s);
-                            e.printStackTrace();
-                        }
-                    }))
-                    .toList();
-
-            // Ожидание завершения всех задач
-            CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            allFutures.join(); // Дождаться завершения всех задач
-            System.out.println("All hosts updated in parallel.");
 
             // Очистка списков победителей
             clearWinners();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            MyLogger.saveLog("TournamentService updating: ", e);
-        } finally {
+
+        }finally {
             BasisController.setIsSaveFile(true);
         }
     }

@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class UtilsAllAddresses {
@@ -88,22 +90,21 @@ public class UtilsAllAddresses {
 
     public static void sendAddress(Set<String> nodes, MyHost myHost) throws IOException {
 
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        for (String s : nodes) {
-            try{
-                String hostStr = s;
-                if(s.contains("\""))
-                    hostStr = s.replaceAll("\"", "");
-                System.out.println("send " + s +" my host: " + myHost + "nodes: " + nodes.size());
+        nodes.stream().forEach(s -> executor.submit(() -> {
+            try {
+                String hostStr = s.contains("\"") ? s.replaceAll("\"", "") : s;
+
+                System.out.println("send " + s + " my host: " + myHost + " nodes: " + nodes.size());
                 UtilUrl.sendPost(UtilsJson.objToStringJson(myHost), hostStr + "/putNode");
-            }catch (Exception e){
-//                e.printStackTrace();
+
+            } catch (Exception e) {
                 System.out.println("error send to host: " + s);
-                continue;
             }
+        }));
 
-        }
-
+        executor.shutdown();
     }
     public static void putNode(MyHost host) {
 

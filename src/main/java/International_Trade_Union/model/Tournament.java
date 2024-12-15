@@ -35,6 +35,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static International_Trade_Union.utils.UtilsTime.logTimeElapsed;
+
 @Component
 @Scope("singleton")
 public class Tournament implements Runnable {
@@ -158,10 +160,27 @@ public class Tournament implements Runnable {
                 hosts = utilsResolving.sortPriorityHost(BasisController.getNodes());
                 hostsG = hosts;
                 BasisController.getBlockedNewSendBlock().set(false);
+                MyLogger.saveLog("start tournament");
+                long timeGlobalBefore = UtilsTime.getUniversalTimestamp();
+
+                long timeBefore =  UtilsTime.getUniversalTimestamp();;
                 tournament.tournament(hosts);
+                long timeAfter =  UtilsTime.getUniversalTimestamp();;
+                logTimeElapsed(timeBefore, timeAfter, "Tournament execution");
+
+                timeBefore =  UtilsTime.getUniversalTimestamp();;
                 tournament.updatingNodeEndBlocks(hosts);
-                allTransactions.addAllTransactions(tournament.getInstance(hosts));
+                timeAfter =  UtilsTime.getUniversalTimestamp();;
+                logTimeElapsed(timeBefore, timeAfter, "Node end blocks update");
+
+                long timeGlobalAfter =  UtilsTime.getUniversalTimestamp();;
+                logTimeElapsed(timeGlobalBefore, timeGlobalAfter, "Global execution");
+
+                MyLogger.saveLog("finish tournament");
+
                 BasisController.getBlockedNewSendBlock().set(true);
+                allTransactions.addAllTransactions(tournament.getInstance(hosts));
+                tournament.sendAndPutHost(nodes);
                 tournament.getCheckSyncTime(hosts);
 
                 // Вычисляем время до следующего турнира
@@ -229,6 +248,7 @@ public class Tournament implements Runnable {
             BasisController.setSizeWinnerList(0);
         }
     }
+
 
 
 }

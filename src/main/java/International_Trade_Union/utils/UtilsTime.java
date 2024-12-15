@@ -16,6 +16,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 public class UtilsTime {
+    public static void logTimeElapsed(long startMillis, long endMillis, String message) {
+        long durationMillis = endMillis - startMillis;
+        long durationSeconds = durationMillis / 1000;
+        MyLogger.saveLog(message + " Time elapsed: " + durationSeconds + " seconds, " + durationMillis + " milliseconds.");
+    }
     public static long getUniversalTimestamp() {
         return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond() * 1000L;
     }
