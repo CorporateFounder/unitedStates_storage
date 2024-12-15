@@ -24,15 +24,13 @@ import java.util.stream.Collectors;
 @Component
 public class NodeChecker {
 
-
     private static final int CHECK_TIMEOUT = 4000; // Таймаут для проверки узла в миллисекундах
 
-    public void checkNodes(UtilsResolving utilsResolving) throws InterruptedException, ExecutionException {
-        BasisController.getBlockedNewSendBlock().set(false);
+    public void checkNodes(List<HostEndDataShortB> hosts) throws InterruptedException, ExecutionException {
 
         // 1. Получаем исходный список узлов
         Set<String> nodes = BasisController.getNodes();
-        List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(nodes);
+
         Set<String> allNodes = new HashSet<>(nodes);
 
         // Получаем списки узлов от каждого сервера

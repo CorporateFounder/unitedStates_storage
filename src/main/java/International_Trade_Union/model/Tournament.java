@@ -100,13 +100,14 @@ public class Tournament implements Runnable {
 
     @Override
     public void run() {
-        BasisController.getBlockedNewSendBlock().set(false);
+
         // 1. Получаем исходный список узлов
         Set<String> nodes = BasisController.getNodes();
         List<HostEndDataShortB> hosts = utilsResolving.sortPriorityHost(nodes);
         hostsG = hosts;
         try {
-            nodeChecker.checkNodes(utilsResolving);
+            BasisController.getBlockedNewSendBlock().set(false);
+            nodeChecker.checkNodes(hosts);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {

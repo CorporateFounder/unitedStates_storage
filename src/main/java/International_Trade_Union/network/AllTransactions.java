@@ -89,7 +89,6 @@ public class AllTransactions {
         }
     }
 
-
     private List<DtoTransaction> validateAndFilterTransactions(List<DtoTransaction> transactions) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         // Удаление дубликатов и транзакций, уже добавленных в блокчейн
         Base base = new Base58();

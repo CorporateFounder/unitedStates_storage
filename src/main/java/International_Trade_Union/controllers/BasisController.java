@@ -1215,8 +1215,12 @@ public class BasisController {
 
                     winnerList.addAll(addlist);
 
+
                     utilsResolving.sendAllBlocksToStorage(addlist);
-                    utilsResolving.sendAllBlocksToStorage(UtilsJson.jsonToObject(winnerList()));
+                    List<Block> blockList = UtilsJson.jsonToObject(winnerList());
+                    if (blockList.size() > 0)
+                        utilsResolving.sendAllBlocksToStorage(blockList);
+
 
                     //прибавить к общей сумме денег
 
@@ -1240,7 +1244,7 @@ public class BasisController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            MyLogger.saveLog("resolve_conflict: ", e);
+            MyLogger.saveLog("resolve_conflict:  " + e.getMessage(), e);
 
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {
