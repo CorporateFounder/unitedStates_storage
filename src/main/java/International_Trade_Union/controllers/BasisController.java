@@ -259,7 +259,7 @@ public class BasisController {
         ));
         long M = 0;
         if (currentWinnerList.get(0).getIndex() > Seting.OPTIMAL_SCORE_INDEX)
-            M = Math.toIntExact(blockService.findModeHashComplexityInRange(currentWinnerList.get(0).getIndex()));
+            M = Math.toIntExact(blockService.findUnifiedModeHashComplexityFromDB(currentWinnerList.get(0).getIndex()));
 
         // Сортировка победителей
         List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList, M);

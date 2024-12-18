@@ -352,7 +352,7 @@ public class TournamentService {
 
             int M = 0;
             if (list.get(0).getIndex() > Seting.OPTIMAL_SCORE_INDEX)
-                M = Math.toIntExact(blockService.findModeHashComplexityInRange(list.get(0).getIndex()));
+                M = Math.toIntExact(blockService.findUnifiedModeHashComplexityFromDB(list.get(0).getIndex()));
 
 
             System.out.println("tournament: winner: " + winner.size());
