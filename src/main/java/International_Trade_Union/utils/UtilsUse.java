@@ -433,9 +433,6 @@ public class UtilsUse {
         if (actual.getIndex() > Seting.NEW_ALGO_MINING) {
 
 
-
-
-
             // Получаем количество уникальных отправителей транзакций
             long transactionCount = actual.getDtoTransactions().stream()
                     .filter(UtilsUse.distinctByKey(DtoTransaction::getSender))
