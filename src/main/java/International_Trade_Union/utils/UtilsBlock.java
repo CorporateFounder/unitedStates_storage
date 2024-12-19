@@ -618,7 +618,6 @@ public class UtilsBlock {
                         minerReward = 0;
                         minerPowerReward = 0;
                         multiplier = (int) money;
-                        MyLogger.saveLog("multiplier: " + multiplier);
                     }
 
                     if (thisBlock.getIndex() > Seting.START_BLOCK_DECIMAL_PLACES && thisBlock.getIndex() <= ALGORITM_MINING) {
