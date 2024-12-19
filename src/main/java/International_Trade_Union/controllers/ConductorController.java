@@ -585,37 +585,5 @@ public class ConductorController {
 
 
 
-    @GetMapping("/mode")
-    @ResponseBody
-    public String mode(@RequestParam int index) {
-        int blockchainSize = BasisController.getBlockchainSize();
-
-        if (index <= Seting.OPTIMAL_SCORE_INDEX) {
-            return "0";
-        }
-
-        if (index > blockchainSize - 1) {
-            return "Cannot be calculated because it is greater than the current height";
-        }
-
-        lock.lock();
-        try {
-
-            MyLogger.saveLog("test M: " + M + " prevIndex: " + prevIndex);
-            if (prevIndex != blockchainSize - 1) {
-
-                M = blockService.findUnifiedModeHashComplexityFromDB(index);
-                prevIndex = blockchainSize - 1;
-                MyLogger.saveLog("M: " + M + " prevIndex: " + prevIndex);
-            }
-            if (prevIndex <= 0) {
-                prevIndex = blockchainSize - 1;
-            }
-        } finally {
-            lock.unlock();
-        }
-
-        return Long.toString(M);
-    }
 
 }

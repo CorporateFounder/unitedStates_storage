@@ -257,12 +257,9 @@ public class BasisController {
                 block.getMinerAddress(),
                 address -> new Account(address, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
         ));
-        long M = 0;
-        if (currentWinnerList.get(0).getIndex() > Seting.OPTIMAL_SCORE_INDEX)
-            M = Math.toIntExact(blockService.findUnifiedModeHashComplexityFromDB(currentWinnerList.get(0).getIndex()));
 
         // Сортировка победителей
-        List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList, M);
+        List<Block> tempWinner = TournamentService.sortWinner(finalBalances, currentWinnerList);
 
         // Обновляем кэш
         winnerList.clear();

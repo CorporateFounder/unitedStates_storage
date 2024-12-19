@@ -515,8 +515,8 @@ public class UtilsResolving {
                                         System.out.println("host: " + entry.getKey());
 
                                         System.out.println("-------------------------------------------------");
-                                        UtilsAllAddresses.saveAllAddresses(entry.getKey(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                                        continue hostContinue;
+                                        UtilsAllAddresses.saveAllAddresses(s, Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
+                                        continue;
                                     }
 
                                 }
@@ -628,7 +628,7 @@ public class UtilsResolving {
 
 
                             if (!temp.isValidation()) {
-                                continue hostContinue;
+                                continue;
                             }
 
                         }
