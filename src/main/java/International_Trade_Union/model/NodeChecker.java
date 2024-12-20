@@ -102,7 +102,7 @@ public class NodeChecker {
         List<CompletableFuture<Void>> checkFutures = sortPriorityHost.stream()
                 .map(host -> CompletableFuture.runAsync(() -> {
                     boolean isResponding = false;
-                    for (int attempt = 0; attempt < 4; attempt++) {
+                    for (int attempt = 0; attempt < 5; attempt++) {
                         try {
                             String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
                             isResponding = true;
@@ -153,7 +153,7 @@ public class NodeChecker {
                 .map(host -> CompletableFuture.runAsync(() -> {
                     for (int attempt = 0; attempt < 6; attempt++) {
                         try {
-                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 5000);
+                            String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
                             if ("ready".equals(response)) {
                                 latch.countDown();
                                 MyLogger.saveLog("Host is ready: " + host.getHost());

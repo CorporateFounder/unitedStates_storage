@@ -1124,31 +1124,6 @@ public class UtilsResolving {
     }
 
 
-    public List<HostEndDataShortB> sortPriorityHostOriginal(Set<String> hosts) throws IOException, JSONException {
-        List<HostEndDataShortB> list = new ArrayList<>();
-        for (String s : hosts) {
-            try {
-                String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
-                System.out.println("jsonGlobalData: " + jsonGlobalData);
-                DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
-                if (global.isValidation()) {
-                    HostEndDataShortB dataShortB = new HostEndDataShortB(s, global);
-                    list.add(dataShortB);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                continue;
-            }
-
-
-        }
-
-        //сортировать здесь.
-        // сортировка
-        Collections.sort(list, new HostEndDataShortBComparator());
-        return list;
-    }
-
     /**
      * Записывает Блоки и баланс во временный файл.
      */

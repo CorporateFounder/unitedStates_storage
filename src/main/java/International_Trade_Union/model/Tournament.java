@@ -87,7 +87,8 @@ public class Tournament implements Runnable {
             } catch (Exception e) {
                 System.err.println("Error during daily time synchronization: " + e.getMessage());
             }
-        }, 24, 24, TimeUnit.HOURS); // Интервал - каждые 24 часа
+        }, 4, 4, TimeUnit.HOURS); // Интервал - каждые 24 часа
+
     }
 
     private void deleteBlockedHosts() {
@@ -138,6 +139,8 @@ public class Tournament implements Runnable {
 
         scheduler.scheduleAtFixedRate(this::deleteBlockedHosts, 0, Seting.DELETED_FILE_BLOCKED_HOST_TIME_SECOND, TimeUnit.SECONDS);
         fileBlockedDeleted = false;
+
+        nodeChecker.initiateProcess(hosts);
 
         while (true) {
 

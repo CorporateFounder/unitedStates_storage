@@ -318,7 +318,6 @@ public class TournamentService {
             Blockchain.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
 
-//            System.out.println("different time: " + timeDifference);
 
 
             System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
