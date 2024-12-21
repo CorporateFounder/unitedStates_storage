@@ -102,7 +102,7 @@ public class NodeChecker {
         List<CompletableFuture<Void>> checkFutures = sortPriorityHost.stream()
                 .map(host -> CompletableFuture.runAsync(() -> {
                     boolean isResponding = false;
-                    for (int attempt = 0; attempt < 4; attempt++) {
+                    for (int attempt = 0; attempt < 5; attempt++) {
                         try {
                             String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
                             isResponding = true;
@@ -132,7 +132,7 @@ public class NodeChecker {
         try {
             // Ждем завершения всех проверок с ограничением по времени
             CompletableFuture.allOf(checkFutures.toArray(new CompletableFuture[0]))
-                    .orTimeout(25, TimeUnit.SECONDS) // Ограничение времени выполнения
+                    .orTimeout(28, TimeUnit.SECONDS) // Ограничение времени выполнения
                     .join();
         } catch (Exception e) {
             MyLogger.saveLog("Error during readiness check: " + e.getMessage());
@@ -151,7 +151,7 @@ public class NodeChecker {
         // Теперь ждем, пока неготовые узлы станут готовыми
         List<CompletableFuture<Void>> waitFutures = availableHosts.stream()
                 .map(host -> CompletableFuture.runAsync(() -> {
-                    for (int attempt = 0; attempt < 5; attempt++) {
+                    for (int attempt = 0; attempt < 6; attempt++) {
                         try {
                             String response = UtilUrl.readJsonFromUrl(host.getHost() + "/confirmReadiness", 7000);
                             if ("ready".equals(response)) {
