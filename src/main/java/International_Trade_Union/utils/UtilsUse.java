@@ -433,6 +433,9 @@ public class UtilsUse {
         if (actual.getIndex() > Seting.NEW_ALGO_MINING) {
 
 
+
+
+
             // Получаем количество уникальных отправителей транзакций
             long transactionCount = actual.getDtoTransactions().stream()
                     .filter(UtilsUse.distinctByKey(DtoTransaction::getSender))
@@ -480,7 +483,7 @@ public class UtilsUse {
             int diffPoint = 0;
             if (actual.getIndex() > Seting.OPTIMAL_SCORE_INDEX) {
                 diffPoint = (int) (actual.getHashCompexity() * 15);
-                X = getX( (int) actual.getHashCompexity());
+
 
                 transactionPoints = calculateScore(transactionSum, 0.1);
 
@@ -489,7 +492,7 @@ public class UtilsUse {
 
                 //диапазон
 
-                int random = deterministicRandom.nextInt(X);
+                int random = deterministicRandom.nextInt(170);
 
                 //результат
                 result = (int) (diffPoint + random + transactionPoints + mineScore);
