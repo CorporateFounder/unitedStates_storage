@@ -170,25 +170,17 @@ public class UtilsResolving {
                     }
 
                     //скачиваем мета данные с сервера
-                    String jsonGlobalData = "";
-                    DataShortBlockchainInformation global = new DataShortBlockchainInformation();
-                    if(isFirst){
-                        global = entry.getValue();
-                        isFirst = false;
-                    }else {
-                        UtilUrl.readJsonFromUrl(s + "/datashort");
-                        System.out.println("jsonGlobalData: " + jsonGlobalData);
-                        //если мета данные сервера пустные, то он пропускает этот сервер
-                        if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
-                            System.out.println("*********************************************************");
-                            System.out.println("jsonGlobalData: error: " + jsonGlobalData);
-                            System.out.println("*********************************************************");
-                            continue;
-                        }
-                        global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
+                    String jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
+                    System.out.println("jsonGlobalData: " + jsonGlobalData);
+                    //если мета данные сервера пустные, то он пропускает этот сервер
+                    if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
+                        System.out.println("*********************************************************");
+                        System.out.println("jsonGlobalData: error: " + jsonGlobalData);
+                        System.out.println("*********************************************************");
+                        continue;
                     }
                     //мета данные с сервера
-
+                    DataShortBlockchainInformation global = UtilsJson.jsonToDataShortBlockchainInformation(jsonGlobalData);
 //
                     System.out.println("resolve3 size: " + size + " blocks_current_size: " + blocks_current_size);
 
