@@ -570,7 +570,7 @@ public class ConductorController {
         }
     }
 
-    @GetMapping("/findBlocksBySenderInRange")
+    @GetMapping("/findBlocksByCustomerInRange")
     public List<EntityBlock> getBlocksByCustomer(
             @RequestParam long from,
             @RequestParam long to,
