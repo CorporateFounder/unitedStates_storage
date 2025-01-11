@@ -146,6 +146,11 @@ public class AllTransactions {
                 System.out.println("The number of decimal places for digitalBonus exceeds " + Seting.SENDING_DECIMAL_PLACES);
                 continue;
             }
+
+            if(dtoTransaction.getDigitalStockBalance() <= 0 && dtoTransaction.getDigitalDollar() <= 0){
+                System.out.println("transaction can not send both dollar and stocks at the same time send 0 or lower " + Seting.SENDING_DECIMAL_PLACES);
+                continue;
+            }
             validTransactions.add(dtoTransaction);
         }
 
