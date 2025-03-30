@@ -1,3 +1,4 @@
+International_Trade_Union\entity\services\RewardDistributionService$3.class
 International_Trade_Union\governments\FractionPower.class
 International_Trade_Union\entity\blockchain\Blockchain$7.class
 International_Trade_Union\utils\UtilsJson.class
@@ -34,6 +35,7 @@ International_Trade_Union\entity\entities\EntityDtoTransaction.class
 International_Trade_Union\entity\repository\EntityAccountRepository.class
 International_Trade_Union\utils\UtilsBlock.class
 International_Trade_Union\entity\blockchain\DataShortBlockchainInformation.class
+International_Trade_Union\entity\entities\PoolBlock.class
 International_Trade_Union\entity\entities\EntityLaws.class
 International_Trade_Union\utils\UtilsBlock$4.class
 International_Trade_Union\model\Keys.class
@@ -92,11 +94,14 @@ International_Trade_Union\sheduled\DeletedSendedTransaction.class
 International_Trade_Union\utils\base\Base58.class
 International_Trade_Union\controllers\BasisController.class
 International_Trade_Union\model\StatusTransaction.class
+International_Trade_Union\entity\services\PoolBlockService.class
+International_Trade_Union\entity\services\RewardDistributionService$2.class
 International_Trade_Union\originalCorporateCharter\OriginalPreamble.class
 International_Trade_Union\utils\UtilsDIfficult.class
 International_Trade_Union\controllers\config\BLockchainFactory.class
 International_Trade_Union\utils\UtilsJson$3.class
 International_Trade_Union\entity\blockchain\Blockchain$6.class
+International_Trade_Union\setings\SetingPool.class
 International_Trade_Union\utils\UtilsResolving.class
 International_Trade_Union\CorporateCharterDraft\ArticleOneLegistratureDraft.class
 International_Trade_Union\CorporateCharterDraft\ArticleFiveCharterSupremacyDraft.class
@@ -113,6 +118,8 @@ International_Trade_Union\utils\UtilsDemerage.class
 International_Trade_Union\utils\HostValidator.class
 International_Trade_Union\originalCorporateCharter\OriginalCHARTER.class
 International_Trade_Union\controllers\NodeController.class
+International_Trade_Union\entity\services\RewardDistributionService.class
+International_Trade_Union\entity\services\RewardDistributionService$1.class
 International_Trade_Union\CorporateCharterEngDraft\ArticleTwoSpecialPositionEngDraft.class
 International_Trade_Union\model\UtilsTransactions.class
 International_Trade_Union\controllers\TransactionController.class
@@ -126,6 +133,7 @@ International_Trade_Union\network\AllTransactions.class
 International_Trade_Union\UnitedStatesApplication.class
 International_Trade_Union\controllers\NodesController.class
 International_Trade_Union\utils\UtilsBlock$3.class
+International_Trade_Union\controllers\PoolBlockController.class
 International_Trade_Union\entity\SendBlocksEndInfo.class
 International_Trade_Union\model\Account.class
 International_Trade_Union\utils\UtilsTransaction.class

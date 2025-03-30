@@ -2,12 +2,15 @@ package International_Trade_Union.model;
 
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.controllers.NodeController;
+
 import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.blockchain.Blockchain;
 import International_Trade_Union.entity.blockchain.DataShortBlockchainInformation;
 import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.entity.services.PoolBlockService;
+import International_Trade_Union.entity.services.RewardDistributionService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
@@ -54,6 +57,12 @@ public class TournamentService {
     @Autowired
     DomainConfiguration domainConfiguration;
 
+    @Autowired
+    PoolBlockService poolBlockService;
+
+    @Autowired
+    RewardDistributionService rewardDistributionService;
+
     private List<Block> winnerDiff = new ArrayList<>();
     private List<Block> winnerCountTransaction = new ArrayList<>();
     private List<Block> winnerStaking = new ArrayList<>();
@@ -67,7 +76,7 @@ public class TournamentService {
         this.winnerDiff = winnerDiff;
     }
 
-    public  static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list) {
+    public static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list) {
         //TODO start test ---------------------------------------------------------
         // Получение big random значения для блока
 
@@ -92,8 +101,6 @@ public class TournamentService {
     }
 
 
-
-
     public List<LiteVersionWiner> blockToLiteVersion(List<Block> list, Map<String, Account> balances) {
         List<LiteVersionWiner> list1 = new ArrayList<>();
         for (Block block : list) {
@@ -114,7 +121,7 @@ public class TournamentService {
         return list1;
     }
 
-    public void getCheckSyncTime( List<HostEndDataShortB> hosts){
+    public void getCheckSyncTime(List<HostEndDataShortB> hosts) {
         List<HostEndDataShortB> sortPriorityHost = null;
 
 
@@ -140,13 +147,13 @@ public class TournamentService {
                 //TODO или нет, чтобы если он не настроил, у него не брать блоки
                 //TODO если нет, то он должен так заблокировать
                 // UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
-                String timestr = UtilUrl.readJsonFromUrl(s +"/timentp");
-                if(timestr == null || timestr.isEmpty() || timestr.isBlank()){
+                String timestr = UtilUrl.readJsonFromUrl(s + "/timentp");
+                if (timestr == null || timestr.isEmpty() || timestr.isBlank()) {
                     return;
                 }
                 long localTime = UtilsTime.getUniversalTimestamp();
                 long serverTime = (long) UtilsJson.jsonToObject(timestr, Long.class);
-                if (!UtilsTime.isTimeSynchronized(localTime, serverTime)){
+                if (!UtilsTime.isTimeSynchronized(localTime, serverTime)) {
                     MyLogger.saveLog("pool.ntp.org different time in server");
                     UtilsAllAddresses.saveAllAddresses(hostEndDataShortB.getHost(), Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
                 }
@@ -243,11 +250,11 @@ public class TournamentService {
 
         // Перед выходом обновляем winnerList атомарно
 
-            for (Block block : tempWinnerSet) {
-                if (!BasisController.getWinnerList().contains(block)) {
-                    BasisController.getWinnerList().add(block);
-                }
+        for (Block block : tempWinnerSet) {
+            if (!BasisController.getWinnerList().contains(block)) {
+                BasisController.getWinnerList().add(block);
             }
+        }
 
     }
 
@@ -274,13 +281,13 @@ public class TournamentService {
     }
 
 
-    public void tournament(List<HostEndDataShortB> hostEndDataShortBS)  {
+    public void tournament(List<HostEndDataShortB> hostEndDataShortBS) {
 
         long timeBefore = UtilsTime.getUniversalTimestamp();
         // Сначала вызываем getAllWinner
         getAllWinner(hostEndDataShortBS);
         long timeAfter = UtilsTime.getUniversalTimestamp();
-        MyLogger.saveLog("getAllWinner: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
+        MyLogger.saveLog("getAllWinner: millisecond: " + (timeAfter - timeBefore) + " second: " + ((timeAfter - timeBefore) / 1000));
 
         // Меняем состояние на "готов"
         NodeController.setReady();
@@ -289,21 +296,19 @@ public class TournamentService {
         // Затем вызываем initiateProcess
         nodeChecker.initiateProcess(hostEndDataShortBS);
         timeAfter = UtilsTime.getUniversalTimestamp();
-        MyLogger.saveLog("initiateProcess: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
+        MyLogger.saveLog("initiateProcess: millisecond: " + (timeAfter - timeBefore) + " second: " + ((timeAfter - timeBefore) / 1000));
 
         try {
             timeBefore = UtilsTime.getUniversalTimestamp();
             List<Block> list = BasisController.getWinnerList();
             timeAfter = UtilsTime.getUniversalTimestamp();
-            MyLogger.saveLog("getWinnerList: millisecond: " + (timeAfter - timeBefore) + " second: " +((timeAfter-timeBefore)/1000));
+            MyLogger.saveLog("getWinnerList: millisecond: " + (timeAfter - timeBefore) + " second: " + ((timeAfter - timeBefore) / 1000));
 
             list = list.stream()
                     .filter(t -> t.getIndex() == BasisController.getBlockchainSize())
                     .filter(UtilsUse.distinctByKey(Block::getHashBlock))
-                    .filter(t-> UtilsUse.getDuplicateTransactions(t).size() == 0)
+                    .filter(t -> UtilsUse.getDuplicateTransactions(t).size() == 0)
                     .collect(Collectors.toList());
-
-
 
 
             if (list == null || list.isEmpty() || list.size() == 0) {
@@ -317,7 +322,6 @@ public class TournamentService {
             UtilsBalance.setBlockService(blockService);
             Blockchain.setBlockService(blockService);
             UtilsBlock.setBlockService(blockService);
-
 
 
             System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -347,7 +351,6 @@ public class TournamentService {
             } else {
                 winnerStaking.clear();
             }
-
 
 
             System.out.println("tournament: winner: " + winner.size());
@@ -390,7 +393,6 @@ public class TournamentService {
             List<Block> lastDiff = new ArrayList<>();
 
 
-
             Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
             List<String> sign = new ArrayList<>();
             //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
@@ -407,15 +409,18 @@ public class TournamentService {
 //                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
 
-
             boolean save = false;
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
-            if (winner != null && balances != null ) {
+            if (winner != null && balances != null) {
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
                 winner = winner.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
             }
 
+            //TODO отправка награды пула
+//            rewardDistributionService.loadState();
+            rewardDistributionService.checkPending();
+            rewardDistributionService.sendReward();
 
             if (save) {
                 //делает запись мета данных блокчейна.
@@ -441,7 +446,7 @@ public class TournamentService {
                     System.exit(1);
                 }
 
-            }else {
+            } else {
                 MyLogger.saveLog("Tournament addBlock3 has error: " + winner.get(0).getIndex());
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
@@ -480,7 +485,7 @@ public class TournamentService {
             );
 
             if (BasisController.getBlockchainSize() % 576 == 0) {
-              BasisController.setTotalDollars(blockService.getTotalDigitalDollarBalance());
+                BasisController.setTotalDollars(blockService.getTotalDigitalDollarBalance());
 
             }
 
@@ -524,7 +529,7 @@ public class TournamentService {
         } catch (IOException e) {
             System.out.println("TournamentService: IOException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e );
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e);
 
         } catch (NoSuchAlgorithmException e) {
             System.out.println("TournamentService: NoSuchAlgorithmException");
@@ -540,23 +545,26 @@ public class TournamentService {
         } catch (SignatureException e) {
             System.out.println("TournamentService: SignatureException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " ", e);
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e);
 
         } catch (NoSuchProviderException e) {
             System.out.println("TournamentService: NoSuchProviderException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " ", e);
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e);
 
         } catch (InvalidKeyException e) {
             System.out.println("TournamentService: InvalidKeyException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " ", e);
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e);
 
         } catch (CloneNotSupportedException e) {
             System.out.println("TournamentService: CloneNotSupportedException");
             e.printStackTrace();
-            MyLogger.saveLog("TournamentService: "+ " message: " + e.getMessage() + " " , e);
+            MyLogger.saveLog("TournamentService: " + " message: " + e.getMessage() + " ", e);
 
+        } catch (Exception e) {
+
+            MyLogger.saveLog("TournamentService: pool error " + " message: " + e.getMessage() + " ", e);
         } finally {
             NodeController.setNotReady();
             BasisController.setIsSaveFile(true);
@@ -564,7 +572,7 @@ public class TournamentService {
 
     }
 
-    public void sendAndPutHost(Set<String> nodes){
+    public void sendAndPutHost(Set<String> nodes) {
         // Отправка собственного хоста
         System.out.println("sending host --------------------------------------------");
         MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
@@ -626,7 +634,7 @@ public class TournamentService {
             clearWinners();
 
 
-        }finally {
+        } finally {
             BasisController.setIsSaveFile(true);
         }
     }
@@ -652,7 +660,9 @@ public class TournamentService {
             BasisController.getWinnerList().clear();
             BasisController.setSizeWinnerList(0);
         }
-    }    public List<DtoTransaction> getInstance(List<HostEndDataShortB> hosts) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+    }
+
+    public List<DtoTransaction> getInstance(List<HostEndDataShortB> hosts) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         // Асинхронная обработка для получения транзакций с каждого хоста
         List<CompletableFuture<List<DtoTransaction>>> futures = hosts.stream()
                 .map(hostEndDataShortB -> CompletableFuture.supplyAsync(() -> {
@@ -681,8 +691,6 @@ public class TournamentService {
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
         return instance.stream().distinct().collect(Collectors.toList());
     }
-
-
 
 
 }

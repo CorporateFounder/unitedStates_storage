@@ -342,4 +342,6 @@ public interface Seting {
     double PERCENT_MONEY_MILTON_FRIMDAN2 = 1.005;
     int MILTON_MONEY_DAY = 432;
     int OPTIMAL_SCORE_INDEX = 342201;
+
+
 }
