@@ -25,5 +25,8 @@ public interface EntityAccountRepository extends JpaRepository<EntityAccount, Lo
 
     @Query("SELECT SUM(e.digitalDollarBalance) FROM EntityAccount e")
     Double getTotalDigitalDollarBalance();
+
+    @Query("SELECT SUM(e.digitalStakingBalance) FROM EntityAccount e")
+    Double getTotalDigitalStakingBalance();
     List<EntityAccount> findAllByAccountIn(List<String> accounts);
 }

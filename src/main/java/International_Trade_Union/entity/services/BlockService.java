@@ -127,7 +127,17 @@ public class BlockService {
         Double totalBalance = entityAccountRepository.getTotalDigitalDollarBalance();
         return (totalBalance != null) ? totalBalance : 0.0;
     }
-
+    @Transactional(readOnly = true)
+    public double getTotalDigitalStakingBalance() {
+        Double totalBalance = entityAccountRepository.getTotalDigitalStakingBalance();
+        return (totalBalance != null) ? totalBalance : 0.0;
+    }
+    @Transactional(readOnly = true)
+    public double getTotalDigitalAllBalance() {
+        Double totalBalance = entityAccountRepository.getTotalDigitalStakingBalance() +
+                entityAccountRepository.getTotalDigitalDollarBalance();
+        return (totalBalance != null) ? totalBalance : 0.0;
+    }
 
     public EntityAccount findByAccount(String account) throws IOException {
         EntityAccount entityAccounts = null;

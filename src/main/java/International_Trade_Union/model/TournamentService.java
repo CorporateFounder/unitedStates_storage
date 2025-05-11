@@ -486,6 +486,9 @@ public class TournamentService {
 
             if (BasisController.getBlockchainSize() % 576 == 0) {
                 BasisController.setTotalDollars(blockService.getTotalDigitalDollarBalance());
+                BasisController.setTotalStaking(blockService.getTotalDigitalStakingBalance());
+                BasisController.setTotalAll(blockService.getTotalDigitalAllBalance());
+
 
             }
 

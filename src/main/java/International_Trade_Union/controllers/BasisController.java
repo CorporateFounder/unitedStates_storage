@@ -322,6 +322,18 @@ public class BasisController {
         BasisController.totalDollars = totalDollars;
     }
 
+    public static void setBalances(Map<String, Account> balances) {
+        BasisController.balances = balances;
+    }
+
+    public static void setTotalStaking(double totalStaking) {
+        BasisController.totalStaking = totalStaking;
+    }
+
+    public static void setTotalAll(double totalAll) {
+        BasisController.totalAll = totalAll;
+    }
+
     public static boolean isBlockchainValid() {
         return blockchainValid;
     }
@@ -473,6 +485,8 @@ public class BasisController {
      * Общее сумма долларов, не находящиеся в стэйкинге
      */
     private static double totalDollars = 0;
+    private static double totalStaking = 0;
+    private static double totalAll = 0;
     private static long dificultyOneBlock;
 
     /**
@@ -701,7 +715,33 @@ public class BasisController {
 
         return totalDollars;
     }
+    @GetMapping("/totalStaking")
+    public double getTotalStaking() {
+        try {
 
+            if (totalStaking == 0) {
+                BasisController.setTotalStaking(blockService.getTotalDigitalStakingBalance());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return totalStaking;
+    }
+
+    @GetMapping("/totalAll")
+    public double getTotalAll() {
+        try {
+
+            if (totalAll == 0) {
+                BasisController.setTotalAll(blockService.getTotalDigitalAllBalance());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return totalAll;
+    }
     /**
      * Общее количество транзакций совершенных в день
      */
