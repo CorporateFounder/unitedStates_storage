@@ -1047,6 +1047,7 @@ public class UtilsBlock {
         UtilsFileSaveRead.deleteAllFiles(Seting.H2_DB);
 
 
+
         UtilsFileSaveRead.deleteFile(Seting.TEMPORARY_BLOCKCHAIN_FILE);
 
 
