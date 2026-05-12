@@ -37,8 +37,13 @@ public class V35ParityTest {
         assertNotNull(ProtocolVersion.class.getDeclaredMethod("isLegacy", long.class));
         assertNotNull(V35RewardCalculator.class.getDeclaredMethod("getTotalGoldReward"));
         assertNotNull(V35RewardCalculator.class.getDeclaredMethod("getInstantMinerGoldReward"));
+        assertNotNull(V35RewardCalculator.class.getDeclaredMethod("getInstantMinerStockReward"));
         assertNotNull(V35RewardCalculator.class.getDeclaredMethod("getJackpotGoldReward"));
+        assertNotNull(V35RewardCalculator.class.getDeclaredMethod("getFounderGoldReward"));
+        assertNotNull(V35RewardCalculator.class.getDeclaredMethod("getFounderStockReward"));
         assertNotNull(V35RewardCalculator.class.getDeclaredMethod("validateJackpotSplit"));
+        assertNotNull(V35RewardCalculator.class.getDeclaredMethod("isValidInstantMinerReward", double.class, double.class));
+        assertNotNull(V35RewardCalculator.class.getDeclaredMethod("isValidFounderReward", double.class, double.class));
         assertNotNull(FounderRewardPolicy.class.getDeclaredMethod("isFounderRewardEnabled", long.class));
         assertNotNull(FounderRewardPolicy.class.getDeclaredMethod("expectedFounderGoldReward", long.class));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("getDailyPerBlock"));

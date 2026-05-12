@@ -10,6 +10,8 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
+import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35RewardCalculator;
 
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
@@ -571,6 +573,38 @@ public class UtilsBlock {
                 MyLogger.saveLog("repeat Transaction: verify" + verify + "json: " + json + " index: "  + thisBlock.getIndex());
             }
             if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
+                if (ProtocolVersion.isV35(thisBlock.getIndex())) {
+                    if (transaction.getCustomer().equals(addressFounder)) {
+                        System.out.println("V35 founder reward is disabled: index: " + thisBlock.getIndex());
+                        UtilsFileSaveRead.save("V35 founder reward is disabled: index: " + thisBlock.getIndex(), ERROR_FILE, true);
+                        validated = false;
+                        break;
+                    }
+
+                    if (!transaction.getCustomer().equals(thisBlock.getMinerAddress())) {
+                        System.out.println("V35 BASIS reward can only be paid to miner in Phase 2B: " + transaction.getCustomer());
+                        UtilsFileSaveRead.save("V35 BASIS reward can only be paid to miner in Phase 2B: " + transaction.getCustomer(), ERROR_FILE, true);
+                        validated = false;
+                        break;
+                    }
+
+                    countBasisSendAll += 1;
+                    if (!V35RewardCalculator.isValidInstantMinerReward(transaction.getDigitalDollar(), transaction.getDigitalStockBalance())) {
+                        System.out.println("V35 wrong miner reward: expected dollar "
+                                + V35RewardCalculator.getInstantMinerGoldReward() + " stock "
+                                + V35RewardCalculator.getInstantMinerStockReward());
+                        UtilsFileSaveRead.save("V35 wrong miner reward: index: " + thisBlock.getIndex(), ERROR_FILE, true);
+                        validated = false;
+                        break;
+                    }
+
+                    if (countBasisSendAll > 1 && thisBlock.getIndex() > 1) {
+                        System.out.println("V35 BASIS reward send count over one: " + countBasisSendAll);
+                        UtilsFileSaveRead.save("V35 BASIS reward send count over one: " + countBasisSendAll, ERROR_FILE, true);
+                        validated = false;
+                        break;
+                    }
+                } else {
                 double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
                 double minerPowerReward = Seting.DIGITAL_STOCK_REWARDS_BEFORE;
                 if (thisBlock.getIndex() > Seting.CHECK_UPDATING_VERSION) {
@@ -888,6 +922,7 @@ public class UtilsBlock {
                     validated = false;
                     break;
                 }
+                }
             } else if (!verify) {
                 System.out.println("wrong transaction: " + transaction + " verify: " + verify);
 
@@ -936,6 +971,12 @@ public class UtilsBlock {
                 }
             }
 
+        }
+
+        if (ProtocolVersion.isV35(thisBlock.getIndex()) && thisBlock.getIndex() > 1 && countBasisSendAll != 1) {
+            System.out.println("V35 block must contain exactly one BASIS miner reward transaction: " + countBasisSendAll);
+            UtilsFileSaveRead.save("V35 block must contain exactly one BASIS miner reward transaction: " + countBasisSendAll, ERROR_FILE, true);
+            return false;
         }
 
         String target = BlockchainDifficulty.calculateTarget(thisBlock.getHashCompexity());

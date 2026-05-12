@@ -11,6 +11,8 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.governments.Directors;
 import International_Trade_Union.governments.UtilsGovernment;
+import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35RewardCalculator;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
@@ -239,6 +241,41 @@ public class Mining {
         }
 
         Block prevBlock = blockchain.get(blockchain.size() - 1);
+
+        if (ProtocolVersion.isV35(index)) {
+            PrivateKey privateKey = UtilsSecurity.privateBytToPrivateKey(base.decode(Seting.BASIS_PASSWORD));
+            double sumRewards = forAdd.stream().collect(Collectors.summingDouble(DtoTransaction::getBonusForMiner));
+            String addressFounrder = Blockchain.indexFromFile(0, Seting.ORIGINAL_BLOCKCHAIN_FILE).getFounderAddress();
+            if (!addressFounrder.equals(prevBlock.getFounderAddress())) {
+                System.out.println("wrong founder address: ");
+                return null;
+            }
+
+            DtoTransaction minerRew = new DtoTransaction(
+                    Seting.BASIS_ADDRESS,
+                    minner.getAccount(),
+                    V35RewardCalculator.getInstantMinerGoldReward(),
+                    V35RewardCalculator.getInstantMinerStockReward(),
+                    new Laws(),
+                    sumRewards,
+                    VoteEnum.YES);
+            byte[] signGold = UtilsSecurity.sign(privateKey, minerRew.toSign());
+            minerRew.setSign(signGold);
+            forAdd.add(minerRew);
+
+            forAdd = forAdd.stream().filter(UtilsUse.distinctByKeyString(t -> {
+                try {
+                    return t.getSign() != null ? base.encode(t.getSign()) : null;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            })).collect(Collectors.toList());
+
+            forAdd = forAdd.stream().filter(t -> t != null).collect(Collectors.toList());
+            forAdd = forAdd.stream().sorted(Comparator.comparing(t -> base.encode(t.getSign()))).collect(Collectors.toList());
+            return new Block(forAdd, prevBlock.getHashBlock(), minner.getAccount(), addressFounrder, difficulty, index);
+        }
 
 
         //доход майнера
