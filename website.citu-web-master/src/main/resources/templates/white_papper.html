@@ -1,0 +1,286 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Block Reward Distribution Mechanism and Cryptocurrency Mining Model</title>
+    <style>
+
+        img {
+            width: 800px; /* задает фиксированную ширину */
+            height: auto; /* сохраняет пропорции */
+        }
+    </style>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header">
+    <h1>Block Reward Distribution Mechanism and Cryptocurrency Mining Model</h1>
+</header>
+
+<div class="container">
+    <div class="content">
+
+        <h1>Instructions for Working with the Points System and Block Complexity</h1>
+
+
+        <hr>
+
+        <h2>Reward Calculation</h2>
+        <ol>
+            <li><strong>Reward Formula:</strong>
+                <ul>
+                    <li><code>blocksSinceStart</code> = current block index - 326840</li>
+                    <li><code>year</code> = <code>blocksSinceStart</code> / (432 × 360)</li>
+                    <li><code>difficultyV2</code> = max(complexity - 22, 0)</li>
+                    <li><strong>Result</strong> = (3 + (coefficient / 4) + (difficultyV2 / 4)) × (1.005) ^ <code>year</code></li>
+                    <li><strong>Reward</strong> = <code>Result</code> × <code>Multiplier</code> (where multiplier ≥ 1)</li>
+                </ul>
+            </li>
+            <li><strong>Coefficient:</strong>
+                <ul>
+                    <li>Possible values: 3 or 0</li>
+                    <li>Encourages transactional activity</li>
+                    <li>3 if unique transactions and volume increase over the previous block</li>
+                    <li>0 if they remain the same or decrease</li>
+                    <li>Excludes BASE ADDRESS and duplicate addresses</li>
+                </ul>
+            </li>
+
+            <li><strong>Multiplier:</strong>
+                <ul>
+                    <li>Initial value: 35, linearly decreases every 4 months.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>Hybrid Consensus System</h2>
+        <p>The system uses a combination of PoW and PoS to ensure security.</p>
+
+        <h3>Player Points Formation:</h3>
+        <p><strong>Points</strong> = complexity points + random number + staking points + transaction points</p>
+        <ol>
+            <li><strong>Staking Points:</strong>
+                <ul>
+                    <li>Exponential scale:</li>
+                    <li>1st point: 1.1 coins</li>
+                    <li>2nd point: 2.1 coins</li>
+                    <li>3rd point: 4.1 coins</li>
+                    <li>Maximum: 30 points.</li>
+                </ul>
+            </li>
+            <li><strong>Transaction Points:</strong>
+                <ul>
+                    <li>Calculated based on the transaction amounts from unique senders:</li>
+                    <li>1st point: 0.11 coins</li>
+                    <li>2nd point: 0.21 coins</li>
+                    <li>3rd point: 0.41 coins</li>
+                    <li>Maximum: points cannot exceed staking points.</li>
+                </ul>
+            </li>
+            <li><strong>Complexity and Groups:</strong>
+                <ul>
+                    <li>Every 100-230 seconds, 1 block is selected by nodes with the highest points.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h2>Parameters of Complexity and Hash Goal</h2>
+        <p>Each participant can send blocks with complexity from <strong>17 to 100</strong>.</p>
+        <ul>
+            <li><strong>Valid Hash</strong>: A hash where the number of units in bits is less than or equal to the value: <br>
+                <strong>Goal = 100 - Complexity.</strong></li>
+        </ul>
+
+        <h3>Randomness Generation:</h3>
+        <p>The random number is generated based on the block hash, where the hash serves as the seed for deterministic randomness. The range for the random number is fixed from <code>0</code> to <code>170</code>.</p>
+
+        <h2>New Scoring Model</h2>
+        <p>The scoring model calculates points for players based on the following:</p>
+
+        <ol>
+            <li>
+                <strong>Difficulty Points:</strong>
+                <ul>
+                    <li>Calculated as: <code>difficulty * 15</code>.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Transaction Points:</strong>
+                <ul>
+                    <li>Determined by a pre-defined formula (already implemented).</li>
+                    <li>Capped at the value of <code>mineScore</code>.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Hash Complexity Value (X):</strong>
+                <ul>
+                    <li>Determined by the formula: <code>170</code>.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Random Range:</strong>
+                <ul>
+                    <li>Fixed range: <code>0 to 170</code>.</li>
+                    <li>A random number is selected within this range.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Total Points:</strong>
+                <ul>
+                    <li>Final calculation: <code>Total Points = Difficulty Points + Random Value + Transaction Points + mineScore</code>.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Example Workflow</h3>
+        <ol>
+            <li>Retrieve the current hash complexity.</li>
+            <li>Calculate <strong>Difficulty Points</strong>: Multiply hash complexity by 15.</li>
+            <li>Use a fixed range of <code>0 to 170</code> for random number generation.</li>
+            <li>Select a random number within the fixed range.</li>
+            <li>Combine all components to determine the total points.</li>
+        </ol>
+
+        <h3>Key Notes</h3>
+        <ul>
+            <li>Transaction Points are pre-calculated and capped by <code>mineScore</code>.</li>
+            <li>The randomness range is always fixed between <code>0</code> and <code>170</code>, regardless of complexity.</li>
+            <li>All calculations must use deterministic randomness for consistency.</li>
+        </ul>
+
+        <h1>Citu Supply Comparison</h1>
+
+        <h2>Conclusion</h2>
+        <p>Each coin has only 2 decimal places.</p>
+
+        <h2>Two Villages</h2>
+        <ol>
+            <li>
+                In the EUR village:
+                <ul>
+                    <li>They issued <strong>1,000 banknotes</strong>.</li>
+                    <li>The denomination of each banknote is <strong>0.01 EUR</strong>.</li>
+                    <li>Total currency volume: <strong>1,000 × 0.01 = 10 EUR</strong>.</li>
+                </ul>
+            </li>
+            <li>
+                In the USD village:
+                <ul>
+                    <li>They also issued <strong>1,000 banknotes</strong>.</li>
+                    <li>The denomination of each banknote is <strong>1 USD</strong>.</li>
+                    <li>Total currency volume: <strong>1,000 × 1 = 1,000 USD</strong>.</li>
+                </ul>
+            </li>
+        </ol>
+        <p>At first glance, it seems that the currency volume differs: 10 EUR versus 1,000 USD. However, it is essential to consider the <strong>exchange rate</strong>.</p>
+
+        <h3>Exchange and Parity</h3>
+        <p>When the villagers decided to trade, they agreed that:</p>
+        <ul>
+            <li><strong>1 USD = 0.01 EUR.</strong></li>
+        </ul>
+        <p>Therefore, economic parity is fully preserved. For example:</p>
+        <ul>
+            <li>A villager from the EUR village buys green sneakers from the USD village for 1 USD. To pay, they give 1 banknote of 0.01 EUR.</li>
+            <li>A villager from the USD village buys a red T-shirt for 0.01 EUR. To pay, they give 1 banknote of 1 USD.</li>
+        </ul>
+        <p>Thus, despite different banknote denominations, the actual volume and purchasing power of the currencies remain <strong>equivalent</strong> since the exchange rate accounts for the nominal differences.</p>
+
+        <h3>Economic Conclusion</h3>
+        <ul>
+            <li>The <strong>total number of banknotes (1,000)</strong> is the same.</li>
+            <li>The <strong>overall purchasing power</strong> of the currencies is equivalent when the exchange rate is applied.</li>
+        </ul>
+        <p>Therefore, the economies of the two villages are <strong>symmetric</strong>, and the denomination of banknotes only affects <strong>perception</strong>.</p>
+
+
+        <h3>Comparison with Bitcoin</h3>
+        <p>Bitcoin has 8 decimal places, meaning it can be divided into <strong>0.00000001 BTC</strong>, or 100,000,000 units per coin. Thus, the total number of units in the Bitcoin system equals:</p>
+        <ul>
+            <li><strong>2,100,000,000,000,000 satoshis.</strong> (calculated as 21,000,000 coins × 100,000,000 units per coin).</li>
+        </ul>
+        <p>In comparison, Citu, even in 11 years, will reach a total of <strong>22,600,000,000 units</strong> (calculated as 226,000,000 coins × 100 units per coin).</p>
+        <p>When people say that only 3 bitcoins are mined per block, this is equivalent to 3 "boxes," each containing <strong>100,000,000 banknotes</strong>. Thus, one Citu coin is essentially equivalent to a "box" containing 100 banknotes, while each bitcoin generates <strong>1,000,000 times more banknotes</strong>.</p>
+        <p>In other words, <strong>226 bitcoins have the same number of banknotes as Citu will achieve in 11 years.</strong></p>
+
+
+        <h2>Current Supply (150 Million Citu Coins):</h2>
+        <p>The smallest units are shown: <span class="highlight">Citu: 15,000,000,000 units.</span> (calculated as 150,000,000 coins × 100 units per coin).</p>
+
+        <h2>Future Supply in 11 Years (226 Million Citu Coins):</h2>
+        <p>The smallest units are shown: <span class="highlight">Citu: 22,600,000,000 units.</span> (calculated as 226,000,000 coins × 100 units per coin).</p>
+
+        <h2>Bitcoin:</h2>
+        <p>The smallest units are shown: <span class="highlight">Bitcoin: 2,100,000,000,000,000 satoshis.</span></p>
+
+        <h2>Ethereum:</h2>
+        <p>The smallest units are shown: <span class="highlight">Ethereum: 120,000,000,000,000,000,000,000 wei</span> (calculated as 120,000,000 coins × 1,000,000,000,000,000,000 units per coin).</p>
+
+        <h2>Gold:</h2>
+        <p>Total gold reserves: <span class="highlight">205,000,000,000 grams.</span></p>
+
+        <h2>If Gold Were Distributed:</h2>
+        <img th:src="@{/logo/output.png}" alt="Gold Distribution">
+        <ul>
+            <li><span class="highlight">Bitcoin (satoshis):</span> 0.0000976 grams per satoshi</li>
+            <li><span class="highlight">Ethereum (wei):</span> 0.0000000000000000017 grams per wei</li>
+            <li><span class="highlight">Citu (current):</span> 13.67 grams per unit</li>
+            <li><span class="highlight">Citu (future):</span> 9.07 grams per unit</li>
+        </ul>
+
+        <p>The <span class="highlight">logarithmic scale</span> shows the gap between the Citu currency and the rest of the assets, highlighting the <span class="highlight">scarcity</span> of Citu both now and in the long term.</p>
+
+        <h2>Comparison with Global Liquidity</h2>
+        <p>Global liquidity encompasses the total value of all money, assets, and wealth in the world, estimated at <strong>100,000,000,000,000 USD (100 trillion dollars)</strong>. This includes:</p>
+        <ul>
+            <li>Cash and physical currency in circulation</li>
+            <li>Bank deposits</li>
+            <li>Real estate, stocks, and bonds</li>
+            <li>Other liquid and semi-liquid assets</li>
+        </ul>
+        <p>Comparing the total number of minimal units for each currency to global liquidity:</p>
+        <ul>
+            <li><strong>Bitcoin:</strong> Total units: 2,100,000,000,000,000. Global liquidity is 21,000 times smaller than the total satoshis.</li>
+            <li><strong>Ethereum:</strong> Total units: 120,000,000,000,000,000,000,000. Global liquidity is 1 trillion times smaller than the total wei.</li>
+            <li><strong>Citu (current):</strong> Total units: 15,000,000,000. Global liquidity is 6,667 times larger than the total minimal units of Citu.</li>
+            <li><strong>Citu (future):</strong> Total units: 22,600,000,000. Global liquidity is 4,425 times larger than the total minimal units of Citu.</li>
+        </ul>
+        <img th:src="@{/logo/output2.png}" alt="Citu">
+
+        <h2>Explanation of Global Liquidity</h2>
+        <p><strong>Global liquidity</strong> refers to the total monetary value of all easily accessible financial assets worldwide, which is estimated at <strong>100 trillion USD</strong>. This figure includes:</p>
+        <ul>
+            <li><strong>Physical cash:</strong> Banknotes and coins in circulation.</li>
+            <li><strong>Bank deposits:</strong> Funds held in checking, savings, and similar accounts.</li>
+            <li><strong>Financial assets:</strong> Stocks, bonds, and other easily tradeable securities.</li>
+            <li><strong>Real estate:</strong> Residential, commercial, and industrial properties contributing to global liquidity.</li>
+            <li><strong>Commodities:</strong> Gold, oil, and other market-traded physical assets.</li>
+            <li><strong>Cryptocurrencies:</strong> Digital currencies like Bitcoin, Ethereum, and others included as part of liquid digital assets.</li>
+        </ul>
+        <p>Global liquidity is a key measure of the world's financial health, reflecting how much capital is readily available for investment, consumption, and trade.</p>
+        <img th:src="@{/logo/output3.png}" alt="Global Liquidity Composition" style="width:100%;max-width:800px;">
+
+
+
+        <h3>Summary</h3>
+        <p>The denomination of currencies (e.g., 0.01 EUR or 1 USD) affects only perception but not actual purchasing power, provided the correct exchange rate is applied. For an economy, the total number of banknotes and their divisibility matter.</p>
+        <p>Bitcoin has high divisibility (8 decimal places), creating a massive number of units (2.1 quadrillion). In comparison, Citu will reach only 22.6 billion units in 11 years due to its 2 decimal place divisibility. Thus, each bitcoin is equivalent to a million Citu banknotes, and 226 bitcoins have the same number of banknotes as Citu will achieve in 11 years.</p>
+
+
+
+        <p>The lower boundary of the cryptocurrency price is determined by the electricity costs for its mining, reflecting the labor theory of value. The upper boundary is governed by the subjective theory of value, representing the value users attribute to the cryptocurrency. The average price will grow in accordance with the marginal utility theory since mining is inelastic, gradually decreasing, but never reaching zero. The annual coin supply increase is significantly less than 0.005% relative to the total issuance, offsetting lost coins and supporting miner expenses.</p>
+        <p>The system dynamically adapts: when demand decreases, mining complexity decreases, reducing emissions, and during a sharp price increase, complexity grows, stimulating coin issuance. This allows the system to regulate the exchange rate using market tools. Excess emissions are directed to staking, promoting long-term stability.</p>
+        <p>This cryptocurrency is especially suitable as a reserve currency. Its limited supply makes it attractive due to its scarcity, enhancing its market value.</p>
+
+    </div>
+</div>
+
+<footer th:insert="blocks/footer :: footer">
+    <p>&copy; 2024 Block Reward Mechanism. All Rights Reserved.</p>
+</footer>
+</body>
+</html>

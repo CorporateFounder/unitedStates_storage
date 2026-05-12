@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">Charter</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+
+    <!-- Подключаем ваш «осенний» файл со стилями -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+
+    <!-- Если нужно оставить Bootstrap для сетки/отступов, оставьте.
+         Если нет необходимости в Bootstrap, можно удалить следующую строку. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+
+<!-- Header, который потом стилизуется классом .header-custom из вашего styles.css -->
+<header th:insert="blocks/header :: header"></header>
+
+<!-- Вместо alert alert-info используем вашу .alert-info,
+     которая определяется в вашем styles.css (фон #f7e4d8, цвет #3e261a, и т.д.) -->
+<div class="alert-info" style="margin: 1rem; padding: 1rem;">
+    <img th:src="@{/vote_p/choose position.png}" alt="Choose Position"/>
+    <img th:src="@{/vote_p/create law.png}" alt="Create Law"/>
+    <img th:src="@{/vote_p/create positon.png}" alt="Create Position"/>
+    <img th:src="@{/vote_p/details.png}" alt="Details"/>
+    <img th:src="@{/vote_p/menu.png}" alt="Menu"/>
+    <img th:src="@{/vote_p/menu choose create.png}" alt="Menu Choose Create"/>
+    <img th:src="@{/vote_ptable voting.png}" alt="Voting"/>
+</div>
+
+<!-- Instructions Section -->
+<div class="container mt-5">
+    <h2>Election Participation Instructions</h2>
+    <p>To participate in the elections, you must click on the <strong>Menu</strong> and then select the current packages of <strong>SOLUTION/RULE</strong> or <strong>POSITION</strong>.</p>
+    <p><strong>IMPORTANT!!!</strong></p>
+    <p>If you are accessing this tab for the first time, the system will perform a full recalculation which may take up to 40 minutes. You can monitor the counting process in the console. After the initial calculation, subsequent calculations will be much faster, taking less than a few seconds.</p>
+
+    <ol>
+        <li>When you click this button, a window appears for filling out rules or proposals (laws) that you can suggest.</li>
+        <li>When you click this button, a window appears for creating new positions. You only need to come up with the package name and position title, and the system will automatically add the keyword <strong>ADD_DIRECTOR</strong> to the names and positions.</li>
+        <li>When you click this button, you can select the position you want to apply for if you haven't done so before. Then, you need to click button 4, and it will automatically fill in some fields and open a window.</li>
+        <li>...</li>
+        <li>5. Displays in your wallet whether you have voted for this: YES with a checkmark, NO with a cross, and if you haven't voted, "Not Voted".</li>
+        <li>6. The index of when you last voted.</li>
+        <li>7. Identification number, which all packages have. If you have previously applied for a position or created a rule/proposal, you can copy this and share it with other participants so they can vote directly for it via <a href="http://localhost:8082/voting">http://localhost:8082/voting</a>. They will need to fill in the field "enter the address of the law".</li>
+        <li>8. Indicates whether this package is an application for a position or a rule/proposal.</li>
+        <li>9. <code>whoCreate</code> displays who created this application or rule/proposal. If you see "POSITION" in item 8, voting for it means you are voting for this address to hold this position or not.</li>
+        <li>10. Indicates when this application or rule/proposal was created.</li>
+        <li>11. Total rating of all votes, including directors' votes and direct votes.</li>
+        <li>12. Rating of all votes relative to the share of the total directors' rating. For example, if each elected director has a rating of 200, the total will be 1000. If participants vote directly, YES-NO=RATING, this number as a fraction of 1000 from directors must be 52% or more.</li>
+        <li>13. Total rating of all directors, each director's rating YES-NO=RATING. The top 5 candidates become directors. The total rating of all directors is displayed here.</li>
+        <li>14. Each director votes with their rating. For example, if you voted for director A and you have 300 coins, and someone votes against with 100 coins, the final rating is 300-100=200, thus their share out of 1000 is 20%. If directors vote 52% or more, the decision passes.</li>
+        <li>15. Votes of the Council of Judges, 1 judge = 1 vote. Only YES is displayed here.</li>
+        <li>16. Votes of the Council of Judges, 1 judge = 1 vote. Only NO is displayed here. If the number is 4 or more, a veto is imposed on the decision.</li>
+        <li>17. List of directors who have voted and their share strength, from 0 to 100% in percentages, relative to the total rating of all directors.</li>
+        <li>18. The General Director displays their vote. Their vote does not influence the decision but shows their opinion on the matter.</li>
+        <li>19. The Founder's vote does not influence the decision but displays the Founder's opinion and can only influence when changes to the charter are needed.</li>
+        <li>20. Package name.</li>
+        <li>21. Vote FOR this package.</li>
+        <li>22. Vote AGAINST this package.</li>
+        <li>23. Withdraw your vote.</li>
+        <li>24. View package contents.</li>
+        <li>25. Enter the package name.</li>
+        <li>26. Enter your private key to sign this transaction.</li>
+        <li>27. Enter the rule or proposal you want to suggest to the community.</li>
+        <li>28. Delete a field.</li>
+        <li>29. Add a field.</li>
+        <li>30-31. Address of who is creating this field; it is filled automatically.</li>
+        <li>32. Enter the package name. The system will automatically add the field <strong>ADD_DIRECTOR</strong> to your name and position titles, meaning both the package name and position will start with <strong>ADD_DIRECTOR</strong> automatically.</li>
+        <li>33. Enter your private key.</li>
+        <li>34. The position title you want to create. Once the package is approved, participants can apply for this position. One title, one seat. The participant with the highest rating wins and can be elected by the board of directors or by direct voting. Judges can also impose a veto.</li>
+        <li>35. Delete a field.</li>
+        <li>36. Add a field, no more than 25, and the name should not exceed 25 characters.</li>
+        <li>37. Submit the transaction.</li>
+    </ol>
+</div>
+
+<!-- Footer, стилизуется классом .footer-custom из вашего styles.css -->
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>

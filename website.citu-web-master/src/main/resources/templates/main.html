@@ -1,0 +1,155 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+
+        img {
+            width: 200px; /* задает фиксированную ширину */
+            height: auto; /* сохраняет пропорции */
+        }
+    </style>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+
+<!-- Header (убран класс link-body-emphasis) -->
+<header th:insert="blocks/header :: header"></header>
+
+<div class="alert alert-info mt-2">
+    <!-- Ссылки без Bootstrap-классов -->
+    <div><a href="https://bitstorage.finance/spot/trading/CITUUSDT?interface=classic" target="_blank">Go to the exchange Bitstorage</a></div>
+    <div><a href="https://dex-trade.com/spot/trading/CITUUSDT?interface=classic" target="_blank">Go to the exchange Dex trade</a></div>
+    <div><a href="https://app.exbitron.com/exchange/?market=CITU-USDT" target="_blank">Go to the exchange exibition</a></div>
+    <div><a href="https://www.livecoinwatch.com/price/CorporationInternationalTradeUnion-CITU" target="_blank">all prices on 3 exchanges</a></div>
+
+    <h6 th:text="'blockchain size: '+${size}"></h6>
+    <h6 th:text="'difficulty one block: '+${difficulty}"></h6>
+    <h6 th:text="'difficulty all blockchain: '+${difficultyAll}"></h6>
+    <h6 th:text="'multiplier: '+${multiplier}"></h6>
+    <h6 th:text="'target uniq sender in prev block: '+${targetTotalUniqAddress}"></h6>
+    <h6 th:text="'target sum sender transaction in prev block: '+${#numbers.formatDecimal(targetTotalSum, 1, 'NONE', 2, 'POINT')}"></h6>
+
+    <h6 th:text="'total dollars: '+${#numbers.formatDecimal(totalDollars, 1, 'NONE', 2, 'POINT')}"></h6>
+    <h6 th:text="'total accounts: '+${totalAccounts}"></h6>
+    <h6 th:text="'previous block total transaction: ' +${prevBlockTotalTransaction}"></h6>
+    <h6 th:text="'previous block total dollar sum: '+${#numbers.formatDecimal(prevBlockTotalSum, 1, 'NONE', 2, 'POINT')}"></h6>
+
+    <h6 th:text="'total transactions in day: ' +${totalTransactionsDay}"></h6>
+    <h6 th:text="'total dollar sum transactions in day: ' + ${#numbers.formatDecimal(totalTransactionsDaySum, 1, 'NONE', 2, 'POINT')}"></h6>
+
+    <h6 th:text="'Every 4 month the multiplier decreases by one, starting from this block ' +${startReduce}"></h6>
+    <h6 th:text="'A day in this system is 432 blocks, a month is 51,840 blocks.  '"></h6>
+    <h6 th:text="'How many blocks are left until the decline is shown here ' +${daysReduce}"></h6>
+</div>
+
+<div class="alert alert-info mt-2">
+    <!-- Ссылки без text-body-secondary и т.д. -->
+    <h6><a th:href="${discord}" th:text="'discord: '+${discord}"></a></h6>
+    <h6><a th:href="${telegram}" th:text="'telegram channel: '+${telegram}"></a></h6>
+    <h6><a th:href="${telegram}" th:text="'telegram: '+${telegram}"></a></h6>
+    <h6><a th:href="'https://t.me/' + ${telegramUsername}" th:text="'Telegram: @' + ${telegramUsername}"></a></h6>
+    <h6><a th:href="'https://twitter.com/' + ${twitter.substring(0)}" th:text="'twitter: ' +${twitter}"></a></h6>
+    <h6><a th:href="${github}" th:text="'wallet: '+${github}"></a></h6>
+    <h6><a th:href="${storage}" th:text="'global server: '+${storage}"></a></h6>
+    <h6><a th:href="'mailto:' + ${gmail}" th:text="'gmail: ' + ${gmail}"></a></h6>
+
+    <p><a href="https://bitcointalk.org/index.php?topic=5520654.new#new" target="_blank">https://bitcointalk.org announcements</a></p>
+    <p><a href="https://bitcointalk.org/index.php?topic=5520620.new#new" target="_blank">https://bitcointalk.org discussion</a></p>
+    <p><a href="https://bitcointalk.org/index.php?topic=5521289.new#new" target="_blank">https://bitcointalk.org на русском</a></p>
+
+    <div class="alert alert-info mt-2">
+        <h1 th:text="${Summary}"></h1>
+        <h6 th:text="${text}"></h6>
+    </div>
+</div>
+
+
+<div class="container mt-5">
+    <h3 th:text="${title}"></h3>
+    <div class="container">
+        <footer class="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 my-5 border-top">
+            <div class="col mb-3">
+                <!-- Убраны link-body-emphasis и text-decoration-none -->
+                <a href="/" class="d-flex align-items-center mb-3">
+                    <svg class="bi me-2" width="40" height="32">
+                        <use xlink:href="#bootstrap"></use>
+                    </svg>
+                </a>
+                <!-- Убрали text-body-secondary -->
+                <p>© 2023</p>
+            </div>
+
+            <div class="col mb-3">
+                <h5>Section</h5>
+                <ul class="nav flex-column">
+                    <!-- Убраны nav-link и text-body-secondary -->
+                    <li class="nav-item mb-2">
+                        <a href="/how_to_install" class="p-0">how to install</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/how_to_open_an_account" class="p-0">how to open an account</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/how_to_change_miner_account" class="p-0">How to change miner account</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/how_to_mining" class="p-0">How to mining</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/how_to_install_server" class="p-0">How to install server</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col mb-3">
+                <h5>Section</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-2">
+                        <a href="/how_to_transaction" class="p-0">How to transaction.html</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/voting" class="p-0">result voting</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/how_to_vote_and_what_voting_types_are_there" class="p-0">how to voting</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/charter" class="p-0">CHARTER</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/vision" class="p-0">vision of the future</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/solving_common_problems" class="p-0">solving_common_problems</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/conductor" class="p-0">Explorer</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/winners" class="p-0">winners</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/wallet_and_node_url" class="p-0">wallet and node url</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/daily_rating" class="p-0">daily rating</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a href="/white_papper" class="p-0">white papper</a>
+                    </li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+</div>
+<img th:src="@{/logo/reward.jpg}" />
+
+<!-- Footer -->
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>

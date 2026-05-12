@@ -1,0 +1,329 @@
+/*****************************
+ * 1. Общие базовые стили
+ *****************************/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* Базовый фон, текст, шрифт */
+body {
+    background-color: #faeee4; /* Нежный персиковый тон */
+    color: #3e261a;           /* Тёплый тёмно-коричневый текст */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+    color: #6d3c2b;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* Ссылки: тёплый коричнево-оранжевый, пунктирное подчёркивание */
+a {
+    color: #b95e33;
+    text-decoration: none;
+    border-bottom: 1px dashed #b95e33;
+    padding: 1px 0;
+}
+a:hover {
+    color: #82431f;
+    text-decoration: underline;
+    border-bottom: 1px solid #82431f;
+}
+
+/*****************************
+ * 2. Переопределение цветов
+ *    для стандартных классов
+ *****************************/
+
+/* 2.1. Кнопки */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.btn-light,
+.btn-dark,
+.btn-link {
+    background-color: #b95e33 !important; /* Тёплый коричнево-оранжевый */
+    color: #fff !important;
+    border: 1px solid #82431f !important;
+    border-radius: 4px !important;
+}
+.btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-success:hover,
+.btn-danger:hover,
+.btn-warning:hover,
+.btn-info:hover,
+.btn-light:hover,
+.btn-dark:hover,
+.btn-link:hover {
+    background-color: #82431f !important;
+    color: #fff !important;
+    border-color: #5a2a16 !important;
+}
+
+/* Сброс для outline при фокусе */
+.btn:focus,
+.btn-primary:focus,
+.btn-secondary:focus,
+.btn-success:focus,
+.btn-danger:focus,
+.btn-warning:focus,
+.btn-info:focus,
+.btn-light:focus,
+.btn-dark:focus,
+.btn-link:focus {
+    box-shadow: 0 0 3px rgba(130, 67, 31, 0.6) !important;
+    outline: none !important;
+}
+
+/* 2.2. Alerts: единая «осенняя» гамма */
+.alert,
+.alert-primary,
+.alert-secondary,
+.alert-success,
+.alert-danger,
+.alert-warning,
+.alert-info,
+.alert-light,
+.alert-dark {
+    border: 1px solid #6d3c2b !important; /* Осенний оттенок границы */
+    background-color: #f7e4d8 !important; /* Бежевый фон */
+    color: #3e261a !important;           /* Тёплый тёмно-коричневый текст */
+    border-radius: 6px !important;
+    box-shadow: 0 2px 4px rgba(109, 60, 43, 0.2);
+}
+
+/* 2.3. Поля форм (form-control) */
+.form-control {
+    background-color: #fff !important;
+    color: #3e261a !important;
+    border: 1px solid #6d3c2b !important;
+    border-radius: 4px !important;
+}
+.form-control:focus {
+    border-color: #b95e33 !important;
+    box-shadow: 0 0 4px rgba(109, 60, 43, 0.3) !important;
+}
+
+/* 2.4. Таблицы */
+.table {
+    color: #3e261a !important;
+    background-color: #faeee4 !important;
+}
+.table thead {
+    background-color: #ecc5b8 !important;
+    color: #3e261a !important;
+}
+.table-bordered > :not(caption) > * > * {
+    border-color: #6d3c2b !important;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(236,197,184, 0.2) !important;
+}
+.table-hover tbody tr:hover {
+    background-color: rgba(236,197,184, 0.3) !important;
+}
+
+/* 2.5. Карточки (card) */
+.card {
+    background-color: #faeee4 !important;
+    border: 1px solid #6d3c2b !important;
+}
+.card-header {
+    background-color: #ecc5b8 !important;
+    color: #3e261a !important;
+    border-bottom: 1px solid #6d3c2b !important;
+}
+.card-body {
+    color: #3e261a !important;
+}
+
+/* 2.6. Список .list-group */
+.list-group-item {
+    background-color: #faeee4 !important;
+    color: #3e261a !important;
+    border: 1px solid #6d3c2b !important;
+}
+.list-group-item.active {
+    background-color: #b95e33 !important;
+    border-color: #82431f !important;
+    color: #fff !important;
+}
+
+/* 2.7. Бейджи (badge) */
+.badge,
+.badge-primary,
+.badge-secondary,
+.badge-success,
+.badge-danger,
+.badge-warning,
+.badge-info,
+.badge-light,
+.badge-dark {
+    background-color: #b95e33 !important;
+    color: #fff !important;
+    border: 1px solid #82431f !important;
+}
+
+/* 2.8. Пагинация (pagination) */
+.page-link {
+    color: #b95e33 !important;
+    border: 1px dashed #b95e33 !important;
+}
+.page-link:hover {
+    color: #82431f !important;
+    border-color: #82431f !important;
+}
+.page-item.active .page-link {
+    background-color: #b95e33 !important;
+    border-color: #82431f !important;
+    color: #fff !important;
+}
+
+/* 2.9. Прогресс-бары (progress) */
+.progress {
+    background-color: #faeee4 !important;
+    border: 1px solid #6d3c2b !important;
+    height: 1.5rem !important;
+    border-radius: 6px !important;
+}
+.progress-bar {
+    background-color: #b95e33 !important;
+    color: #fff !important;
+}
+
+/* 2.10. Текстовые классы (text-*) */
+.text-primary,
+.text-secondary,
+.text-success,
+.text-danger,
+.text-warning,
+.text-info,
+.text-light,
+.text-dark,
+.text-body,
+.text-muted,
+.text-white,
+.text-black-50,
+.text-white-50 {
+    color: #3e261a !important;
+}
+
+/* 2.11. Фоновые классы (bg-*) */
+.bg-primary,
+.bg-secondary,
+.bg-success,
+.bg-danger,
+.bg-warning,
+.bg-info,
+.bg-light,
+.bg-dark,
+.bg-white,
+.bg-transparent {
+    background-color: #faeee4 !important;
+    color: #3e261a !important;
+}
+
+/*****************************
+ * 3. Ваши собственные классы
+ *****************************/
+.header-custom {
+    background-color: #ecc5b8;
+    border-bottom: 2px solid #6d3c2b;
+    padding: 1rem;
+}
+.footer-custom {
+    background-color: #ecc5b8;
+    text-align: center;
+    border-top: 2px solid #6d3c2b;
+    color: #3e261a;
+    padding: 1rem;
+}
+
+/*****************************
+ * 4. Навигация (navbar)
+ *****************************/
+.navbar {
+    background-color: #ecc5b8 !important;
+    border-bottom: 1px solid #6d3c2b !important;
+}
+.navbar-nav .nav-link {
+    color: #3e261a !important;
+}
+.nav-link:hover {
+    color: #82431f !important;
+}
+
+/*****************************
+ * 1. Общие базовые стили
+ *****************************/
+
+/* Контейнер */
+.custom-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #faeee4; /* Нежный персиковый фон */
+    color: #3e261a; /* Тёплый тёмно-коричневый текст */
+    font-family: Arial, sans-serif;
+}
+
+/* Отступы */
+.custom-margin-top {
+    margin-top: 30px;
+}
+
+/* Оформление блоков (замена .alert) */
+.custom-alert {
+    border: 1px solid #6d3c2b; /* Осенний оттенок границы */
+    background-color: #f7e4d8; /* Тёплый бежевый фон */
+    color: #3e261a; /* Цвет текста */
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+    box-shadow: 0 2px 4px rgba(109, 60, 43, 0.2);
+}
+
+/* Заголовки */
+h5 {
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+/*****************************
+ * 2. Стили для заголовков и ссылок
+ *****************************/
+a {
+    color: #b95e33;
+    text-decoration: none;
+    border-bottom: 1px dashed #b95e33;
+    padding: 1px 0;
+}
+a:hover {
+    color: #82431f;
+    text-decoration: underline;
+    border-bottom: 1px solid #82431f;
+}
+
+/*****************************
+ * 3. Оформление футера
+ *****************************/
+footer {
+    background-color: #ecc5b8;
+    text-align: center;
+    border-top: 2px solid #6d3c2b;
+    color: #3e261a;
+    padding: 10px;
+    margin-top: 20px;
+}

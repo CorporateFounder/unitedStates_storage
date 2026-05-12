@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+
+    <!-- Подключаем ваши «осенние» стили -->
+
+    <!-- Если нужна только сетка и базовые отступы от Bootstrap, оставляем -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        table {
+            width: 100%;
+        }
+        table td, table th {
+            border: 1px solid grey;
+        }
+        table th {
+            background: #eee;
+        }
+        .pagination-div {
+            user-select: none;
+        }
+        .pagination-div span {
+            border-radius: 3px;
+            border: 1px solid #999;
+            padding: 5px;
+            margin: 10px 0px 0px 10px;
+            display: inline-block
+        }
+
+        span.selected {
+            background: #ccf;
+        }
+    </style>
+</head>
+<body>
+
+<header th:insert="blocks/header :: header"></header>
+<div class="container mt 5">
+    <h1 th:text="${title}"></h1>
+</div>
+
+
+
+<form action="/conductor" method="post">
+    <input type="text" name="sign" placeholder="Enter index block or sign transaction" class="form-control"><br>
+    <button type="submit" class="btn btn-success">Submit</button><br>
+</form>
+
+
+<form action="/sender" method="get">
+    <input type="text" name="pubkey" placeholder="enter sender address " class="form-control"><br>
+    <button type="submit" class="btn btn-success" name="action" value="/send">Submit</button><br>
+</form>
+
+
+<form action="/customer" method="get">
+    <input type="text" name="pubkey" placeholder="enter customer address " class="form-control"><br>
+    <button type="submit" class="btn btn-success" name="action" value="/send">Submit</button><br>
+</form>
+
+<h4 th:text="'status: ' + ${status}"></h4>
+<h4 th:if="${text != null && text != '' }" th:text="'text: ' + ${text}"></h4>
+
+
+<div class="alert alert-info mt-2">
+    <h4 th:if="${block?.index != null}" th:text="'index: ' + ${block?.index}"></h4>
+    <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
+    <h4 th:if="${block?.previousHash != null}" th:text="'previous hash: ' + ${block?.previousHash}"></h4>
+    <h4 th:if="${block?.minerAddress != null}" th:text="'miner address: ' + ${block?.minerAddress}"></h4>
+    <h4 th:if="${block?.hashCompexity != null}" th:text="'block difficulty: ' + ${block?.hashCompexity}"></h4>
+    <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
+    <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
+    <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>
+    <h4 th:if="${block?.dtoTransactions != null}" th:text="'count transaction: ' + ${block?.dtoTransactions?.size}"></h4>
+
+    <a th:if="${block?.index != null && block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/0'" class="btn btn-warning">Details</a>
+    <a th:if="${block?.index != null && !block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
+
+    <h4 th:if="${dto?.sender != null}" th:text="'sender: ' + ${dto?.sender}"></h4>
+    <h4 th:if="${dto?.customer != null}" th:text="'customen: ' + ${dto?.customer}"></h4>
+    <h4 th:if="${dto?.voteEnum != null}" th:text="'voteEnum: ' + ${dto?.voteEnum}"></h4>
+    <h4 th:if="${dto?.signStr != null}" th:text="'sign: ' + ${dto?.signStr}"></h4>
+    <h4 th:if="${dto?.bonusForMiner != null}" th:text="'bonusForMiner: ' + ${dto?.bonusForMiner}"></h4>
+    <h4 th:if="${dto?.digitalDollar != null}" th:text="'stock votes raiting: '+${#numbers.formatDecimal(dto?.digitalDollar, 1, 'COMMA', 16, 'POINT')}"/>
+    <h4 th:if="${dto?.digitalStockBalance != null}" th:text="'stock votes raiting: '+${#numbers.formatDecimal(dto?.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}"/>
+
+</div>
+
+<h2>Blocks</h2>
+
+<tr th:if="${blocks?.size > 0}" th:each="block : ${blocks}">
+    <div class="alert alert-info mt-2">
+    <h4 th:if="${block?.index != null}" th:text="'index: ' + ${block?.index}"></h4>
+
+    <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
+        <h4 th:if="${block?.previousHash != null}" th:text="'previous hash: ' + ${block?.previousHash}"></h4>
+    <h4 th:if="${block?.minerAddress != null}" th:text="'miner address: ' + ${block?.minerAddress}"></h4>
+    <h4 th:if="${block?.hashCompexity != null}" th:text="'block difficulty: ' + ${block?.hashCompexity}"></h4>
+    <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
+    <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
+    <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>
+    <h4 th:if="${block?.dtoTransactions != null}" th:text="'count transaction: ' + ${block?.dtoTransactions?.size}"></h4>
+
+        <a th:if="${block?.index != null && block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/0'" class="btn btn-warning">Details</a>
+        <a th:if="${block?.index != null && !block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
+
+
+
+    </div>
+
+</tr>
+
+<form th:if="${blocks != null}" th:action="@{/conductor}" method="post" class="alert alert-info mt-2">
+    <div th:if="${blocks[0].index != size}">
+        <!-- Передаём индекс последнего блока текущей страницы для перелистывания "Next" -->
+        <button type="submit" name="page" th:value="'next:' + ${blocks[blocks.size() - 1].index}">Next Page</button>
+    </div>
+    <div th:if="${blocks[blocks.size() - 1].index != 1}">
+        <!-- Передаём индекс первого блока текущей страницы для перелистывания "Prev" -->
+        <button type="submit" name="page" th:value="'prev:' + ${blocks[0].index}">Prev Page</button>
+    </div>
+</form>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

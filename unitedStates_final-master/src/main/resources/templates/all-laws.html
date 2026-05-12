@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"/>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+
+<div class="container mt-5">
+
+    <h3 th:text="${title}"/>
+    <div th:each="el : ${allLaws}" class="alert alert-info mt-2">
+        <h4 th:text="'address package law: '+${el.addressLaw}"/>
+        <p th:text="'staking votes raiting: '+${#numbers.formatDecimal(el.votes, 1, 'COMMA', 16, 'POINT')}"/>
+        <p th:text="'votesCorporateCouncilOfReferees raiting: '+${el.votesCorporateCouncilOfReferees}"/>
+<!--        <p th:text="'votes board of directiors raitng: '+${el.votesBoardOfDirectors}"/>-->
+        <p th:text="'votes BoardOfShareholders raiting: '+${el.votesBoardOfShareholders}"/>
+        <p th:text="'voteGeneral Executive Director: '+${el.voteGeneralExecutiveDirector}"/>
+        <p th:text="'founderVote: '+${el.founderVote}"/>
+        <p th:text="'voting directors: '+${#numbers.formatDecimal(el.fractionVote, 1, 'COMMA', 16, 'POINT')}"/>
+        <div th:each="director : ${el.directorsVote}" class="mt-1">
+            <span th:text="'Director: ' + ${director.address}"></span>
+            <span th:text="'Vote: ' + ${director.vote}"></span>
+        </div>
+        <p th:text="'package law name: '+${el.packageName}"/>
+        <a th:href="'/detail-laws-current/' + ${el.addressLaw}" class="btn btn-warning">Details</a>
+    </div>
+
+</div>
+<footer th:insert="blocks/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

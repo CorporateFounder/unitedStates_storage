@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">Current Package</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<div class="container mt-5">
+    <h3 th:text="${title}">Current Package</h3>
+
+    <!-- Существующий список законов без кнопок -->
+    <div th:each="el : ${currentLaw}" th:classappend="${el.isValid} ? 'alert-success' : 'alert-danger'" class="alert mt-2">
+        <!-- Отображение статуса голосования пользователя -->
+
+        <!-- Извлеченный фрагмент без кнопок -->
+        <h4 th:text="'Address Package : ' + ${el.addressLaw}"></h4>
+        <p th:text="'Package : ' + (${el.isPosition} ? 'POSITION' : 'SOLUTION/RULE')"></p>
+        <p th:text="'who create Package : ' + ${el.whoCreate}"></p>
+        <p th:text="'when create Package : ' + ${el.indexCreateLaw}"></p>
+        <p th:text="'Balance Votes Rating: ' + ${#numbers.formatDecimal(el.votes, 1, 'COMMA', 16, 'POINT')}"></p>
+        <p th:text="'Balance Votes Rating Percent: ' + ${#numbers.formatDecimal(el.percentDirectDemocracy, 1, 'COMMA', 16, 'POINT')}"></p>
+        <p th:text="'Sum Rating Directors: ' + ${#numbers.formatDecimal(el.sum, 1, 'COMMA', 16, 'POINT')}"></p>
+        <p th:text="'Voting Directors: ' + ${#numbers.formatDecimal(el.fractionVote, 1, 'COMMA', 16, 'POINT')}"></p>
+        <p th:text="'The judges voted YES: ' + ${el.votesCorporateCouncilOfRefereesYes}"></p>
+        <p th:text="'The judges voted NO: ' + ${el.votesCorporateCouncilOfRefereesNo}"></p>
+
+        <div th:each="director : ${el.directorsVote}" class="mt-1">
+            <span th:text="'Director: ' + ${director.address}"></span>
+            <span th:text="'Vote: ' + ${director.vote}"></span>
+        </div>
+
+        <p th:text="'Vote General Executive Director: ' + ${el.voteGeneralExecutiveDirector}"></p>
+        <p th:text="'Founder Vote: ' + ${el.founderVote}"></p>
+        <p th:text="'Name of the Package : ' + ${el.packageName}"></p>
+
+    </div>
+</div>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

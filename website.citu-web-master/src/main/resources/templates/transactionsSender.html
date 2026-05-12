@@ -1,0 +1,45 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>About us</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+
+<header th:insert="blocks/header :: header"></header>
+
+
+<div class="container mt-5">
+    <h1 th:text="${title}"></h1>
+    <div th:each="el : ${transactions}" class="alert alert-info mt-2">
+        <h5 th:if="${el?.sender != null}" th:text="'sender: ' + ${el?.sender}"></h5>
+        <h5 th:if="${el?.customer != null}" th:text="'customen: ' + ${el?.customer}"></h5>
+        <h5 th:if="${el?.voteEnum != null}" th:text="'voteEnum: ' + ${el?.voteEnum}"></h5>
+        <h5 th:if="${el?.signStr != null}" th:text="'sign: ' + ${el?.signStr}"></h5>
+        <h5 th:if="${el?.bonusForMiner != null}" th:text="'bonusForMiner: ' + ${el?.bonusForMiner}"></h5>
+        <h5 th:if="${el?.digitalDollar != null}" th:text="'dollar: '+${#numbers.formatDecimal(el?.digitalDollar, 1, 'COMMA', 16, 'POINT')}"/>
+        <h5 th:if="${el?.digitalStockBalance != null}" th:text="'stock: '+${#numbers.formatDecimal(el?.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}"/>
+        <a th:if="${el?.signStr != null && el?.laws?.packetLawName != null && el?.laws?.packetLawName != ''}" th:href="'/detail-laws/' + ${el?.hex}" class="btn btn-warning">Details</a>
+    </div>
+</div>
+
+<form  action="/sender" method="post">
+
+    <input type="hidden" name="pubkey" th:value="${pubkey}">
+    <input type="hidden" name="page" th:value="${page}">
+    <input type="hidden" name="size" th:value="${size}">
+
+    <button type="submit" class="btn btn-success" name="action" value="/send">Submit</button><br>
+    <button th:if="${page > 0}" type="submit" class="btn btn-primary" name="action" value="/prev">Prev Page</button><br>
+    <button th:if="${page < totalPages - 1}" type="submit" class="btn btn-primary" name="action" value="/next">Next Page sender</button><br>
+</form>
+
+
+
+<footer th:insert="blocks/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

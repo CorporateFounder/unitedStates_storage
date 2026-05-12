@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">API Documentation</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .api-section {
+            margin-bottom: 30px;
+        }
+
+        .api-endpoint {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .api-description {
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .api-url {
+            background-color: #e9ecef;
+            padding: 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .api-json {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 3px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<div class="container mt-4">
+    <h1 class="mb-4">API Documentation</h1>
+
+    <div class="api-section">
+        <h2>Node API</h2>
+
+        <div class="api-endpoint">
+            <h4>GET /datashort</h4>
+            <p class="api-description">Returns blockchain meta data including height, hashCount, staking, transactions,
+                bigRandomNumber, and validation.</p>
+            <p class="api-url">http://{{host}}:{{port}}/datashort</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /prevBlock</h4>
+            <p class="api-description">Returns the last block.</p>
+            <p class="api-url">http://{{host}}:{{port}}/prevBlock</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /conductorBlock</h4>
+            <p class="api-description">Returns a block at the specified index. Note: Genesis block has index 1.</p>
+            <p class="api-url">http://{{host}}:{{port}}/conductorBlock?index=263899</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /status</h4>
+            <p class="api-description">Returns the current status of the node.</p>
+            <p class="api-url">http://{{host}}:{{port}}/status</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /addresses</h4>
+            <p class="api-description">Returns a list of all addresses with their accounts. Not recommended due to large
+                size.</p>
+            <p class="api-url">http://{{host}}:{{port}}/addresses</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /totalDollars</h4>
+            <p class="api-description">Returns the sum of all dollars in the system.</p>
+            <p class="api-url">http://{{host}}:{{port}}/totalDollars</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /size</h4>
+            <p class="api-description">Returns the height of the blockchain.</p>
+            <p class="api-url">http://{{host}}:{{port}}/size</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /version</h4>
+            <p class="api-description">Returns the special version that differs from Github.</p>
+            <p class="api-url">http://{{host}}:{{port}}/version</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /difficultyBlockchain</h4>
+            <p class="api-description">Returns the difficulty of the last block and the sum of all difficulties in this
+                blockchain.</p>
+            <p class="api-url">http://{{host}}:{{port}}/difficultyBlockchain</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>POST /sub-blocks</h4>
+            <p class="api-description">Returns a list of blocks from start to finish index, inclusive.</p>
+            <p class="api-url">http://{{host}}:{{port}}/sub-blocks</p>
+            <pre class="api-json">
+{
+    "start": 0,
+    "finish": 10
+}
+      </pre>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /getTransactions</h4>
+            <p class="api-description">Returns a list of transactions that have not yet been added to the
+                blockchain.</p>
+            <p class="api-url">http://{{host}}:{{port}}/getTransactions</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /senderTransactions</h4>
+            <p class="api-description">Returns all sent transactions of a given address from the specified block
+                range.</p>
+            <p class="api-url">
+                http://{{host}}:{{port}}/senderTransactions?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43&from=0&to=10</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /customerTransactions</h4>
+            <p class="api-description">Returns all received transactions of a given address from the specified block
+                range.</p>
+            <p class="api-url">
+                http://{{host}}:{{port}}/customerTransactions?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43&from=0&to=10</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /senderCountDto</h4>
+            <p class="api-description">Returns the sum of all transactions sent by this address.</p>
+            <p class="api-url">
+                http://{{host}}:{{port}}/senderCountDto?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /isSaveFile</h4>
+            <p class="api-description">Checks if the file is saved.</p>
+            <p class="api-url">http://{{host}}:{{port}}/isSaveFile</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>POST /isTransactionAddBase64</h4>
+            <p class="api-description">Determines if a given transaction is added to the blockchain based on the base64
+                signature.</p>
+            <p class="api-url">http://{{host}}:{{port}}/isTransactionAddBase64</p>
+            <pre class="api-json">
+{
+    "sign": "MEUCIQCikyqSQ+/chwaQlqx0MAU6yKM9hBqDIKsn9Dudg/F37AIgUpbfRPt+nGlHLYuL0FStgsm5epJ8Jr1TsIeYKxXEkMg="
+}
+      </pre>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>POST /TransactionAddBase64</h4>
+            <p class="api-description">Returns the transaction based on its base64 signature if it's in the
+                blockchain.</p>
+            <p class="api-url">http://{{host}}:{{port}}/TransactionAddBase64</p>
+            <pre class="api-json">
+{
+    "sign": "MEUCIQCikyqSQ+/chwaQlqx0MAU6yKM9hBqDIKsn9Dudg/F37AIgUpbfRPt+nGlHLYuL0FStgsm5epJ8Jr1TsIeYKxXEkMg="
+}
+      </pre>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /account</h4>
+            <p class="api-description">Returns the balance of an account (Dollar, Promotions, Staking).</p>
+            <p class="api-url">http://{{host}}:{{port}}/account?address=tiwnwfxx3JjKaDi6ZmRihH9PNE5GZXcLNYqGrm7Rwxjg</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /customerCountDto</h4>
+            <p class="api-description">Returns the sum of all transactions received by this address.</p>
+            <p class="api-url">
+                http://{{host}}:{{port}}/customerCountDto?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /allwinners</h4>
+            <p class="api-description">Returns a list of block candidates that participated in the last tournament.</p>
+            <p class="api-url">http://{{host}}:{{port}}/allwinners</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /bigRandomWiner</h4>
+            <p class="api-description">Returns the winner from the last tournament.</p>
+            <p class="api-url">http://{{host}}:{{port}}/bigRandomWiner</p>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>GET /winnerList</h4>
+            <p class="api-description">Returns the strongest candidate from the list of blocks that have not yet entered
+                the tournament.</p>
+            <p class="api-url">http://{{host}}:{{port}}/winnerList</p>
+        </div>
+
+
+        <div class="api-endpoint">
+            <h4>POST /isTransactionAdd</h4>
+            <p class="api-description">returns true or false if the transaction is added to the blockchain, takes base58 as input</p>
+            <p class="api-url">http://{{host}}:{{port}}/isTransactionAdd</p>
+            <pre class="api-json">
+{
+    "sign": "381yXZJ8ERboZbDj9nf2pZkvjLeMTZAeuhzMgfipCP9minvaLfdbBy6LWr8X7wpKPy6pBCUH2HUGu2TeK9hqGs5ZiVcFhKSo"
+}
+      </pre>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>POST /TransactionAddBase</h4>
+            <p class="api-description">returns a transaction object if the transaction has been added to the blockchain, if not null, takes base58 as input</p>
+            <p class="api-url">http://{{host}}:{{port}}/TransactionAddBase</p>
+            <pre class="api-json">
+{
+    "sign": "381yXZJ8ERboZbDj9nf2pZkvjLeMTZAeuhzMgfipCP9minvaLfdbBy6LWr8X7wpKPy6pBCUH2HUGu2TeK9hqGs5ZiVcFhKSo"
+}
+      </pre>
+        </div>
+
+        <div class="api-endpoint">
+            <h4>POST /findBlocksFromSign58</h4>
+            <p class="api-description">returns a list of blocks if this transaction is present in the blockchain, otherwise an empty list. Takes base58 as input</p>
+            <p class="api-url">http://{{host}}:{{port}}/findBlocksFromSign58</p>
+            <pre class="api-json">
+{
+    "sign": "381yXZJ8ERboZbDj9nf2pZkvjLeMTZAeuhzMgfipCP9minvaLfdbBy6LWr8X7wpKPy6pBCUH2HUGu2TeK9hqGs5ZiVcFhKSo"
+}
+      </pre>
+        </div>
+
+    </div>
+
+    <div class="api-endpoint">
+        <h4>POST /findBlocksFromSign64</h4>
+        <p class="api-description">returns a list of blocks if this transaction is present in the blockchain, otherwise an empty list. Takes base64 as input</p>
+        <p class="api-url">http://{{host}}:{{port}}/findBlocksFromSign64</p>
+        <pre class="api-json">
+{
+    "sign": "MEYCIQCFc+Jzdf/qDO43BefYb4TbMmQk3MpwEH4y14ScL8M4GQIhALse6+GyeG9YnHmihIUgJI3Z4L6S9syFL4Bxyu1hDrjT"
+}
+      </pre>
+    </div>
+
+    <div class="api-endpoint">
+        <h4>POST /statusTransaction58</h4>
+        <p class="api-description">1. updating information - which means the server is being updated and try again later.
+            2. Incorrect signature - incorrect signature.
+            3. success - added to the blockchain of this server
+            4. pending - waiting to be added
+            5. absent - there is no transaction in this server, it may have been rejected due to insufficient balance, or for other reasons rejected or simply did not have time to get there.
+            SOMETIMES DUE TO A DELAY, THE TRANSACTION HAS NOT YET ENDED UP ON THIS SERVER. input base58</p>
+        <p class="api-url">http://{{host}}:{{port}}/statusTransaction58</p>
+        <pre class="api-json">
+{
+    "sign": "381yXZJ8ERboZbDj9nf2pZkvjLeMTZAeuhzMgfipCP9minvaLfdbBy6LWr8X7wpKPy6pBCUH2HUGu2TeK9hqGs5ZiVcFhKSo"
+}
+      </pre>
+    </div>
+
+    <div class="api-endpoint">
+        <h4>POST /statusTransaction64</h4>
+        <p class="api-description">1. updating information - which means the server is being updated and try again later.
+            2. Incorrect signature - incorrect signature.
+            3. success - added to the blockchain of this server
+            4. pending - waiting to be added
+            5. absent - there is no transaction in this server, it may have been rejected due to insufficient balance, or for other reasons rejected or simply did not have time to get there.
+            SOMETIMES DUE TO A DELAY, THE TRANSACTION HAS NOT YET ENDED UP ON THIS SERVER. input base64</p>
+        <p class="api-url">http://{{host}}:{{port}}/statusTransaction64</p>
+        <pre class="api-json">
+{
+    "sign": "MEYCIQCFc+Jzdf/qDO43BefYb4TbMmQk3MpwEH4y14ScL8M4GQIhALse6+GyeG9YnHmihIUgJI3Z4L6S9syFL4Bxyu1hDrjT"
+}
+      </pre>
+    </div>
+
+    <div class="api-endpoint">
+        <h4>GET /getBlocksBySenderInRange</h4>
+        <p class="api-description">
+            Returns a list of blocks associated with a specific sender within the specified index range. Limits the range to a maximum of 20 blocks.
+        </p>
+        <p class="api-url">
+            http://{{host}}:{{port}}/getBlocksBySenderInRange?from=0&to=10&sender=senderAddress
+        </p>
+    </div>
+
+    <div class="api-endpoint">
+        <h4>GET /findBlocksBySenderInRange</h4>
+        <p class="api-description">
+            Returns a list of blocks associated with a specific customer within the specified index range. Limits the range to a maximum of 20 blocks.
+        </p>
+        <p class="api-url">
+            http://{{host}}:{{port}}/findBlocksBySenderInRange?from=0&to=10&customer=customerAddress
+        </p>
+    </div>
+    </div>
+
+
+    <h2>Wallet API</h2>
+
+    <div class="api-endpoint">
+      <h4>GET /keys</h4>
+      <p class="api-description">Returns the public key and private key (password).</p>
+      <p class="api-url">localhost:8082/keys</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /account</h4>
+      <p class="api-description">Returns the balance of an account (Dollar, Promotions, Staking).</p>
+      <p class="api-url">localhost:8082/account?address=tiwnwfxx3JjKaDi6ZmRihH9PNE5GZXcLNYqGrm7Rwxjg</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /dollar</h4>
+      <p class="api-description">Returns the dollar balance only.</p>
+      <p class="api-url">localhost:8082/dollar?address=tiwnwfxx3JjKaDi6ZmRihH9PNE5GZXcLNYqGrm7Rwxjg</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /sendCoin</h4>
+      <p class="api-description">Sends coins from one address to another.</p>
+      <p class="api-url">localhost:8082/sendCoin?sender=tiwnwfxx3JjKaDi6ZmRihH9PNE5GZXcLNYqGrm7Rwxjg&recipient=rDqx8hhZRzNm6xxvL1GL5aWyYoQRKVdjEHqDo5PY2nbM&dollar=1&stock=2.0&reward=0.0&password=</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /stock</h4>
+      <p class="api-description">Returns the stock balance.</p>
+      <p class="api-url">localhost:8082/stock?address=tiwnwfxx3JjKaDi6ZmRihH9PNE5GZXcLNYqGrm7Rwxjg</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>POST /isTransactionAddBase64</h4>
+      <p class="api-description">Determines if a given transaction is added to the blockchain based on the base64 signature.</p>
+      <p class="api-url">localhost:8082/isTransactionAddBase64</p>
+      <pre class="api-json">
+{
+    "sign": "MEUCIQCikyqSQ+/chwaQlqx0MAU6yKM9hBqDIKsn9Dudg/F37AIgUpbfRPt+nGlHLYuL0FStgsm5epJ8Jr1TsIeYKxXEkMg="
+}
+      </pre>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>POST /TransactionAddBase64</h4>
+      <p class="api-description">Returns the transaction based on its base64 signature if it's in the blockchain.</p>
+      <p class="api-url">localhost:8082/TransactionAddBase64</p>
+      <pre class="api-json">
+{
+    "sign": "MEUCIQCikyqSQ+/chwaQlqx0MAU6yKM9hBqDIKsn9Dudg/F37AIgUpbfRPt+nGlHLYuL0FStgsm5epJ8Jr1TsIeYKxXEkMg="
+}
+      </pre>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /senderCountDto</h4>
+      <p class="api-description">Returns the sum of all transactions sent by this address.</p>
+      <p class="api-url">localhost:8082/senderCountDto?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /senderTransactions</h4>
+      <p class="api-description">Returns all sent transactions of a given address from the specified block range.limitation for to, TO cannot be larger FROM more than 500 blocks.</p>
+      <p class="api-url">localhost:8082/senderTransactions?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43&from=0&to=10</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /customerTransactions</h4>
+      <p class="api-description">Returns all received transactions of a given address from the specified block range.limitation for to, TO cannot be larger FROM more than 500 blocks.</p>
+      <p class="api-url">localhost:8082/customerTransactions?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43&from=0&to=10</p>
+    </div>
+
+    <div class="api-endpoint">
+      <h4>GET /customerCountDto</h4>
+      <p class="api-description">Returns the sum of all transactions received by this address.</p>
+      <p class="api-url">localhost:8082/customerCountDto?address=nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</p>
+    </div>
+
+<div class="api-endpoint">
+    <h4>GET /getBlocksBySenderInRange</h4>
+    <p class="api-description">
+        Returns a list of blocks associated with a specific sender within the specified index range. Limits the range to a maximum of 20 blocks.
+    </p>
+    <p class="api-url">
+        http://localhost:8082/getBlocksBySenderInRange?from=0&to=10&sender=senderAddress
+    </p>
+</div>
+
+<div class="api-endpoint">
+    <h4>GET /findBlocksBySenderInRange</h4>
+    <p class="api-description">
+        Returns a list of blocks associated with a specific customer within the specified index range. Limits the range to a maximum of 20 blocks.
+    </p>
+    <p class="api-url">
+        http://localhost:8082/findBlocksBySenderInRange?from=0&to=10&customer=customerAddress
+    </p>
+</div>
+  </div>
+
+
+      </pre>
+    </div>
+</div>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>

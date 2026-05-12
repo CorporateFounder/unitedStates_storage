@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="utf-8" />
+		<title>
+		</title>
+		<style>
+			body { line-height:108%; font-family:Calibri; font-size:11pt }
+			p { margin:0pt 0pt 8pt }
+			li { margin-top:0pt; margin-bottom:8pt }
+			.ListParagraph { margin-left:36pt; margin-bottom:8pt; line-height:108%; font-size:11pt }
+			span.Hyperlink { text-decoration:underline; color:#0563c1 }
+			span.UnresolvedMention { color:#605e5c; background-color:#e1dfdd }
+@media (max-width: 900px) { 
+img { 
+   max-width: 100%;
+   height: auto;
+}
+
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td, th {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+}	
+
+
+		</style>
+	</head>
+	<body>
+
+
+	<p style="line-height:108%; font-size:24pt">
+
+	<header th:insert="blocks/header :: header ">
+		<link rel="stylesheet" th:href="@{/css/styles.css}"/>
+	</header>
+
+	<strong>GUIDE for CITU mining application</strong>
+			</p>
+			<p>
+				<strong>Description:</strong>
+			</p>
+			<p>
+				This application is not a wallet. It is to simplify the mining of CITU cryptocurrency in a user-friendly environment. It includes the ability to create a cryptocurrency address, blockchain statistics, staking, and mining with settings. <span style="color:#ff0000">The application works in the JAVA environment, therefore it is necessary to download JAVA to the PC first </span>.
+			</p>
+			<p>
+				All application setup data as well as the blockchain will be downloaded and stored in the "resources" folder on the C drive. You can place the application in any folder you want. The downloaded wallet will also be stored in this folder (every time the application is restarted, it checks the latest version of the wallet on github, and if the existing wallet in the folder with the application is older, a new one is automatically downloaded and launched).
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 1</strong>
+			</p>
+			<p>
+				Download and install the original JAVA environment for Windows: <a href="https://download.oracle.com/java/23/latest/jdk-23_windows-x64_bin.exe" style="text-decoration:none"><span class="Hyperlink">https://download.oracle.com/java/23/latest/jdk-23_windows-x64_bin.exe</span></a>
+			</p>
+			<p>
+				<u>Note</u> : the app requires minimum version 17: <a href="https://jdk.java.net/archive/" style="text-decoration:none"><span class="Hyperlink">https://jdk.java.net/archive/</span></a>
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 2</strong>
+			</p>
+			<p>
+				Download and run the app: <a href="https://github.com/SuprTrupr/CITU_app_miner/releases" style="text-decoration:none"><span class="Hyperlink">https://github.com/SuprTrupr/CITU_app_miner/releases</span></a>
+			</p>
+			<p>
+				When the application starts, it checks if there is JAVA. If not, it won't work. If JAVA is fine, wait until everything necessary starts (usually it takes a few seconds or up to a minute).
+			</p>
+			<p>
+				When the lower console says: "Started UnitedStatesApplication in xx.xxx seconds….", then go to the next step.
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-1.png" width="734" height="189" alt="" />
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 3</strong>
+			</p>
+			<p>
+				If you have already created a wallet address, you can skip this step.
+			</p>
+			<p>
+				Create an address for your CITU coins here by clicking "generate new account".
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-2.png" width="734" height="171" alt="" />
+			</p>
+			<p>
+				This will generate your wallet address and password. Keep the data safe or click on "create backup file" - a TXT file with the name of your wallet address will be created for you in the folder where the app is located
+			</p>
+			<p>
+				<u>Example</u> :
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-3.png" width="734" height="60" alt="" />
+			</p>
+			<p>
+				<strong>Public Key </strong>= your generated wallet address
+			</p>
+			<p>
+				<strong>Private Key </strong>= your password for handling your wallet
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 4</strong>
+			</p>
+			<p>
+				Now we will set up the wallet and server for mining.
+			</p>
+			<p>
+				Paste the generated address in the previous step into "wallet address" and click "confirm". The address will be saved and you can click "refresh" to display it.
+			</p>
+			<p>
+				You can select the server you want to mine on in the "choose server" box and confirm your choice by clicking "change your server"
+			</p>
+			<p>
+				<u>Note</u> : primarily, the default CITU main server is automatic set.
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-4.png" width="734" height="317" alt="" />
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 5</strong>
+			</p>
+			<p>
+				The previous step is followed by the start of mining.
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-5.png" width="734" height="317" alt="" />
+			</p>
+			<p>
+				First, set the mining difficulty according to your CPU performance. The default is 17, but that's for older, weak CPUs.
+			</p>
+			<p>
+				A 19-21 diff is commonly used on today's CPUs. If you have many threads, you can try 22-24.
+			</p>
+			<p>
+				The "start" and "stop" buttons turn mining on and off.
+			</p>
+			<p>
+				<u>Note</u> : If you are using the application for the first time, you do not have the blockchain downloaded, and after starting mining, the blockchain will first start downloading to the "resources" folder, as mentioned at the beginning of this tutorial (which will take a few hours), and only then will mining start.
+			</p>
+			<p>
+				<u>This is the status of a successful mining run</u> :
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-6.png" width="734" height="137" alt="" />
+			</p>
+			<p>
+				<u>Note</u> : You can limit the number of threads involved in mining in the "task manager" (start it with the keys ctrl+alt+del), as follows:
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-7.png" width="423" height="334" alt="" />
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 6</strong>
+			</p>
+			<p>
+				You can find informations about the number of blocks and the balance of your wallet in the "info" column of our application.
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-8.png" width="727" height="315" alt="" />
+			</p>
+			<p>
+				<strong>LOCAL SIZE </strong>= number of current blocks on your disk
+			</p>
+			<p>
+				<strong>GLOBAL SIZE </strong>= number of current blocks on the CITU main server
+			</p>
+			<p>
+				<strong>DIGITAL DOLLAR </strong>= number of available coins in your wallet
+			</p>
+			<p>
+				<strong>DIGITAL STOCK </strong>= the total number of "stocks" you own
+			</p>
+			<p>
+				<strong>DIGITAL STAKING </strong>= number of coins in staking
+			</p>
+			<p>
+				<u>Note</u> : You can learn the meaning of "staking" on our official Discord server: <a href="https://discord.gg/qDqFzvEZ2Y" style="text-decoration:none"><span class="Hyperlink">https://discord.gg/qDqFzvEZ2Y </span></a>in the section: <a href="https://discord.com/channels/1114144782575468575/1258150799297744948/1259765122478637107" style="text-decoration:none"><span class="Hyperlink">https://discord.com/channels/1114144782575468575/1258150799297744948/1259765122478637107</span></a>
+			</p>
+			<p>
+				Click the "update blockchain" button to manually download/update the blockchain on your disk.
+			</p>
+			<p>
+				Click the "refresh balance" button to view/update your wallet's current coins balance.
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 7</strong>
+			</p>
+			<p>
+				Setting up staking is done here:
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-9.png" width="734" height="318" alt="" />
+			</p>
+			<p>
+				<strong>ADDRESS </strong>= enter your wallet address here
+			</p>
+			<p>
+				<strong>AMOUNT </strong>= the number of coins you want to transfer to staking or back to the wallet
+			</p>
+			<p>
+				<strong>PASSWORD </strong>= is your private wallet key generated in step 3
+			</p>
+			<p>
+				Then click "staking" if you want to transfer the coins to the main server for staking or "unstaking" if you want to transfer them back to your wallet.
+			</p>
+			<p style="line-height:108%; font-size:20pt">
+				<strong>STEP 8</strong>
+			</p>
+			<p>
+				In this step, we will show you how to send coins to other wallet addresses.
+			</p>
+			<p>
+				<img src="1734101366_mining-app-guide-win/1734101366_mining-app-guide-win-10.png" width="734" height="274" alt="" />
+			</p>
+			<p>
+				<strong>SENDER </strong>= enter your wallet address here
+			</p>
+			<p>
+				<strong>RECIPIENT </strong>= the address where you want to send your coins
+			</p>
+			<p>
+				<strong>DOLLAR </strong>= the number of coins in your wallet that you want to send
+			</p>
+			<p>
+				<strong>STOCK </strong>= this is for the future, enter 0.0 for now
+			</p>
+			<p>
+				<strong>REWARD </strong>= this field <span style="color:#ff0000">must always</span> contain 0.0
+			</p>
+			<p>
+				<strong>PASSWORD </strong>= enter your private key generated in step 3 here
+			</p>
+			<p>
+				<u>Note</u> : Enter <span style="color:#ff0000">0.0 in the "stock" and "reward" boxes </span>- if you enter <span style="color:#ff0000">0</span>, it won't work!
+			</p>
+			<p>
+				&#xa0;
+			</p>
+
+
+	<footer th:insert="blocks/footer :: footer"></footer>
+
+	</body>
+</html>

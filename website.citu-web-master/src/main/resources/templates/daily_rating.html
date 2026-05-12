@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .gold-medal {
+            border: 2px solid #FFD700; /* Золотая рамка */
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .silver-medal {
+            border: 2px solid #C0C0C0; /* Серебряная рамка */
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .bronze-medal {
+            border: 2px solid #CD7F32; /* Бронзовая рамка */
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .tournament-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .tournament-list li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f8f9fa; /* Светло-серый фон */
+            border: 2px solid #dee2e6; /* Серый цвет рамки для остальных блоков */
+            border-radius: 5px;
+            color: #000000; /* Черный текст */
+        }
+        .place-number {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .gold-medal .place-number {
+            color: #FFD700; /* Золотой цвет цифры */
+        }
+        .silver-medal .place-number {
+            color: #C0C0C0; /* Серебряный цвет цифры */
+        }
+        .bronze-medal .place-number {
+            color: #CD7F32; /* Бронзовый цвет цифры */
+        }
+    </style>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<div class="container mt-5">
+    <h5 th:text="${title}"></h5>
+    <h4 th:text="'Today is day ' + ${day} + '. The result is updated every 576 blocks or every 24 hours.'"></h4>
+    <h3>Time remaining until next update: <span id="countdown" th:text="${time}"></span></h3> <!-- Время до следующего обновления -->
+    <h3>Ratings:</h3>
+
+    <ul class="tournament-list">
+        <li th:each="rating, iterStat : ${raitings}"
+            th:classappend="gold-medal" th:if="${iterStat.index == 0}">
+            <span class="place-number">1st place:</span> <span th:text="${rating}"></span>
+        </li>
+        <li th:each="rating, iterStat : ${raitings}"
+            th:classappend="silver-medal" th:if="${iterStat.index == 1}">
+            <span class="place-number">2nd place:</span> <span th:text="${rating}"></span>
+        </li>
+        <li th:each="rating, iterStat : ${raitings}"
+            th:classappend="bronze-medal" th:if="${iterStat.index == 2}">
+            <span class="place-number">3rd place:</span> <span th:text="${rating}"></span>
+        </li>
+        <li th:each="rating, iterStat : ${raitings}"
+            th:unless="${iterStat.index < 3}">
+            <span class="place-number" th:text="${iterStat.index + 1} + 'th place:'"></span> <span th:text="${rating}"></span>
+        </li>
+    </ul>
+</div>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+
+<script>
+    function startCountdown(duration) {
+        var countdownElement = document.getElementById('countdown');
+        var timer = duration, hours, minutes, seconds;
+
+        setInterval(function () {
+            if (timer > 0) {
+                hours = Math.floor(timer / 3600);
+                minutes = Math.floor((timer % 3600) / 60);
+                seconds = Math.floor(timer % 60);
+
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                countdownElement.textContent = hours + ":" + minutes + ":" + seconds;
+
+                timer--;
+            } else {
+                countdownElement.textContent = "00:00:00";
+            }
+        }, 1000);
+    }
+
+    // Инициализируем таймер обратного отсчета
+    var remainingTime = parseInt(document.getElementById('countdown').textContent);
+    startCountdown(remainingTime);
+</script>
+
+</body>
+</html>

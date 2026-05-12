@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"/>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header "></header>
+
+
+<div class="container">
+    <div class="content">
+        <h3>Voting System</h3>
+        <p>If you want to become a member of the Board of Directors, the Board of Judges or the General Director, then you must be elected by voters.
+            To do this, you must have your personal ID for the position.
+            If you don't have it, here are the steps on how to get it
+            1. Go to the APPLY FOR A POSITON tab (http://localhost:8082/create-position).p.s. The page can only load if your wallet is running and updated. The download itself may take some time.
+            2. fill in the input address sender field, you need to add your pubkey there.
+            3. Click on the position, there will appear a choice of three positions, Board of Directors, Judges and General Director.
+            4. After selecting, fill in your contacts, then click send. This transaction will go to the blockchain, and then you will be able to find your ID.
+        </p>
+        <p>If you have already completed the previous list, then you can see your ID,
+            by completing the steps below.
+            1. Go to the http://localhost:8082/all-laws tab
+            2. look at the package law name: this is the name of the package you can vote for. and find your position there, for example BOARD_OF_DIRECTORS.
+            3. Then enter the details and you should see in line 0: your address.
+            example, 0: rDqx8hhZRzNm6xxvL1GL5aWyYoQRKVdjEHqDo5PY2nbM,
+            4. If you found your address, go back and copy the ID
+            LIBER8e583f3acf721d24bd059f89dac050fea0eff1181c4b279afa28670e3e407ded
+            5. Send everyone your ID so they can vote. How to vote will be described below.
+            6. seven directors and seven judges and one general director, with the highest rating, receives the position.
+            7. To look in this tab http://localhost:8082/all-laws you will see the staking votes rating: 0.00000000000000000, all selected positions and solutions go here http://localhost:8082/current-laws.
+            8. The rating is calculated in such a way that each stacker who votes gives his vote to the identifier, and there is no limit on the number of votes for candidates.
+            Each participant can vote YES or NO, or remove their vote. A YES-NO=Rating is calculated for each candidate. The highest ranked members receive the position.
+            Decisions, decisions are a mechanism that can be approved by the Board of Directors, but if the Council of Judges does not veto it.
+        </p>
+        <p>Here are the steps on how to create a solution.
+            1. Go to the Create a package of laws tab http://localhost:8082/create-law.
+            2. In the enter the sender address field, write your public address. example rDqx8hhZRzNm6xxvL1GL5aWyYoQRKVdjEHqDo5PY2nbM
+            3. In enter the name of the package laws, write the name of your solution in capital letters with an underscore instead of a space. example: FINANCING_CHARITY.
+            4. Enter your decisions in the enter the law fields, for example, blogging for this organization. Or financing the site, etc. you can write down the address where you can transfer money, example: rDqx8hhZRzNm6xxvL1GL5aWyYoQRKVdjEHqDo5PY2nbM
+            5. then click submite law
+            6. The decision can be approved by the board of directors, but only the Judges can veto it. How decisions are made, it is necessary for the board of directors to give a vote of 57% or more and the judges either no one voted, or those who voted FOR will be more against. Each director's vote is equal to the percentage of his rating relative to other elected directors. Example, 600 YES and 400 NO voted for you, your rating is 200. Now let’s imagine that in total all 7 directors received a rating of 2000. Then your vote is 10%.
+            7. With a judge, everything is much simpler, one judge, one vote.
+            Thus, the vote of directors voting directors: 0.0000000000000000, the vote of judges votesCorporateCouncilOfReferees raiting: 0, the vote of voters staking votes raiting: 0.0000000000000000. For the decision to be approved, voting directors must be equal to or greater than 57%, and votesCorporateCouncilOfReferees raiting must be equal to or greater than zero:
+        </p>
+        <p>How to vote:
+            go to the Vote tab http://localhost:8082/voting,
+            1. enter your address in the first field, example: rDqx8hhZRzNm6xxvL1GL5aWyYoQRKVdjEHqDo5PY2nbM
+            2. Enter the identifier in the second field, this could be a position or a decision, example: LIBER7dec241e92241dcc5f60ee2a4e0e0f7e4d752d9d7f1307cec244445055c3106a
+            3. select YES or NO or REMOVE_YOUR_VOICE,
+            IMPORTANT! IN ALL CASES, YOU WILL HAVE TO ENTER YOUR PASSWORD ALSO WHERE IT IS SO THAT YOU CAN SIGN THIS TRANSACTION.
+        </p>
+    </div>
+    <img  th:src="@{/apply_a_job_p/Screenshot_2.png}"/>
+    <img  th:src="@{/apply_a_job_p/Screenshot_3.png}"/>
+    <img  th:src="@{/apply_a_job_p/Screenshot_6.png}"/>
+    <img  th:src="@{/apply_a_job_p/vote_1.png}"/>
+    <img  th:src="@{/apply_a_job_p/vote_2.png}"/>
+    <img  th:src="@{/apply_a_job_p/vote_3.png}"/>
+
+
+</div>
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>

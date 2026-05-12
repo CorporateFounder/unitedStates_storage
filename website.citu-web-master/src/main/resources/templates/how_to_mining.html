@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"/>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header "></header>
+
+<div class="container mt-4">
+    <div class="content-section">
+        <h6>Note:</h6>
+        <h6>new updating: Milton fridman: valid since 342201</h6>
+        <a href="/white_papper" class="btn btn-info mt-3">View White Paper</a>
+        <p th:text="${noteText}"></p>
+
+        <h6>Instructions:</h6>
+        <p th:text="${instructionsText}"></p>
+
+<!--        <h6>Important Information:</h6>-->
+<!--        <p th:text="${importantInfoText}"></p>-->
+
+<!--        <h6>History:</h6>-->
+<!--        <p th:text="${randomAndStakingText}"></p>-->
+
+<!--        <h6>Updating: </h6>-->
+<!--        <p th:text="${newReward}"></p>-->
+
+<!--        <h6>Updating: </h6>-->
+<!--        <p th:text="${newBigRandom}"></p>-->
+
+<!--        <h6>Updating: </h6>-->
+<!--        <p th:text="${udatingBigRandom}"></p>-->
+
+
+
+        <h6>Calculator score staking</h6>
+        <p>Your staking: <span th:text="${staking}"></span></p>
+        <p>Your calculated score: <span th:text="${score}"></span></p>
+
+        <!-- Форма для обновления значения staking -->
+        <form action="#" th:action="@{/how_to_mining}" method="post">
+            <div class="mb-3">
+                <label for="stakingInput" class="form-label">Enter new staking value:</label>
+                <input type="number" class="form-control" id="stakingInput" name="staking" step="0.01" value="0.0">
+            </div>
+            <button type="submit" class="btn btn-primary">Update staking</button>
+        </form>
+
+        <form action="#" th:action="@{/calculate_reward}" method="post">
+            <div class="mb-3">
+                <label for="difficultyInput" class="form-label">Enter difficulty:</label>
+                <input type="number" class="form-control" id="difficultyInput" name="difficulty" step="1" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="multiplierInput" class="form-label">Enter MULTIPLIER:</label>
+                <input type="number" class="form-control" id="multiplierInput" name="MULTIPLIER" step="1" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="indexInput" class="form-label">Enter index:</label>
+                <input type="number" class="form-control" id="indexInput" name="index" step="1" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Calculate Reward</button>
+        </form>
+
+        <div class="mt-4">
+            <h6>Reward Results:</h6>
+            <p>Reward for coefficient = 0: <span th:text="${rewardG0}"></span></p>
+            <p>Reward for coefficient = 3: <span th:text="${rewardG3}"></span></p>
+        </div>
+
+
+    </div>
+</div>
+
+    </div>
+</div>
+<img  th:src="@{/mining/mining.png}"/>
+<img  th:src="@{/mining/mining1.png}"/>
+<img  th:src="@{/mining/mining2.png}"/>
+<img  th:src="@{/mining/mining3.png}"/>
+<img  th:src="@{/mining/mining4.png}"/>
+<img  th:src="@{/mining/mining5.png}"/>
+<img  th:src="@{/mining/mining6.png}"/>
+<img  th:src="@{/mining/mining7.png}"/>
+<img  th:src="@{/mining/checkBalance.png}"/>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+
+</body>
+</html>
