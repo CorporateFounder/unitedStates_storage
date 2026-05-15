@@ -11,7 +11,9 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35PowValidator;
 import International_Trade_Union.protocol.v35.V35RewardCalculator;
+import International_Trade_Union.protocol.v35.V35TargetDifficulty;
 
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
@@ -979,37 +981,59 @@ public class UtilsBlock {
             return false;
         }
 
-        String target = BlockchainDifficulty.calculateTarget(thisBlock.getHashCompexity());
-        BigInteger bigTarget = BlockchainDifficulty.calculateTargetV30(thisBlock.getHashCompexity());
-        if (!UtilsUse.chooseComplexity(thisBlock.getHashBlock(), thisBlock.getHashCompexity(), thisBlock.getIndex(), target, bigTarget)) {
-            System.out.println("wrong difficulty hash");
-
-            System.out.println("this block hash: " + thisBlock.getHashBlock());
-
-            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
-            UtilsFileSaveRead.save("wrong difficulty hash", ERROR_FILE, true);
-            UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
-
-            return false;
-        }
-
-        if (thisBlock.getIndex() > Seting.v4MeetsDifficulty && thisBlock.getIndex() < Seting.V34_NEW_ALGO) {
-            long diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
-            if (thisBlock.getHashCompexity() != diff) {
-                System.out.println("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
-                        + diff);
-                System.out.println("wrong difficult");
+        if (ProtocolVersion.isV35(thisBlock.getIndex())) {
+            BigInteger v35Target = V35TargetDifficulty.decodeCompactTarget(thisBlock.getHashCompexity());
+            if (v35Target.signum() <= 0) {
+                System.out.println("V35 invalid compact target: " + thisBlock.getHashCompexity());
                 UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
-                UtilsFileSaveRead.save("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
-                        + diff, ERROR_FILE, true);
+                UtilsFileSaveRead.save("V35 invalid compact target: " + thisBlock.getHashCompexity(), ERROR_FILE, true);
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                return false;
+            }
+
+            if (!V35PowValidator.isHashUnderTarget(thisBlock.getHashBlock(), v35Target)) {
+                System.out.println("V35 wrong target proof of work");
+                System.out.println("this block hash: " + thisBlock.getHashBlock());
+
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                UtilsFileSaveRead.save("V35 wrong target proof of work", ERROR_FILE, true);
                 UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
 
                 return false;
             }
-        } else if (thisBlock.getHashCompexity() >= Seting.V34_NEW_ALGO) {
-            if (Seting.IS_TEST == false && thisBlock.getHashCompexity() < Seting.V34_MIN_DIFF) {
-                System.out.printf("your diff %d, less than it %d\n", thisBlock.getHashCompexity(),
-                        Seting.V34_MIN_DIFF);
+        } else {
+            String target = BlockchainDifficulty.calculateTarget(thisBlock.getHashCompexity());
+            BigInteger bigTarget = BlockchainDifficulty.calculateTargetV30(thisBlock.getHashCompexity());
+            if (!UtilsUse.chooseComplexity(thisBlock.getHashBlock(), thisBlock.getHashCompexity(), thisBlock.getIndex(), target, bigTarget)) {
+                System.out.println("wrong difficulty hash");
+
+                System.out.println("this block hash: " + thisBlock.getHashBlock());
+
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                UtilsFileSaveRead.save("wrong difficulty hash", ERROR_FILE, true);
+                UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
+                return false;
+            }
+
+            if (thisBlock.getIndex() > Seting.v4MeetsDifficulty && thisBlock.getIndex() < Seting.V34_NEW_ALGO) {
+                long diff = UtilsBlock.difficulty(lastBlock, Seting.BLOCK_GENERATION_INTERVAL, Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
+                if (thisBlock.getHashCompexity() != diff) {
+                    System.out.println("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
+                            + diff);
+                    System.out.println("wrong difficult");
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+                    UtilsFileSaveRead.save("utils Block: actual difficult: " + thisBlock.getHashCompexity() + ":expected: "
+                            + diff, ERROR_FILE, true);
+                    UtilsFileSaveRead.save("************************************", ERROR_FILE, true);
+
+                    return false;
+                }
+            } else if (thisBlock.getHashCompexity() >= Seting.V34_NEW_ALGO) {
+                if (Seting.IS_TEST == false && thisBlock.getHashCompexity() < Seting.V34_MIN_DIFF) {
+                    System.out.printf("your diff %d, less than it %d\n", thisBlock.getHashCompexity(),
+                            Seting.V34_MIN_DIFF);
+                }
             }
         }
 
