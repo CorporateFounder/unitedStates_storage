@@ -11,7 +11,9 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.governments.Directors;
 import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35PowValidator;
 import International_Trade_Union.protocol.v35.V35RewardCalculator;
+import International_Trade_Union.protocol.v35.V35TargetDifficulty;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
@@ -26,6 +28,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -68,6 +72,10 @@ public class Mining {
     public static void setCustomDiff(int customDiff) {
         customDiff = customDiff < Seting.V34_MIN_DIFF ? Seting.V34_MIN_DIFF : customDiff;
         Mining.customDiff = customDiff;
+    }
+
+    public static long selectV35MiningCompactTarget(List<Block> blockchain) {
+        return V35TargetDifficulty.getInitialCompactTarget();
     }
 
     public static boolean isIsMiningStop() {
@@ -238,7 +246,8 @@ public class Mining {
 
             forAdd = forAdd.stream().filter(t -> t != null).collect(Collectors.toList());
             forAdd = forAdd.stream().sorted(Comparator.comparing(t -> base.encode(t.getSign()))).collect(Collectors.toList());
-            return new Block(forAdd, prevBlock.getHashBlock(), minner.getAccount(), addressFounrder, difficulty, index);
+            long v35CompactTarget = selectV35MiningCompactTarget(blockchain);
+            return mineV35Block(forAdd, prevBlock.getHashBlock(), minner.getAccount(), addressFounrder, sumRewards, v35CompactTarget, index);
         }
 
 
@@ -414,5 +423,31 @@ public class Mining {
 
 
         return block;
+    }
+
+    private static Block mineV35Block(List<DtoTransaction> transactions,
+                                      String previousHash,
+                                      String minerAddress,
+                                      String founderAddress,
+                                      double minerRewards,
+                                      long compactTarget,
+                                      long index) throws IOException {
+        BigInteger target = V35TargetDifficulty.decodeCompactTarget(compactTarget);
+        if (target.signum() <= 0) {
+            throw new IllegalArgumentException("V35 compact target must decode to a positive target");
+        }
+
+        Timestamp timestamp = new Timestamp(UtilsTime.getUniversalTimestamp());
+        long nonce = Block.getRandomNumberProofStatic();
+        while (true) {
+            Block candidate = new Block(transactions, previousHash, minerAddress, founderAddress,
+                    nonce, minerRewards, compactTarget, timestamp, index, "");
+            String hash = candidate.hashForTransaction();
+            if (V35PowValidator.isHashUnderTarget(hash, target)) {
+                return new Block(transactions, previousHash, minerAddress, founderAddress,
+                        nonce, minerRewards, compactTarget, timestamp, index, hash);
+            }
+            nonce++;
+        }
     }
 }

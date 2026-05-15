@@ -12,6 +12,7 @@ import java.math.RoundingMode;
 public final class V35TargetDifficulty {
     private static final long COMPACT_SIGN_BIT = 0x00800000L;
     private static final long COMPACT_MANTISSA_MASK = 0x007fffffL;
+    private static final long INITIAL_COMPACT_TARGET = 0x207fffffL;
 
     private V35TargetDifficulty() {
     }
@@ -26,6 +27,14 @@ public final class V35TargetDifficulty {
 
     public static long getEmergencyDelaySeconds() {
         return Seting.V35_EMERGENCY_DELAY_SECONDS;
+    }
+
+    public static long getInitialCompactTarget() {
+        return INITIAL_COMPACT_TARGET;
+    }
+
+    public static BigInteger getInitialTarget() {
+        return decodeCompactTarget(INITIAL_COMPACT_TARGET);
     }
 
     public static BigInteger decodeCompactTarget(long compact) {

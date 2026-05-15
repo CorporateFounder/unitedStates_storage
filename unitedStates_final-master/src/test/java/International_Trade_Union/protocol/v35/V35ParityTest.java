@@ -68,6 +68,8 @@ public class V35ParityTest {
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getTargetWindow"));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getTargetBlockTimeSeconds"));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getEmergencyDelaySeconds"));
+        assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getInitialCompactTarget"));
+        assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getInitialTarget"));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("decodeCompactTarget", long.class));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("encodeCompactTarget", BigInteger.class));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("clampTargetChange", BigInteger.class, BigInteger.class));

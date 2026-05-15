@@ -16,6 +16,16 @@ public class V35TargetDifficultyTest {
     }
 
     @Test
+    public void exposesInitialMiningTarget() {
+        long compact = V35TargetDifficulty.getInitialCompactTarget();
+        BigInteger target = V35TargetDifficulty.getInitialTarget();
+
+        assertEquals(0x207fffffL, compact);
+        assertEquals(target, V35TargetDifficulty.decodeCompactTarget(compact));
+        assertTrue(target.signum() > 0);
+    }
+
+    @Test
     public void compactTargetRoundTripsSafeTargets() {
         BigInteger[] targets = {
                 BigInteger.valueOf(0x123456L),
