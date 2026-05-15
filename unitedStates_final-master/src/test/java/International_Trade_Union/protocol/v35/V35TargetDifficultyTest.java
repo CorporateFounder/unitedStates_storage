@@ -58,6 +58,26 @@ public class V35TargetDifficultyTest {
     }
 
     @Test
+    public void calculateNextCompactTargetAdjustsAndClamps() {
+        long compact = V35TargetDifficulty.getInitialCompactTarget();
+        BigInteger previous = V35TargetDifficulty.decodeCompactTarget(compact);
+        long expected = 60L * 150L;
+
+        BigInteger stable = V35TargetDifficulty.decodeCompactTarget(
+                V35TargetDifficulty.calculateNextCompactTarget(compact, expected, expected, 0L));
+        BigInteger slow = V35TargetDifficulty.decodeCompactTarget(
+                V35TargetDifficulty.calculateNextCompactTarget(compact, expected * 2, expected, 0L));
+        BigInteger fast = V35TargetDifficulty.decodeCompactTarget(
+                V35TargetDifficulty.calculateNextCompactTarget(compact, expected / 4, expected, 0L));
+
+        assertEquals(previous, stable);
+        assertTrue(slow.compareTo(previous) > 0);
+        assertTrue(slow.compareTo(V35TargetDifficulty.clampTargetChange(previous, previous.shiftLeft(8))) <= 0);
+        assertTrue(fast.compareTo(previous) < 0);
+        assertTrue(fast.signum() > 0);
+    }
+
+    @Test
     public void emergencyDropOnlyAppliesAfterDelay() {
         BigInteger current = BigInteger.valueOf(1000);
 
@@ -65,5 +85,20 @@ public class V35TargetDifficultyTest {
         BigInteger eased = V35TargetDifficulty.applyEmergencyDrop(current, 1800L);
         assertTrue(eased.compareTo(current) > 0);
         assertEquals(BigInteger.valueOf(1250), eased);
+    }
+
+    @Test
+    public void compactEmergencyEasesOnlyAfterDelay() {
+        long compact = V35TargetDifficulty.getInitialCompactTarget();
+        BigInteger previous = V35TargetDifficulty.decodeCompactTarget(compact);
+        long expected = 60L * 150L;
+
+        BigInteger beforeDelay = V35TargetDifficulty.decodeCompactTarget(
+                V35TargetDifficulty.calculateNextCompactTarget(compact, expected, expected, 1799L));
+        BigInteger afterDelay = V35TargetDifficulty.decodeCompactTarget(
+                V35TargetDifficulty.calculateNextCompactTarget(compact, expected, expected, 1800L));
+
+        assertEquals(previous, beforeDelay);
+        assertTrue(afterDelay.compareTo(previous) > 0);
     }
 }

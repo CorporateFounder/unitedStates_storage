@@ -75,7 +75,33 @@ public class Mining {
     }
 
     public static long selectV35MiningCompactTarget(List<Block> blockchain) {
-        return V35TargetDifficulty.getInitialCompactTarget();
+        if (blockchain == null || blockchain.isEmpty()) {
+            return V35TargetDifficulty.getInitialCompactTarget();
+        }
+
+        List<Block> v35Blocks = blockchain.stream()
+                .filter(block -> block != null && ProtocolVersion.isV35(block.getIndex()))
+                .sorted(Comparator.comparing(Block::getIndex))
+                .collect(Collectors.toList());
+        int window = V35TargetDifficulty.getTargetWindow();
+        if (v35Blocks.size() < window) {
+            return V35TargetDifficulty.getInitialCompactTarget();
+        }
+
+        Block lastBlock = v35Blocks.get(v35Blocks.size() - 1);
+        Block windowStart = v35Blocks.get(v35Blocks.size() - window);
+        if (lastBlock.getTimestamp() == null || windowStart.getTimestamp() == null) {
+            return V35TargetDifficulty.getInitialCompactTarget();
+        }
+
+        long actualTimespanSeconds = (lastBlock.getTimestamp().getTime() - windowStart.getTimestamp().getTime()) / 1000L;
+        long expectedTimespanSeconds = (long) window * V35TargetDifficulty.getTargetBlockTimeSeconds();
+        long secondsSinceLastBlock = (UtilsTime.getUniversalTimestamp() - lastBlock.getTimestamp().getTime()) / 1000L;
+        return V35TargetDifficulty.calculateNextCompactTarget(
+                lastBlock.getHashCompexity(),
+                actualTimespanSeconds,
+                expectedTimespanSeconds,
+                secondsSinceLastBlock);
     }
 
     public static boolean isIsMiningStop() {

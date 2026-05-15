@@ -108,6 +108,27 @@ public final class V35TargetDifficulty {
         return clampTargetChange(previousTarget, proposedTarget);
     }
 
+    public static long calculateNextCompactTarget(long previousCompactTarget,
+                                                  long actualTimespanSeconds,
+                                                  long expectedTimespanSeconds,
+                                                  long secondsSinceLastBlock) {
+        BigInteger previousTarget = decodeCompactTarget(previousCompactTarget);
+        if (previousTarget.signum() <= 0) {
+            return getInitialCompactTarget();
+        }
+
+        BigInteger adjustedTarget = calculateNextTarget(previousTarget, actualTimespanSeconds, expectedTimespanSeconds);
+        if (adjustedTarget.signum() <= 0) {
+            return getInitialCompactTarget();
+        }
+
+        BigInteger emergencyTarget = applyEmergencyDrop(adjustedTarget, secondsSinceLastBlock);
+        if (emergencyTarget.signum() <= 0) {
+            return getInitialCompactTarget();
+        }
+        return encodeCompactTarget(emergencyTarget);
+    }
+
     public static BigInteger applyEmergencyDrop(BigInteger currentTarget, long secondsSinceLastBlock) {
         if (currentTarget == null || currentTarget.signum() <= 0) {
             return BigInteger.ZERO;

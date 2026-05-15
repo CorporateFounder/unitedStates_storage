@@ -74,6 +74,7 @@ public class V35ParityTest {
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("encodeCompactTarget", BigInteger.class));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("clampTargetChange", BigInteger.class, BigInteger.class));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("calculateNextTarget", BigInteger.class, long.class, long.class));
+        assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("calculateNextCompactTarget", long.class, long.class, long.class, long.class));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("applyEmergencyDrop", BigInteger.class, long.class));
         assertNotNull(V35PowValidator.class.getDeclaredMethod("isHashUnderTarget", String.class, BigInteger.class));
         assertNotNull(V35WorkCalculator.class.getDeclaredMethod("zeroWork"));
