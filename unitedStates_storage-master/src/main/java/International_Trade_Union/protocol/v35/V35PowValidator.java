@@ -10,13 +10,17 @@ public final class V35PowValidator {
     }
 
     public static boolean isHashUnderTarget(String hashHex, BigInteger target) {
-        if (hashHex == null || hashHex.isBlank() || target == null || target.signum() < 0) {
+        if (hashHex == null || hashHex.isBlank() || target == null || target.signum() <= 0) {
             return false;
         }
         if (!hashHex.matches("[0-9a-fA-F]+")) {
             return false;
         }
-        BigInteger hashNumber = new BigInteger(hashHex, 16);
-        return hashNumber.compareTo(target) <= 0;
+        try {
+            BigInteger hashNumber = new BigInteger(hashHex, 16);
+            return hashNumber.compareTo(target) <= 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

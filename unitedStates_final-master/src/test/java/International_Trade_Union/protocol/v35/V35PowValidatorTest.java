@@ -18,9 +18,12 @@ public class V35PowValidatorTest {
     public void comparesHashNumberToTargetSafely() {
         assertTrue(V35PowValidator.isHashUnderTarget(LOW_HASH, HIGH_TARGET));
         assertFalse(V35PowValidator.isHashUnderTarget(HIGH_HASH, BigInteger.ONE));
+        assertTrue(V35PowValidator.isHashUnderTarget("ff", new BigInteger("ff", 16)));
         assertFalse(V35PowValidator.isHashUnderTarget("not-a-hash", HIGH_TARGET));
         assertFalse(V35PowValidator.isHashUnderTarget(null, HIGH_TARGET));
         assertFalse(V35PowValidator.isHashUnderTarget("", HIGH_TARGET));
         assertFalse(V35PowValidator.isHashUnderTarget(LOW_HASH, null));
+        assertFalse(V35PowValidator.isHashUnderTarget(LOW_HASH, BigInteger.ZERO));
+        assertFalse(V35PowValidator.isHashUnderTarget(LOW_HASH, BigInteger.valueOf(-1)));
     }
 }

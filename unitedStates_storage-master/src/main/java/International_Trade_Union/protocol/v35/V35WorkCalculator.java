@@ -18,4 +18,11 @@ public final class V35WorkCalculator {
         BigInteger safeAdditional = additionalWork == null ? BigInteger.ZERO : additionalWork;
         return safeCurrent.add(safeAdditional);
     }
+
+    public static BigInteger workFromTarget(BigInteger target) {
+        if (target == null || target.signum() <= 0) {
+            return BigInteger.ZERO;
+        }
+        return BigInteger.ONE.shiftLeft(256).divide(target.add(BigInteger.ONE));
+    }
 }
