@@ -52,8 +52,25 @@ public class V35ParityTest {
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("getQuarterlyPerBlock"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("getHalfYearPerBlock"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("getYearlyPerBlock"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("reservePerBlockForPeriod", String.class));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("getTotalPerBlock"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("totalReservePerBlock"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("validateSplit"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("validateReserveSplit"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("dailyWindowBlocks"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("weeklyWindowBlocks"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("monthlyWindowBlocks"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("quarterlyWindowBlocks"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("halfYearWindowBlocks"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("yearlyWindowBlocks"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("periodStart", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("periodEnd", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("isPeriodEnd", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("maturityBlock", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("selectWinnerOffset", String.class, int.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("combineHashesForSeed", java.util.List.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("baseTicketCountForBlock"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("isEligibleTicketBlock", boolean.class, String.class));
         assertNotNull(TicketWeightCalculator.class.getDeclaredMethod("baseWeight"));
         assertNotNull(TicketWeightCalculator.class.getDeclaredMethod("maxWeight"));
         assertNotNull(TicketWeightCalculator.class.getDeclaredMethod("capTxBoost", double.class));
@@ -80,6 +97,12 @@ public class V35ParityTest {
         assertNotNull(V35WorkCalculator.class.getDeclaredMethod("zeroWork"));
         assertNotNull(V35WorkCalculator.class.getDeclaredMethod("addWork", BigInteger.class, BigInteger.class));
         assertNotNull(V35WorkCalculator.class.getDeclaredMethod("workFromTarget", BigInteger.class));
+        assertNotNull(V35WorkCalculator.class.getDeclaredMethod("workFromCompactTarget", long.class));
+        assertNotNull(V35WorkCalculator.class.getDeclaredMethod("cumulativeWorkFromCompactTargets", java.util.List.class));
         assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("intendedPriority"));
+        assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("capTieBreakerScore", double.class));
+        assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("score", boolean.class, BigInteger.class, long.class, double.class, String.class));
+        assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("compare", ChainTournamentScorer.ChainScore.class, ChainTournamentScorer.ChainScore.class));
+        assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("betterOf", ChainTournamentScorer.ChainScore.class, ChainTournamentScorer.ChainScore.class));
     }
 }
