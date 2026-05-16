@@ -7,6 +7,8 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 
+import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35WorkCalculator;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
@@ -20,6 +22,7 @@ import lombok.Data;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -135,11 +138,13 @@ public class Blockchain implements Cloneable {
             Map<String, Account> balanceForValidation,
             List<String> signaturesNotTakenIntoAccount) {
         int size = (int) data.getSize();
+        BigInteger cumulativeWork = parseCumulativeWork(data.getCumulativeWork());
+        String tipHash = safeMetadataString(data.getTipHash());
 
         if (size >= blocks.get(0).getIndex() + 1 || prevBlock == null) {
             System.out.println("size: " + size + blocks.get(0).getIndex());
             System.out.println(" shortCheck: null");
-            return new DataShortBlockchainInformation(size, false, 0, BigDecimal.ZERO, 0, 0);
+            return shortInfo(size, false, 0, BigDecimal.ZERO, 0, 0, cumulativeWork, tipHash);
         }
 
         long hashcount = data.getHashCount();
@@ -190,6 +195,8 @@ public class Blockchain implements Cloneable {
                 size++;
 
                 hashcount += UtilsUse.powerDiff(block.getHashCompexity());
+                cumulativeWork = addV35Work(cumulativeWork, block);
+                tipHash = latestTipHash(tipHash, block);
                 Account miner = balances.get(block.getMinerAddress());
                 miner = miner != null ? miner : new Account(block.getMinerAddress(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
                 System.out.println("shortCheck miner: " + miner);
@@ -205,7 +212,7 @@ public class Blockchain implements Cloneable {
 
                 if (!validation) {
                     System.out.println("false shortCheck");
-                    return new DataShortBlockchainInformation(size, validation, hashcount, staking, transactions, bigRandomNumber);
+                    return shortInfo(size, validation, hashcount, staking, transactions, bigRandomNumber, cumulativeWork, tipHash);
                 }
             }
         } catch (Exception e) {
@@ -214,7 +221,7 @@ public class Blockchain implements Cloneable {
             System.out.println("-------------------------------------------");
         }
 
-        return new DataShortBlockchainInformation(size, validation, hashcount, staking, transactions, bigRandomNumber);
+        return shortInfo(size, validation, hashcount, staking, transactions, bigRandomNumber, cumulativeWork, tipHash);
     }
 
 
@@ -230,6 +237,8 @@ public class Blockchain implements Cloneable {
         long epoch = 0;
         long transactions = 0;
         int bigRandomNumber = 0;
+        BigInteger cumulativeWork = BigInteger.ZERO;
+        String tipHash = DataShortBlockchainInformation.DEFAULT_TIP_HASH;
 
         Map<String, Account> balances = new HashMap<>();
         List<String> sign = new ArrayList<>();
@@ -273,8 +282,11 @@ public class Blockchain implements Cloneable {
                         System.out.println("index: " + index + " block.index: " + block.getIndex());
                         MyLogger.saveLog("1. checkFromFile:wrong blockchain missing block: " + size + " index: " + block.getIndex());
                         MyLogger.saveLog("index: " + index + " block.index: " + block.getIndex());
-                        return new DataShortBlockchainInformation(size, valid, hashCount, staking, transactions, bigRandomNumber);
+                        return shortInfo(size, valid, hashCount, staking, transactions, bigRandomNumber, cumulativeWork, tipHash);
                     }
+
+                    cumulativeWork = addV35Work(cumulativeWork, block);
+                    tipHash = latestTipHash(tipHash, block);
 
                     if (prevBlock == null) {
                         prevBlock = block;
@@ -364,7 +376,7 @@ public class Blockchain implements Cloneable {
                         MyLogger.saveLog("ERROR: UtilsBlock: validation: BLOCK_GENERATION_INTERVAL:" + Seting.BLOCK_GENERATION_INTERVAL);
                         MyLogger.saveLog("ERROR: UtilsBlock: validation: DIFFICULTY_ADJUSTMENT_INTERVAL:" + Seting.DIFFICULTY_ADJUSTMENT_INTERVAL);
                         size++;
-                        return new DataShortBlockchainInformation(size, valid, hashCount, staking, transactions, bigRandomNumber);
+                        return shortInfo(size, valid, hashCount, staking, transactions, bigRandomNumber, cumulativeWork, tipHash);
                     }
 
                     prevBlock = block;
@@ -372,7 +384,7 @@ public class Blockchain implements Cloneable {
             }
         }
 
-        return new DataShortBlockchainInformation(size, valid, hashCount, staking, transactions, bigRandomNumber);
+        return shortInfo(size, valid, hashCount, staking, transactions, bigRandomNumber, cumulativeWork, tipHash);
     }
 
 
@@ -757,12 +769,17 @@ public class Blockchain implements Cloneable {
         BigDecimal staking = data.getStaking();
         long transactions = data.getTransactions();
         int bigRandomNumber = data.getBigRandomNumber();
+        BigInteger cumulativeWork = parseCumulativeWork(data.getCumulativeWork());
         boolean validation = true;
 
         for (int i = blocks.size() - 1; i >= 0; i--) {
             size--;
 
             hashcount -= UtilsUse.powerDiff(blocks.get(i).getHashCompexity());
+            cumulativeWork = cumulativeWork.subtract(v35Work(blocks.get(i)));
+            if (cumulativeWork.signum() < 0) {
+                cumulativeWork = BigInteger.ZERO;
+            }
             staking = staking.subtract(stakingForDataShort(balances.get(blocks.get(i).getMinerAddress()).getDigitalStakingBalance()));
 
             transactions -= blocks.get(i).getDtoTransactions().size();
@@ -770,9 +787,69 @@ public class Blockchain implements Cloneable {
             balances = UtilsBalance.rollbackCalculateBalance(balances, blocks.get(i));
         }
 
-        return new DataShortBlockchainInformation(size, validation, hashcount, staking, transactions, bigRandomNumber);
+        return shortInfo(size, validation, hashcount, staking, transactions, bigRandomNumber, cumulativeWork, DataShortBlockchainInformation.DEFAULT_TIP_HASH);
+    }
+
+    private static DataShortBlockchainInformation shortInfo(long size,
+                                                            boolean validation,
+                                                            long hashCount,
+                                                            BigDecimal staking,
+                                                            long transactions,
+                                                            int bigRandomNumber,
+                                                            BigInteger cumulativeWork,
+                                                            String tipHash) {
+        return new DataShortBlockchainInformation(
+                size,
+                validation,
+                hashCount,
+                staking,
+                transactions,
+                bigRandomNumber,
+                cumulativeWorkString(cumulativeWork),
+                safeMetadataString(tipHash));
+    }
+
+    public static BigInteger addV35Work(BigInteger currentWork, Block block) {
+        BigInteger safeCurrent = currentWork == null ? BigInteger.ZERO : currentWork;
+        return safeCurrent.add(v35Work(block));
+    }
+
+    public static BigInteger v35Work(Block block) {
+        if (block == null || !ProtocolVersion.isV35(block.getIndex())) {
+            return BigInteger.ZERO;
+        }
+        return V35WorkCalculator.workFromCompactTarget(block.getHashCompexity());
+    }
+
+    public static String latestTipHash(String currentTipHash, Block block) {
+        if (block == null || block.getHashBlock() == null) {
+            return safeMetadataString(currentTipHash);
+        }
+        return block.getHashBlock();
+    }
+
+    private static BigInteger parseCumulativeWork(String cumulativeWork) {
+        if (cumulativeWork == null || cumulativeWork.trim().isEmpty()) {
+            return BigInteger.ZERO;
+        }
+        try {
+            BigInteger parsed = new BigInteger(cumulativeWork);
+            return parsed.signum() <= 0 ? BigInteger.ZERO : parsed;
+        } catch (NumberFormatException e) {
+            return BigInteger.ZERO;
+        }
+    }
+
+    private static String cumulativeWorkString(BigInteger cumulativeWork) {
+        if (cumulativeWork == null || cumulativeWork.signum() <= 0) {
+            return DataShortBlockchainInformation.DEFAULT_CUMULATIVE_WORK;
+        }
+        return cumulativeWork.toString();
+    }
+
+    private static String safeMetadataString(String value) {
+        return value == null ? "" : value;
     }
 
 
 }
-
