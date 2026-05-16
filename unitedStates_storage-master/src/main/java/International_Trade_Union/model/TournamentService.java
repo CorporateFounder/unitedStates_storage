@@ -12,6 +12,8 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.entity.services.PoolBlockService;
 import International_Trade_Union.entity.services.RewardDistributionService;
 import International_Trade_Union.logger.MyLogger;
+import International_Trade_Union.protocol.v35.ChainTournamentScorer;
+import International_Trade_Union.protocol.v35.V35WorkCalculator;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import org.json.JSONException;
@@ -23,6 +25,7 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -77,10 +80,13 @@ public class TournamentService {
     }
 
     public static List<Block> sortWinner(Map<String, Account> finalBalances, List<Block> list) {
+        if (shouldUseV35CandidatePriority(list, Seting.V35_RESCUE_FORK_INDEX)) {
+            return sortWinnerV35(finalBalances, list);
+        }
         //TODO start test ---------------------------------------------------------
         // Получение big random значения для блока
 
-        Function<Block, Integer> bigRandomValue = block -> bigRandomWinner(block, finalBalances.get(block.getMinerAddress()));
+        Function<Block, Integer> bigRandomValue = block -> safeBigRandomWinner(block, finalBalances);
 
 // Создание компаратора с учетом big random, hashComplexity, staking и transactionCount
         Comparator<Block> blockComparator = Comparator
@@ -98,6 +104,130 @@ public class TournamentService {
 
         return sortedList;
         //TODO finish test ---------------------------------------------------------
+    }
+
+    static List<Block> sortWinnerForForkIndex(Map<String, Account> finalBalances, List<Block> list, long forkIndex) {
+        if (shouldUseV35CandidatePriority(list, forkIndex)) {
+            return sortWinnerV35(finalBalances, list);
+        }
+        return sortWinner(finalBalances, list);
+    }
+
+    static boolean shouldUseV35CandidatePriority(List<Block> list, long forkIndex) {
+        if (forkIndex == Long.MAX_VALUE || list == null || list.isEmpty()) {
+            return false;
+        }
+        for (Block block : list) {
+            if (!hasValidV35CandidateMetadata(block, forkIndex)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean hasValidV35CandidateMetadata(Block block, long forkIndex) {
+        return block != null
+                && block.getIndex() >= forkIndex
+                && candidateWork(block).signum() > 0
+                && hashNumber(block).signum() >= 0;
+    }
+
+    private static List<Block> sortWinnerV35(Map<String, Account> finalBalances, List<Block> list) {
+        return list.stream()
+                .sorted((left, right) -> -compareV35Candidate(finalBalances, left, right))
+                .collect(Collectors.toList());
+    }
+
+    static int compareV35Candidate(Map<String, Account> finalBalances, Block left, Block right) {
+        int workCompare = candidateWork(left).compareTo(candidateWork(right));
+        if (workCompare != 0) {
+            return workCompare;
+        }
+
+        int hashCompare = hashNumber(right).compareTo(hashNumber(left));
+        if (hashCompare != 0) {
+            return hashCompare;
+        }
+
+        int tieBreakerCompare = Double.compare(candidateTieBreaker(finalBalances, left), candidateTieBreaker(finalBalances, right));
+        if (tieBreakerCompare != 0) {
+            return tieBreakerCompare;
+        }
+
+        return compareHashText(left == null ? null : left.getHashBlock(), right == null ? null : right.getHashBlock());
+    }
+
+    private static BigInteger candidateWork(Block block) {
+        if (block == null) {
+            return BigInteger.ZERO;
+        }
+        return V35WorkCalculator.workFromCompactTarget(block.getHashCompexity());
+    }
+
+    private static BigInteger hashNumber(Block block) {
+        if (block == null || block.getHashBlock() == null || block.getHashBlock().trim().isEmpty()) {
+            return BigInteger.valueOf(-1);
+        }
+        try {
+            return new BigInteger(block.getHashBlock(), 16);
+        } catch (NumberFormatException e) {
+            return BigInteger.valueOf(-1);
+        }
+    }
+
+    private static double candidateTieBreaker(Map<String, Account> finalBalances, Block block) {
+        if (block == null) {
+            return 0.0;
+        }
+        Account account = finalBalances == null ? null : finalBalances.get(block.getMinerAddress());
+        double stake = normalized(account == null ? BigDecimal.ZERO : account.getDigitalStakingBalance());
+        double transactions = normalized(block.getDtoTransactions() == null ? 0L : block.getDtoTransactions().size());
+        return ChainTournamentScorer.capTieBreakerScore((stake + transactions) / 2.0);
+    }
+
+    private static int safeBigRandomWinner(Block block, Map<String, Account> finalBalances) {
+        if (block == null) {
+            return 0;
+        }
+        try {
+            Account account = finalBalances == null ? null : finalBalances.get(block.getMinerAddress());
+            return bigRandomWinner(block, account);
+        } catch (RuntimeException e) {
+            return 0;
+        }
+    }
+
+    private static double normalized(BigDecimal value) {
+        if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+            return 0.0;
+        }
+        double number = value.doubleValue();
+        if (Double.isNaN(number) || Double.isInfinite(number)) {
+            return 1.0;
+        }
+        return number / (number + 1.0);
+    }
+
+    private static double normalized(long value) {
+        if (value <= 0) {
+            return 0.0;
+        }
+        return (double) value / ((double) value + 1.0);
+    }
+
+    private static int compareHashText(String leftHash, String rightHash) {
+        boolean leftEmpty = leftHash == null || leftHash.isEmpty();
+        boolean rightEmpty = rightHash == null || rightHash.isEmpty();
+        if (leftEmpty && rightEmpty) {
+            return 0;
+        }
+        if (leftEmpty) {
+            return -1;
+        }
+        if (rightEmpty) {
+            return 1;
+        }
+        return rightHash.compareTo(leftHash);
     }
 
 
