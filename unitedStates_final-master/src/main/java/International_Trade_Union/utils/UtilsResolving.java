@@ -628,6 +628,9 @@ public class UtilsResolving {
     public boolean isBig(
             DataShortBlockchainInformation actual,
             DataShortBlockchainInformation global) {
+        if (HostEndDataShortBComparator.shouldUseV35Comparison(actual, global)) {
+            return HostEndDataShortBComparator.compareV35(global, actual) > 0;
+        }
         if (global.getBigRandomNumber() != actual.getBigRandomNumber())
             return true;
         else return false;
@@ -636,6 +639,9 @@ public class UtilsResolving {
 
 
     public boolean isSmall(DataShortBlockchainInformation expected, DataShortBlockchainInformation actual) {
+        if (HostEndDataShortBComparator.shouldUseV35Comparison(expected, actual)) {
+            return HostEndDataShortBComparator.compareV35(expected, actual) > 0;
+        }
         if (
                 actual.getSize() < expected.getSize()
                         || actual.getBigRandomNumber() < expected.getBigRandomNumber()
@@ -1205,4 +1211,3 @@ public class UtilsResolving {
     }
 
 }
-
