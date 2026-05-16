@@ -9,6 +9,7 @@ import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.*;
+import International_Trade_Union.protocol.v35.ChainTournamentScorer;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
 import International_Trade_Union.vote.UtilsLaws;
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -1182,13 +1184,13 @@ public class BasisController {
                 long timeDifferenceSeconds = (checkBlock.getTimestamp().getTime() - prevBlock().getTimestamp().getTime()) / 1000;
                 long actualTimeCheck = UtilsTime.getUniversalTimestamp() / 1000L;
                 if (!checkBlock.getPreviousHash().equals(prevBlock.getHashBlock())
-                        || checkBlock.getHashCompexity() < Seting.V34_MIN_DIFF
+                        || isResolveBlockBelowMinimumDifficulty(checkBlock)
                         || timeDifferenceSeconds < 100
                         || timeDifferenceSeconds > actualTimeCheck
                         || !checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())) {
                     System.out.println("wrong block: resolve_from_to_block: "
                             + !checkBlock.getPreviousHash().equals(prevBlock.getHashBlock() + ":" +
-                            (checkBlock.getHashCompexity() < Seting.V34_MIN_DIFF)) + ":" +
+                            isResolveBlockBelowMinimumDifficulty(checkBlock)) + ":" +
                             (timeDifferenceSeconds < 100) + ":" +
                             (timeDifferenceSeconds > actualTimeCheck) + ":" +
                             (!checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())));
@@ -1241,8 +1243,7 @@ public class BasisController {
                 }
 
 
-                if (temp.getSize() > shortDataBlockchain.getSize()
-                        && temp.getHashCount() >= shortDataBlockchain.getHashCount()) {
+                if (shouldAcceptResolveCandidate(shortDataBlockchain, temp)) {
 
 
                     System.out.println("*************************************");
@@ -1288,6 +1289,89 @@ public class BasisController {
         } finally {
 
             System.out.println("finish resolve_from_to_block");
+        }
+    }
+
+    static boolean shouldAcceptResolveCandidate(DataShortBlockchainInformation local,
+                                                DataShortBlockchainInformation candidate) {
+        return shouldAcceptResolveCandidate(local, candidate, Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    static boolean shouldAcceptResolveCandidate(DataShortBlockchainInformation local,
+                                                DataShortBlockchainInformation candidate,
+                                                long forkIndex) {
+        if (shouldUseV35ResolveAdmission(local, candidate, forkIndex)) {
+            return compareV35ResolveAdmission(candidate, local) > 0;
+        }
+        return isLegacyResolveAdmissionPreferred(local, candidate);
+    }
+
+    static boolean isLegacyResolveAdmissionPreferred(DataShortBlockchainInformation local,
+                                                     DataShortBlockchainInformation candidate) {
+        if (local == null || candidate == null) {
+            return false;
+        }
+        return candidate.getSize() > local.getSize()
+                && candidate.getHashCount() >= local.getHashCount();
+    }
+
+    static boolean shouldUseV35ResolveAdmission(DataShortBlockchainInformation local,
+                                                DataShortBlockchainInformation candidate,
+                                                long forkIndex) {
+        if (forkIndex == Long.MAX_VALUE) {
+            return false;
+        }
+        if (!isShortInfoAtOrAfterFork(local, forkIndex) && !isShortInfoAtOrAfterFork(candidate, forkIndex)) {
+            return false;
+        }
+        return parseResolveCumulativeWork(local).signum() > 0
+                || parseResolveCumulativeWork(candidate).signum() > 0;
+    }
+
+    static int compareV35ResolveAdmission(DataShortBlockchainInformation left,
+                                          DataShortBlockchainInformation right) {
+        return ChainTournamentScorer.compare(toResolveChainScore(left), toResolveChainScore(right));
+    }
+
+    static boolean isResolveBlockBelowMinimumDifficulty(Block block) {
+        return isResolveBlockBelowMinimumDifficulty(block, Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    static boolean isResolveBlockBelowMinimumDifficulty(Block block, long forkIndex) {
+        if (block == null) {
+            return true;
+        }
+        if (forkIndex != Long.MAX_VALUE && block.getIndex() >= forkIndex) {
+            return false;
+        }
+        return block.getHashCompexity() < Seting.V34_MIN_DIFF;
+    }
+
+    private static ChainTournamentScorer.ChainScore toResolveChainScore(DataShortBlockchainInformation data) {
+        if (data == null) {
+            return ChainTournamentScorer.ChainScore.invalid();
+        }
+        return ChainTournamentScorer.score(
+                data.isValidation(),
+                parseResolveCumulativeWork(data),
+                data.getSize(),
+                0.0,
+                data.getTipHash());
+    }
+
+    private static boolean isShortInfoAtOrAfterFork(DataShortBlockchainInformation data, long forkIndex) {
+        return data != null && data.getSize() >= forkIndex;
+    }
+
+    private static BigInteger parseResolveCumulativeWork(DataShortBlockchainInformation data) {
+        if (data == null || data.getCumulativeWork() == null || data.getCumulativeWork().trim().isEmpty()) {
+            return BigInteger.ZERO;
+        }
+        try {
+            BigInteger parsed = new BigInteger(data.getCumulativeWork());
+            return parsed.signum() <= 0 ? BigInteger.ZERO : parsed;
+        } catch (NumberFormatException e) {
+            return BigInteger.ZERO;
         }
     }
 
@@ -1423,5 +1507,3 @@ public class BasisController {
         return UtilsTime.getUniversalTimestamp();
     }
 }
-
-
