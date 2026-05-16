@@ -23,7 +23,9 @@ public class V35ParityTest {
                 V35TargetDifficulty.class,
                 V35PowValidator.class,
                 V35WorkCalculator.class,
-                ChainTournamentScorer.class
+                ChainTournamentScorer.class,
+                JackpotTicket.class,
+                JackpotWinnerProof.class
         };
 
         for (Class<?> clazz : classes) {
@@ -67,10 +69,34 @@ public class V35ParityTest {
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("periodEnd", long.class, long.class));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("isPeriodEnd", long.class, long.class));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("maturityBlock", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("periodStartForBlock", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("periodEndForBlock", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("maturityBlockForPeriod", long.class, long.class));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("selectWinnerOffset", String.class, int.class));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("combineHashesForSeed", java.util.List.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("isMature", long.class, long.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("seedFromFutureHashes", java.util.List.class));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("baseTicketCountForBlock"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("isEligibleTicketBlock", boolean.class, String.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("isEligibleTicket", long.class, String.class, boolean.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("eligibleTickets", java.util.List.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("selectWinner", long.class, long.class, java.util.List.class, java.util.List.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("selectWinner", java.util.List.class, java.util.List.class));
+        assertNotNull(JackpotTicket.class.getDeclaredMethod("of", long.class, String.class));
+        assertNotNull(JackpotTicket.class.getDeclaredMethod("getBlockIndex"));
+        assertNotNull(JackpotTicket.class.getDeclaredMethod("getMinerAddress"));
+        assertNotNull(JackpotTicket.class.getDeclaredMethod("getWeight"));
+        assertNotNull(JackpotTicket.class.getDeclaredMethod("isValid"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("noWinner", long.class, long.class, long.class, int.class, String.class));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getPeriodStart"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getPeriodEnd"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getMaturityBlock"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getRandomDelayBlocks"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getSeedHex"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getSelectedOffset"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getSelectedBlockIndex"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("getWinnerMinerAddress"));
+        assertNotNull(JackpotWinnerProof.class.getDeclaredMethod("hasWinner"));
         assertNotNull(TicketWeightCalculator.class.getDeclaredMethod("baseWeight"));
         assertNotNull(TicketWeightCalculator.class.getDeclaredMethod("maxWeight"));
         assertNotNull(TicketWeightCalculator.class.getDeclaredMethod("capTxBoost", double.class));

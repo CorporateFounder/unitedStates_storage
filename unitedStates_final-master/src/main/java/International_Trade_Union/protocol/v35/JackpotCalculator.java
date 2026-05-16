@@ -6,6 +6,9 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -145,6 +148,19 @@ public final class JackpotCalculator {
         return periodEnd + delayBlocks;
     }
 
+    public static long periodStartForBlock(long blockIndex, long windowSize) {
+        return periodStart(blockIndex, windowSize);
+    }
+
+    public static long periodEndForBlock(long blockIndex, long windowSize) {
+        return periodEnd(blockIndex, windowSize);
+    }
+
+    public static long maturityBlockForPeriod(long blockIndex, long windowSize) {
+        long end = periodEndForBlock(blockIndex, windowSize);
+        return maturityBlock(end, JACKPOT_RANDOM_DELAY_BLOCKS);
+    }
+
     public static int selectWinnerOffset(String seedHex, int eligibleTicketCount) {
         if (eligibleTicketCount <= 0 || seedHex == null || seedHex.trim().isEmpty()) {
             return -1;
@@ -173,12 +189,115 @@ public final class JackpotCalculator {
         return sha256Hex(combined.toString());
     }
 
+    public static boolean isMature(long currentHeight, long periodEnd) {
+        long maturity = maturityBlock(periodEnd, JACKPOT_RANDOM_DELAY_BLOCKS);
+        return maturity >= 0 && currentHeight >= maturity;
+    }
+
+    public static String seedFromFutureHashes(List<String> futureHashes) {
+        if (futureHashes == null || futureHashes.size() < JACKPOT_RANDOM_DELAY_BLOCKS) {
+            return "";
+        }
+        List<String> delayedHashes = new ArrayList<>();
+        for (int i = 0; i < JACKPOT_RANDOM_DELAY_BLOCKS; i++) {
+            String hash = futureHashes.get(i);
+            if (hash == null || hash.trim().isEmpty()) {
+                return "";
+            }
+            delayedHashes.add(hash.trim());
+        }
+        return combineHashesForSeed(delayedHashes);
+    }
+
     public static int baseTicketCountForBlock() {
         return 1;
     }
 
     public static boolean isEligibleTicketBlock(boolean isV35Block, String minerAddress) {
         return isV35Block && minerAddress != null && !minerAddress.trim().isEmpty();
+    }
+
+    public static boolean isEligibleTicket(long blockIndex, String minerAddress, boolean isV35Block) {
+        return blockIndex >= 0 && isEligibleTicketBlock(isV35Block, minerAddress);
+    }
+
+    public static List<JackpotTicket> eligibleTickets(List<JackpotTicket> tickets) {
+        if (tickets == null || tickets.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<JackpotTicket> eligible = new ArrayList<>();
+        for (JackpotTicket ticket : tickets) {
+            if (ticket != null && ticket.isValid()) {
+                eligible.add(ticket);
+            }
+        }
+        eligible.sort(Comparator.comparingLong(JackpotTicket::getBlockIndex));
+        return Collections.unmodifiableList(eligible);
+    }
+
+    public static JackpotWinnerProof selectWinner(long periodStart, long periodEnd,
+                                                  List<JackpotTicket> tickets,
+                                                  List<String> futureHashes) {
+        long maturity = maturityBlock(periodEnd, JACKPOT_RANDOM_DELAY_BLOCKS);
+        if (periodStart < 0 || periodEnd < periodStart || maturity < 0) {
+            return JackpotWinnerProof.noWinner(periodStart, periodEnd, maturity, (int) JACKPOT_RANDOM_DELAY_BLOCKS, "");
+        }
+
+        List<JackpotTicket> eligible = eligibleTicketsForPeriod(tickets, periodStart, periodEnd);
+        String seed = seedFromFutureHashes(futureHashes);
+        int offset = selectWinnerOffset(seed, eligible.size());
+        if (offset < 0) {
+            return JackpotWinnerProof.noWinner(periodStart, periodEnd, maturity, (int) JACKPOT_RANDOM_DELAY_BLOCKS, seed);
+        }
+
+        JackpotTicket winner = eligible.get(offset);
+        return new JackpotWinnerProof(
+                periodStart,
+                periodEnd,
+                maturity,
+                (int) JACKPOT_RANDOM_DELAY_BLOCKS,
+                seed,
+                offset,
+                winner.getBlockIndex(),
+                winner.getMinerAddress()
+        );
+    }
+
+    public static JackpotWinnerProof selectWinner(List<JackpotTicket> tickets, List<String> futureHashes) {
+        List<JackpotTicket> eligible = eligibleTickets(tickets);
+        String seed = seedFromFutureHashes(futureHashes);
+        int offset = selectWinnerOffset(seed, eligible.size());
+        if (offset < 0) {
+            return JackpotWinnerProof.noWinner(-1L, -1L, -1L, (int) JACKPOT_RANDOM_DELAY_BLOCKS, seed);
+        }
+
+        JackpotTicket winner = eligible.get(offset);
+        return new JackpotWinnerProof(
+                -1L,
+                -1L,
+                -1L,
+                (int) JACKPOT_RANDOM_DELAY_BLOCKS,
+                seed,
+                offset,
+                winner.getBlockIndex(),
+                winner.getMinerAddress()
+        );
+    }
+
+    private static List<JackpotTicket> eligibleTicketsForPeriod(List<JackpotTicket> tickets,
+                                                                long periodStart,
+                                                                long periodEnd) {
+        List<JackpotTicket> eligible = eligibleTickets(tickets);
+        if (eligible.isEmpty()) {
+            return eligible;
+        }
+        List<JackpotTicket> inPeriod = new ArrayList<>();
+        for (JackpotTicket ticket : eligible) {
+            if (ticket.getBlockIndex() >= periodStart && ticket.getBlockIndex() <= periodEnd) {
+                inPeriod.add(ticket);
+            }
+        }
+        return Collections.unmodifiableList(inPeriod);
     }
 
     private static String normalizeHex(String seedHex) {
