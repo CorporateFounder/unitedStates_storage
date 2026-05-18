@@ -23,8 +23,8 @@ public class V35RewardValidationFixtureTest {
 
     @Test
     public void fixedV35RewardShapeIsLocked() {
-        assertEquals(10.00, V35RewardCalculator.getTotalGoldReward(), DELTA);
-        assertEquals(8.00, V35RewardCalculator.getInstantMinerGoldReward(), DELTA);
+        assertEquals(8.00, V35RewardCalculator.getTotalGoldReward(), DELTA);
+        assertEquals(6.00, V35RewardCalculator.getInstantMinerGoldReward(), DELTA);
         assertEquals(2.00, V35RewardCalculator.getJackpotGoldReward(), DELTA);
         assertEquals(0.00, V35RewardCalculator.getFounderGoldReward(), DELTA);
         assertEquals(0.00, V35RewardCalculator.getInstantMinerStockReward(), DELTA);
@@ -43,7 +43,7 @@ public class V35RewardValidationFixtureTest {
     @Test
     public void exactMinerRewardTransactionIsAcceptedByV35RewardRules() {
         List<DtoTransaction> transactions = Collections.singletonList(
-                rewardTo(MINER_ADDRESS, 8.00, 0.00));
+                rewardTo(MINER_ADDRESS, 6.00, 0.00));
 
         assertTrue(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, transactions));
     }
@@ -51,7 +51,7 @@ public class V35RewardValidationFixtureTest {
     @Test
     public void minerRewardOverpaymentIsRejectedByV35RewardRules() {
         List<DtoTransaction> transactions = Collections.singletonList(
-                rewardTo(MINER_ADDRESS, 8.01, 0.00));
+                rewardTo(MINER_ADDRESS, 6.01, 0.00));
 
         assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, transactions));
     }
@@ -59,19 +59,19 @@ public class V35RewardValidationFixtureTest {
     @Test
     public void minerRewardUnderpaymentAndStockRewardAreRejectedByV35RewardRules() {
         assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX,
-                Collections.singletonList(rewardTo(MINER_ADDRESS, 7.99, 0.00))));
+                Collections.singletonList(rewardTo(MINER_ADDRESS, 5.99, 0.00))));
         assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX,
-                Collections.singletonList(rewardTo(MINER_ADDRESS, 8.00, 0.01))));
+                Collections.singletonList(rewardTo(MINER_ADDRESS, 6.00, 0.01))));
     }
 
     @Test
     public void missingOrExtraBasisRewardShapesAreRejectedByV35RewardRules() {
         assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, Collections.emptyList()));
         assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, Arrays.asList(
-                rewardTo(MINER_ADDRESS, 8.00, 0.00),
-                rewardTo(MINER_ADDRESS, 8.00, 0.00))));
+                rewardTo(MINER_ADDRESS, 6.00, 0.00),
+                rewardTo(MINER_ADDRESS, 6.00, 0.00))));
         assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, Collections.singletonList(
-                rewardTo(OTHER_ADDRESS, 8.00, 0.00))));
+                rewardTo(OTHER_ADDRESS, 6.00, 0.00))));
     }
 
     @Test

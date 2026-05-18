@@ -41,12 +41,28 @@ public class JackpotCalculatorTest {
 
     @Test
     public void exposesFixedBlockWindows() {
-        assertEquals(576L, JackpotCalculator.dailyWindowBlocks());
-        assertEquals(4032L, JackpotCalculator.weeklyWindowBlocks());
-        assertEquals(17280L, JackpotCalculator.monthlyWindowBlocks());
-        assertEquals(51840L, JackpotCalculator.quarterlyWindowBlocks());
-        assertEquals(104832L, JackpotCalculator.halfYearWindowBlocks());
-        assertEquals(210240L, JackpotCalculator.yearlyWindowBlocks());
+        assertEquals(432L, JackpotCalculator.dailyWindowBlocks());
+        assertEquals(3024L, JackpotCalculator.weeklyWindowBlocks());
+        assertEquals(12960L, JackpotCalculator.monthlyWindowBlocks());
+        assertEquals(38880L, JackpotCalculator.quarterlyWindowBlocks());
+        assertEquals(78624L, JackpotCalculator.halfYearWindowBlocks());
+        assertEquals(157680L, JackpotCalculator.yearlyWindowBlocks());
+    }
+
+    @Test
+    public void exposesFullWindowJackpotPayoutAmounts() {
+        assertEquals(302.40, JackpotCalculator.expectedPayoutAmount(
+                JackpotCalculator.PERIOD_DAILY, (int) JackpotCalculator.dailyWindowBlocks()), DELTA);
+        assertEquals(1209.60, JackpotCalculator.expectedPayoutAmount(
+                JackpotCalculator.PERIOD_WEEKLY, (int) JackpotCalculator.weeklyWindowBlocks()), DELTA);
+        assertEquals(3888.00, JackpotCalculator.expectedPayoutAmount(
+                JackpotCalculator.PERIOD_MONTHLY, (int) JackpotCalculator.monthlyWindowBlocks()), DELTA);
+        assertEquals(9720.00, JackpotCalculator.expectedPayoutAmount(
+                JackpotCalculator.PERIOD_QUARTERLY, (int) JackpotCalculator.quarterlyWindowBlocks()), DELTA);
+        assertEquals(15724.80, JackpotCalculator.expectedPayoutAmount(
+                JackpotCalculator.PERIOD_HALF_YEAR, (int) JackpotCalculator.halfYearWindowBlocks()), DELTA);
+        assertEquals(23652.00, JackpotCalculator.expectedPayoutAmount(
+                JackpotCalculator.PERIOD_YEARLY, (int) JackpotCalculator.yearlyWindowBlocks()), DELTA);
     }
 
     @Test
@@ -54,21 +70,21 @@ public class JackpotCalculatorTest {
         long daily = JackpotCalculator.dailyWindowBlocks();
 
         assertEquals(0L, JackpotCalculator.periodStart(0L, daily));
-        assertEquals(0L, JackpotCalculator.periodStart(575L, daily));
-        assertEquals(576L, JackpotCalculator.periodStart(576L, daily));
-        assertEquals(575L, JackpotCalculator.periodEnd(0L, daily));
-        assertEquals(575L, JackpotCalculator.periodEnd(575L, daily));
-        assertEquals(1151L, JackpotCalculator.periodEnd(576L, daily));
-        assertFalse(JackpotCalculator.isPeriodEnd(574L, daily));
-        assertTrue(JackpotCalculator.isPeriodEnd(575L, daily));
-        assertEquals(635L, JackpotCalculator.maturityBlock(575L, JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS));
+        assertEquals(0L, JackpotCalculator.periodStart(431L, daily));
+        assertEquals(432L, JackpotCalculator.periodStart(432L, daily));
+        assertEquals(431L, JackpotCalculator.periodEnd(0L, daily));
+        assertEquals(431L, JackpotCalculator.periodEnd(431L, daily));
+        assertEquals(863L, JackpotCalculator.periodEnd(432L, daily));
+        assertFalse(JackpotCalculator.isPeriodEnd(430L, daily));
+        assertTrue(JackpotCalculator.isPeriodEnd(431L, daily));
+        assertEquals(491L, JackpotCalculator.maturityBlock(431L, JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS));
     }
 
     @Test
     public void invalidPeriodInputsAreSafe() {
-        assertEquals(-1L, JackpotCalculator.periodStart(-1L, 576L));
+        assertEquals(-1L, JackpotCalculator.periodStart(-1L, 432L));
         assertEquals(-1L, JackpotCalculator.periodStart(1L, 0L));
-        assertEquals(-1L, JackpotCalculator.periodEnd(-1L, 576L));
+        assertEquals(-1L, JackpotCalculator.periodEnd(-1L, 432L));
         assertEquals(-1L, JackpotCalculator.maturityBlock(-1L, 60L));
         assertEquals(-1L, JackpotCalculator.maturityBlock(10L, -1L));
         assertFalse(JackpotCalculator.isPeriodEnd(10L, 0L));

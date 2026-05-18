@@ -69,14 +69,14 @@ public class JackpotPayoutValidationTest {
     }
 
     @Test
-    public void minerInstantRewardRemainsEightGold() {
-        assertEquals(8.00, V35RewardCalculator.getInstantMinerGoldReward(), 0.00000001);
-        assertTrue(V35RewardCalculator.isValidInstantMinerReward(8.00, 0.00));
-        assertFalse(V35RewardCalculator.isValidInstantMinerReward(8.01, 0.00));
+    public void minerInstantRewardRemainsSixGold() {
+        assertEquals(6.00, V35RewardCalculator.getInstantMinerGoldReward(), 0.00000001);
+        assertTrue(V35RewardCalculator.isValidInstantMinerReward(6.00, 0.00));
+        assertFalse(V35RewardCalculator.isValidInstantMinerReward(6.01, 0.00));
     }
 
     private static JackpotWinnerProof dailyProof() {
-        return JackpotCalculator.selectWinner(0L, 575L,
+        return JackpotCalculator.selectWinner(0L, 431L,
                 Arrays.asList(
                         JackpotTicket.of(1L, "miner-a"),
                         JackpotTicket.of(2L, "miner-b"),

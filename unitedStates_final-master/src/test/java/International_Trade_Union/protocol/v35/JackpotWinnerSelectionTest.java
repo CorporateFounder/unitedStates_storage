@@ -36,11 +36,11 @@ public class JackpotWinnerSelectionTest {
 
     @Test
     public void maturityRequiresSixtyFutureBlocks() {
-        long periodEnd = 575L;
+        long periodEnd = 431L;
 
-        assertEquals(635L, JackpotCalculator.maturityBlock(periodEnd, JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS));
-        assertFalse(JackpotCalculator.isMature(634L, periodEnd));
-        assertTrue(JackpotCalculator.isMature(635L, periodEnd));
+        assertEquals(491L, JackpotCalculator.maturityBlock(periodEnd, JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS));
+        assertFalse(JackpotCalculator.isMature(490L, periodEnd));
+        assertTrue(JackpotCalculator.isMature(491L, periodEnd));
     }
 
     @Test
@@ -86,14 +86,14 @@ public class JackpotWinnerSelectionTest {
         );
         List<String> hashes = futureHashes(60);
 
-        JackpotWinnerProof first = JackpotCalculator.selectWinner(0L, 575L, tickets, hashes);
-        JackpotWinnerProof second = JackpotCalculator.selectWinner(0L, 575L, tickets, hashes);
+        JackpotWinnerProof first = JackpotCalculator.selectWinner(0L, 431L, tickets, hashes);
+        JackpotWinnerProof second = JackpotCalculator.selectWinner(0L, 431L, tickets, hashes);
 
         assertEquals(first, second);
         assertTrue(first.hasWinner());
         assertEquals(0L, first.getPeriodStart());
-        assertEquals(575L, first.getPeriodEnd());
-        assertEquals(635L, first.getMaturityBlock());
+        assertEquals(431L, first.getPeriodEnd());
+        assertEquals(491L, first.getMaturityBlock());
         assertEquals(60, first.getRandomDelayBlocks());
         assertTrue(first.getSelectedOffset() >= 0);
         assertTrue(first.getSelectedOffset() < 3);
@@ -118,8 +118,8 @@ public class JackpotWinnerSelectionTest {
 
     @Test
     public void winnerSelectionRejectsEmptyOrImmatureInputs() {
-        assertFalse(JackpotCalculator.selectWinner(0L, 575L, Collections.emptyList(), futureHashes(60)).hasWinner());
-        assertFalse(JackpotCalculator.selectWinner(0L, 575L,
+        assertFalse(JackpotCalculator.selectWinner(0L, 431L, Collections.emptyList(), futureHashes(60)).hasWinner());
+        assertFalse(JackpotCalculator.selectWinner(0L, 431L,
                 Collections.singletonList(JackpotTicket.of(1L, "miner")), futureHashes(59)).hasWinner());
         assertFalse(JackpotCalculator.selectWinner(10L, 0L,
                 Collections.singletonList(JackpotTicket.of(1L, "miner")), futureHashes(60)).hasWinner());
@@ -127,12 +127,12 @@ public class JackpotWinnerSelectionTest {
 
     @Test
     public void dailyAndWeeklyPeriodHelpersSupportWinnerSelection() {
-        assertEquals(0L, JackpotCalculator.periodStartForBlock(575L, JackpotCalculator.dailyWindowBlocks()));
-        assertEquals(575L, JackpotCalculator.periodEndForBlock(575L, JackpotCalculator.dailyWindowBlocks()));
-        assertEquals(635L, JackpotCalculator.maturityBlockForPeriod(575L, JackpotCalculator.dailyWindowBlocks()));
-        assertEquals(4031L, JackpotCalculator.periodEndForBlock(1L, JackpotCalculator.weeklyWindowBlocks()));
+        assertEquals(0L, JackpotCalculator.periodStartForBlock(431L, JackpotCalculator.dailyWindowBlocks()));
+        assertEquals(431L, JackpotCalculator.periodEndForBlock(431L, JackpotCalculator.dailyWindowBlocks()));
+        assertEquals(491L, JackpotCalculator.maturityBlockForPeriod(431L, JackpotCalculator.dailyWindowBlocks()));
+        assertEquals(3023L, JackpotCalculator.periodEndForBlock(1L, JackpotCalculator.weeklyWindowBlocks()));
 
-        JackpotWinnerProof proof = JackpotCalculator.selectWinner(0L, 4031L,
+        JackpotWinnerProof proof = JackpotCalculator.selectWinner(0L, 3023L,
                 Arrays.asList(JackpotTicket.of(5L, "daily-miner"), JackpotTicket.of(40L, "weekly-miner")),
                 futureHashes(60));
 

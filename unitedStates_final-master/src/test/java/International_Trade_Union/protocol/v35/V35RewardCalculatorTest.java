@@ -11,8 +11,8 @@ public class V35RewardCalculatorTest {
 
     @Test
     public void exposesFixedRewardConstants() {
-        assertEquals(10.00, V35RewardCalculator.getTotalGoldReward(), DELTA);
-        assertEquals(8.00, V35RewardCalculator.getInstantMinerGoldReward(), DELTA);
+        assertEquals(8.00, V35RewardCalculator.getTotalGoldReward(), DELTA);
+        assertEquals(6.00, V35RewardCalculator.getInstantMinerGoldReward(), DELTA);
         assertEquals(0.00, V35RewardCalculator.getInstantMinerStockReward(), DELTA);
         assertEquals(2.00, V35RewardCalculator.getJackpotGoldReward(), DELTA);
         assertEquals(0.00, V35RewardCalculator.getFounderGoldReward(), DELTA);
@@ -22,10 +22,10 @@ public class V35RewardCalculatorTest {
 
     @Test
     public void validatesV35MinerAndFounderRewardShape() {
-        assertTrue(V35RewardCalculator.isValidInstantMinerReward(8.00, 0.00));
-        assertFalse(V35RewardCalculator.isValidInstantMinerReward(8.01, 0.00));
-        assertFalse(V35RewardCalculator.isValidInstantMinerReward(8.00, 1.00));
+        assertTrue(V35RewardCalculator.isValidInstantMinerReward(6.00, 0.00));
+        assertFalse(V35RewardCalculator.isValidInstantMinerReward(6.01, 0.00));
+        assertFalse(V35RewardCalculator.isValidInstantMinerReward(6.00, 1.00));
         assertTrue(V35RewardCalculator.isValidFounderReward(0.00, 0.00));
-        assertFalse(V35RewardCalculator.isValidFounderReward(8.00, 0.00));
+        assertFalse(V35RewardCalculator.isValidFounderReward(6.00, 0.00));
     }
 }

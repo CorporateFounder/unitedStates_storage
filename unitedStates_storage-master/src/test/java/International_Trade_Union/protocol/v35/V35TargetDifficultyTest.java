@@ -11,7 +11,7 @@ public class V35TargetDifficultyTest {
     @Test
     public void exposesTargetDifficultyConstants() {
         assertEquals(60, V35TargetDifficulty.getTargetWindow());
-        assertEquals(150, V35TargetDifficulty.getTargetBlockTimeSeconds());
+        assertEquals(200, V35TargetDifficulty.getTargetBlockTimeSeconds());
         assertEquals(1800L, V35TargetDifficulty.getEmergencyDelaySeconds());
     }
 
@@ -42,7 +42,7 @@ public class V35TargetDifficultyTest {
     @Test
     public void calculateNextTargetUsesExpectedTimespan() {
         BigInteger previous = BigInteger.valueOf(1000);
-        long expected = 60L * 150L;
+        long expected = 60L * 200L;
 
         assertEquals(previous, V35TargetDifficulty.calculateNextTarget(previous, expected, expected));
         assertEquals(BigInteger.valueOf(1250), V35TargetDifficulty.calculateNextTarget(previous, expected * 2, expected));
@@ -61,7 +61,7 @@ public class V35TargetDifficultyTest {
     public void calculateNextCompactTargetAdjustsAndClamps() {
         long compact = V35TargetDifficulty.getInitialCompactTarget();
         BigInteger previous = V35TargetDifficulty.decodeCompactTarget(compact);
-        long expected = 60L * 150L;
+        long expected = 60L * 200L;
 
         BigInteger stable = V35TargetDifficulty.decodeCompactTarget(
                 V35TargetDifficulty.calculateNextCompactTarget(compact, expected, expected, 0L));
@@ -91,7 +91,7 @@ public class V35TargetDifficultyTest {
     public void compactEmergencyEasesOnlyAfterDelay() {
         long compact = V35TargetDifficulty.getInitialCompactTarget();
         BigInteger previous = V35TargetDifficulty.decodeCompactTarget(compact);
-        long expected = 60L * 150L;
+        long expected = 60L * 200L;
 
         BigInteger beforeDelay = V35TargetDifficulty.decodeCompactTarget(
                 V35TargetDifficulty.calculateNextCompactTarget(compact, expected, expected, 1799L));
