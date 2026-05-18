@@ -2,8 +2,11 @@ package International_Trade_Union.protocol.v35;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -63,6 +66,46 @@ public class JackpotCalculatorTest {
                 JackpotCalculator.PERIOD_HALF_YEAR, (int) JackpotCalculator.halfYearWindowBlocks()), DELTA);
         assertEquals(23652.00, JackpotCalculator.expectedPayoutAmount(
                 JackpotCalculator.PERIOD_YEARLY, (int) JackpotCalculator.yearlyWindowBlocks()), DELTA);
+    }
+
+    @Test
+    public void classifiesCanonicalJackpotPayoutAmounts() {
+        assertEquals(JackpotCalculator.JackpotPeriod.DAILY, JackpotCalculator.classifyPayoutAmount(302.40));
+        assertEquals(JackpotCalculator.JackpotPeriod.DAILY, JackpotCalculator.classifyPayoutAmount(302.400));
+        assertEquals(JackpotCalculator.JackpotPeriod.WEEKLY, JackpotCalculator.classifyPayoutAmount(1209.60));
+        assertEquals(JackpotCalculator.JackpotPeriod.MONTHLY, JackpotCalculator.classifyPayoutAmount(3888.00));
+        assertEquals(JackpotCalculator.JackpotPeriod.QUARTERLY, JackpotCalculator.classifyPayoutAmount(9720.00));
+        assertEquals(JackpotCalculator.JackpotPeriod.HALF_YEAR, JackpotCalculator.classifyPayoutAmount(15724.80));
+        assertEquals(JackpotCalculator.JackpotPeriod.YEARLY, JackpotCalculator.classifyPayoutAmount(23652.00));
+    }
+
+    @Test
+    public void rejectsNonJackpotAndUnsafePayoutAmounts() {
+        assertEquals(JackpotCalculator.JackpotPeriod.UNKNOWN, JackpotCalculator.classifyPayoutAmount(6.00));
+        assertEquals(JackpotCalculator.JackpotPeriod.UNKNOWN, JackpotCalculator.classifyPayoutAmount(0.00));
+        assertEquals(JackpotCalculator.JackpotPeriod.UNKNOWN, JackpotCalculator.classifyPayoutAmount(302.41));
+        assertEquals(JackpotCalculator.JackpotPeriod.UNKNOWN, JackpotCalculator.classifyPayoutAmount(302.399));
+        assertEquals(JackpotCalculator.JackpotPeriod.UNKNOWN, JackpotCalculator.classifyPayoutAmount(Double.NaN));
+        assertEquals(JackpotCalculator.JackpotPeriod.UNKNOWN, JackpotCalculator.classifyPayoutAmount(Double.POSITIVE_INFINITY));
+        assertFalse(JackpotCalculator.isCanonicalPayoutAmount(6.00));
+        assertFalse(JackpotCalculator.isCanonicalPayoutAmount(302.399));
+    }
+
+    @Test
+    public void payoutAmountMapIsUniqueAndDistinctFromMinerReward() {
+        Map<JackpotCalculator.JackpotPeriod, BigDecimal> payouts = JackpotCalculator.allExpectedPayoutAmounts();
+
+        assertEquals(new BigDecimal("302.40"), JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.DAILY));
+        assertEquals(new BigDecimal("1209.60"), JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.WEEKLY));
+        assertEquals(new BigDecimal("3888.00"), JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.MONTHLY));
+        assertEquals(new BigDecimal("9720.00"), JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.QUARTERLY));
+        assertEquals(new BigDecimal("15724.80"), JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.HALF_YEAR));
+        assertEquals(new BigDecimal("23652.00"), JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.YEARLY));
+        assertEquals(new BigDecimal("0.00"), JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.UNKNOWN));
+        assertEquals(6, payouts.size());
+        assertEquals(payouts.size(), new HashSet<>(payouts.values()).size());
+        assertTrue(JackpotCalculator.validatePayoutAmountsAreUnique());
+        assertTrue(JackpotCalculator.validateReserveSplit());
     }
 
     @Test

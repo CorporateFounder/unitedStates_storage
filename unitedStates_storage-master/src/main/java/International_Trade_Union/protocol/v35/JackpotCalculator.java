@@ -2,14 +2,20 @@ package International_Trade_Union.protocol.v35;
 
 import International_Trade_Union.setings.Seting;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Pure V35 jackpot helpers. This class does not create transactions, mutate blocks,
@@ -23,9 +29,30 @@ public final class JackpotCalculator {
     public static final String PERIOD_HALF_YEAR = "half-year";
     public static final String PERIOD_YEARLY = "yearly";
 
+    public enum JackpotPeriod {
+        DAILY(PERIOD_DAILY),
+        WEEKLY(PERIOD_WEEKLY),
+        MONTHLY(PERIOD_MONTHLY),
+        QUARTERLY(PERIOD_QUARTERLY),
+        HALF_YEAR(PERIOD_HALF_YEAR),
+        YEARLY(PERIOD_YEARLY),
+        UNKNOWN("unknown");
+
+        private final String periodName;
+
+        JackpotPeriod(String periodName) {
+            this.periodName = periodName;
+        }
+
+        public String getPeriodName() {
+            return periodName;
+        }
+    }
+
     public static final long JACKPOT_RANDOM_DELAY_BLOCKS = 60L;
     private static final long SECONDS_PER_DAY = 86_400L;
     private static final long BLOCKS_PER_DAY = SECONDS_PER_DAY / Seting.V35_TARGET_BLOCK_TIME_SECONDS;
+    private static final BigDecimal ZERO_PAYOUT = BigDecimal.ZERO.setScale(2);
     private static final double DELTA = 0.00000001;
 
     private JackpotCalculator() {
@@ -129,6 +156,50 @@ public final class JackpotCalculator {
             return 0.0;
         }
         return reservePerBlockForPeriod(period) * eligibleTicketCount;
+    }
+
+    public static BigDecimal expectedPayoutAmount(JackpotPeriod periodType) {
+        if (periodType == null || periodType == JackpotPeriod.UNKNOWN) {
+            return ZERO_PAYOUT;
+        }
+        BigDecimal perBlock = BigDecimal.valueOf(reservePerBlockForPeriod(periodType.getPeriodName()));
+        BigDecimal window = BigDecimal.valueOf(windowBlocksForPeriod(periodType.getPeriodName()));
+        return perBlock.multiply(window).setScale(2, RoundingMode.UNNECESSARY);
+    }
+
+    public static JackpotPeriod classifyPayoutAmount(double amount) {
+        BigDecimal canonicalAmount = canonicalAmount(amount);
+        if (canonicalAmount == null) {
+            return JackpotPeriod.UNKNOWN;
+        }
+        for (Map.Entry<JackpotPeriod, BigDecimal> entry : allExpectedPayoutAmounts().entrySet()) {
+            if (entry.getValue().compareTo(canonicalAmount) == 0) {
+                return entry.getKey();
+            }
+        }
+        return JackpotPeriod.UNKNOWN;
+    }
+
+    public static boolean isCanonicalPayoutAmount(double amount) {
+        return classifyPayoutAmount(amount) != JackpotPeriod.UNKNOWN;
+    }
+
+    public static Map<JackpotPeriod, BigDecimal> allExpectedPayoutAmounts() {
+        EnumMap<JackpotPeriod, BigDecimal> payouts = new EnumMap<>(JackpotPeriod.class);
+        payouts.put(JackpotPeriod.DAILY, expectedPayoutAmount(JackpotPeriod.DAILY));
+        payouts.put(JackpotPeriod.WEEKLY, expectedPayoutAmount(JackpotPeriod.WEEKLY));
+        payouts.put(JackpotPeriod.MONTHLY, expectedPayoutAmount(JackpotPeriod.MONTHLY));
+        payouts.put(JackpotPeriod.QUARTERLY, expectedPayoutAmount(JackpotPeriod.QUARTERLY));
+        payouts.put(JackpotPeriod.HALF_YEAR, expectedPayoutAmount(JackpotPeriod.HALF_YEAR));
+        payouts.put(JackpotPeriod.YEARLY, expectedPayoutAmount(JackpotPeriod.YEARLY));
+        return Collections.unmodifiableMap(payouts);
+    }
+
+    public static boolean validatePayoutAmountsAreUnique() {
+        Set<BigDecimal> uniquePayouts = new HashSet<>(allExpectedPayoutAmounts().values());
+        return uniquePayouts.size() == allExpectedPayoutAmounts().size()
+                && !isCanonicalPayoutAmount(V35RewardCalculator.getInstantMinerGoldReward())
+                && !isCanonicalPayoutAmount(V35RewardCalculator.getFounderGoldReward());
     }
 
     public static long dailyWindowBlocks() {
@@ -388,6 +459,17 @@ public final class JackpotCalculator {
             return normalized.substring(2);
         }
         return normalized;
+    }
+
+    private static BigDecimal canonicalAmount(double amount) {
+        if (!Double.isFinite(amount)) {
+            return null;
+        }
+        try {
+            return BigDecimal.valueOf(amount).setScale(2, RoundingMode.UNNECESSARY);
+        } catch (ArithmeticException e) {
+            return null;
+        }
     }
 
     private static String sha256Hex(String input) {

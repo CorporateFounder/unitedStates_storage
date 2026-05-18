@@ -62,6 +62,11 @@ public class V35ParityTest {
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("validateSplit"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("validateReserveSplit"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("expectedPayoutAmount", String.class, int.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("expectedPayoutAmount", JackpotCalculator.JackpotPeriod.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("classifyPayoutAmount", double.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("isCanonicalPayoutAmount", double.class));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("allExpectedPayoutAmounts"));
+        assertNotNull(JackpotCalculator.class.getDeclaredMethod("validatePayoutAmountsAreUnique"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("dailyWindowBlocks"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("weeklyWindowBlocks"));
         assertNotNull(JackpotCalculator.class.getDeclaredMethod("monthlyWindowBlocks"));
