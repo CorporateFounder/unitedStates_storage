@@ -77,6 +77,32 @@ public final class JackpotCalculator {
         }
     }
 
+    public static boolean isKnownJackpotPeriod(String period) {
+        return reservePerBlockForPeriod(period) > 0.0 && windowBlocksForPeriod(period) > 0L;
+    }
+
+    public static long windowBlocksForPeriod(String period) {
+        if (period == null) {
+            return -1L;
+        }
+        switch (period.trim().toLowerCase()) {
+            case PERIOD_DAILY:
+                return dailyWindowBlocks();
+            case PERIOD_WEEKLY:
+                return weeklyWindowBlocks();
+            case PERIOD_MONTHLY:
+                return monthlyWindowBlocks();
+            case PERIOD_QUARTERLY:
+                return quarterlyWindowBlocks();
+            case PERIOD_HALF_YEAR:
+                return halfYearWindowBlocks();
+            case PERIOD_YEARLY:
+                return yearlyWindowBlocks();
+            default:
+                return -1L;
+        }
+    }
+
     public static double getTotalPerBlock() {
         return totalReservePerBlock();
     }
@@ -96,6 +122,13 @@ public final class JackpotCalculator {
 
     public static boolean validateReserveSplit() {
         return Math.abs(totalReservePerBlock() - Seting.V35_JACKPOT_REWARD) < DELTA;
+    }
+
+    public static double expectedPayoutAmount(String period, int eligibleTicketCount) {
+        if (eligibleTicketCount <= 0 || !isKnownJackpotPeriod(period)) {
+            return 0.0;
+        }
+        return reservePerBlockForPeriod(period) * eligibleTicketCount;
     }
 
     public static long dailyWindowBlocks() {
@@ -282,6 +315,55 @@ public final class JackpotCalculator {
                 winner.getBlockIndex(),
                 winner.getMinerAddress()
         );
+    }
+
+    public static boolean isV35JackpotPayoutAllowedAt(long payoutBlockIndex) {
+        return Seting.V35_RESCUE_FORK_INDEX != Long.MAX_VALUE
+                && payoutBlockIndex >= Seting.V35_RESCUE_FORK_INDEX;
+    }
+
+    public static boolean isValidJackpotPayout(long payoutBlockIndex,
+                                               String period,
+                                               double payoutAmount,
+                                               String recipientAddress,
+                                               String founderAddress,
+                                               JackpotWinnerProof proof,
+                                               int eligibleTicketCount,
+                                               boolean alreadyPaid) {
+        return isValidJackpotPayout(isV35JackpotPayoutAllowedAt(payoutBlockIndex), payoutBlockIndex,
+                period, payoutAmount, recipientAddress, founderAddress, proof, eligibleTicketCount, alreadyPaid);
+    }
+
+    public static boolean isValidJackpotPayout(boolean v35Active,
+                                               long payoutBlockIndex,
+                                               String period,
+                                               double payoutAmount,
+                                               String recipientAddress,
+                                               String founderAddress,
+                                               JackpotWinnerProof proof,
+                                               int eligibleTicketCount,
+                                               boolean alreadyPaid) {
+        if (!v35Active
+                || !isKnownJackpotPeriod(period)
+                || proof == null
+                || !proof.hasWinner()
+                || alreadyPaid
+                || recipientAddress == null
+                || recipientAddress.trim().isEmpty()
+                || founderAddress == null
+                || recipientAddress.trim().equals(founderAddress.trim())) {
+            return false;
+        }
+
+        if (proof.getMaturityBlock() < 0 || payoutBlockIndex < proof.getMaturityBlock()) {
+            return false;
+        }
+        if (!recipientAddress.trim().equals(proof.getWinnerMinerAddress())) {
+            return false;
+        }
+
+        double expectedAmount = expectedPayoutAmount(period, eligibleTicketCount);
+        return expectedAmount > 0.0 && Math.abs(payoutAmount - expectedAmount) < DELTA;
     }
 
     private static List<JackpotTicket> eligibleTicketsForPeriod(List<JackpotTicket> tickets,
