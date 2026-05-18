@@ -10,6 +10,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
+import International_Trade_Union.protocol.v35.JackpotCalculator;
 import International_Trade_Union.protocol.v35.ProtocolVersion;
 import International_Trade_Union.protocol.v35.V35PowValidator;
 import International_Trade_Union.protocol.v35.V35RewardCalculator;
@@ -565,6 +566,7 @@ public class UtilsBlock {
 
         List<DtoTransaction> transactions = thisBlock.getDtoTransactions();
         transactions = transactions.stream().sorted(Comparator.comparing(t->base.encode(t.getSign()))).collect(Collectors.toList());
+        Set<JackpotCalculator.JackpotPeriod> v35JackpotPayoutPeriodsInBlock = EnumSet.noneOf(JackpotCalculator.JackpotPeriod.class);
         finished:
         for (DtoTransaction transaction : transactions) {
             boolean verify = transaction.verify();
@@ -583,26 +585,43 @@ public class UtilsBlock {
                         break;
                     }
 
-                    if (!transaction.getCustomer().equals(thisBlock.getMinerAddress())) {
-                        System.out.println("V35 BASIS reward can only be paid to miner in Phase 2B: " + transaction.getCustomer());
-                        UtilsFileSaveRead.save("V35 BASIS reward can only be paid to miner in Phase 2B: " + transaction.getCustomer(), ERROR_FILE, true);
-                        validated = false;
-                        break;
-                    }
-
-                    countBasisSendAll += 1;
-                    if (!V35RewardCalculator.isValidInstantMinerReward(transaction.getDigitalDollar(), transaction.getDigitalStockBalance())) {
-                        System.out.println("V35 wrong miner reward: expected dollar "
-                                + V35RewardCalculator.getInstantMinerGoldReward() + " stock "
-                                + V35RewardCalculator.getInstantMinerStockReward());
-                        UtilsFileSaveRead.save("V35 wrong miner reward: index: " + thisBlock.getIndex(), ERROR_FILE, true);
-                        validated = false;
-                        break;
-                    }
-
-                    if (countBasisSendAll > 1 && thisBlock.getIndex() > 1) {
-                        System.out.println("V35 BASIS reward send count over one: " + countBasisSendAll);
-                        UtilsFileSaveRead.save("V35 BASIS reward send count over one: " + countBasisSendAll, ERROR_FILE, true);
+                    if (transaction.getCustomer().equals(thisBlock.getMinerAddress())
+                            && V35RewardCalculator.isValidInstantMinerReward(transaction.getDigitalDollar(), transaction.getDigitalStockBalance())) {
+                        countBasisSendAll += 1;
+                        if (countBasisSendAll > 1 && thisBlock.getIndex() > 1) {
+                            System.out.println("V35 instant miner reward send count over one: " + countBasisSendAll);
+                            UtilsFileSaveRead.save("V35 instant miner reward send count over one: " + countBasisSendAll, ERROR_FILE, true);
+                            validated = false;
+                            break;
+                        }
+                    } else {
+                        JackpotCalculator.JackpotPeriod jackpotPeriod = JackpotCalculator.classifyPayoutAmount(transaction.getDigitalDollar());
+                        if (jackpotPeriod == JackpotCalculator.JackpotPeriod.UNKNOWN) {
+                            System.out.println("V35 invalid BASIS payout amount: " + transaction.getDigitalDollar());
+                            UtilsFileSaveRead.save("V35 invalid BASIS payout amount: " + transaction.getDigitalDollar(), ERROR_FILE, true);
+                            validated = false;
+                            break;
+                        }
+                        if (transaction.getDigitalStockBalance() != V35RewardCalculator.getInstantMinerStockReward()) {
+                            System.out.println("V35 jackpot payout must not include stock reward: " + transaction.getDigitalStockBalance());
+                            UtilsFileSaveRead.save("V35 jackpot payout must not include stock reward: " + transaction.getDigitalStockBalance(), ERROR_FILE, true);
+                            validated = false;
+                            break;
+                        }
+                        if (transaction.getBonusForMiner() != 0.0) {
+                            System.out.println("V35 jackpot payout must not include miner bonus: " + transaction.getBonusForMiner());
+                            UtilsFileSaveRead.save("V35 jackpot payout must not include miner bonus: " + transaction.getBonusForMiner(), ERROR_FILE, true);
+                            validated = false;
+                            break;
+                        }
+                        if (!v35JackpotPayoutPeriodsInBlock.add(jackpotPeriod)) {
+                            System.out.println("V35 duplicate jackpot payout period in block: " + jackpotPeriod);
+                            UtilsFileSaveRead.save("V35 duplicate jackpot payout period in block: " + jackpotPeriod, ERROR_FILE, true);
+                            validated = false;
+                            break;
+                        }
+                        System.out.println("V35 jackpot payout proof validation requires canonical chain context: " + jackpotPeriod);
+                        UtilsFileSaveRead.save("V35 jackpot payout proof validation requires canonical chain context: " + jackpotPeriod, ERROR_FILE, true);
                         validated = false;
                         break;
                     }

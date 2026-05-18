@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -75,6 +77,38 @@ public class V35RewardValidationFixtureTest {
     }
 
     @Test
+    public void jackpotPayoutCandidateIsClassifiedButRejectedUntilProofContextExists() {
+        DtoTransaction dailyJackpot = rewardTo(OTHER_ADDRESS,
+                JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.DAILY).doubleValue(), 0.00);
+
+        assertEquals(JackpotCalculator.JackpotPeriod.DAILY,
+                JackpotCalculator.classifyPayoutAmount(dailyJackpot.getDigitalDollar()));
+        assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, Arrays.asList(
+                rewardTo(MINER_ADDRESS, 6.00, 0.00),
+                dailyJackpot)));
+    }
+
+    @Test
+    public void jackpotPayoutCandidateWithStockOrBonusIsRejected() {
+        assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, Arrays.asList(
+                rewardTo(MINER_ADDRESS, 6.00, 0.00),
+                rewardTo(OTHER_ADDRESS, 302.40, 0.01))));
+        assertFalse(isAcceptedByV35RewardShape(SIMULATED_V35_INDEX, Arrays.asList(
+                rewardTo(MINER_ADDRESS, 6.00, 0.00),
+                rewardTo(OTHER_ADDRESS, 302.40, 0.00, 0.01))));
+    }
+
+    @Test
+    public void duplicateJackpotPeriodCandidatesAreDetectableBeforeFullProofValidation() {
+        assertTrue(hasDuplicateJackpotPeriodCandidates(Arrays.asList(
+                rewardTo("winner-a", 302.40, 0.00),
+                rewardTo("winner-b", 302.40, 0.00))));
+        assertFalse(hasDuplicateJackpotPeriodCandidates(Arrays.asList(
+                rewardTo("winner-a", 302.40, 0.00),
+                rewardTo("winner-b", 1209.60, 0.00))));
+    }
+
+    @Test
     public void normalIndexesStayOnLegacyPathWhileV35IsDisabled() {
         assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
         assertFalse(ProtocolVersion.isV35(1_000_000L));
@@ -85,13 +119,17 @@ public class V35RewardValidationFixtureTest {
     }
 
     private static DtoTransaction rewardTo(String customer, double digitalDollar, double digitalStockBalance) {
+        return rewardTo(customer, digitalDollar, digitalStockBalance, 0.00);
+    }
+
+    private static DtoTransaction rewardTo(String customer, double digitalDollar, double digitalStockBalance, double bonusForMiner) {
         return new DtoTransaction(
                 Seting.BASIS_ADDRESS,
                 customer,
                 digitalDollar,
                 digitalStockBalance,
                 new Laws(),
-                0.00,
+                bonusForMiner,
                 VoteEnum.YES);
     }
 
@@ -101,6 +139,7 @@ public class V35RewardValidationFixtureTest {
         }
 
         int basisRewardCount = 0;
+        Set<JackpotCalculator.JackpotPeriod> jackpotPeriods = EnumSet.noneOf(JackpotCalculator.JackpotPeriod.class);
         for (DtoTransaction transaction : transactions) {
             if (!Seting.BASIS_ADDRESS.equals(transaction.getSender())) {
                 continue;
@@ -108,19 +147,37 @@ public class V35RewardValidationFixtureTest {
             if (FOUNDER_ADDRESS.equals(transaction.getCustomer())) {
                 return false;
             }
-            if (!MINER_ADDRESS.equals(transaction.getCustomer())) {
-                return false;
-            }
-            basisRewardCount += 1;
-            if (!V35RewardCalculator.isValidInstantMinerReward(
-                    transaction.getDigitalDollar(),
-                    transaction.getDigitalStockBalance())) {
-                return false;
-            }
-            if (basisRewardCount > 1) {
+            if (MINER_ADDRESS.equals(transaction.getCustomer())
+                    && V35RewardCalculator.isValidInstantMinerReward(transaction.getDigitalDollar(), transaction.getDigitalStockBalance())) {
+                basisRewardCount += 1;
+                if (basisRewardCount > 1) {
+                    return false;
+                }
+            } else {
+                JackpotCalculator.JackpotPeriod jackpotPeriod = JackpotCalculator.classifyPayoutAmount(transaction.getDigitalDollar());
+                if (jackpotPeriod == JackpotCalculator.JackpotPeriod.UNKNOWN
+                        || transaction.getDigitalStockBalance() != V35RewardCalculator.getInstantMinerStockReward()
+                        || transaction.getBonusForMiner() != 0.0
+                        || !jackpotPeriods.add(jackpotPeriod)) {
+                    return false;
+                }
                 return false;
             }
         }
         return basisRewardCount == 1;
+    }
+
+    private static boolean hasDuplicateJackpotPeriodCandidates(List<DtoTransaction> transactions) {
+        Set<JackpotCalculator.JackpotPeriod> jackpotPeriods = EnumSet.noneOf(JackpotCalculator.JackpotPeriod.class);
+        for (DtoTransaction transaction : transactions) {
+            JackpotCalculator.JackpotPeriod jackpotPeriod = JackpotCalculator.classifyPayoutAmount(transaction.getDigitalDollar());
+            if (jackpotPeriod == JackpotCalculator.JackpotPeriod.UNKNOWN) {
+                continue;
+            }
+            if (!jackpotPeriods.add(jackpotPeriod)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
