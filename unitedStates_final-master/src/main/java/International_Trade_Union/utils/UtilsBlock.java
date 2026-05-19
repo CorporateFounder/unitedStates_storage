@@ -407,6 +407,57 @@ public class UtilsBlock {
                 forkIndex);
     }
 
+    public static boolean validateV35JackpotPayoutsWithCanonicalContext(
+            List<Block> canonicalChain,
+            Block payoutBlock,
+            String founderAddress) {
+        return validateV35JackpotPayoutsWithCanonicalContext(
+                canonicalChain,
+                payoutBlock,
+                founderAddress,
+                Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    public static boolean validateV35JackpotPayoutsWithCanonicalContext(
+            List<Block> canonicalChain,
+            Block payoutBlock,
+            String founderAddress,
+            long forkIndex) {
+        if (payoutBlock == null || payoutBlock.getDtoTransactions() == null) {
+            return false;
+        }
+
+        boolean hasJackpotPayoutCandidate = false;
+        Set<JackpotCalculator.JackpotPeriod> periodsInBlock = EnumSet.noneOf(JackpotCalculator.JackpotPeriod.class);
+        for (DtoTransaction transaction : payoutBlock.getDtoTransactions()) {
+            if (transaction == null || !Seting.BASIS_ADDRESS.equals(transaction.getSender())) {
+                continue;
+            }
+            JackpotCalculator.JackpotPeriod period = JackpotCalculator.classifyPayoutAmount(transaction.getDigitalDollar());
+            if (period == JackpotCalculator.JackpotPeriod.UNKNOWN) {
+                continue;
+            }
+
+            hasJackpotPayoutCandidate = true;
+            if (forkIndex == Long.MAX_VALUE || payoutBlock.getIndex() < forkIndex) {
+                return false;
+            }
+            if (!periodsInBlock.add(period)) {
+                return false;
+            }
+            JackpotProofResult result = validateV35JackpotPayoutWithChainContext(
+                    canonicalChain,
+                    payoutBlock,
+                    transaction,
+                    founderAddress,
+                    forkIndex);
+            if (!result.isValid()) {
+                return false;
+            }
+        }
+        return !hasJackpotPayoutCandidate || forkIndex != Long.MAX_VALUE;
+    }
+
     private static JackpotProofResult invalidV35JackpotProof(String reason, DtoTransaction payoutTransaction) {
         JackpotCalculator.JackpotPeriod period = payoutTransaction == null
                 ? JackpotCalculator.JackpotPeriod.UNKNOWN

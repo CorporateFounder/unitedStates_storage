@@ -79,9 +79,94 @@ public class UtilsBlockV35JackpotChainContextTest {
 
     @Test
     public void minerInstantRewardIsDistinctFromJackpotPayout() {
+        DtoTransaction minerReward = new DtoTransaction(
+                Seting.BASIS_ADDRESS,
+                "miner",
+                V35RewardCalculator.getInstantMinerGoldReward(),
+                V35RewardCalculator.getInstantMinerStockReward(),
+                new Laws(),
+                0.0,
+                VoteEnum.YES);
+        Block minerRewardBlock = block(FORK_INDEX, "miner", hash(FORK_INDEX), Collections.singletonList(minerReward));
+
         assertEquals(JackpotCalculator.JackpotPeriod.UNKNOWN,
                 JackpotCalculator.classifyPayoutAmount(V35RewardCalculator.getInstantMinerGoldReward()));
         assertTrue(V35RewardCalculator.isValidInstantMinerReward(6.00, 0.00));
+        assertTrue(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                Collections.singletonList(block(FORK_INDEX - 1L, "miner-before", hash(FORK_INDEX - 1L), Collections.emptyList())),
+                minerRewardBlock,
+                FOUNDER,
+                FORK_INDEX));
+    }
+
+    @Test
+    public void blockLevelContextAwareHelperAcceptsValidJackpotPayout() {
+        Fixture fixture = fixture(JackpotCalculator.JackpotPeriod.DAILY);
+
+        assertTrue(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                fixture.chain, fixture.payoutBlock, FOUNDER, FORK_INDEX));
+    }
+
+    @Test
+    public void blockLevelContextAwareHelperRejectsInvalidJackpotPayouts() {
+        Fixture fixture = fixture(JackpotCalculator.JackpotPeriod.DAILY);
+
+        assertFalse(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                Collections.emptyList(), fixture.payoutBlock, FOUNDER, FORK_INDEX));
+        assertFalse(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                fixture.chain, fixture.payoutBlock, FOUNDER));
+        assertFalse(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                fixture.chain, block(fixture.payoutBlock.getIndex(), "payout-miner", hash(fixture.payoutBlock.getIndex()),
+                        Collections.singletonList(payout("wrong-recipient", fixture.amount.doubleValue()))),
+                FOUNDER,
+                FORK_INDEX));
+        assertFalse(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                fixture.chain, block(fixture.payoutBlock.getIndex(), "payout-miner", hash(fixture.payoutBlock.getIndex()),
+                        Collections.singletonList(payout(FOUNDER, fixture.amount.doubleValue()))),
+                FOUNDER,
+                FORK_INDEX));
+
+        Block immatureBlock = block(fixture.instance.getMaturityBlock(), "payout-miner",
+                hash(fixture.instance.getMaturityBlock()),
+                Collections.singletonList(payout(fixture.winner, fixture.amount.doubleValue())));
+        assertFalse(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                fixture.chain, immatureBlock, FOUNDER, FORK_INDEX));
+
+        List<Block> chainWithDuplicate = new ArrayList<>(fixture.chain);
+        chainWithDuplicate.add(fixture.payoutBlock);
+        assertFalse(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                chainWithDuplicate, fixture.payoutBlock, FOUNDER, FORK_INDEX));
+    }
+
+    @Test
+    public void blockLevelContextAwareHelperRejectsDuplicateSamePeriodInBlock() {
+        Fixture fixture = fixture(JackpotCalculator.JackpotPeriod.DAILY);
+        List<DtoTransaction> duplicatePayouts = new ArrayList<>();
+        duplicatePayouts.add(fixture.payoutTransaction);
+        duplicatePayouts.add(payout(fixture.winner, fixture.amount.doubleValue()));
+        Block duplicateBlock = block(fixture.payoutBlock.getIndex(), "payout-miner",
+                hash(fixture.payoutBlock.getIndex()), duplicatePayouts);
+
+        assertFalse(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                fixture.chain, duplicateBlock, FOUNDER, FORK_INDEX));
+    }
+
+    @Test
+    public void blockLevelContextAwareHelperAcceptsMultipleDifferentPeriods() {
+        long weeklyWindow = JackpotCalculator.windowBlocksForPeriod(JackpotCalculator.JackpotPeriod.WEEKLY.getPeriodName());
+        long weeklyEnd = FORK_INDEX + weeklyWindow - 1L;
+        long payoutIndex = weeklyEnd + JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS + 1L;
+        JackpotPeriodInstance daily = V35JackpotChainContextAdapter.buildPeriodInstance(
+                JackpotCalculator.JackpotPeriod.DAILY, payoutIndex, FORK_INDEX);
+        List<Block> chain = chain(FORK_INDEX, JackpotCalculator.maturityBlock(weeklyEnd, JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS));
+        List<DtoTransaction> payouts = V35JackpotPayoutBuilder.buildPayoutTransactions(
+                chain, payoutIndex, "payout-miner", FOUNDER, FORK_INDEX);
+        Block payoutBlock = block(payoutIndex, "payout-miner", hash(payoutIndex), payouts);
+
+        assertEquals(daily.getFirstPayoutBlock(), payoutIndex);
+        assertEquals(2, payouts.size());
+        assertTrue(UtilsBlock.validateV35JackpotPayoutsWithCanonicalContext(
+                chain, payoutBlock, FOUNDER, FORK_INDEX));
     }
 
     private static JackpotProofResult verifyWithRecipient(Fixture fixture, String recipient) {
