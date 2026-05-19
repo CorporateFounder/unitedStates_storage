@@ -388,6 +388,16 @@ public class TournamentService {
 
     }
 
+    private List<Block> v35CanonicalContextBefore(Block prevBlock) throws IOException {
+        if (Seting.V35_RESCUE_FORK_INDEX == Long.MAX_VALUE
+                || prevBlock == null
+                || prevBlock.getIndex() < Seting.V35_RESCUE_FORK_INDEX) {
+            return Collections.emptyList();
+        }
+        return UtilsBlockToEntityBlock.entityBlocksToBlocks(
+                blockService.findBySpecialIndexBetween(0, prevBlock.getIndex()));
+    }
+
     private void validateAndAddBlock(Block block, Set<Block> tempWinnerSet, String host) {
         try {
             List<String> sign = new ArrayList<>();
@@ -397,9 +407,10 @@ public class TournamentService {
             Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(
                     UtilsUse.accounts(tempBlock, blockService));
 
-            DataShortBlockchainInformation temp = Blockchain.shortCheck(
+            DataShortBlockchainInformation temp = Blockchain.shortCheckWithCanonicalContext(
                     BasisController.prevBlock(), tempBlock, BasisController.getShortDataBlockchain(),
-                    new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
+                    new ArrayList<>(), tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>(),
+                    v35CanonicalContextBefore(BasisController.prevBlock()), Seting.V35_RESCUE_FORK_INDEX);
 
             if (temp.isValidation()) {
                 MyLogger.saveLog("Block is valid: " + block.getIndex() + " from host: " + host);
@@ -526,7 +537,10 @@ public class TournamentService {
             Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
             List<String> sign = new ArrayList<>();
             //Вычисляет мета данные блокчейна, с учетом нового блока, его целостность, длину, а также другие параметры
-            DataShortBlockchainInformation temp = Blockchain.shortCheck(BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());
+            DataShortBlockchainInformation temp = Blockchain.shortCheckWithCanonicalContext(
+                    BasisController.prevBlock(), winner, BasisController.getShortDataBlockchain(), lastDiff,
+                    tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>(),
+                    v35CanonicalContextBefore(BasisController.prevBlock()), Seting.V35_RESCUE_FORK_INDEX);
 
             if (temp == null || !temp.isValidation()) {
                 System.out.println("wrong validation short: " + temp);

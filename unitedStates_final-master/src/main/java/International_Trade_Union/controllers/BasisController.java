@@ -448,7 +448,10 @@ public class BasisController {
             DataShortBlockchainInformation temp = new DataShortBlockchainInformation();
             if (BasisController.getBlockchainSize() > 1) {
                 Map<String, Account> balanceForValidation = UtilsUse.balancesClone(balances);
-                temp = Blockchain.shortCheck(BasisController.getPrevBlock(), list, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>());
+                temp = Blockchain.shortCheckWithCanonicalContext(
+                        BasisController.getPrevBlock(), list, BasisController.getShortDataBlockchain(),
+                        lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>(),
+                        v35CanonicalContextBefore(BasisController.getPrevBlock()), Seting.V35_RESCUE_FORK_INDEX);
 
                 boolean result = utilsResolving.addBlock3(list, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
                 if (result) {
@@ -476,7 +479,10 @@ public class BasisController {
                     );
                 }
                 Map<String, Account> balanceForValidation = UtilsUse.balancesClone(balances);
-                temp = Blockchain.shortCheck(BasisController.getPrevBlock(), list, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>());
+                temp = Blockchain.shortCheckWithCanonicalContext(
+                        BasisController.getPrevBlock(), list, BasisController.getShortDataBlockchain(),
+                        lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>(),
+                        v35CanonicalContextBefore(BasisController.getPrevBlock()), Seting.V35_RESCUE_FORK_INDEX);
 
                 BasisController.setShortDataBlockchain(temp);
                 BasisController.setBlockchainSize((int) temp.getSize());
@@ -1057,7 +1063,7 @@ public class BasisController {
 
             List<String> signs = new ArrayList<>();
             if (testingValidationsBlock.size() > 1) {
-                boolean validationTesting = UtilsBlock.validationOneBlock(
+                boolean validationTesting = UtilsBlock.validationOneBlockWithCanonicalContext(
                         addresFounder,
                         testingValidationsBlock.get(testingValidationsBlock.size() - 1),
                         block,
@@ -1065,7 +1071,9 @@ public class BasisController {
                         blockService,
                         balance,
                         signs,
-                        new ArrayList<>());
+                        new ArrayList<>(),
+                        v35CanonicalContextForLocalValidation(block, tempBlockchain),
+                        Seting.V35_RESCUE_FORK_INDEX);
 
                 if (validationTesting == false) {
                     System.out.println("wrong validation block: " + validationTesting);
@@ -1286,6 +1294,30 @@ public class BasisController {
 
     }
 
+    private List<Block> v35CanonicalContextForLocalValidation(Block candidateBlock, List<Block> localChain) {
+        if (Seting.V35_RESCUE_FORK_INDEX == Long.MAX_VALUE
+                || candidateBlock == null
+                || candidateBlock.getIndex() < Seting.V35_RESCUE_FORK_INDEX
+                || localChain == null) {
+            return Collections.emptyList();
+        }
+        return localChain.stream()
+                .filter(Objects::nonNull)
+                .filter(block -> block.getIndex() < candidateBlock.getIndex())
+                .sorted(Comparator.comparing(Block::getIndex))
+                .collect(Collectors.toList());
+    }
+
+    private List<Block> v35CanonicalContextBefore(Block prevBlock) throws IOException {
+        if (Seting.V35_RESCUE_FORK_INDEX == Long.MAX_VALUE
+                || prevBlock == null
+                || prevBlock.getIndex() < Seting.V35_RESCUE_FORK_INDEX) {
+            return Collections.emptyList();
+        }
+        return UtilsBlockToEntityBlock.entityBlocksToBlocks(
+                blockService.findBySpecialIndexBetween(0, prevBlock.getIndex()));
+    }
+
     @GetMapping("/showAccounts")
     @ResponseBody
     public List<Map<String, Account>> showAccounts() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException {
@@ -1354,5 +1386,3 @@ public class BasisController {
     }
 
 }
-
-

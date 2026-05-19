@@ -467,6 +467,10 @@ public class UtilsBlock {
         return JackpotProofResult.invalid(reason, null, null, expectedAmount, recipient);
     }
 
+    private static boolean isV35ActiveForValidation(Block block, long forkIndex) {
+        return block != null && forkIndex != Long.MAX_VALUE && block.getIndex() >= forkIndex;
+    }
+
     public static boolean validationOneBlock(
             String addressFounder,
             Block previusblock,
@@ -476,8 +480,33 @@ public class UtilsBlock {
             Map<String, Account> balance,
             List<String> signs,
             List<String> SignaturesNotTakenIntoAccount) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        return validationOneBlockWithCanonicalContext(
+                addressFounder,
+                previusblock,
+                thisBlock,
+                lastBlock,
+                blockService,
+                balance,
+                signs,
+                SignaturesNotTakenIntoAccount,
+                Collections.emptyList(),
+                Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    public static boolean validationOneBlockWithCanonicalContext(
+            String addressFounder,
+            Block previusblock,
+            Block thisBlock,
+            List<Block> lastBlock,
+            BlockService blockService,
+            Map<String, Account> balance,
+            List<String> signs,
+            List<String> SignaturesNotTakenIntoAccount,
+            List<Block> canonicalChainBeforeBlock,
+            long forkIndex) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 
         Base base = new Base58();
+        boolean isV35Validation = isV35ActiveForValidation(thisBlock, forkIndex);
         // КОНСТАНТА: Индекс блока, с которого меняется порядок округления
         long FIX_FRIDMAN_ROUNDING_INDEX = 482360;
 
@@ -676,7 +705,7 @@ public class UtilsBlock {
                 MyLogger.saveLog("repeat Transaction: verify" + verify + "json: " + json + " index: "  + thisBlock.getIndex());
             }
             if (transaction.verify() && transaction.getSender().equals(Seting.BASIS_ADDRESS)) {
-                if (ProtocolVersion.isV35(thisBlock.getIndex())) {
+                if (isV35Validation) {
                     if (transaction.getCustomer().equals(addressFounder)) {
                         System.out.println("V35 founder reward is disabled: index: " + thisBlock.getIndex());
                         UtilsFileSaveRead.save("V35 founder reward is disabled: index: " + thisBlock.getIndex(), ERROR_FILE, true);
@@ -719,10 +748,24 @@ public class UtilsBlock {
                             validated = false;
                             break;
                         }
-                        System.out.println("V35 jackpot payout proof validation requires canonical chain context: " + jackpotPeriod);
-                        UtilsFileSaveRead.save("V35 jackpot payout proof validation requires canonical chain context: " + jackpotPeriod, ERROR_FILE, true);
-                        validated = false;
-                        break;
+                        if (canonicalChainBeforeBlock == null || canonicalChainBeforeBlock.isEmpty()) {
+                            System.out.println("V35 jackpot payout proof validation requires canonical chain context: " + jackpotPeriod);
+                            UtilsFileSaveRead.save("V35 jackpot payout proof validation requires canonical chain context: " + jackpotPeriod, ERROR_FILE, true);
+                            validated = false;
+                            break;
+                        }
+                        JackpotProofResult jackpotProofResult = validateV35JackpotPayoutWithChainContext(
+                                canonicalChainBeforeBlock,
+                                thisBlock,
+                                transaction,
+                                addressFounder,
+                                forkIndex);
+                        if (!jackpotProofResult.isValid()) {
+                            System.out.println("V35 jackpot payout proof is invalid: " + jackpotProofResult.getReason());
+                            UtilsFileSaveRead.save("V35 jackpot payout proof is invalid: " + jackpotProofResult.getReason(), ERROR_FILE, true);
+                            validated = false;
+                            break;
+                        }
                     }
                 } else {
                 double minerReward = Seting.DIGITAL_DOLLAR_REWARDS_BEFORE;
@@ -1093,13 +1136,13 @@ public class UtilsBlock {
 
         }
 
-        if (ProtocolVersion.isV35(thisBlock.getIndex()) && thisBlock.getIndex() > 1 && countBasisSendAll != 1) {
+        if (isV35Validation && thisBlock.getIndex() > 1 && countBasisSendAll != 1) {
             System.out.println("V35 block must contain exactly one BASIS miner reward transaction: " + countBasisSendAll);
             UtilsFileSaveRead.save("V35 block must contain exactly one BASIS miner reward transaction: " + countBasisSendAll, ERROR_FILE, true);
             return false;
         }
 
-        if (ProtocolVersion.isV35(thisBlock.getIndex())) {
+        if (isV35Validation) {
             BigInteger v35Target = V35TargetDifficulty.decodeCompactTarget(thisBlock.getHashCompexity());
             if (v35Target.signum() <= 0) {
                 System.out.println("V35 invalid compact target: " + thisBlock.getHashCompexity());

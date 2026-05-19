@@ -1199,7 +1199,17 @@ public class BasisController {
 
                 Map<String, Account> tempBalances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(addlist, blockService));
 
-                DataShortBlockchainInformation temp = Blockchain.shortCheck(prevBlock, addlist, shortDataBlockchain, lastDiff, tempBalances, sign, UtilsUse.balancesClone(tempBalances), new ArrayList<>());// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
+                DataShortBlockchainInformation temp = Blockchain.shortCheckWithCanonicalContext(
+                        prevBlock,
+                        addlist,
+                        shortDataBlockchain,
+                        lastDiff,
+                        tempBalances,
+                        sign,
+                        UtilsUse.balancesClone(tempBalances),
+                        new ArrayList<>(),
+                        v35CanonicalContextBefore(prevBlock),
+                        Seting.V35_RESCUE_FORK_INDEX);// Blockchain.checkEqualsFromToBlockFile(Seting.ORIGINAL_BLOCKCHAIN_FILE, addlist);
 
                 System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
                 System.out.println("original: " + shortDataBlockchain);
@@ -1290,6 +1300,16 @@ public class BasisController {
 
             System.out.println("finish resolve_from_to_block");
         }
+    }
+
+    private List<Block> v35CanonicalContextBefore(Block prevBlock) throws IOException {
+        if (Seting.V35_RESCUE_FORK_INDEX == Long.MAX_VALUE
+                || prevBlock == null
+                || prevBlock.getIndex() < Seting.V35_RESCUE_FORK_INDEX) {
+            return Collections.emptyList();
+        }
+        return UtilsBlockToEntityBlock.entityBlocksToBlocks(
+                blockService.findBySpecialIndexBetween(0, prevBlock.getIndex()));
     }
 
     static boolean shouldAcceptResolveCandidate(DataShortBlockchainInformation local,

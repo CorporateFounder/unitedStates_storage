@@ -137,6 +137,21 @@ public class Blockchain implements Cloneable {
             List<String> sign,
             Map<String, Account> balanceForValidation,
             List<String> signaturesNotTakenIntoAccount) {
+        return shortCheckWithCanonicalContext(prevBlock, blocks, data, tempList, balances, sign,
+                balanceForValidation, signaturesNotTakenIntoAccount, Collections.emptyList(),
+                Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    public static DataShortBlockchainInformation shortCheckWithCanonicalContext(
+            Block prevBlock, List<Block> blocks,
+            DataShortBlockchainInformation data,
+            List<Block> tempList,
+            Map<String, Account> balances,
+            List<String> sign,
+            Map<String, Account> balanceForValidation,
+            List<String> signaturesNotTakenIntoAccount,
+            List<Block> canonicalChainBeforeBatch,
+            long forkIndex) {
         int size = (int) data.getSize();
         BigInteger cumulativeWork = parseCumulativeWork(data.getCumulativeWork());
         String tipHash = safeMetadataString(data.getTipHash());
@@ -170,6 +185,7 @@ public class Blockchain implements Cloneable {
             System.out.println("shortCheck: tempList: size: " + tempList.size());
 
             List<String> signs = new ArrayList<>();
+            List<Block> acceptedBlocksForContext = new ArrayList<>();
             for (Block block : blocks) {
                 blockList.add(prev);
                 if (blockList.size() > Seting.PORTION_BLOCK_TO_COMPLEXCITY) {
@@ -182,7 +198,7 @@ public class Blockchain implements Cloneable {
                             .collect(Collectors.toList());
                 }
 
-                validation = UtilsBlock.validationOneBlock(
+                validation = UtilsBlock.validationOneBlockWithCanonicalContext(
                         Seting.ADDRESS_FOUNDER,
                         prev,
                         block,
@@ -190,8 +206,11 @@ public class Blockchain implements Cloneable {
                         blockService,
                         balanceForValidation,
                         signs,
-                        signaturesNotTakenIntoAccount);
+                        signaturesNotTakenIntoAccount,
+                        canonicalContextBeforeBlock(canonicalChainBeforeBatch, acceptedBlocksForContext),
+                        forkIndex);
                 prev = block.clone();
+                acceptedBlocksForContext.add(block.clone());
                 size++;
 
                 hashcount += UtilsUse.powerDiff(block.getHashCompexity());
@@ -244,6 +263,7 @@ public class Blockchain implements Cloneable {
         List<String> sign = new ArrayList<>();
         List<Block> tempList = new ArrayList<>();
         List<File> folders = new ArrayList<>(List.of(folder.listFiles()));
+        List<Block> canonicalContext = new ArrayList<>();
 
         folders = folders.stream().sorted(new Comparator<File>() {
             public int compare(File f1, File f2) {
@@ -288,6 +308,7 @@ public class Blockchain implements Cloneable {
 
                     if (prevBlock == null) {
                         prevBlock = block;
+                        canonicalContext.add(block);
                         continue;
                     }
 
@@ -328,14 +349,16 @@ public class Blockchain implements Cloneable {
                     }
 
                     try {
-                        valid = UtilsBlock.validationOneBlock(Seting.ADDRESS_FOUNDER,
+                        valid = UtilsBlock.validationOneBlockWithCanonicalContext(Seting.ADDRESS_FOUNDER,
                                 prevBlock,
                                 block,
                                 tempList,
                                 blockService,
                                 UtilsUse.balancesClone(balances),
                                 signs,
-                                new ArrayList<>());
+                                new ArrayList<>(),
+                                canonicalContext,
+                                Seting.V35_RESCUE_FORK_INDEX);
                     } catch (IOException e) {
                         MyLogger.saveLog("checkFromFile: ", e);
                         throw new RuntimeException(e);
@@ -369,6 +392,7 @@ public class Blockchain implements Cloneable {
                         size++;
                         return shortInfo(size, valid, hashCount, staking, transactions, bigRandomNumber, cumulativeWork, tipHash);
                     }
+                    canonicalContext.add(block);
 
                     prevBlock = block;
                 }
@@ -798,6 +822,27 @@ public class Blockchain implements Cloneable {
                 bigRandomNumber,
                 cumulativeWorkString(cumulativeWork),
                 safeMetadataString(tipHash));
+    }
+
+    private static List<Block> canonicalContextBeforeBlock(List<Block> canonicalChainBeforeBatch,
+                                                           List<Block> acceptedBlocksForContext) throws CloneNotSupportedException {
+        List<Block> context = new ArrayList<>();
+        if (canonicalChainBeforeBatch != null) {
+            for (Block block : canonicalChainBeforeBatch) {
+                if (block != null) {
+                    context.add(block.clone());
+                }
+            }
+        }
+        if (acceptedBlocksForContext != null) {
+            for (Block block : acceptedBlocksForContext) {
+                if (block != null) {
+                    context.add(block.clone());
+                }
+            }
+        }
+        context.sort(Comparator.comparing(Block::getIndex));
+        return context;
     }
 
     public static BigInteger addV35Work(BigInteger currentWork, Block block) {
