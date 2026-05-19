@@ -11,7 +11,9 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.protocol.v35.JackpotCalculator;
+import International_Trade_Union.protocol.v35.JackpotProofResult;
 import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35JackpotChainContextAdapter;
 import International_Trade_Union.protocol.v35.V35PowValidator;
 import International_Trade_Union.protocol.v35.V35RewardCalculator;
 import International_Trade_Union.protocol.v35.V35TargetDifficulty;
@@ -366,6 +368,52 @@ public class UtilsBlock {
 
 
         return difficulty == 0 ? 1 : difficulty;
+    }
+
+    public static JackpotProofResult validateV35JackpotPayoutWithChainContext(
+            List<Block> canonicalChain,
+            Block payoutBlock,
+            DtoTransaction payoutTransaction,
+            String founderAddress) {
+        return validateV35JackpotPayoutWithChainContext(
+                canonicalChain,
+                payoutBlock,
+                payoutTransaction,
+                founderAddress,
+                Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    public static JackpotProofResult validateV35JackpotPayoutWithChainContext(
+            List<Block> canonicalChain,
+            Block payoutBlock,
+            DtoTransaction payoutTransaction,
+            String founderAddress,
+            long forkIndex) {
+        if (canonicalChain == null || canonicalChain.isEmpty()) {
+            return invalidV35JackpotProof("missing canonical chain context", payoutTransaction);
+        }
+        if (payoutBlock == null || payoutTransaction == null) {
+            return invalidV35JackpotProof("missing payout block or transaction", payoutTransaction);
+        }
+        if (JackpotCalculator.classifyPayoutAmount(payoutTransaction.getDigitalDollar())
+                == JackpotCalculator.JackpotPeriod.UNKNOWN) {
+            return invalidV35JackpotProof("payout amount is not a canonical jackpot amount", payoutTransaction);
+        }
+        return V35JackpotChainContextAdapter.verifyPayoutWithChainContext(
+                canonicalChain,
+                payoutBlock,
+                payoutTransaction,
+                founderAddress,
+                forkIndex);
+    }
+
+    private static JackpotProofResult invalidV35JackpotProof(String reason, DtoTransaction payoutTransaction) {
+        JackpotCalculator.JackpotPeriod period = payoutTransaction == null
+                ? JackpotCalculator.JackpotPeriod.UNKNOWN
+                : JackpotCalculator.classifyPayoutAmount(payoutTransaction.getDigitalDollar());
+        String recipient = payoutTransaction == null ? "" : payoutTransaction.getCustomer();
+        BigDecimal expectedAmount = JackpotCalculator.expectedPayoutAmount(period);
+        return JackpotProofResult.invalid(reason, null, null, expectedAmount, recipient);
     }
 
     public static boolean validationOneBlock(
