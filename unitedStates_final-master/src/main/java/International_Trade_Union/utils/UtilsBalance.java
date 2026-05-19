@@ -7,6 +7,9 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.model.MyLogger;
+import International_Trade_Union.protocol.v35.JackpotCalculator;
+import International_Trade_Union.protocol.v35.JackpotProofResult;
+import International_Trade_Union.protocol.v35.V35JackpotChainContextAdapter;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -343,16 +346,117 @@ public class UtilsBalance {
 
     //подсчет целиком баланса
     public static Map<String, Account> calculateBalances(List<Block> blocks) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        return calculateBalances(blocks, Seting.ADDRESS_FOUNDER, Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    public static Map<String, Account> calculateBalances(List<Block> blocks, String founderAddress, long forkIndex) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
         Map<String, Account> balances = new HashMap<>();
         List<String> signs = new ArrayList<>();
         Map<String, Laws> allLaws = new HashMap<>();
         List<LawEligibleForParliamentaryApproval> allLawsWithBalance = new ArrayList<>();
         for (Block block : blocks) {
-            calculateBalance(balances, block, signs, new ArrayList<>());
+            Block legacyAccountingBlock = block;
+            if (isV35ActiveAt(block.getIndex(), forkIndex) && containsV35JackpotPayoutCandidate(block)) {
+                legacyAccountingBlock = withoutV35JackpotPayoutCandidates(block);
+            }
+            calculateBalance(balances, legacyAccountingBlock, signs, new ArrayList<>());
+            applyV35JackpotPayoutsWithChainContext(balances, blocks, block, founderAddress, forkIndex);
         }
 
         return balances;
 
+    }
+
+    public static boolean applyV35JackpotPayoutsWithChainContext(Map<String, Account> balances,
+                                                                 List<Block> canonicalChain,
+                                                                 Block payoutBlock,
+                                                                 String founderAddress,
+                                                                 long forkIndex) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        if (balances == null || payoutBlock == null || payoutBlock.getDtoTransactions() == null
+                || !isV35ActiveAt(payoutBlock.getIndex(), forkIndex)) {
+            return false;
+        }
+
+        boolean applied = false;
+        List<Block> chainContext = chainBeforeBlock(canonicalChain, payoutBlock.getIndex());
+        for (DtoTransaction transaction : payoutBlock.getDtoTransactions()) {
+            if (!isV35JackpotPayoutCandidate(transaction)) {
+                continue;
+            }
+            JackpotProofResult result = V35JackpotChainContextAdapter.verifyPayoutWithChainContext(
+                    chainContext, payoutBlock, transaction, founderAddress, forkIndex);
+            if (!result.isValid()) {
+                continue;
+            }
+
+            Account sender = getBalance(transaction.getSender(), balances);
+            Account customer = getBalance(transaction.getCustomer(), balances);
+            boolean sendTrue = UtilsBalance.sendMoney(
+                    sender,
+                    customer,
+                    BigDecimal.valueOf(transaction.getDigitalDollar()),
+                    BigDecimal.valueOf(transaction.getDigitalStockBalance()),
+                    BigDecimal.valueOf(transaction.getBonusForMiner()),
+                    transaction.getVoteEnum()
+            );
+            if (sendTrue) {
+                balances.put(sender.getAccount(), sender);
+                balances.put(customer.getAccount(), customer);
+                applied = true;
+            }
+        }
+        return applied;
+    }
+
+    public static boolean isValidV35JackpotPayoutForBalance(List<Block> canonicalChain,
+                                                            Block payoutBlock,
+                                                            DtoTransaction payoutTransaction,
+                                                            String founderAddress,
+                                                            long forkIndex) {
+        if (payoutBlock == null || payoutTransaction == null || !isV35ActiveAt(payoutBlock.getIndex(), forkIndex)
+                || !isV35JackpotPayoutCandidate(payoutTransaction)) {
+            return false;
+        }
+        JackpotProofResult result = V35JackpotChainContextAdapter.verifyPayoutWithChainContext(
+                chainBeforeBlock(canonicalChain, payoutBlock.getIndex()), payoutBlock, payoutTransaction,
+                founderAddress, forkIndex);
+        return result.isValid();
+    }
+
+    private static Block withoutV35JackpotPayoutCandidates(Block block) {
+        List<DtoTransaction> transactions = block.getDtoTransactions() == null
+                ? new ArrayList<>()
+                : block.getDtoTransactions().stream()
+                .filter(transaction -> !isV35JackpotPayoutCandidate(transaction))
+                .collect(Collectors.toList());
+        return new Block(transactions, block.getPreviousHash(), block.getMinerAddress(), block.getFounderAddress(),
+                block.getRandomNumberProof(), block.getMinerRewards(), block.getHashCompexity(),
+                block.getTimestamp(), block.getIndex(), block.getHashBlock());
+    }
+
+    private static List<Block> chainBeforeBlock(List<Block> canonicalChain, long payoutBlockIndex) {
+        if (canonicalChain == null || canonicalChain.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return canonicalChain.stream()
+                .filter(block -> block != null && block.getIndex() < payoutBlockIndex)
+                .collect(Collectors.toList());
+    }
+
+    private static boolean containsV35JackpotPayoutCandidate(Block block) {
+        return block != null && block.getDtoTransactions() != null
+                && block.getDtoTransactions().stream().anyMatch(UtilsBalance::isV35JackpotPayoutCandidate);
+    }
+
+    private static boolean isV35JackpotPayoutCandidate(DtoTransaction transaction) {
+        return transaction != null
+                && Seting.BASIS_ADDRESS.equals(transaction.getSender())
+                && JackpotCalculator.classifyPayoutAmount(transaction.getDigitalDollar())
+                != JackpotCalculator.JackpotPeriod.UNKNOWN;
+    }
+
+    private static boolean isV35ActiveAt(long blockIndex, long forkIndex) {
+        return forkIndex != Long.MAX_VALUE && blockIndex >= forkIndex;
     }
 
 
