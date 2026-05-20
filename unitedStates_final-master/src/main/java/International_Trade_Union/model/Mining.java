@@ -12,6 +12,7 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.governments.Directors;
 import International_Trade_Union.governments.UtilsGovernment;
 import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35JackpotPayoutBuilder;
 import International_Trade_Union.protocol.v35.V35PowValidator;
 import International_Trade_Union.protocol.v35.V35RewardCalculator;
 import International_Trade_Union.protocol.v35.V35TargetDifficulty;
@@ -104,6 +105,40 @@ public class Mining {
                 actualTimespanSeconds,
                 expectedTimespanSeconds,
                 secondsSinceLastBlock);
+    }
+
+    public static List<DtoTransaction> buildV35JackpotPayoutTransactionsForMining(List<Block> blockchain,
+                                                                                  long payoutBlockIndex,
+                                                                                  String minerAddress,
+                                                                                  String founderAddress,
+                                                                                  PrivateKey basisPrivateKey) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, IOException {
+        return buildV35JackpotPayoutTransactionsForMining(
+                blockchain, payoutBlockIndex, minerAddress, founderAddress, basisPrivateKey, Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    static List<DtoTransaction> buildV35JackpotPayoutTransactionsForMining(List<Block> blockchain,
+                                                                           long payoutBlockIndex,
+                                                                           String minerAddress,
+                                                                           String founderAddress,
+                                                                           PrivateKey basisPrivateKey,
+                                                                           long forkIndex) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, IOException {
+        if (basisPrivateKey == null) {
+            return Collections.emptyList();
+        }
+        List<DtoTransaction> payouts = V35JackpotPayoutBuilder.buildPayoutTransactions(
+                blockchain, payoutBlockIndex, minerAddress, founderAddress, forkIndex);
+        if (payouts.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<DtoTransaction> signedPayouts = new ArrayList<>();
+        for (DtoTransaction payout : payouts) {
+            if (payout == null || founderAddress == null || founderAddress.equals(payout.getCustomer())) {
+                continue;
+            }
+            payout.setSign(UtilsSecurity.sign(basisPrivateKey, payout.toSign()));
+            signedPayouts.add(payout);
+        }
+        return signedPayouts;
     }
 
     public static boolean isIsMiningStop() {
@@ -296,6 +331,8 @@ public class Mining {
             byte[] signGold = UtilsSecurity.sign(privateKey, minerRew.toSign());
             minerRew.setSign(signGold);
             forAdd.add(minerRew);
+            forAdd.addAll(buildV35JackpotPayoutTransactionsForMining(
+                    blockchain, index, minner.getAccount(), addressFounrder, privateKey));
 
             forAdd = forAdd.stream().filter(UtilsUse.distinctByKeyString(t -> {
                 try {
