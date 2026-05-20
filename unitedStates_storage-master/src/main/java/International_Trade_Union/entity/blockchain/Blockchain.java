@@ -198,6 +198,7 @@ public class Blockchain implements Cloneable {
                             .collect(Collectors.toList());
                 }
 
+                List<Block> v35ContextBeforeBlock = canonicalContextBeforeBlock(canonicalChainBeforeBatch, acceptedBlocksForContext);
                 validation = UtilsBlock.validationOneBlockWithCanonicalContext(
                         Seting.ADDRESS_FOUNDER,
                         prev,
@@ -207,7 +208,7 @@ public class Blockchain implements Cloneable {
                         balanceForValidation,
                         signs,
                         signaturesNotTakenIntoAccount,
-                        canonicalContextBeforeBlock(canonicalChainBeforeBatch, acceptedBlocksForContext),
+                        v35ContextBeforeBlock,
                         forkIndex);
                 prev = block.clone();
                 acceptedBlocksForContext.add(block.clone());
@@ -226,7 +227,14 @@ public class Blockchain implements Cloneable {
 
                 transactions += block.getDtoTransactions().size();
 
-                balances = UtilsBalance.calculateBalance(balances, block, sign, signaturesNotTakenIntoAccount);
+                balances = UtilsBalance.calculateBalanceWithV35JackpotContext(
+                        balances,
+                        v35ContextBeforeBlock,
+                        block,
+                        Seting.ADDRESS_FOUNDER,
+                        forkIndex,
+                        sign,
+                        signaturesNotTakenIntoAccount);
                 balanceForValidation = UtilsUse.balancesClone(balances);
 
                 if (!validation) {
@@ -246,6 +254,12 @@ public class Blockchain implements Cloneable {
 
     public static DataShortBlockchainInformation checkFromFile(
             String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        return checkFromFile(filename, Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    public static DataShortBlockchainInformation checkFromFile(
+            String filename,
+            long forkIndex) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         boolean valid = true;
         File folder = new File(filename);
         Block prevBlock = null;
@@ -317,7 +331,14 @@ public class Blockchain implements Cloneable {
 
                     hashCount += UtilsUse.powerDiff(block.getHashCompexity());
                     try {
-                        balances = UtilsBalance.calculateBalance(balances, block, sign, new ArrayList<>());
+                        balances = UtilsBalance.calculateBalanceWithV35JackpotContext(
+                                balances,
+                                canonicalContext,
+                                block,
+                                Seting.ADDRESS_FOUNDER,
+                                forkIndex,
+                                sign,
+                                new ArrayList<>());
                     } catch (IOException e) {
                         MyLogger.saveLog("checkFromFile: ", e);
                         throw new RuntimeException(e);
@@ -361,7 +382,7 @@ public class Blockchain implements Cloneable {
                                 signs,
                                 new ArrayList<>(),
                                 canonicalContext,
-                                Seting.V35_RESCUE_FORK_INDEX);
+                                forkIndex);
                     } catch (IOException e) {
                         MyLogger.saveLog("checkFromFile: ", e);
                         throw new RuntimeException(e);

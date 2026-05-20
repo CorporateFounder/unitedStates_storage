@@ -407,6 +407,26 @@ public class UtilsBalance {
         return applied;
     }
 
+    public static Map<String, Account> calculateBalanceWithV35JackpotContext(
+            Map<String, Account> balances,
+            List<Block> canonicalChain,
+            Block block,
+            String founderAddress,
+            long forkIndex,
+            List<String> signs,
+            List<String> signaturesNotTakenIntoAccount) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        if (!isV35ActiveAt(block.getIndex(), forkIndex) || !containsV35JackpotPayoutCandidate(block)) {
+            return calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
+        }
+
+        Block blockWithoutJackpotPayouts = withoutV35JackpotPayoutCandidates(block);
+        Map<String, Account> updatedBalances = calculateBalance(balances, blockWithoutJackpotPayouts, signs, signaturesNotTakenIntoAccount);
+        if (!applyV35JackpotPayoutsWithChainContext(updatedBalances, canonicalChain, block, founderAddress, forkIndex)) {
+            throw new IllegalStateException("Invalid V35 jackpot payout in balance path at block " + block.getIndex());
+        }
+        return updatedBalances;
+    }
+
     public static boolean isValidV35JackpotPayoutForBalance(List<Block> canonicalChain,
                                                             Block payoutBlock,
                                                             DtoTransaction payoutTransaction,
