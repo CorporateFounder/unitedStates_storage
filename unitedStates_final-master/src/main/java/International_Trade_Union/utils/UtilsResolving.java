@@ -1,6 +1,7 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.controllers.BasisController;
+import International_Trade_Union.entity.DtoTransaction.DtoTransaction;
 import International_Trade_Union.entity.EntityChain;
 import International_Trade_Union.entity.SubBlockchainEntity;
 import International_Trade_Union.entity.blockchain.Blockchain;
@@ -11,6 +12,7 @@ import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.*;
 import International_Trade_Union.model.comparator.HostEndDataShortBComparator;
+import International_Trade_Union.protocol.v35.JackpotCalculator;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -59,6 +61,117 @@ public class UtilsResolving {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
+    }
+
+    private List<Block> v35CanonicalContextBefore(Block prevBlock) throws IOException {
+        if (prevBlock == null) {
+            return new ArrayList<>();
+        }
+        return v35CanonicalContextBeforeIndex(prevBlock.getIndex());
+    }
+
+    private List<Block> v35CanonicalContextBeforeIndex(long index) throws IOException {
+        if (Seting.V35_RESCUE_FORK_INDEX == Long.MAX_VALUE || index < Seting.V35_RESCUE_FORK_INDEX) {
+            return new ArrayList<>();
+        }
+        return UtilsBlockToEntityBlock.entityBlocksToBlocks(blockService.findBySpecialIndexBetween(0, index));
+    }
+
+    static boolean isV35JackpotAccountingRequired(Block block) {
+        return Seting.V35_RESCUE_FORK_INDEX != Long.MAX_VALUE
+                && block != null
+                && block.getIndex() >= Seting.V35_RESCUE_FORK_INDEX
+                && containsV35JackpotPayoutCandidate(block);
+    }
+
+    static boolean containsV35JackpotPayoutCandidate(List<Block> blocks) {
+        if (blocks == null) {
+            return false;
+        }
+        for (Block block : blocks) {
+            if (containsV35JackpotPayoutCandidate(block)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean requiresV35JackpotAccounting(List<Block> blocks) {
+        if (blocks == null) {
+            return false;
+        }
+        for (Block block : blocks) {
+            if (isV35JackpotAccountingRequired(block)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean containsV35JackpotPayoutCandidate(Block block) {
+        if (block == null || block.getDtoTransactions() == null) {
+            return false;
+        }
+        for (DtoTransaction transaction : block.getDtoTransactions()) {
+            if (transaction == null) {
+                continue;
+            }
+            if (Seting.BASIS_ADDRESS.equals(transaction.getSender())
+                    && JackpotCalculator.classifyPayoutAmount(transaction.getDigitalDollar()) != JackpotCalculator.JackpotPeriod.UNKNOWN) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static Block withoutV35JackpotPayoutCandidates(Block block) {
+        if (!containsV35JackpotPayoutCandidate(block)) {
+            return block;
+        }
+        List<DtoTransaction> transactions = block.getDtoTransactions().stream()
+                .filter(transaction -> !(Seting.BASIS_ADDRESS.equals(transaction.getSender())
+                        && JackpotCalculator.classifyPayoutAmount(transaction.getDigitalDollar()) != JackpotCalculator.JackpotPeriod.UNKNOWN))
+                .collect(Collectors.toList());
+        return new Block(
+                transactions,
+                block.getPreviousHash(),
+                block.getMinerAddress(),
+                block.getFounderAddress(),
+                block.getRandomNumberProof(),
+                block.getMinerRewards(),
+                block.getHashCompexity(),
+                block.getTimestamp(),
+                block.getIndex(),
+                block.getHashBlock()
+        );
+    }
+
+    private Map<String, Account> calculateResolvingBalance(
+            Map<String, Account> balances,
+            Block block,
+            List<String> signs,
+            List<String> signaturesNotTakenIntoAccount,
+            List<Block> acceptedBlocksForContext
+    ) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, SignatureException, InvalidKeyException, IOException {
+        if (!isV35JackpotAccountingRequired(block)) {
+            return calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
+        }
+
+        Block blockWithoutJackpotPayouts = withoutV35JackpotPayoutCandidates(block);
+        Map<String, Account> updatedBalances = calculateBalance(balances, blockWithoutJackpotPayouts, signs, signaturesNotTakenIntoAccount);
+        List<Block> canonicalContext = v35CanonicalContextBeforeIndex(block.getIndex() - 1);
+        if (acceptedBlocksForContext != null) {
+            canonicalContext.addAll(acceptedBlocksForContext);
+        }
+        if (!UtilsBalance.applyV35JackpotPayoutsWithChainContext(
+                updatedBalances,
+                canonicalContext,
+                block,
+                Seting.ADDRESS_FOUNDER,
+                Seting.V35_RESCUE_FORK_INDEX)) {
+            throw new IllegalStateException("Invalid V35 jackpot payout in resolving balance path at block " + block.getIndex());
+        }
+        return updatedBalances;
     }
 
 
@@ -277,7 +390,10 @@ public class UtilsResolving {
                                     //проверяет скаченные блоки на целостность
                                     //checks downloaded blocks for integrity
                                     Map<String, Account> balanceForValid = UtilsUse.balancesClone(balances);
-                                    temp = Blockchain.shortCheck(BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValid, new ArrayList<>());
+                                    temp = Blockchain.shortCheckWithCanonicalContext(
+                                            BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(),
+                                            lastDiff, tempBalances, sign, balanceForValid, new ArrayList<>(),
+                                            v35CanonicalContextBefore(BasisController.getPrevBlock()), Seting.V35_RESCUE_FORK_INDEX);
                                     System.out.println("prevBlock: " + BasisController.getPrevBlock().getIndex());
                                 } else {
 
@@ -344,7 +460,10 @@ public class UtilsResolving {
                                 Map<String, Account> balanceForValidation = UtilsUse.balancesClone(balances);
 
                                 //вычисляет мета данные, и делает проверку целостности блокчейна, если блокчейн правильный то это записывается в мета данных
-                                temp = Blockchain.shortCheck(BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>());
+                                temp = Blockchain.shortCheckWithCanonicalContext(
+                                        BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(),
+                                        lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>(),
+                                        v35CanonicalContextBefore(BasisController.getPrevBlock()), Seting.V35_RESCUE_FORK_INDEX);
 
                                 //получает баланс с базы данных h2, локально из счетов в блоке.
                                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(subBlocks, blockService));
@@ -449,7 +568,10 @@ public class UtilsResolving {
                                     temp = new DataShortBlockchainInformation();
                                     balanceForValidation = UtilsUse.balancesClone(balances);
                                     //подсчет мета данных и проверка целостности блокчейна, скачиваемого из сервера.
-                                    temp = Blockchain.shortCheck(BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>());
+                                    temp = Blockchain.shortCheckWithCanonicalContext(
+                                            BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(),
+                                            lastDiff, tempBalances, sign, balanceForValidation, new ArrayList<>(),
+                                            v35CanonicalContextBefore(BasisController.getPrevBlock()), Seting.V35_RESCUE_FORK_INDEX);
 
 
                                     System.out.println("2: temp: " + temp);
@@ -551,7 +673,10 @@ public class UtilsResolving {
                             }
 
                             DataShortBlockchainInformation temp = new DataShortBlockchainInformation();
-                            temp = Blockchain.shortCheck(BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(), lastDiff, tempBalances, sign, validationBalance, new ArrayList<>());
+                            temp = Blockchain.shortCheckWithCanonicalContext(
+                                    BasisController.getPrevBlock(), subBlocks, BasisController.getShortDataBlockchain(),
+                                    lastDiff, tempBalances, sign, validationBalance, new ArrayList<>(),
+                                    v35CanonicalContextBefore(BasisController.getPrevBlock()), Seting.V35_RESCUE_FORK_INDEX);
 
                             jsonGlobalData = UtilUrl.readJsonFromUrl(s + "/datashort");
                             if (jsonGlobalData == null || jsonGlobalData.isEmpty() || jsonGlobalData.isBlank()) {
@@ -775,12 +900,20 @@ public class UtilsResolving {
             //во время отправки денег.
             Map<String, Account> balanceForValidation = UtilsUse.balancesClone(balances);
 
-            for (int i = different.size() - 1; i >= 0; i--) {
-                Block block = different.get(i);
+            if (requiresV35JackpotAccounting(different)) {
+                balanceForValidation = UtilsBalance.calculateBalances(
+                        v35CanonicalContextBeforeIndex(different.get(0).getIndex() - 1),
+                        Seting.ADDRESS_FOUNDER,
+                        Seting.V35_RESCUE_FORK_INDEX
+                );
+            } else {
+                for (int i = different.size() - 1; i >= 0; i--) {
+                    Block block = different.get(i);
 
                 //откатывает баланс на основе блоков.
-                balanceForValidation = rollbackCalculateBalance(balanceForValidation, block);
+                    balanceForValidation = rollbackCalculateBalance(balanceForValidation, block);
 
+                }
             }
 
             //здесь подсчитывает целостность мета данных, а также целостность блокчейна, так же balanceForValidation используется
@@ -792,10 +925,14 @@ public class UtilsResolving {
                 signaturesNotTakenIntoAccount.addAll(tempSign);
             }
 
+            List<Block> v35ReplacementContext = v35CanonicalContextBefore(tempPrevBlock);
             for (Block block : emptyList) {
                 List<Block> tempList = new ArrayList<>();
                 tempList.add(block);
-                temp = Blockchain.shortCheck(tempPrevBlock, tempList, temp, lastDiff, tempBalance, sign, balanceForValidation, signaturesNotTakenIntoAccount);
+                temp = Blockchain.shortCheckWithCanonicalContext(tempPrevBlock, tempList, temp, lastDiff, tempBalance, sign, balanceForValidation, signaturesNotTakenIntoAccount, v35ReplacementContext, Seting.V35_RESCUE_FORK_INDEX);
+                if (temp.isValidation()) {
+                    v35ReplacementContext.add(block);
+                }
                 tempPrevBlock = block;
             }
 
@@ -956,14 +1093,18 @@ public class UtilsResolving {
 
         try {
             //откатывает баланс, исходя из блоков предназначенных для удаления.
-            for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
-                Block block = deleteBlocks.get(i);
-                MyLogger.saveLog("----------------------------------");
-                MyLogger.saveLog("rollBackAddBlock3 index: " + block.getIndex());
-                MyLogger.saveLog("balance before: " + balances);
-                balances = rollbackCalculateBalance(balances, block);
-                MyLogger.saveLog("after before: " + balances);
-                MyLogger.saveLog("----------------------------------");
+            if (requiresV35JackpotAccounting(deleteBlocks)) {
+                balances = UtilsBalance.calculateBalances(tempBlock, Seting.ADDRESS_FOUNDER, Seting.V35_RESCUE_FORK_INDEX);
+            } else {
+                for (int i = deleteBlocks.size() - 1; i >= 0; i--) {
+                    Block block = deleteBlocks.get(i);
+                    MyLogger.saveLog("----------------------------------");
+                    MyLogger.saveLog("rollBackAddBlock3 index: " + block.getIndex());
+                    MyLogger.saveLog("balance before: " + balances);
+                    balances = rollbackCalculateBalance(balances, block);
+                    MyLogger.saveLog("after before: " + balances);
+                    MyLogger.saveLog("----------------------------------");
+                }
             }
 
 
@@ -1026,13 +1167,15 @@ public class UtilsResolving {
         long start = UtilsTime.getUniversalTimestamp();
 
 
+        List<Block> acceptedBlocksForContext = new ArrayList<>();
         for (Block block : originalBlocks) {
             System.out.println(" :BasisController: addBlock3: blockchain is being updated: index" + block.getIndex());
 
             EntityBlock entityBlock = UtilsBlockToEntityBlock.blockToEntityBlock(block);
             list.add(entityBlock);
             //посчитывает баланс на основе блока
-            balances =  calculateBalance(balances, block, signs, signaturesNotTakenIntoAccount);
+            balances = calculateResolvingBalance(balances, block, signs, signaturesNotTakenIntoAccount, acceptedBlocksForContext);
+            acceptedBlocksForContext.add(block);
         }
         list = list.stream().sorted(Comparator.comparing(EntityBlock::getSpecialIndex)).collect(Collectors.toList());
 
