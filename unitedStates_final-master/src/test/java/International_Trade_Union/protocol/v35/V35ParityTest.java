@@ -25,7 +25,9 @@ public class V35ParityTest {
                 V35WorkCalculator.class,
                 ChainTournamentScorer.class,
                 JackpotTicket.class,
-                JackpotWinnerProof.class
+                JackpotWinnerProof.class,
+                V35SupplyCalculator.class,
+                V35SupplySnapshot.class
         };
 
         for (Class<?> clazz : classes) {
@@ -151,5 +153,30 @@ public class V35ParityTest {
         assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("score", boolean.class, BigInteger.class, long.class, double.class, String.class));
         assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("compare", ChainTournamentScorer.ChainScore.class, ChainTournamentScorer.ChainScore.class));
         assertNotNull(ChainTournamentScorer.class.getDeclaredMethod("betterOf", ChainTournamentScorer.ChainScore.class, ChainTournamentScorer.ChainScore.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("annualEmissionGold"));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("annualMinerEmissionGold"));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("annualJackpotEmissionGold"));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("circulatingGold", java.math.BigDecimal.class, java.math.BigDecimal.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("inflationPercent", java.math.BigDecimal.class, java.math.BigDecimal.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("snapshot", java.math.BigDecimal.class, java.math.BigDecimal.class, java.math.BigDecimal.class, java.math.BigDecimal.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("snapshot", java.math.BigDecimal.class, java.math.BigDecimal.class, java.math.BigDecimal.class, java.math.BigDecimal.class, boolean.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("snapshotFromBalances", java.math.BigDecimal.class, java.util.Map.class, java.math.BigDecimal.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("snapshotFromBalances", java.math.BigDecimal.class, java.util.Map.class, java.math.BigDecimal.class, String.class, String.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("totalMintedFromTransactions", java.util.List.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("jackpotPaidFromTransactions", java.util.List.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("accountGoldBalance", java.util.Map.class, String.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("gold", double.class));
+        assertNotNull(V35SupplyCalculator.class.getDeclaredMethod("gold", String.class));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getTotalMintedGold"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getBurnedGold"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getCirculatingGold"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getFounderReserveGold"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getJackpotPaidGold"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getAnnualEmissionGold"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getInflationBeforeBurnPercent"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getInflationAfterBurnPercent"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("isBurnAddressConfigured"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("isValid"));
+        assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getInvalidReason"));
     }
 }
