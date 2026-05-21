@@ -121,8 +121,14 @@ public class V35ParityTest {
         assertNotNull(AssetDisplayMapper.class.getDeclaredMethod("rawDigitalStockToSilverDisplay", double.class));
         assertNotNull(AssetDisplayMapper.class.getDeclaredMethod("silverDisplayToRawDigitalStock", double.class));
         assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("getBurnAddress"));
+        assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("isPlaceholderBurnAddress"));
         assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("isBurnAddress", String.class));
+        assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("isNoSpendActive", long.class));
+        assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("isNoSpendActive", long.class, long.class));
         assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("canSpendFromAddress", long.class, String.class));
+        assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("canSpendFromAddress", long.class, String.class, long.class));
+        assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("isSpendForbidden", long.class, String.class));
+        assertNotNull(BurnAddressPolicy.class.getDeclaredMethod("isSpendForbidden", long.class, String.class, long.class));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getTargetWindow"));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getTargetBlockTimeSeconds"));
         assertNotNull(V35TargetDifficulty.class.getDeclaredMethod("getEmergencyDelaySeconds"));

@@ -7,6 +7,7 @@ import International_Trade_Union.entity.blockchain.block.Block;
 import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.model.MyLogger;
+import International_Trade_Union.protocol.v35.BurnAddressPolicy;
 import International_Trade_Union.protocol.v35.JackpotCalculator;
 import International_Trade_Union.protocol.v35.JackpotProofResult;
 import International_Trade_Union.protocol.v35.V35JackpotChainContextAdapter;
@@ -65,6 +66,10 @@ public class UtilsBalance {
             DtoTransaction transaction = transactions.get(j);
             if (transaction.getSender().startsWith(Seting.NAME_LAW_ADDRESS_START)) {
                 System.out.println("law balance cannot be sender");
+                continue;
+            }
+            if (BurnAddressPolicy.isSpendForbidden(block.getIndex(), transaction.getSender())) {
+                MyLogger.saveLog("V35 burn address cannot spend in rollback balance path: index: " + block.getIndex());
                 continue;
             }
             if (transaction.verify()) {
@@ -215,6 +220,10 @@ public class UtilsBalance {
             }
             Account sender = getBalance(transaction.getSender(), balances);
             Account customer = getBalance(transaction.getCustomer(), balances);
+            if (BurnAddressPolicy.isSpendForbidden(block.getIndex(), transaction.getSender())) {
+                MyLogger.saveLog("V35 burn address cannot spend in calculateBalance: index: " + block.getIndex());
+                continue;
+            }
             boolean verifyTransaction = transaction.verify();
             if (verifyTransaction == false){
                 String json = UtilsJson.objToStringJson(transaction);

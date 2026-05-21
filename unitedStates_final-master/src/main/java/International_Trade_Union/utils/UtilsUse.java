@@ -8,6 +8,7 @@ import International_Trade_Union.entity.services.BlockService;
 
 import International_Trade_Union.model.Account;
 import International_Trade_Union.model.MyLogger;
+import International_Trade_Union.protocol.v35.BurnAddressPolicy;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.base.Base;
 import International_Trade_Union.utils.base.Base58;
@@ -702,6 +703,10 @@ public class UtilsUse {
 
             boolean result = false;
 
+            if (BurnAddressPolicy.isSpendForbidden(index, transaction.getSender())) {
+                MyLogger.saveLog("V35 burn address cannot spend in balanceTransaction: index: " + index);
+                continue;
+            }
 
             if (!voteSet.contains(transaction.getVoteEnum())) {
                 System.out.println("Value is not contained in VoteEnum enum");

@@ -11,6 +11,7 @@ import International_Trade_Union.entity.services.BlockService;
 
 import International_Trade_Union.model.Account;
 import International_Trade_Union.model.MyLogger;
+import International_Trade_Union.protocol.v35.BurnAddressPolicy;
 import International_Trade_Union.protocol.v35.JackpotCalculator;
 import International_Trade_Union.protocol.v35.JackpotProofResult;
 import International_Trade_Union.protocol.v35.ProtocolVersion;
@@ -697,6 +698,12 @@ public class UtilsBlock {
         Set<JackpotCalculator.JackpotPeriod> v35JackpotPayoutPeriodsInBlock = EnumSet.noneOf(JackpotCalculator.JackpotPeriod.class);
         finished:
         for (DtoTransaction transaction : transactions) {
+            if (BurnAddressPolicy.isSpendForbidden(thisBlock.getIndex(), transaction.getSender(), forkIndex)) {
+                System.out.println("V35 burn address cannot spend: index: " + thisBlock.getIndex());
+                UtilsFileSaveRead.save("V35 burn address cannot spend: index: " + thisBlock.getIndex(), ERROR_FILE, true);
+                validated = false;
+                break;
+            }
             boolean verify = transaction.verify();
             if (verify == false){
                 String json = UtilsJson.objToStringJson(transaction);
