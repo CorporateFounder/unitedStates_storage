@@ -27,7 +27,8 @@ public class V35ParityTest {
                 JackpotTicket.class,
                 JackpotWinnerProof.class,
                 V35SupplyCalculator.class,
-                V35SupplySnapshot.class
+                V35SupplySnapshot.class,
+                V35SupplyChainAdapter.class
         };
 
         for (Class<?> clazz : classes) {
@@ -178,5 +179,14 @@ public class V35ParityTest {
         assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("isBurnAddressConfigured"));
         assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("isValid"));
         assertNotNull(V35SupplySnapshot.class.getDeclaredMethod("getInvalidReason"));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("snapshotFromChainAndAccounts", java.util.List.class, java.util.Map.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("snapshotFromChainAndAccounts", java.util.List.class, java.util.Map.class, String.class, String.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("snapshotFromTransactionsAndAccounts", java.util.List.class, java.util.Map.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("snapshotFromTransactionsAndAccounts", java.util.List.class, java.util.Map.class, String.class, String.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("totalMintedGold", java.util.List.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("jackpotPaidGold", java.util.List.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("totalMintedGoldFromChain", java.util.List.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("jackpotPaidGoldFromChain", java.util.List.class));
+        assertNotNull(V35SupplyChainAdapter.class.getDeclaredMethod("transactionsFromChain", java.util.List.class));
     }
 }
