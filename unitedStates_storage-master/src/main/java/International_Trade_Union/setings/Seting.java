@@ -371,8 +371,7 @@ public interface Seting {
     double V35_MAX_TX_BOOST = 0.30;
     double V35_MAX_STAKE_BOOST = 0.20;
 
-    // TODO V35: replace with final burn address before enabling the fork.
-    String V35_BURN_ADDRESS = "TODO_V35_BURN_ADDRESS";
+    String V35_BURN_ADDRESS = "BURN_ADDRESS";
 
     boolean V35_FOUNDER_REWARD_ENABLED = false;
     double V35_EXPECTED_FOUNDER_REWARD = 0.00;

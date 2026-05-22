@@ -65,9 +65,9 @@ public class V35SupplyCalculatorTest {
     }
 
     @Test
-    public void placeholderBurnAddressDoesNotBecomeBurnedSupply() {
+    public void configuredBurnAddressBalanceBecomesBurnedSupply() {
         Map<String, Account> balances = new HashMap<>();
-        balances.put(Seting.V35_BURN_ADDRESS, new Account(Seting.V35_BURN_ADDRESS, bd("999.00")));
+        balances.put(Seting.V35_BURN_ADDRESS, new Account(Seting.V35_BURN_ADDRESS, bd("60.82")));
         balances.put(FOUNDER, new Account(FOUNDER, bd("76.03")));
 
         V35SupplySnapshot snapshot = V35SupplyCalculator.snapshotFromBalances(
@@ -75,11 +75,11 @@ public class V35SupplyCalculatorTest {
                 balances,
                 bd("0.00"));
 
-        assertTrue(BurnAddressPolicy.isPlaceholderBurnAddress());
-        assertFalse(snapshot.isBurnAddressConfigured());
+        assertFalse(BurnAddressPolicy.isPlaceholderBurnAddress());
+        assertTrue(snapshot.isBurnAddressConfigured());
         assertTrue(snapshot.isValid());
-        assertEquals(bd("0.00"), snapshot.getBurnedGold());
-        assertEquals(bd("159.55"), snapshot.getCirculatingGold());
+        assertEquals(bd("60.82"), snapshot.getBurnedGold());
+        assertEquals(bd("98.73"), snapshot.getCirculatingGold());
         assertEquals(bd("76.03"), snapshot.getFounderReserveGold());
     }
 
