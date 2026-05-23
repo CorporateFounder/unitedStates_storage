@@ -18,6 +18,15 @@ import java.util.Map;
 @Controller
 public class V35DashboardController {
     private static final String UNAVAILABLE = "Unavailable";
+    private final V35DashboardApiClient apiClient;
+
+    public V35DashboardController() {
+        this(new V35DashboardApiClient());
+    }
+
+    V35DashboardController(V35DashboardApiClient apiClient) {
+        this.apiClient = apiClient;
+    }
 
     @GetMapping("/v35-dashboard")
     public String dashboard(Model model) {
@@ -36,23 +45,145 @@ public class V35DashboardController {
         model.addAttribute("isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress());
         model.addAttribute("founderAddress", Seting.ADDRESS_FOUNDER);
 
+        model.addAttribute("liveApiBaseUrl", UNAVAILABLE);
+        model.addAttribute("liveApiError", "");
+        model.addAttribute("liveProtocolAvailable", false);
         model.addAttribute("liveSupplyAvailable", false);
+        model.addAttribute("liveBurnAvailable", false);
+        model.addAttribute("liveFounderAvailable", false);
+        model.addAttribute("liveFounderSnapshotAvailable", false);
         model.addAttribute("unavailable", UNAVAILABLE);
         model.addAttribute("totalMintedGold", UNAVAILABLE);
         model.addAttribute("burnedGold", UNAVAILABLE);
         model.addAttribute("circulatingGold", UNAVAILABLE);
         model.addAttribute("founderReserveGold", UNAVAILABLE);
         model.addAttribute("jackpotPaidGold", UNAVAILABLE);
+        model.addAttribute("supplySnapshotSource", UNAVAILABLE);
+        model.addAttribute("supplyValid", UNAVAILABLE);
+        model.addAttribute("supplyInvalidReason", "");
         model.addAttribute("snapshotHeight", UNAVAILABLE);
         model.addAttribute("snapshotBlockHash", UNAVAILABLE);
         model.addAttribute("founderBalanceGold", UNAVAILABLE);
+        model.addAttribute("founderSnapshotNote", "");
         model.addAttribute("burnTransactionCreated", false);
 
         model.addAttribute("burnOptions", burnOptions());
         model.addAttribute("proofChecklist", proofChecklist());
         model.addAttribute("jackpotPeriods", jackpotPeriods());
         model.addAttribute("warnings", warnings());
+        overlayLiveData(model, apiClient.fetch());
         return "v35-dashboard";
+    }
+
+    private void overlayLiveData(Model model, V35DashboardApiClient.LiveData liveData) {
+        if (liveData == null) {
+            model.addAttribute("liveApiError", "Live V35 data unavailable.");
+            return;
+        }
+        model.addAttribute("liveApiBaseUrl", fallback(liveData.baseUrl(), UNAVAILABLE));
+        model.addAttribute("liveApiError", liveData.errorMessage());
+        model.addAttribute("liveProtocolAvailable", liveData.protocolAvailable());
+        model.addAttribute("liveSupplyAvailable", liveData.supplyAvailable());
+        model.addAttribute("liveBurnAvailable", liveData.burnAvailable());
+        model.addAttribute("liveFounderAvailable", liveData.founderAvailable());
+        model.addAttribute("liveFounderSnapshotAvailable", liveData.founderBurnSnapshotAvailable());
+
+        if (liveData.protocolAvailable()) {
+            overlayProtocol(model, liveData.protocol());
+        }
+        if (liveData.supplyAvailable()) {
+            overlaySupply(model, liveData.supply());
+        }
+        if (liveData.burnAvailable()) {
+            overlayBurn(model, liveData.burn());
+        }
+        if (liveData.founderAvailable()) {
+            overlayFounder(model, liveData.founder());
+        }
+        if (liveData.founderBurnSnapshotAvailable()) {
+            overlayFounderBurnSnapshot(model, liveData.founderBurnSnapshot());
+        }
+    }
+
+    private void overlayProtocol(Model model, Map<String, Object> protocol) {
+        model.addAttribute("v35Active", V35DashboardApiClient.booleanField(protocol, "v35Active", isV35Active()));
+        model.addAttribute("v35ForkIndex", V35DashboardApiClient.stringField(protocol, "v35ForkIndex", forkIndexValue()));
+        model.addAttribute("blockTimeSeconds", V35DashboardApiClient.stringField(protocol, "blockTimeSeconds",
+                Integer.toString(Seting.V35_TARGET_BLOCK_TIME_SECONDS)));
+        model.addAttribute("blocksPerDay", V35DashboardApiClient.stringField(protocol, "blocksPerDay",
+                Long.toString(JackpotCalculator.dailyWindowBlocks())));
+        model.addAttribute("rewardPerBlockGold", V35DashboardApiClient.stringField(protocol, "rewardPerBlockGold",
+                gold(Seting.V35_GOLD_REWARD)));
+        model.addAttribute("minerRewardGold", V35DashboardApiClient.stringField(protocol, "minerRewardGold",
+                gold(Seting.V35_INSTANT_MINER_REWARD)));
+        model.addAttribute("jackpotReservePerBlockGold", V35DashboardApiClient.stringField(protocol, "jackpotReservePerBlockGold",
+                gold(Seting.V35_JACKPOT_REWARD)));
+        model.addAttribute("founderRewardGold", V35DashboardApiClient.stringField(protocol, "founderRewardGold",
+                gold(Seting.V35_EXPECTED_FOUNDER_REWARD)));
+        model.addAttribute("annualEmissionGold", V35DashboardApiClient.stringField(protocol, "annualEmissionGold",
+                V35SupplyCalculator.annualEmissionGold().toPlainString()));
+        model.addAttribute("burnAddress", V35DashboardApiClient.stringField(protocol, "burnAddress",
+                BurnAddressPolicy.getBurnAddress()));
+        model.addAttribute("founderAddress", V35DashboardApiClient.stringField(protocol, "founderAddress",
+                Seting.ADDRESS_FOUNDER));
+        model.addAttribute("burnAddressConfigured", V35DashboardApiClient.booleanField(protocol, "burnAddressConfigured",
+                !BurnAddressPolicy.isPlaceholderBurnAddress()));
+        model.addAttribute("isBurnAddressPlaceholder", V35DashboardApiClient.booleanField(protocol,
+                "isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress()));
+    }
+
+    private void overlaySupply(Model model, Map<String, Object> supply) {
+        model.addAttribute("totalMintedGold", V35DashboardApiClient.stringField(supply, "totalMintedGold", UNAVAILABLE));
+        model.addAttribute("burnedGold", V35DashboardApiClient.stringField(supply, "burnedGold", UNAVAILABLE));
+        model.addAttribute("circulatingGold", V35DashboardApiClient.stringField(supply, "circulatingGold", UNAVAILABLE));
+        model.addAttribute("founderReserveGold", V35DashboardApiClient.stringField(supply, "founderReserveGold", UNAVAILABLE));
+        model.addAttribute("jackpotPaidGold", V35DashboardApiClient.stringField(supply, "jackpotPaidGold", UNAVAILABLE));
+        model.addAttribute("annualEmissionGold", V35DashboardApiClient.stringField(supply, "annualEmissionGold",
+                V35SupplyCalculator.annualEmissionGold().toPlainString()));
+        model.addAttribute("supplySnapshotSource", V35DashboardApiClient.stringField(supply, "snapshotSource", UNAVAILABLE));
+        model.addAttribute("supplyValid", V35DashboardApiClient.stringField(supply, "valid", UNAVAILABLE));
+        model.addAttribute("supplyInvalidReason", V35DashboardApiClient.stringField(supply, "invalidReason", ""));
+    }
+
+    private void overlayBurn(Model model, Map<String, Object> burn) {
+        model.addAttribute("burnAddress", V35DashboardApiClient.stringField(burn, "burnAddress",
+                BurnAddressPolicy.getBurnAddress()));
+        model.addAttribute("burnAddressConfigured", V35DashboardApiClient.booleanField(burn, "burnAddressConfigured",
+                !BurnAddressPolicy.isPlaceholderBurnAddress()));
+        model.addAttribute("isBurnAddressPlaceholder", V35DashboardApiClient.booleanField(burn,
+                "isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress()));
+        model.addAttribute("burnTransactionCreated", V35DashboardApiClient.booleanField(burn,
+                "burnTransactionCreated", false));
+        if (UNAVAILABLE.equals(model.asMap().get("burnedGold"))) {
+            model.addAttribute("burnedGold", V35DashboardApiClient.stringField(burn, "burnedGold", UNAVAILABLE));
+        }
+    }
+
+    private void overlayFounder(Model model, Map<String, Object> founder) {
+        model.addAttribute("founderAddress", V35DashboardApiClient.stringField(founder, "founderAddress",
+                Seting.ADDRESS_FOUNDER));
+        if (UNAVAILABLE.equals(model.asMap().get("founderReserveGold"))) {
+            model.addAttribute("founderReserveGold", V35DashboardApiClient.stringField(founder,
+                    "founderReserveGold", UNAVAILABLE));
+        }
+    }
+
+    private void overlayFounderBurnSnapshot(Model model, Map<String, Object> snapshot) {
+        model.addAttribute("snapshotHeight", V35DashboardApiClient.stringField(snapshot, "snapshotHeight", UNAVAILABLE));
+        model.addAttribute("snapshotBlockHash", V35DashboardApiClient.stringField(snapshot, "snapshotBlockHash", UNAVAILABLE));
+        model.addAttribute("founderBalanceGold", V35DashboardApiClient.stringField(snapshot, "founderBalanceGold", UNAVAILABLE));
+        model.addAttribute("founderSnapshotNote", V35DashboardApiClient.stringField(snapshot, "note", ""));
+        model.addAttribute("burnTransactionCreated", V35DashboardApiClient.booleanField(snapshot,
+                "burnTransactionCreated", false));
+
+        List<Map<String, Object>> liveBurnOptions = V35DashboardApiClient.listOfMapsField(snapshot, "burnOptions");
+        if (!liveBurnOptions.isEmpty()) {
+            model.addAttribute("burnOptions", liveBurnOptions);
+        }
+        List<String> liveProofChecklist = V35DashboardApiClient.proofChecklistField(snapshot, "proofChecklist");
+        if (!liveProofChecklist.isEmpty()) {
+            model.addAttribute("proofChecklist", liveProofChecklist);
+        }
     }
 
     private boolean isV35Active() {
@@ -137,5 +268,9 @@ public class V35DashboardController {
 
     private String gold(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    private String fallback(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value;
     }
 }

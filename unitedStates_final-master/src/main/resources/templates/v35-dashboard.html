@@ -19,6 +19,29 @@
     </section>
 
     <section class="mt-4">
+        <h2 class="h4">Live read-only data</h2>
+        <p>
+            Static protocol policy is always shown. Live chain values are server-reported read-only values when the
+            configured V35 endpoints are available.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <tbody>
+                <tr><th>Server source</th><td class="text-break" th:text="${liveApiBaseUrl}">Unavailable</td></tr>
+                <tr><th>Protocol endpoint</th><td th:text="${liveProtocolAvailable}">false</td></tr>
+                <tr><th>Supply endpoint</th><td th:text="${liveSupplyAvailable}">false</td></tr>
+                <tr><th>Burn endpoint</th><td th:text="${liveBurnAvailable}">false</td></tr>
+                <tr><th>Founder endpoint</th><td th:text="${liveFounderAvailable}">false</td></tr>
+                <tr><th>Founder snapshot endpoint</th><td th:text="${liveFounderSnapshotAvailable}">false</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${liveApiError != null and !#strings.isEmpty(liveApiError)}" class="text-muted" th:text="${liveApiError}">
+            Live V35 data unavailable.
+        </p>
+    </section>
+
+    <section class="mt-4">
         <h2 class="h4">Protocol and reward model</h2>
         <p>Manual difficulty is legacy-only after V35.</p>
         <div class="table-responsive">
@@ -51,10 +74,15 @@
                 <tr><th>Actual circulating</th><td th:text="${circulatingGold}">Unavailable</td></tr>
                 <tr><th>Founder reserve</th><td th:text="${founderReserveGold}">Unavailable</td></tr>
                 <tr><th>Jackpot paid</th><td th:text="${jackpotPaidGold}">Unavailable</td></tr>
+                <tr><th>Snapshot source</th><td th:text="${supplySnapshotSource}">Unavailable</td></tr>
+                <tr><th>Supply snapshot valid</th><td th:text="${supplyValid}">Unavailable</td></tr>
                 </tbody>
             </table>
         </div>
         <p th:if="${!liveSupplyAvailable}" class="text-muted">Live supply endpoint data is unavailable in this wallet page.</p>
+        <p th:if="${supplyInvalidReason != null and !#strings.isEmpty(supplyInvalidReason)}" class="text-muted" th:text="${supplyInvalidReason}">
+            Supply snapshot note.
+        </p>
     </section>
 
     <section class="mt-4">
@@ -67,6 +95,9 @@
         <p><strong>Snapshot block hash:</strong> <span class="text-break" th:text="${snapshotBlockHash}">Unavailable</span></p>
         <p><strong>Founder balance at snapshot:</strong> <span th:text="${founderBalanceGold}">Unavailable</span></p>
         <p><strong>Burn transaction created:</strong> <span th:text="${burnTransactionCreated}">false</span></p>
+        <p th:if="${founderSnapshotNote != null and !#strings.isEmpty(founderSnapshotNote)}" class="text-muted" th:text="${founderSnapshotNote}">
+            Founder snapshot note.
+        </p>
 
         <div class="table-responsive">
             <table class="table table-sm table-bordered align-middle">
