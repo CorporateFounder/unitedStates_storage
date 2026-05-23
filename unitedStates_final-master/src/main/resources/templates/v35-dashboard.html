@@ -1,0 +1,143 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">V35 dashboard</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container mt-4 mb-5">
+    <h1>V35 dashboard</h1>
+
+    <section class="alert alert-warning mt-3">
+        <h2 class="h4">Status</h2>
+        <p><strong>V35 active:</strong> <span th:text="${v35Active}">false</span></p>
+        <p><strong>Fork index:</strong> <span th:text="${v35ForkIndex}">Long.MAX_VALUE</span></p>
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+    </section>
+
+    <section class="mt-4">
+        <h2 class="h4">Protocol and reward model</h2>
+        <p>Manual difficulty is legacy-only after V35.</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <tbody>
+                <tr><th>Block time</th><td th:text="${blockTimeSeconds + ' sec'}">200 sec</td></tr>
+                <tr><th>Blocks per day</th><td th:text="${blocksPerDay}">432</td></tr>
+                <tr><th>Reward per block</th><td th:text="${rewardPerBlockGold + ' GOLD'}">8.00 GOLD</td></tr>
+                <tr><th>Miner reward</th><td th:text="${minerRewardGold + ' GOLD'}">6.00 GOLD</td></tr>
+                <tr><th>Jackpot reserve</th><td th:text="${jackpotReservePerBlockGold + ' GOLD'}">2.00 GOLD</td></tr>
+                <tr><th>Founder reward</th><td th:text="${founderRewardGold + ' GOLD'}">0.00 GOLD</td></tr>
+                <tr><th>Annual emission</th><td th:text="${annualEmissionGold + ' GOLD/year'}">1261440.00 GOLD/year</td></tr>
+                <tr><th>Burn address</th><td class="text-break" th:text="${burnAddress}">BURN_ADDRESS</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="mt-4">
+        <h2 class="h4">Actual supply and burn</h2>
+        <p>
+            These are actual chain values only when the wallet has a read-only supply snapshot.
+            This dashboard does not fake live supply values.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <tbody>
+                <tr><th>Total minted</th><td th:text="${totalMintedGold}">Unavailable</td></tr>
+                <tr><th>Actual burned</th><td th:text="${burnedGold}">Unavailable</td></tr>
+                <tr><th>Actual circulating</th><td th:text="${circulatingGold}">Unavailable</td></tr>
+                <tr><th>Founder reserve</th><td th:text="${founderReserveGold}">Unavailable</td></tr>
+                <tr><th>Jackpot paid</th><td th:text="${jackpotPaidGold}">Unavailable</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${!liveSupplyAvailable}" class="text-muted">Live supply endpoint data is unavailable in this wallet page.</p>
+    </section>
+
+    <section class="mt-4">
+        <h2 class="h4">Founder burn snapshot</h2>
+        <p>Modeled burn values are projections. They are not actual burned supply until a founder-signed burn transaction is confirmed.</p>
+        <p>BURN_ADDRESS is a protocol sink. Sending to it is allowed; spending from it is blocked after V35.</p>
+        <p><strong>Founder address:</strong> <span class="text-break" th:text="${founderAddress}">founder</span></p>
+        <p><strong>Burn address:</strong> <span class="text-break" th:text="${burnAddress}">BURN_ADDRESS</span></p>
+        <p><strong>Snapshot height:</strong> <span th:text="${snapshotHeight}">Unavailable</span></p>
+        <p><strong>Snapshot block hash:</strong> <span class="text-break" th:text="${snapshotBlockHash}">Unavailable</span></p>
+        <p><strong>Founder balance at snapshot:</strong> <span th:text="${founderBalanceGold}">Unavailable</span></p>
+        <p><strong>Burn transaction created:</strong> <span th:text="${burnTransactionCreated}">false</span></p>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>Percent</th>
+                    <th>Burn amount</th>
+                    <th>Founder reserve after burn</th>
+                    <th>Modeled burned after burn</th>
+                    <th>Modeled circulating after burn</th>
+                    <th>Modeled inflation after burn</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="option : ${burnOptions}">
+                    <td>
+                        <span th:text="${option.percent + '%'}">80%</span>
+                        <span th:if="${option.recommended}" class="badge bg-success ms-2">recommended</span>
+                    </td>
+                    <td th:text="${option.burnGold}">Unavailable</td>
+                    <td th:text="${option.founderReserveAfterBurnGold}">Unavailable</td>
+                    <td th:text="${option.modeledBurnedGoldAfterBurn}">Unavailable</td>
+                    <td th:text="${option.modeledCirculatingGoldAfterBurn}">Unavailable</td>
+                    <td th:text="${option.modeledInflationAfterBurnPercent}">Unavailable</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 class="h5 mt-3">Proof checklist</h3>
+        <ul>
+            <li th:each="item : ${proofChecklist}" th:text="${item}">burnTxHash</li>
+        </ul>
+    </section>
+
+    <section class="mt-4">
+        <h2 class="h4">Jackpot policy</h2>
+        <p>Each V35 mined block is a jackpot ticket. The winner is the minerAddress of the selected eligible block.</p>
+        <p>Sender addresses are never jackpot participants. Jackpot randomness uses delayed future block hashes.</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Window blocks</th>
+                    <th>Reserve per block</th>
+                    <th>Canonical payout</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="period : ${jackpotPeriods}">
+                    <td th:text="${period.name}">daily</td>
+                    <td th:text="${period.windowBlocks}">432</td>
+                    <td th:text="${period.reservePerBlockGold + ' GOLD'}">0.70 GOLD</td>
+                    <td th:text="${period.payoutGold + ' GOLD'}">302.40 GOLD</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>No last winners are shown here until a read-only jackpot status/history endpoint exists.</p>
+    </section>
+
+    <section class="mt-4">
+        <h2 class="h4">Warnings</h2>
+        <ul>
+            <li th:each="warning : ${warnings}" th:text="${warning}">V35 is not active.</li>
+        </ul>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
