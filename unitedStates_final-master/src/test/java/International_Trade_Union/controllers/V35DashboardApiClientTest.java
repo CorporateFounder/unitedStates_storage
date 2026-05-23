@@ -21,12 +21,15 @@ public class V35DashboardApiClientTest {
         V35DashboardApiClient.LiveData data = client.fetch();
 
         assertEquals("http://node.test", data.baseUrl());
-        assertEquals(5, urls.size());
+        assertEquals(8, urls.size());
         assertTrue(urls.contains("http://node.test/v35/protocol"));
         assertTrue(urls.contains("http://node.test/v35/supply"));
         assertTrue(urls.contains("http://node.test/v35/burn"));
         assertTrue(urls.contains("http://node.test/v35/founder"));
         assertTrue(urls.contains("http://node.test/v35/founder/burn-snapshot"));
+        assertTrue(urls.contains("http://node.test/v35/jackpot/status"));
+        assertTrue(urls.contains("http://node.test/v35/jackpot/periods"));
+        assertTrue(urls.contains("http://node.test/v35/jackpot/history"));
         assertTrue(urls.stream().allMatch(url -> url.contains("/v35/")));
         assertTrue(urls.stream().noneMatch(url -> url.contains("/mine") || url.contains("/send")));
     }
@@ -40,6 +43,9 @@ public class V35DashboardApiClientTest {
 
         assertFalse(data.protocolAvailable());
         assertFalse(data.supplyAvailable());
+        assertFalse(data.jackpotStatusAvailable());
+        assertFalse(data.jackpotPeriodsAvailable());
+        assertFalse(data.jackpotHistoryAvailable());
         assertTrue(data.errorMessage().contains("Live V35 data unavailable"));
     }
 

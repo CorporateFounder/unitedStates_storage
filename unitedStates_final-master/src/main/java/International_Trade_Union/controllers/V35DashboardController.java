@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,9 @@ public class V35DashboardController {
         model.addAttribute("liveBurnAvailable", false);
         model.addAttribute("liveFounderAvailable", false);
         model.addAttribute("liveFounderSnapshotAvailable", false);
+        model.addAttribute("liveJackpotStatusAvailable", false);
+        model.addAttribute("liveJackpotPeriodsAvailable", false);
+        model.addAttribute("liveJackpotHistoryAvailable", false);
         model.addAttribute("unavailable", UNAVAILABLE);
         model.addAttribute("totalMintedGold", UNAVAILABLE);
         model.addAttribute("burnedGold", UNAVAILABLE);
@@ -70,6 +74,18 @@ public class V35DashboardController {
         model.addAttribute("burnOptions", burnOptions());
         model.addAttribute("proofChecklist", proofChecklist());
         model.addAttribute("jackpotPeriods", jackpotPeriods());
+        model.addAttribute("jackpotPeriodStatuses", Collections.emptyList());
+        model.addAttribute("jackpotHistoryItems", Collections.emptyList());
+        model.addAttribute("jackpotHistoryMessage", UNAVAILABLE);
+        model.addAttribute("jackpotLiveWarning", "Live jackpot data unavailable.");
+        model.addAttribute("jackpotCurrentHeight", UNAVAILABLE);
+        model.addAttribute("jackpotRandomDelayBlocks", Long.toString(JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS));
+        model.addAttribute("jackpotWinnerSource", "minerAddress");
+        model.addAttribute("jackpotSenderEligibilityAllowed", false);
+        model.addAttribute("jackpotProofNote",
+                "Jackpot proof is available on demand via /v35/jackpot/proof/{periodType}/{periodEnd}; this dashboard does not fetch proof by default.");
+        model.addAttribute("jackpotTicketsNote",
+                "Only minerAddress can win. Sender addresses are never jackpot participants. Address ticket lookups are not fetched by default.");
         model.addAttribute("warnings", warnings());
         overlayLiveData(model, apiClient.fetch());
         return "v35-dashboard";
@@ -87,6 +103,9 @@ public class V35DashboardController {
         model.addAttribute("liveBurnAvailable", liveData.burnAvailable());
         model.addAttribute("liveFounderAvailable", liveData.founderAvailable());
         model.addAttribute("liveFounderSnapshotAvailable", liveData.founderBurnSnapshotAvailable());
+        model.addAttribute("liveJackpotStatusAvailable", liveData.jackpotStatusAvailable());
+        model.addAttribute("liveJackpotPeriodsAvailable", liveData.jackpotPeriodsAvailable());
+        model.addAttribute("liveJackpotHistoryAvailable", liveData.jackpotHistoryAvailable());
 
         if (liveData.protocolAvailable()) {
             overlayProtocol(model, liveData.protocol());
@@ -102,6 +121,15 @@ public class V35DashboardController {
         }
         if (liveData.founderBurnSnapshotAvailable()) {
             overlayFounderBurnSnapshot(model, liveData.founderBurnSnapshot());
+        }
+        if (liveData.jackpotStatusAvailable()) {
+            overlayJackpotStatus(model, liveData.jackpotStatus());
+        }
+        if (liveData.jackpotPeriodsAvailable()) {
+            overlayJackpotPeriods(model, liveData.jackpotPeriods());
+        }
+        if (liveData.jackpotHistoryAvailable()) {
+            overlayJackpotHistory(model, liveData.jackpotHistory());
         }
     }
 
@@ -183,6 +211,56 @@ public class V35DashboardController {
         List<String> liveProofChecklist = V35DashboardApiClient.proofChecklistField(snapshot, "proofChecklist");
         if (!liveProofChecklist.isEmpty()) {
             model.addAttribute("proofChecklist", liveProofChecklist);
+        }
+    }
+
+    private void overlayJackpotStatus(Model model, Map<String, Object> jackpotStatus) {
+        model.addAttribute("jackpotLiveWarning", V35DashboardApiClient.stringField(jackpotStatus, "warning", ""));
+        model.addAttribute("jackpotCurrentHeight", V35DashboardApiClient.stringField(jackpotStatus, "currentHeight", UNAVAILABLE));
+        model.addAttribute("jackpotRandomDelayBlocks", V35DashboardApiClient.stringField(jackpotStatus,
+                "randomDelayBlocks", Long.toString(JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS)));
+        model.addAttribute("jackpotWinnerSource", V35DashboardApiClient.stringField(jackpotStatus,
+                "winnerSource", "minerAddress"));
+        model.addAttribute("jackpotSenderEligibilityAllowed", V35DashboardApiClient.booleanField(jackpotStatus,
+                "senderEligibilityAllowed", false));
+
+        List<Map<String, Object>> liveStatuses = V35DashboardApiClient.listOfMapsField(jackpotStatus, "periods");
+        if (!liveStatuses.isEmpty()) {
+            model.addAttribute("jackpotPeriodStatuses", liveStatuses);
+        }
+    }
+
+    private void overlayJackpotPeriods(Model model, Map<String, Object> jackpotPeriods) {
+        List<Map<String, Object>> livePeriods = V35DashboardApiClient.listOfMapsField(jackpotPeriods, "periods");
+        if (livePeriods.isEmpty()) {
+            return;
+        }
+        List<Map<String, String>> rows = new ArrayList<>();
+        for (Map<String, Object> livePeriod : livePeriods) {
+            Map<String, String> row = new LinkedHashMap<>();
+            row.put("name", V35DashboardApiClient.stringField(livePeriod, "periodName",
+                    V35DashboardApiClient.stringField(livePeriod, "periodType", UNAVAILABLE)));
+            row.put("windowBlocks", V35DashboardApiClient.stringField(livePeriod, "windowBlocks", UNAVAILABLE));
+            row.put("reservePerBlockGold", V35DashboardApiClient.stringField(livePeriod,
+                    "reservePerBlockGold", UNAVAILABLE));
+            row.put("payoutGold", V35DashboardApiClient.stringField(livePeriod,
+                    "canonicalPayoutGold", UNAVAILABLE));
+            rows.add(row);
+        }
+        model.addAttribute("jackpotPeriods", rows);
+    }
+
+    private void overlayJackpotHistory(Model model, Map<String, Object> jackpotHistory) {
+        List<Map<String, Object>> liveHistory = V35DashboardApiClient.listOfMapsField(jackpotHistory, "items");
+        model.addAttribute("jackpotHistoryItems", liveHistory);
+        if (liveHistory.isEmpty()) {
+            model.addAttribute("jackpotHistoryMessage", "No paid V35 jackpot history yet");
+        } else {
+            model.addAttribute("jackpotHistoryMessage", "");
+        }
+        String warning = V35DashboardApiClient.stringField(jackpotHistory, "warning", "");
+        if (!warning.isEmpty() && String.valueOf(model.asMap().get("jackpotLiveWarning")).isEmpty()) {
+            model.addAttribute("jackpotLiveWarning", warning);
         }
     }
 

@@ -33,6 +33,9 @@
                 <tr><th>Burn endpoint</th><td th:text="${liveBurnAvailable}">false</td></tr>
                 <tr><th>Founder endpoint</th><td th:text="${liveFounderAvailable}">false</td></tr>
                 <tr><th>Founder snapshot endpoint</th><td th:text="${liveFounderSnapshotAvailable}">false</td></tr>
+                <tr><th>Jackpot status endpoint</th><td th:text="${liveJackpotStatusAvailable}">false</td></tr>
+                <tr><th>Jackpot periods endpoint</th><td th:text="${liveJackpotPeriodsAvailable}">false</td></tr>
+                <tr><th>Jackpot history endpoint</th><td th:text="${liveJackpotHistoryAvailable}">false</td></tr>
                 </tbody>
             </table>
         </div>
@@ -137,6 +140,61 @@
         <h2 class="h4">Jackpot policy</h2>
         <p>Each V35 mined block is a jackpot ticket. The winner is the minerAddress of the selected eligible block.</p>
         <p>Sender addresses are never jackpot participants. Jackpot randomness uses delayed future block hashes.</p>
+
+        <h3 class="h5 mt-3">Live jackpot status</h3>
+        <p th:if="${jackpotLiveWarning != null and !#strings.isEmpty(jackpotLiveWarning)}" class="text-muted" th:text="${jackpotLiveWarning}">
+            Live jackpot data unavailable.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <tbody>
+                <tr><th>Status endpoint</th><td th:text="${liveJackpotStatusAvailable}">false</td></tr>
+                <tr><th>Periods endpoint</th><td th:text="${liveJackpotPeriodsAvailable}">false</td></tr>
+                <tr><th>History endpoint</th><td th:text="${liveJackpotHistoryAvailable}">false</td></tr>
+                <tr><th>Current height</th><td th:text="${jackpotCurrentHeight}">Unavailable</td></tr>
+                <tr><th>Future hash delay</th><td th:text="${jackpotRandomDelayBlocks + ' blocks'}">60 blocks</td></tr>
+                <tr><th>Winner source</th><td th:text="${jackpotWinnerSource}">minerAddress</td></tr>
+                <tr><th>Sender eligibility allowed</th><td th:text="${jackpotSenderEligibilityAllowed}">false</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 class="h5 mt-3">Live period status</h3>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Window blocks</th>
+                    <th>Canonical payout</th>
+                    <th>Current start</th>
+                    <th>Current end</th>
+                    <th>Maturity block</th>
+                    <th>Mature</th>
+                    <th>Tickets</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${jackpotPeriodStatuses == null or #lists.isEmpty(jackpotPeriodStatuses)}">
+                    <td colspan="9">Live jackpot data unavailable</td>
+                </tr>
+                <tr th:each="period : ${jackpotPeriodStatuses}">
+                    <td th:text="${period.periodType}">DAILY</td>
+                    <td th:text="${period.windowBlocks}">432</td>
+                    <td th:text="${period.canonicalPayoutGold + ' GOLD'}">302.40 GOLD</td>
+                    <td th:text="${period.currentPeriodStart ?: 'Unavailable'}">Unavailable</td>
+                    <td th:text="${period.currentPeriodEnd ?: 'Unavailable'}">Unavailable</td>
+                    <td th:text="${period.maturityBlock ?: 'Unavailable'}">Unavailable</td>
+                    <td th:text="${period.mature}">false</td>
+                    <td th:text="${period.estimatedTickets ?: 'Unavailable'}">0</td>
+                    <td th:text="${period.status ?: 'Unavailable'}">DISABLED</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 class="h5 mt-3">Canonical payout table</h3>
         <div class="table-responsive">
             <table class="table table-sm table-bordered align-middle">
                 <thead>
@@ -157,7 +215,40 @@
                 </tbody>
             </table>
         </div>
-        <p>No last winners are shown here until a read-only jackpot status/history endpoint exists.</p>
+
+        <h3 class="h5 mt-3">Jackpot history</h3>
+        <p th:if="${jackpotHistoryMessage != null and !#strings.isEmpty(jackpotHistoryMessage)}" th:text="${jackpotHistoryMessage}">
+            No paid V35 jackpot history yet
+        </p>
+        <div class="table-responsive" th:if="${jackpotHistoryItems != null and !#lists.isEmpty(jackpotHistoryItems)}">
+            <table class="table table-sm table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Period start</th>
+                    <th>Period end</th>
+                    <th>Payout block</th>
+                    <th>Winner minerAddress</th>
+                    <th>Payout</th>
+                    <th>Proof status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${jackpotHistoryItems}">
+                    <td th:text="${item.periodType}">DAILY</td>
+                    <td th:text="${item.periodStart}">0</td>
+                    <td th:text="${item.periodEnd}">431</td>
+                    <td th:text="${item.payoutBlockIndex}">492</td>
+                    <td class="text-break" th:text="${item.winnerMinerAddress}">miner</td>
+                    <td th:text="${item.payoutGold + ' GOLD'}">302.40 GOLD</td>
+                    <td th:text="${item.proofStatus}">VALID</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p th:text="${jackpotTicketsNote}">Only minerAddress can win. Sender addresses are never jackpot participants.</p>
+        <p th:text="${jackpotProofNote}">Jackpot proof is available on demand via /v35/jackpot/proof/{periodType}/{periodEnd}.</p>
     </section>
 
     <section class="mt-4">

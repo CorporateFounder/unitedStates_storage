@@ -23,6 +23,9 @@ public class V35DashboardApiClient {
     private static final String BURN_PATH = "/v35/burn";
     private static final String FOUNDER_PATH = "/v35/founder";
     private static final String FOUNDER_BURN_SNAPSHOT_PATH = "/v35/founder/burn-snapshot";
+    private static final String JACKPOT_STATUS_PATH = "/v35/jackpot/status";
+    private static final String JACKPOT_PERIODS_PATH = "/v35/jackpot/periods";
+    private static final String JACKPOT_HISTORY_PATH = "/v35/jackpot/history";
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<Map<String, Object>>() {
     };
 
@@ -52,6 +55,9 @@ public class V35DashboardApiClient {
         data.burn = fetchMap(data, baseUrl, BURN_PATH);
         data.founder = fetchMap(data, baseUrl, FOUNDER_PATH);
         data.founderBurnSnapshot = fetchMap(data, baseUrl, FOUNDER_BURN_SNAPSHOT_PATH);
+        data.jackpotStatus = fetchMap(data, baseUrl, JACKPOT_STATUS_PATH);
+        data.jackpotPeriods = fetchMap(data, baseUrl, JACKPOT_PERIODS_PATH);
+        data.jackpotHistory = fetchMap(data, baseUrl, JACKPOT_HISTORY_PATH);
         return data;
     }
 
@@ -195,6 +201,9 @@ public class V35DashboardApiClient {
         private Map<String, Object> burn = Collections.emptyMap();
         private Map<String, Object> founder = Collections.emptyMap();
         private Map<String, Object> founderBurnSnapshot = Collections.emptyMap();
+        private Map<String, Object> jackpotStatus = Collections.emptyMap();
+        private Map<String, Object> jackpotPeriods = Collections.emptyMap();
+        private Map<String, Object> jackpotHistory = Collections.emptyMap();
 
         public LiveData(String baseUrl) {
             this.baseUrl = baseUrl == null ? "" : baseUrl;
@@ -212,12 +221,28 @@ public class V35DashboardApiClient {
                                   Map<String, Object> burn,
                                   Map<String, Object> founder,
                                   Map<String, Object> founderBurnSnapshot) {
+            return of(baseUrl, protocol, supply, burn, founder, founderBurnSnapshot,
+                    Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
+        }
+
+        public static LiveData of(String baseUrl,
+                                  Map<String, Object> protocol,
+                                  Map<String, Object> supply,
+                                  Map<String, Object> burn,
+                                  Map<String, Object> founder,
+                                  Map<String, Object> founderBurnSnapshot,
+                                  Map<String, Object> jackpotStatus,
+                                  Map<String, Object> jackpotPeriods,
+                                  Map<String, Object> jackpotHistory) {
             LiveData data = new LiveData(baseUrl);
             data.protocol = safeMap(protocol);
             data.supply = safeMap(supply);
             data.burn = safeMap(burn);
             data.founder = safeMap(founder);
             data.founderBurnSnapshot = safeMap(founderBurnSnapshot);
+            data.jackpotStatus = safeMap(jackpotStatus);
+            data.jackpotPeriods = safeMap(jackpotPeriods);
+            data.jackpotHistory = safeMap(jackpotHistory);
             return data;
         }
 
@@ -255,6 +280,18 @@ public class V35DashboardApiClient {
             return !founderBurnSnapshot.isEmpty();
         }
 
+        public boolean jackpotStatusAvailable() {
+            return !jackpotStatus.isEmpty();
+        }
+
+        public boolean jackpotPeriodsAvailable() {
+            return !jackpotPeriods.isEmpty();
+        }
+
+        public boolean jackpotHistoryAvailable() {
+            return !jackpotHistory.isEmpty();
+        }
+
         public String errorMessage() {
             if (errors.isEmpty()) {
                 return "";
@@ -280,6 +317,18 @@ public class V35DashboardApiClient {
 
         public Map<String, Object> founderBurnSnapshot() {
             return founderBurnSnapshot;
+        }
+
+        public Map<String, Object> jackpotStatus() {
+            return jackpotStatus;
+        }
+
+        public Map<String, Object> jackpotPeriods() {
+            return jackpotPeriods;
+        }
+
+        public Map<String, Object> jackpotHistory() {
+            return jackpotHistory;
         }
     }
 }

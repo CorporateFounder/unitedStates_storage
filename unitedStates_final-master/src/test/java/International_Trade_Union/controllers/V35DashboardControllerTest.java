@@ -33,6 +33,9 @@ public class V35DashboardControllerTest {
         assertEquals(false, model.get("isBurnAddressPlaceholder"));
         assertEquals(false, model.get("liveProtocolAvailable"));
         assertEquals(false, model.get("liveSupplyAvailable"));
+        assertEquals(false, model.get("liveJackpotStatusAvailable"));
+        assertEquals(false, model.get("liveJackpotPeriodsAvailable"));
+        assertEquals(false, model.get("liveJackpotHistoryAvailable"));
     }
 
     @Test
@@ -54,6 +57,8 @@ public class V35DashboardControllerTest {
         assertEquals("Unavailable", model.get("burnedGold"));
         assertEquals("Unavailable", model.get("circulatingGold"));
         assertTrue(String.valueOf(model.get("liveApiError")).contains("Live V35 data unavailable"));
+        assertEquals("Live jackpot data unavailable.", model.get("jackpotLiveWarning"));
+        assertEquals("Unavailable", model.get("jackpotHistoryMessage"));
     }
 
     @Test
@@ -92,6 +97,9 @@ public class V35DashboardControllerTest {
         assertEquals(true, model.get("liveSupplyAvailable"));
         assertEquals(true, model.get("liveBurnAvailable"));
         assertEquals(true, model.get("liveFounderSnapshotAvailable"));
+        assertEquals(true, model.get("liveJackpotStatusAvailable"));
+        assertEquals(true, model.get("liveJackpotPeriodsAvailable"));
+        assertEquals(true, model.get("liveJackpotHistoryAvailable"));
         assertEquals("http://node.test", model.get("liveApiBaseUrl"));
         assertEquals(false, model.get("v35Active"));
         assertEquals("Long.MAX_VALUE", model.get("v35ForkIndex"));
@@ -112,6 +120,21 @@ public class V35DashboardControllerTest {
 
         List<String> checklist = proofChecklist(model);
         assertTrue(checklist.stream().anyMatch(value -> value.contains("burnTxHash: PENDING_MANUAL_BURN")));
+
+        assertEquals("V35 jackpot policy is configured but not active yet.", model.get("jackpotLiveWarning"));
+        assertEquals("-1", model.get("jackpotCurrentHeight"));
+        assertEquals("60", model.get("jackpotRandomDelayBlocks"));
+        assertEquals("minerAddress", model.get("jackpotWinnerSource"));
+        assertEquals(false, model.get("jackpotSenderEligibilityAllowed"));
+        assertEquals("No paid V35 jackpot history yet", model.get("jackpotHistoryMessage"));
+
+        List<Map<String, Object>> jackpotStatuses = jackpotPeriodStatuses(model);
+        assertEquals(1, jackpotStatuses.size());
+        assertEquals("DAILY", jackpotStatuses.get(0).get("periodType"));
+        assertEquals("DISABLED", jackpotStatuses.get(0).get("status"));
+
+        List<Map<String, Object>> jackpotHistory = jackpotHistoryItems(model);
+        assertEquals(0, jackpotHistory.size());
     }
 
     @Test
@@ -141,7 +164,12 @@ public class V35DashboardControllerTest {
         assertTrue(template.contains("Live V35 data unavailable"));
         assertTrue(template.contains("BURN_ADDRESS is a protocol sink"));
         assertTrue(template.contains("Manual difficulty is legacy-only after V35."));
-        assertTrue(template.contains("No last winners are shown here until a read-only jackpot status/history endpoint exists."));
+        assertTrue(template.contains("Live jackpot status"));
+        assertTrue(template.contains("Live jackpot data unavailable"));
+        assertTrue(template.contains("No paid V35 jackpot history yet"));
+        assertTrue(template.contains("Only minerAddress can win."));
+        assertTrue(template.contains("Sender addresses are never jackpot participants."));
+        assertTrue(template.contains("/v35/jackpot/proof/{periodType}/{periodEnd}"));
         assertTrue(header.contains("/v35-dashboard"));
         assertTrue(header.contains("V35 dashboard"));
     }
@@ -159,6 +187,16 @@ public class V35DashboardControllerTest {
     @SuppressWarnings("unchecked")
     private static List<Map<String, String>> jackpotPeriods(ExtendedModelMap model) {
         return (List<Map<String, String>>) model.get("jackpotPeriods");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> jackpotPeriodStatuses(ExtendedModelMap model) {
+        return (List<Map<String, Object>>) model.get("jackpotPeriodStatuses");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> jackpotHistoryItems(ExtendedModelMap model) {
+        return (List<Map<String, Object>>) model.get("jackpotHistoryItems");
     }
 
     private static V35DashboardController controllerWithUnavailableLiveData() {
@@ -229,7 +267,50 @@ public class V35DashboardControllerTest {
                 ),
                 "note", "Burn options are modeled from the snapshot founder balance."
         );
-        return V35DashboardApiClient.LiveData.of("http://node.test", protocol, supply, burn, founder, snapshot);
+        Map<String, Object> jackpotStatus = map(
+                "v35Active", false,
+                "v35ForkIndex", "Long.MAX_VALUE",
+                "currentHeight", -1,
+                "randomDelayBlocks", 60,
+                "winnerSource", "minerAddress",
+                "senderEligibilityAllowed", false,
+                "warning", "V35 jackpot policy is configured but not active yet.",
+                "periods", jackpotStatusRows()
+        );
+        Map<String, Object> jackpotPeriods = map(
+                "exactSlotOnly", true,
+                "missedPayoutsPaidLater", false,
+                "periods", jackpotPeriodRows()
+        );
+        Map<String, Object> jackpotHistory = map(
+                "status", "DISABLED",
+                "warning", "V35 jackpot policy is configured but not active yet.",
+                "items", new ArrayList<>()
+        );
+        return V35DashboardApiClient.LiveData.of("http://node.test", protocol, supply, burn, founder, snapshot,
+                jackpotStatus, jackpotPeriods, jackpotHistory);
+    }
+
+    private static List<Map<String, Object>> jackpotStatusRows() {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        rows.add(map("periodType", "DAILY", "windowBlocks", 432,
+                "canonicalPayoutGold", "302.40",
+                "currentPeriodStart", null,
+                "currentPeriodEnd", null,
+                "maturityBlock", null,
+                "mature", false,
+                "estimatedTickets", 0,
+                "status", "DISABLED"));
+        return rows;
+    }
+
+    private static List<Map<String, Object>> jackpotPeriodRows() {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        rows.add(map("periodType", "DAILY", "periodName", "daily", "windowBlocks", 432,
+                "reservePerBlockGold", "0.70", "canonicalPayoutGold", "302.40"));
+        rows.add(map("periodType", "WEEKLY", "periodName", "weekly", "windowBlocks", 3024,
+                "reservePerBlockGold", "0.40", "canonicalPayoutGold", "1209.60"));
+        return rows;
     }
 
     private static List<Map<String, Object>> burnOptionRows() {
