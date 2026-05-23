@@ -8,6 +8,7 @@ import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.Account;
 import International_Trade_Union.model.Mining;
+import International_Trade_Union.protocol.v35.BurnAddressPolicy;
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.utils.*;
 import International_Trade_Union.utils.base.Base;
@@ -119,6 +120,10 @@ public class AllTransactions {
             double digitalDollar = dtoTransaction.getDigitalDollar();
             double digitalStock = dtoTransaction.getDigitalStockBalance();
             double digitalBonus = dtoTransaction.getBonusForMiner();
+            if (BurnAddressPolicy.isSpendForbidden(BasisController.getBlockchainSize(), dtoTransaction.getSender())) {
+                System.out.println("V35 burn address cannot spend in transaction pool");
+                continue;
+            }
             if(dtoTransaction.verify() == false){
                 System.out.println("wrong transaction: " + dtoTransaction.verify());
                 continue;
@@ -167,6 +172,10 @@ public class AllTransactions {
         // Создаём EnumSet из всех возможных значений VoteEnum
         EnumSet<VoteEnum> voteSet = EnumSet.allOf(VoteEnum.class);
         for (DtoTransaction transaction : transactions) {
+            if (BurnAddressPolicy.isSpendForbidden(BasisController.getBlockchainSize(), transaction.getSender())) {
+                System.out.println("V35 burn address cannot spend in transaction pool balance path");
+                continue;
+            }
             if(!transaction.verify()){
                 System.out.println("the transaction has an incorrect signature: " + transaction);
                 continue;
