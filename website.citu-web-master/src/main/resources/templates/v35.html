@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 overview</h1>
+
+    <section class="alert alert-warning">
+        <h2>V35 is not active yet</h2>
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>Current public status: <strong th:text="${v35Active}"></strong>. Fork index: <strong th:text="${v35ForkIndex}"></strong>.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Protocol model</h2>
+        <ul>
+            <li>Founder reward removed: 0 GOLD after V35.</li>
+            <li>New reward model: 8 GOLD/block = 6 GOLD miner + 2 GOLD jackpot + 0 founder.</li>
+            <li>Block time: 200 sec/block.</li>
+            <li>Blocks per day: 432 blocks/day.</li>
+            <li>Bitcoin-like PoW: hash &lt;= target.</li>
+            <li>Stronger chain after V35 is selected by cumulativeWork chain selection.</li>
+            <li>Burn address = <strong th:text="${burnAddress}"></strong>.</li>
+        </ul>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Read-only public pages</h2>
+        <p>These pages explain V35 policy only. They do not activate V35, do not create a burn transaction, and do not mutate balances.</p>
+        <p>
+            <a href="/v35/tokenomics">Tokenomics</a> |
+            <a href="/v35/burn">Burn policy</a> |
+            <a href="/v35/jackpot">Jackpot</a> |
+            <a href="/v35/mining">Mining</a> |
+            <a href="/v35/faq">FAQ</a>
+        </p>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>

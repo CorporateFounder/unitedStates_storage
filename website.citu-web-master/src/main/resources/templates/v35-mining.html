@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 mining</h1>
+
+    <section class="alert alert-warning">
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>Manual difficulty is legacy-only after V35.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Reward and proof of work</h2>
+        <ul>
+            <li>One block reward = 6 GOLD instant + jackpot ticket.</li>
+            <li>No founder reward after V35.</li>
+            <li>Bitcoin-like target difficulty: hash &lt;= target.</li>
+            <li>Emergency difficulty easing is part of the V35 safety model.</li>
+            <li>cumulativeWork decides stronger chain after V35.</li>
+            <li>Block time target: 200 sec/block and 432 blocks/day.</li>
+        </ul>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>

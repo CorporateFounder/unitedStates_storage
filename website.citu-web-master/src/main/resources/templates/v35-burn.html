@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 burn policy and proof</h1>
+
+    <section class="alert alert-warning">
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>The founder burn has not happened until a burn transaction hash and burn block are published.</p>
+        <p>Modeled founder burn is not actual burned supply.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Burn address policy</h2>
+        <ul>
+            <li>Burn address: <strong th:text="${burnAddress}"></strong>.</li>
+            <li>BURN_ADDRESS is a protocol sink.</li>
+            <li>Sending TO BURN_ADDRESS is allowed.</li>
+            <li>Spending FROM BURN_ADDRESS is blocked after V35 by consensus policy.</li>
+            <li>Founder burn is planned manually before V35 activation.</li>
+            <li>Recommended founder burn: 80%.</li>
+        </ul>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Public proof checklist</h2>
+        <ul>
+            <li>founder address: <span th:text="${founderAddress}"></span></li>
+            <li>burn address: <span th:text="${burnAddress}"></span></li>
+            <li>snapshot height/hash</li>
+            <li>burn amount</li>
+            <li>burn tx hash</li>
+            <li>burn block index/hash</li>
+            <li>after-burn founder balance</li>
+            <li>burned/circulating supply</li>
+        </ul>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 jackpot mining</h1>
+
+    <section class="alert alert-warning">
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>No live winners are shown here because no read-only jackpot winner endpoint exists yet.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Eligibility and randomness</h2>
+        <ul>
+            <li>Every V35 mined block is a jackpot ticket.</li>
+            <li>Winner is minerAddress of selected eligible block.</li>
+            <li>Sender addresses are never jackpot participants.</li>
+            <li>Randomness is deterministic and based on delayed future block hashes.</li>
+            <li>No manual winner selection is used.</li>
+        </ul>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Jackpot periods and payouts</h2>
+        <table class="table table-bordered">
+            <thead>
+            <tr><th>Period</th><th>Window</th><th>Payout</th></tr>
+            </thead>
+            <tbody>
+            <tr><td>Daily</td><td>432 blocks</td><td>302.40 GOLD</td></tr>
+            <tr><td>Weekly</td><td>3024 blocks</td><td>1209.60 GOLD</td></tr>
+            <tr><td>Monthly</td><td>12960 blocks</td><td>3888.00 GOLD</td></tr>
+            <tr><td>Quarterly</td><td>38880 blocks</td><td>9720.00 GOLD</td></tr>
+            <tr><td>Half-year</td><td>78624 blocks</td><td>15724.80 GOLD</td></tr>
+            <tr><td>Yearly</td><td>157680 blocks</td><td>23652.00 GOLD</td></tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>
