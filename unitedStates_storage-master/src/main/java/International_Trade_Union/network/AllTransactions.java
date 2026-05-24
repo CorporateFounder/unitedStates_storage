@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.LongSupplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,10 +44,18 @@ public class AllTransactions {
     private final List<DtoTransaction> instance = new CopyOnWriteArrayList<>();
 
     private final BlockService blockService;
+    private final LongSupplier blockchainSizeSupplier;
+    private final LongSupplier v35ForkIndexSupplier;
 
     @Autowired
     public AllTransactions(BlockService blockService) {
+        this(blockService, BasisController::getBlockchainSize, () -> Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    AllTransactions(BlockService blockService, LongSupplier blockchainSizeSupplier, LongSupplier v35ForkIndexSupplier) {
         this.blockService = blockService;
+        this.blockchainSizeSupplier = blockchainSizeSupplier;
+        this.v35ForkIndexSupplier = v35ForkIndexSupplier;
     }
 
     public List<DtoTransaction> getTransactions() {
@@ -120,7 +129,7 @@ public class AllTransactions {
             double digitalDollar = dtoTransaction.getDigitalDollar();
             double digitalStock = dtoTransaction.getDigitalStockBalance();
             double digitalBonus = dtoTransaction.getBonusForMiner();
-            if (BurnAddressPolicy.isSpendForbidden(BasisController.getBlockchainSize(), dtoTransaction.getSender())) {
+            if (BurnAddressPolicy.isSpendForbidden(blockchainSizeSupplier.getAsLong(), dtoTransaction.getSender(), v35ForkIndexSupplier.getAsLong())) {
                 System.out.println("V35 burn address cannot spend in transaction pool");
                 continue;
             }
@@ -162,7 +171,7 @@ public class AllTransactions {
         // Проверка баланса и других логических проверок
         Map<String, Account> balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findByDtoAccounts(transactions));
 
-        return UtilsUse.balanceTransaction(validTransactions, UtilsUse.balancesClone(balances), BasisController.getBlockchainSize()-1);
+        return UtilsUse.balanceTransaction(validTransactions, UtilsUse.balancesClone(balances), blockchainSizeSupplier.getAsLong()-1);
 
     }
 
@@ -172,7 +181,7 @@ public class AllTransactions {
         // Создаём EnumSet из всех возможных значений VoteEnum
         EnumSet<VoteEnum> voteSet = EnumSet.allOf(VoteEnum.class);
         for (DtoTransaction transaction : transactions) {
-            if (BurnAddressPolicy.isSpendForbidden(BasisController.getBlockchainSize(), transaction.getSender())) {
+            if (BurnAddressPolicy.isSpendForbidden(blockchainSizeSupplier.getAsLong(), transaction.getSender(), v35ForkIndexSupplier.getAsLong())) {
                 System.out.println("V35 burn address cannot spend in transaction pool balance path");
                 continue;
             }
