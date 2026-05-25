@@ -83,6 +83,8 @@ class V35PublicControllerTest {
         String content = Files.readString(template("v35-founder-burn-proof.html"));
 
         assertTrue(content.contains("Founder burn is planned, not executed yet"));
+        assertTrue(content.contains("Optional live API status"));
+        assertTrue(content.contains("Live values when available"));
         assertTrue(content.contains("The founder burn has not happened yet"));
         assertTrue(content.contains("nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43"));
         assertTrue(content.contains("BURN_ADDRESS"));
@@ -96,8 +98,87 @@ class V35PublicControllerTest {
         assertTrue(content.contains("/v35/burn"));
         assertTrue(content.contains("/v35/founder"));
         assertTrue(content.contains("/v35/founder/burn-snapshot"));
+        assertTrue(content.contains("Modeled/recommended burn is not actual burned supply"));
         assertTrue(content.contains("not financial advice"));
         assertTrue(content.contains("Do not treat Pending fields as a real burn transaction"));
+    }
+
+    @Test
+    void founderBurnProofFallsBackWhenApiUnavailable() {
+        V35FounderBurnProofApiClient client = new V35FounderBurnProofApiClient(
+                (url, timeoutMillis) -> {
+                    throw new IOException("offline");
+                },
+                () -> "http://node.example"
+        );
+        V35PublicController fallbackController = new V35PublicController(client);
+        ExtendedModelMap model = new ExtendedModelMap();
+
+        assertEquals("v35-founder-burn-proof", fallbackController.founderBurnProof(model));
+        assertEquals("Unavailable", model.get("liveApiStatus"));
+        assertEquals("Unavailable", model.get("supplyApiStatus"));
+        assertEquals("Unavailable", model.get("burnApiStatus"));
+        assertEquals("Unavailable", model.get("founderApiStatus"));
+        assertEquals("Unavailable", model.get("snapshotApiStatus"));
+        assertEquals("Planned / Pending / Not executed yet", model.get("currentBurnStatus"));
+        assertEquals("Unavailable", model.get("liveTotalMintedGold"));
+        assertEquals("Unavailable", model.get("liveBurnedGold"));
+        assertEquals("false", model.get("liveV35Active"));
+        assertEquals("Long.MAX_VALUE", model.get("liveV35ForkIndex"));
+    }
+
+    @Test
+    void founderBurnProofMapsOptionalLiveApiDataWithoutTreatingModeledBurnAsActual() {
+        V35FounderBurnProofApiClient client = new V35FounderBurnProofApiClient(
+                (url, timeoutMillis) -> {
+                    if (url.endsWith(V35FounderBurnProofApiClient.SUPPLY_PATH)) {
+                        return "{\"totalMintedGold\":\"100.00\",\"burnedGold\":\"0.00\",\"circulatingGold\":\"100.00\",\"founderReserveGold\":\"80.00\",\"jackpotPaidGold\":\"0.00\",\"annualEmissionGold\":\"1261440.00\",\"v35Active\":false,\"v35ForkIndex\":\"Long.MAX_VALUE\"}";
+                    }
+                    if (url.endsWith(V35FounderBurnProofApiClient.BURN_PATH)) {
+                        return "{\"burnAddress\":\"BURN_ADDRESS\",\"burnTransactionCreated\":false,\"actualBurnedGold\":\"0.00\",\"burnedGold\":\"0.00\",\"v35Active\":false,\"v35ForkIndex\":\"Long.MAX_VALUE\"}";
+                    }
+                    if (url.endsWith(V35FounderBurnProofApiClient.FOUNDER_PATH)) {
+                        return "{\"founderAddress\":\"nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43\",\"founderReserveGold\":\"80.00\",\"modeledBurnGold\":\"64.00\",\"actualBurnedGold\":\"0.00\"}";
+                    }
+                    if (url.endsWith(V35FounderBurnProofApiClient.BURN_SNAPSHOT_PATH)) {
+                        return "{\"snapshotHeight\":\"123\",\"snapshotBlockHash\":\"abc\",\"founderBalanceGold\":\"80.00\",\"recommendedBurnPercent\":\"80\",\"burnTransactionCreated\":false}";
+                    }
+                    throw new IOException("unexpected url");
+                },
+                () -> "http://node.example/"
+        );
+        V35PublicController liveController = new V35PublicController(client);
+        ExtendedModelMap model = new ExtendedModelMap();
+
+        assertEquals("v35-founder-burn-proof", liveController.founderBurnProof(model));
+        assertEquals("Partial / available", model.get("liveApiStatus"));
+        assertEquals("Available", model.get("supplyApiStatus"));
+        assertEquals("Available", model.get("burnApiStatus"));
+        assertEquals("Available", model.get("founderApiStatus"));
+        assertEquals("Available", model.get("snapshotApiStatus"));
+        assertEquals("false", model.get("liveV35Active"));
+        assertEquals("0.00", model.get("liveBurnedGold"));
+        assertEquals("100.00", model.get("liveCirculatingGold"));
+        assertEquals("64.00", model.get("liveModeledBurnGold"));
+        assertEquals("false", model.get("liveBurnTransactionCreated"));
+        assertEquals("123", model.get("liveSnapshotHeight"));
+        assertEquals("abc", model.get("liveSnapshotBlockHash"));
+        assertEquals("Planned / Pending / Not executed yet", model.get("currentBurnStatus"));
+    }
+
+    @Test
+    void founderBurnProofHandlesMalformedApiDataSafely() {
+        V35FounderBurnProofApiClient client = new V35FounderBurnProofApiClient(
+                (url, timeoutMillis) -> "{not-json",
+                () -> "http://node.example"
+        );
+        V35PublicController malformedController = new V35PublicController(client);
+        ExtendedModelMap model = new ExtendedModelMap();
+
+        assertEquals("v35-founder-burn-proof", malformedController.founderBurnProof(model));
+        assertEquals("Unavailable", model.get("liveApiStatus"));
+        assertEquals("Unavailable", model.get("liveTotalMintedGold"));
+        assertEquals("Planned / Pending / Not executed yet", model.get("currentBurnStatus"));
     }
 
     @Test

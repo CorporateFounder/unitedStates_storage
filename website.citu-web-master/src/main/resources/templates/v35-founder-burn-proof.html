@@ -34,6 +34,49 @@
         <p>Recommended burn is 80% of snapshot founder balance.</p>
     </section>
 
+    <section class="alert alert-primary">
+        <h2>Optional live API status</h2>
+        <p>Live data is optional. If the API is unavailable, this page remains a static proof template.</p>
+        <p>Burn status: <strong th:text="${currentBurnStatus}">Planned / Pending / Not executed yet</strong>.</p>
+        <p>API source: <span th:text="${liveApiBaseUrl}">Unavailable</span></p>
+        <p>API status: <strong th:text="${liveApiStatus}">Unavailable</strong></p>
+        <p th:text="${liveApiWarning}">Live V35 data unavailable. Static proof template remains visible.</p>
+        <table class="table table-bordered">
+            <tbody>
+            <tr><th>/v35/supply</th><td th:text="${supplyApiStatus}">Unavailable</td></tr>
+            <tr><th>/v35/burn</th><td th:text="${burnApiStatus}">Unavailable</td></tr>
+            <tr><th>/v35/founder</th><td th:text="${founderApiStatus}">Unavailable</td></tr>
+            <tr><th>/v35/founder/burn-snapshot</th><td th:text="${snapshotApiStatus}">Unavailable</td></tr>
+            <tr><th>Current V35 active</th><td th:text="${liveV35Active}">false</td></tr>
+            <tr><th>Current V35 fork index</th><td th:text="${liveV35ForkIndex}">Long.MAX_VALUE</td></tr>
+            </tbody>
+        </table>
+        <p>Burn not executed yet unless real transaction proof is published. Pending proof fields below remain pending.</p>
+    </section>
+
+    <section class="alert alert-light border">
+        <h2>Live values when available</h2>
+        <p>Actual live values are separate from modeled/recommended burn values. Modeled/recommended burn is not actual burned supply.</p>
+        <table class="table table-bordered">
+            <tbody>
+            <tr><th>Actual total minted</th><td th:text="${liveTotalMintedGold}">Unavailable</td></tr>
+            <tr><th>Actual burned supply</th><td th:text="${liveBurnedGold}">Unavailable</td></tr>
+            <tr><th>Actual circulating supply</th><td th:text="${liveCirculatingGold}">Unavailable</td></tr>
+            <tr><th>Actual founder reserve</th><td th:text="${liveFounderReserveGold}">Unavailable</td></tr>
+            <tr><th>Actual jackpot paid</th><td th:text="${liveJackpotPaidGold}">Unavailable</td></tr>
+            <tr><th>Annual emission</th><td th:text="${liveAnnualEmissionGold}">1,261,440 GOLD/year</td></tr>
+            <tr><th>Live burn address</th><td th:text="${liveBurnAddress}">BURN_ADDRESS</td></tr>
+            <tr><th>Live founder address</th><td th:text="${liveFounderAddress}">nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</td></tr>
+            <tr><th>Burn transaction created by API</th><td th:text="${liveBurnTransactionCreated}">false</td></tr>
+            <tr><th>Snapshot height from API</th><td th:text="${liveSnapshotHeight}">Unavailable</td></tr>
+            <tr><th>Snapshot block hash from API</th><td th:text="${liveSnapshotBlockHash}">Unavailable</td></tr>
+            <tr><th>Founder balance from snapshot API</th><td th:text="${liveFounderBalanceGold}">Unavailable</td></tr>
+            <tr><th>Recommended burn percent from snapshot API</th><td th:text="${liveRecommendedBurnPercent}">80</td></tr>
+            <tr><th>Modeled 80% burn amount</th><td th:text="${liveModeledBurnGold}">Unavailable</td></tr>
+            </tbody>
+        </table>
+    </section>
+
     <section class="alert alert-secondary">
         <h2>Snapshot proof</h2>
         <p>These fields are pending. They must be filled only after the public snapshot is taken.</p>
