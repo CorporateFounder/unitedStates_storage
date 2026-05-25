@@ -33,6 +33,7 @@ class V35PublicControllerTest {
 
         assertEquals("v35-tokenomics", controller.tokenomics(new ExtendedModelMap()));
         assertEquals("v35-burn", controller.burn(new ExtendedModelMap()));
+        assertEquals("v35-founder-burn-proof", controller.founderBurnProof(new ExtendedModelMap()));
         assertEquals("v35-jackpot", controller.jackpot(new ExtendedModelMap()));
         assertEquals("v35-mining", controller.mining(new ExtendedModelMap()));
         assertEquals("v35-faq", controller.faq(new ExtendedModelMap()));
@@ -44,6 +45,7 @@ class V35PublicControllerTest {
                 "v35.html",
                 "v35-tokenomics.html",
                 "v35-burn.html",
+                "v35-founder-burn-proof.html",
                 "v35-jackpot.html",
                 "v35-mining.html",
                 "v35-faq.html"
@@ -77,12 +79,35 @@ class V35PublicControllerTest {
     }
 
     @Test
+    void founderBurnProofPageUsesOnlyPendingProofValues() throws IOException {
+        String content = Files.readString(template("v35-founder-burn-proof.html"));
+
+        assertTrue(content.contains("Founder burn is planned, not executed yet"));
+        assertTrue(content.contains("The founder burn has not happened yet"));
+        assertTrue(content.contains("nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43"));
+        assertTrue(content.contains("BURN_ADDRESS"));
+        assertTrue(content.contains("80% of snapshot founder balance"));
+        assertTrue(content.contains("Founder reward after V35"));
+        assertTrue(content.contains("Fork activation is by block index, not date alone"));
+        assertTrue(content.contains("Pending - not executed yet"));
+        assertTrue(content.contains("Pending - to be published after snapshot"));
+        assertTrue(content.contains("burn tx hash"));
+        assertTrue(content.contains("/v35/supply"));
+        assertTrue(content.contains("/v35/burn"));
+        assertTrue(content.contains("/v35/founder"));
+        assertTrue(content.contains("/v35/founder/burn-snapshot"));
+        assertTrue(content.contains("not financial advice"));
+        assertTrue(content.contains("Do not treat Pending fields as a real burn transaction"));
+    }
+
+    @Test
     void headerLinksToPublicV35Pages() throws IOException {
         String header = Files.readString(template("blocks/header.html"));
 
         assertTrue(header.contains("href=\"/v35\""));
         assertTrue(header.contains("href=\"/v35/tokenomics\""));
         assertTrue(header.contains("href=\"/v35/burn\""));
+        assertTrue(header.contains("href=\"/v35/founder-burn-proof\""));
         assertTrue(header.contains("href=\"/v35/jackpot\""));
     }
 

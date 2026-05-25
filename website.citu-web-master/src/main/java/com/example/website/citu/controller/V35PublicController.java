@@ -29,6 +29,15 @@ public class V35PublicController {
         return "v35-burn";
     }
 
+    @GetMapping("/v35/founder-burn-proof")
+    public String founderBurnProof(Model model) {
+        addCommonV35Model(model, "V35 founder burn proof");
+        model.addAttribute("burnExecutionStatus", "Pending - not executed yet");
+        model.addAttribute("proofPlaceholder", "Pending - to be published after snapshot and burn execution");
+        model.addAttribute("recommendedBurnPercent", "80");
+        return "v35-founder-burn-proof";
+    }
+
     @GetMapping("/v35/jackpot")
     public String jackpot(Model model) {
         addCommonV35Model(model, "V35 jackpot");

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 founder burn proof</h1>
+
+    <section class="alert alert-warning">
+        <h2>Founder burn is planned, not executed yet</h2>
+        <p>The founder burn has not happened yet. Burn proof will be published only after execution.</p>
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>Fork activation is by block index, not date alone. No real fork index has been selected yet.</p>
+        <p>Status: <strong th:text="${burnExecutionStatus}"></strong>.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Planned burn policy</h2>
+        <ul>
+            <li>Founder address: <span th:text="${founderAddress}">nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</span></li>
+            <li>Burn address: <strong th:text="${burnAddress}"></strong></li>
+            <li>Recommended burn: <span th:text="${recommendedBurnPercent}">80</span>% of snapshot founder balance.</li>
+            <li>Founder reward after V35: <span th:text="${founderRewardGold}"></span> GOLD.</li>
+            <li>BURN_ADDRESS is a protocol sink.</li>
+            <li>Sending TO BURN_ADDRESS is allowed.</li>
+            <li>Spending FROM BURN_ADDRESS is blocked after V35 by consensus policy.</li>
+        </ul>
+        <p>Recommended burn is 80% of snapshot founder balance.</p>
+    </section>
+
+    <section class="alert alert-secondary">
+        <h2>Snapshot proof</h2>
+        <p>These fields are pending. They must be filled only after the public snapshot is taken.</p>
+        <table class="table table-bordered">
+            <tbody>
+            <tr><th>Snapshot height</th><td>Pending - to be published after snapshot</td></tr>
+            <tr><th>Snapshot block hash</th><td>Pending - to be published after snapshot</td></tr>
+            <tr><th>Snapshot timestamp</th><td>Pending - to be published after snapshot</td></tr>
+            <tr><th>Founder balance at snapshot</th><td>Pending - to be published after snapshot</td></tr>
+            <tr><th>Burn percent</th><td>80% recommended</td></tr>
+            <tr><th>Calculated burn amount</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Remaining founder reserve</th><td>Pending - to be published after snapshot</td></tr>
+            <tr><th>Total supply before burn</th><td>Pending - to be published after snapshot</td></tr>
+            <tr><th>Burned supply before burn</th><td>Pending - to be published after snapshot</td></tr>
+            <tr><th>Circulating supply before burn</th><td>Pending - to be published after snapshot</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="alert alert-secondary">
+        <h2>Burn transaction proof</h2>
+        <p>No burn transaction has been created. These fields are placeholders and must not be treated as proof yet.</p>
+        <p>burn tx hash: Pending - not executed yet</p>
+        <table class="table table-bordered">
+            <tbody>
+            <tr><th>Burn tx hash</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Burn block index</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Burn block hash</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Burn timestamp</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Sender</th><td th:text="${founderAddress}">nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</td></tr>
+            <tr><th>Recipient</th><td th:text="${burnAddress}"></td></tr>
+            <tr><th>Amount</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Fee</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Confirmations</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Validation status</th><td>Pending - not executed yet</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="alert alert-secondary">
+        <h2>After-burn verification</h2>
+        <p>After the burn confirms, these values must be verified against read-only V35 APIs.</p>
+        <table class="table table-bordered">
+            <tbody>
+            <tr><th>Founder balance after burn</th><td>Pending - not executed yet</td></tr>
+            <tr><th>BURN_ADDRESS balance</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Total minted</th><td>Pending - to be verified by /v35/supply</td></tr>
+            <tr><th>Burned supply</th><td>Pending - to be verified by /v35/burn</td></tr>
+            <tr><th>Circulating supply</th><td>Pending - to be verified by /v35/supply</td></tr>
+            <tr><th>Founder reserve</th><td>Pending - to be verified by /v35/founder</td></tr>
+            <tr><th>Jackpot paid</th><td>Pending - to be verified by /v35/supply</td></tr>
+            <tr><th>Annual emission</th><td th:text="${annualEmissionGold}"></td></tr>
+            </tbody>
+        </table>
+        <p>Verification endpoints: /v35/supply, /v35/burn, /v35/founder, /v35/founder/burn-snapshot.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>How to verify later</h2>
+        <ol>
+            <li>Check the published snapshot height and snapshot block hash.</li>
+            <li>Check the founder balance at the snapshot.</li>
+            <li>Check that the burn transaction sender is the founder address.</li>
+            <li>Check that the burn transaction recipient is BURN_ADDRESS.</li>
+            <li>Confirm the amount equals 80% of the snapshot founder balance.</li>
+            <li>Confirm after-burn supply APIs reflect the burn.</li>
+            <li>Confirm BURN_ADDRESS cannot spend after V35.</li>
+        </ol>
+    </section>
+
+    <section class="alert alert-danger">
+        <h2>Warning</h2>
+        <p>This is protocol upgrade information, not financial advice.</p>
+        <p>The burn is irreversible once executed.</p>
+        <p>Until proof fields are filled with real chain data, the burn should be treated as planned, not completed.</p>
+        <p>Do not treat Pending fields as a real burn transaction, block hash, snapshot hash, or actual burn amount.</p>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>
