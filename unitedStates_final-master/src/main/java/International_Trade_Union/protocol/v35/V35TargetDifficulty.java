@@ -84,13 +84,19 @@ public final class V35TargetDifficulty {
         BigInteger maxTarget = multiply(previousTarget, Seting.V35_MAX_TARGET_UP);
         BigInteger minTarget = multiply(previousTarget, Seting.V35_MAX_TARGET_DOWN);
 
-        if (proposedTarget.compareTo(maxTarget) > 0) {
-            return maxTarget;
+        BigInteger boundedTarget = proposedTarget;
+        if (boundedTarget.compareTo(maxTarget) > 0) {
+            boundedTarget = maxTarget;
         }
-        if (proposedTarget.compareTo(minTarget) < 0) {
-            return minTarget;
+        if (boundedTarget.compareTo(minTarget) < 0) {
+            boundedTarget = minTarget;
         }
-        return proposedTarget;
+
+        BigInteger protocolMaxTarget = getInitialTarget();
+        if (boundedTarget.compareTo(protocolMaxTarget) > 0) {
+            return protocolMaxTarget;
+        }
+        return boundedTarget;
     }
 
     public static BigInteger calculateNextTarget(BigInteger previousTarget, long actualTimespanSeconds, long expectedTimespanSeconds) {

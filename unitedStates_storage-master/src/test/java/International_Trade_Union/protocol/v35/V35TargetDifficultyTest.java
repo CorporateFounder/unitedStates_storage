@@ -71,7 +71,8 @@ public class V35TargetDifficultyTest {
                 V35TargetDifficulty.calculateNextCompactTarget(compact, expected / 4, expected, 0L));
 
         assertEquals(previous, stable);
-        assertTrue(slow.compareTo(previous) > 0);
+        assertTrue(slow.compareTo(previous) >= 0);
+        assertTrue(slow.compareTo(V35TargetDifficulty.getInitialTarget()) <= 0);
         assertTrue(slow.compareTo(V35TargetDifficulty.clampTargetChange(previous, previous.shiftLeft(8))) <= 0);
         assertTrue(fast.compareTo(previous) < 0);
         assertTrue(fast.signum() > 0);
@@ -99,6 +100,7 @@ public class V35TargetDifficultyTest {
                 V35TargetDifficulty.calculateNextCompactTarget(compact, expected, expected, 1800L));
 
         assertEquals(previous, beforeDelay);
-        assertTrue(afterDelay.compareTo(previous) > 0);
+        assertTrue(afterDelay.compareTo(previous) >= 0);
+        assertTrue(afterDelay.compareTo(V35TargetDifficulty.getInitialTarget()) <= 0);
     }
 }
