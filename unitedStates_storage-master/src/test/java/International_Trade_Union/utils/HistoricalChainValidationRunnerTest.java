@@ -27,6 +27,8 @@ public class HistoricalChainValidationRunnerTest {
     private static final String CHAIN_PATH_PROPERTY = "citu.chain.path";
     private static final String BLOCK_301393_STAKING_SENDER = "qDWgdtEBzbSGs7AdUVLYEiBP5Bs7nb3m3L8GaBGgbSEP";
     private static final String BLOCK_301409_STAKING_SENDER = "28eNM7pFKzTgYb8WyUHgttJK9v9oV3TH4jYMxB1xXAK4o";
+    private static final String BLOCK_331090_DUST_SENDER = "hK6XwB7LxM5wkqbHV3WTpjhZG1TstggsxqEWMw8FnbGf";
+    private static final String BLOCK_331090_DUST_RECIPIENT = "yfudXXYdHx1W9QBZuDubr5ZjiqmdTMuKYkMdJyZYmevc";
 
     @Test
     public void bundledServerSampleChainLoadsAndValidatesReadOnly() throws Exception {
@@ -139,6 +141,80 @@ public class HistoricalChainValidationRunnerTest {
     }
 
     @Test
+    public void block331090TinyPrecisionDustTransferIsAcceptedOnlyForHistoricalReplay() throws Exception {
+        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+        assertFalse(ProtocolVersion.isV35(331090L));
+        assertFalse(BurnAddressPolicy.isNoSpendActive(331090L));
+
+        DtoTransaction dustTransfer = yesTransaction(
+                BLOCK_331090_DUST_SENDER,
+                BLOCK_331090_DUST_RECIPIENT,
+                805_179.0,
+                764_179.0,
+                new byte[]{6});
+        Map<String, Account> balances = new HashMap<>();
+        balances.put(BLOCK_331090_DUST_SENDER,
+                new Account(
+                        BLOCK_331090_DUST_SENDER,
+                        new BigDecimal("805178.9999999844"),
+                        new BigDecimal("764178.9999999857"),
+                        BigDecimal.ZERO));
+        balances.put(BLOCK_331090_DUST_RECIPIENT,
+                new Account(
+                        BLOCK_331090_DUST_RECIPIENT,
+                        new BigDecimal("679920.1999999811"),
+                        new BigDecimal("645932.1999999819"),
+                        BigDecimal.ZERO));
+
+        BigDecimal requiredDollar = BigDecimal.valueOf(dustTransfer.getDigitalDollar());
+        BigDecimal requiredStock = BigDecimal.valueOf(dustTransfer.getDigitalStockBalance());
+        BigDecimal dollarDeficit = requiredDollar.subtract(balances.get(BLOCK_331090_DUST_SENDER).getDigitalDollarBalance());
+        BigDecimal stockDeficit = requiredStock.subtract(balances.get(BLOCK_331090_DUST_SENDER).getDigitalStockBalance());
+
+        assertEquals(new BigDecimal("0.0000000156"), dollarDeficit);
+        assertEquals(new BigDecimal("0.0000000143"), stockDeficit);
+        assertEquals(1, requiredDollar.scale(), "Transaction amount comes from the historical double payload as 805179.0");
+        assertEquals(10, balances.get(BLOCK_331090_DUST_SENDER).getDigitalDollarBalance().scale(),
+                "Replay accumulation produced a higher-scale decimal balance");
+
+        List<DtoTransaction> standardAccepted = UtilsUse.balanceTransaction(
+                List.of(dustTransfer), UtilsUse.balancesClone(balances), 331090L);
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(dustTransfer), UtilsUse.balancesClone(balances), 331090L);
+
+        assertEquals(0, standardAccepted.size(),
+                "Live balance validation remains strict for the tiny dust shortage");
+        assertEquals(1, historicalAccepted.size(),
+                "Historical replay accepts bounded legacy precision dust");
+
+        Map<String, Account> adjustedBalances = UtilsUse.balancesClone(balances);
+        assertTrue(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(dustTransfer), adjustedBalances, 331090L));
+        List<DtoTransaction> acceptedAfterAdjustment = UtilsUse.balanceTransaction(
+                List.of(dustTransfer), adjustedBalances, 331090L);
+        assertEquals(1, acceptedAfterAdjustment.size(),
+                "Replay dust adjustment lets the normal balance application path apply the historical transaction");
+    }
+
+    @Test
+    public void historicalReplayPrecisionDustStillRejectsMeaningfulInsufficientYesTransfer() throws Exception {
+        DtoTransaction transfer = yesTransaction("meaningful-shortage-sender", "meaningful-shortage-recipient", 100.0, 100.0, new byte[]{7});
+        Map<String, Account> balances = new HashMap<>();
+        balances.put("meaningful-shortage-sender",
+                new Account("meaningful-shortage-sender", new BigDecimal("99.999"), new BigDecimal("99.999"), BigDecimal.ZERO));
+        balances.put("meaningful-shortage-recipient",
+                new Account("meaningful-shortage-recipient", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(transfer), UtilsUse.balancesClone(balances), 331090L);
+
+        assertEquals(0, historicalAccepted.size(),
+                "Historical replay precision handling must not accept meaningful insufficient-balance transfers");
+        assertFalse(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(transfer), balances, 331090L),
+                "Meaningful shortages must not be normalized as dust");
+    }
+
+    @Test
     public void optionalExternalHistoricalChainPathCanBeValidatedWhenProvided() throws Exception {
         assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
@@ -179,6 +255,19 @@ public class HistoricalChainValidationRunnerTest {
                 new Laws(),
                 0.0,
                 VoteEnum.STAKING);
+        transaction.setSign(sign);
+        return transaction;
+    }
+
+    private static DtoTransaction yesTransaction(String sender, String customer, double dollar, double stock, byte[] sign) {
+        DtoTransaction transaction = new DtoTransaction(
+                sender,
+                customer,
+                dollar,
+                stock,
+                new Laws(),
+                0.0,
+                VoteEnum.YES);
         transaction.setSign(sign);
         return transaction;
     }

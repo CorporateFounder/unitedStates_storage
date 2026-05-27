@@ -323,6 +323,10 @@ public class Blockchain implements Cloneable {
                     tipHash = latestTipHash(tipHash, block);
 
                     if (prevBlock == null) {
+                        UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(
+                                block.getDtoTransactions(),
+                                balances,
+                                block.getIndex());
                         balances = UtilsBalance.calculateBalanceWithV35JackpotContext(
                                 balances,
                                 canonicalContext,
@@ -399,6 +403,10 @@ public class Blockchain implements Cloneable {
                     }
 
                     try {
+                        UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(
+                                block.getDtoTransactions(),
+                                balances,
+                                block.getIndex());
                         balances = UtilsBalance.calculateBalanceWithV35JackpotContext(
                                 balances,
                                 canonicalContext,
