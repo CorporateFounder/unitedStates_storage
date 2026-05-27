@@ -356,7 +356,8 @@ public class Blockchain implements Cloneable {
                                 signs,
                                 new ArrayList<>(),
                                 canonicalContext,
-                                forkIndex);
+                                forkIndex,
+                                true);
                     } catch (IOException e) {
                         MyLogger.saveLog("checkFromFile: ", e);
                         throw new RuntimeException(e);

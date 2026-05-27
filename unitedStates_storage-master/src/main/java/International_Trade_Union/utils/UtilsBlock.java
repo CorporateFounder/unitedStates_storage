@@ -505,6 +505,32 @@ public class UtilsBlock {
             List<String> SignaturesNotTakenIntoAccount,
             List<Block> canonicalChainBeforeBlock,
             long forkIndex) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
+        return validationOneBlockWithCanonicalContext(
+                addressFounder,
+                previusblock,
+                thisBlock,
+                lastBlock,
+                blockService,
+                balance,
+                signs,
+                SignaturesNotTakenIntoAccount,
+                canonicalChainBeforeBlock,
+                forkIndex,
+                false);
+    }
+
+    public static boolean validationOneBlockWithCanonicalContext(
+            String addressFounder,
+            Block previusblock,
+            Block thisBlock,
+            List<Block> lastBlock,
+            BlockService blockService,
+            Map<String, Account> balance,
+            List<String> signs,
+            List<String> SignaturesNotTakenIntoAccount,
+            List<Block> canonicalChainBeforeBlock,
+            long forkIndex,
+            boolean historicalReplay) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException {
 
         Base base = new Base58();
         boolean isV35Validation = isV35ActiveForValidation(thisBlock, forkIndex);
@@ -581,7 +607,9 @@ public class UtilsBlock {
                     .filter(t->!t.getSender().equals(BASIS_ADDRESS))
                     .collect(Collectors.toList());
             int transactionsCount = transactions.size();
-            List<DtoTransaction> temp = UtilsUse.balanceTransaction(transactions, balances, thisBlock.getIndex());
+            List<DtoTransaction> temp = historicalReplay
+                    ? UtilsUse.balanceTransactionForHistoricalReplay(transactions, balances, thisBlock.getIndex())
+                    : UtilsUse.balanceTransaction(transactions, balances, thisBlock.getIndex());
             int after = temp.size();
 
 

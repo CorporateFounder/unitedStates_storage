@@ -791,6 +791,69 @@ public class UtilsUse {
 
 
     //возвращает скользящее окно для хранения последних 30 слепков балана
+    public static List<DtoTransaction> balanceTransactionForHistoricalReplay(List<DtoTransaction> transactions, Map<String, Account> basis, long index) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        Map<String, Account> standardBalances = new HashMap<>();
+        try {
+            standardBalances = UtilsUse.balancesClone(basis);
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        List<DtoTransaction> standardAccepted = balanceTransaction(transactions, standardBalances, index);
+        if (standardAccepted.size() == transactions.size()) {
+            return standardAccepted;
+        }
+
+        List<DtoTransaction> accepted = new ArrayList<>();
+        Map<String, Account> replayBalances = new HashMap<>();
+        try {
+            replayBalances = UtilsUse.balancesClone(basis);
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        for (DtoTransaction transaction : transactions) {
+            List<DtoTransaction> singleTransactionAccepted = balanceTransaction(Collections.singletonList(transaction), replayBalances, index);
+            if (!singleTransactionAccepted.isEmpty()) {
+                accepted.add(transaction);
+                continue;
+            }
+
+            Account sender = replayBalances.get(transaction.getSender());
+            if (isLegacyReplaySelfStakingDeclaration(transaction, sender, index)) {
+                accepted.add(transaction);
+            }
+        }
+        return accepted;
+    }
+
+    private static boolean isLegacyReplaySelfStakingDeclaration(DtoTransaction transaction, Account sender, long index) {
+        if (sender == null || transaction == null || !VoteEnum.STAKING.equals(transaction.getVoteEnum())) {
+            return false;
+        }
+        if (!transaction.getSender().equals(transaction.getCustomer())) {
+            return false;
+        }
+        if (index <= Seting.BALANCE_CHEKING || index >= Seting.V35_RESCUE_FORK_INDEX) {
+            return false;
+        }
+
+        BigDecimal amount = BigDecimal.valueOf(transaction.getDigitalDollar());
+        BigDecimal stock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
+        BigDecimal bonus = BigDecimal.valueOf(transaction.getBonusForMiner());
+        if (amount.compareTo(BigDecimal.ZERO) < 0 || stock.compareTo(BigDecimal.ZERO) < 0 || bonus.compareTo(BigDecimal.ZERO) < 0) {
+            return false;
+        }
+        if (stock.compareTo(BigDecimal.ZERO) != 0) {
+            return false;
+        }
+        if (sender.getDigitalDollarBalance() == null || sender.getDigitalStakingBalance() == null) {
+            return false;
+        }
+        BigDecimal required = amount.add(bonus);
+        BigDecimal declaredStakeAvailable = sender.getDigitalDollarBalance().add(sender.getDigitalStakingBalance());
+        return sender.getDigitalDollarBalance().compareTo(required) < 0
+                && declaredStakeAvailable.compareTo(required) >= 0;
+    }
+
     public static Map<Long, Map<String, Account>> slideWindow() {
         // Replace the HashMap with a LinkedHashMap that has a size limit for the sliding window
         Map<Long, Map<String, Account>> windows = new LinkedHashMap<Long, Map<String, Account>>(30, 0.75f, true) {

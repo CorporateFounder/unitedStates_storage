@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class HistoricalChainValidationRunnerTest {
     private static final String CHAIN_PATH_PROPERTY = "citu.chain.path";
     private static final String BLOCK_301393_STAKING_SENDER = "qDWgdtEBzbSGs7AdUVLYEiBP5Bs7nb3m3L8GaBGgbSEP";
+    private static final String BLOCK_301409_STAKING_SENDER = "28eNM7pFKzTgYb8WyUHgttJK9v9oV3TH4jYMxB1xXAK4o";
 
     @Test
     public void bundledServerSampleChainLoadsAndValidatesReadOnly() throws Exception {
@@ -98,6 +99,46 @@ public class HistoricalChainValidationRunnerTest {
     }
 
     @Test
+    public void block301409LegacySelfStakingDeclarationIsAcceptedOnlyForHistoricalReplay() throws Exception {
+        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+        assertFalse(ProtocolVersion.isV35(301409L));
+        assertFalse(BurnAddressPolicy.isNoSpendActive(301409L));
+
+        DtoTransaction stakingDeclaration = stakingTransaction(BLOCK_301409_STAKING_SENDER, 1_400_000.0, new byte[]{4});
+        Map<String, Account> balances = new HashMap<>();
+        balances.put(BLOCK_301409_STAKING_SENDER,
+                new Account(
+                        BLOCK_301409_STAKING_SENDER,
+                        new BigDecimal("71365.20885803517"),
+                        new BigDecimal("1412196.2788580486"),
+                        new BigDecimal("1370831.0700000033")));
+
+        List<DtoTransaction> standardAccepted = UtilsUse.balanceTransaction(
+                List.of(stakingDeclaration), UtilsUse.balancesClone(balances), 301409L);
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(stakingDeclaration), UtilsUse.balancesClone(balances), 301409L);
+
+        assertEquals(0, standardAccepted.size(),
+                "Live balance validation still requires enough spendable digital dollars for STAKING");
+        assertEquals(1, historicalAccepted.size(),
+                "Historical replay accepts legacy self-STAKING declarations backed by current stake plus spendable balance");
+    }
+
+    @Test
+    public void historicalReplaySelfStakingStillRejectsTrulyInsufficientStakeDeclaration() throws Exception {
+        Map<String, Account> balances = new HashMap<>();
+        balances.put(BLOCK_301409_STAKING_SENDER,
+                new Account(BLOCK_301409_STAKING_SENDER, new BigDecimal("10.00"), BigDecimal.ZERO, new BigDecimal("20.00")));
+
+        DtoTransaction impossibleDeclaration = stakingTransaction(BLOCK_301409_STAKING_SENDER, 100.0, new byte[]{5});
+        List<DtoTransaction> accepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(impossibleDeclaration), balances, 301409L);
+
+        assertEquals(0, accepted.size(), "Historical replay must not accept self-STAKING declarations without sufficient declared stake coverage");
+    }
+
+    @Test
     public void optionalExternalHistoricalChainPathCanBeValidatedWhenProvided() throws Exception {
         assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
@@ -126,9 +167,13 @@ public class HistoricalChainValidationRunnerTest {
     }
 
     private static DtoTransaction stakingTransaction(double amount, byte[] sign) {
+        return stakingTransaction(BLOCK_301393_STAKING_SENDER, amount, sign);
+    }
+
+    private static DtoTransaction stakingTransaction(String address, double amount, byte[] sign) {
         DtoTransaction transaction = new DtoTransaction(
-                BLOCK_301393_STAKING_SENDER,
-                BLOCK_301393_STAKING_SENDER,
+                address,
+                address,
                 amount,
                 0.0,
                 new Laws(),
