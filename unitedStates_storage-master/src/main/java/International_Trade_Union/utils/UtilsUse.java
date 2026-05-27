@@ -37,6 +37,7 @@ import static International_Trade_Union.setings.Seting.SENDING_DECIMAL_PLACES_2;
 public class UtilsUse {
     private static MessageDigest digest;
     private static final BigDecimal HISTORICAL_REPLAY_DUST_TOLERANCE = new BigDecimal("0.0000001");
+    private static final BigDecimal HISTORICAL_REPLAY_CENT_DRIFT_TOLERANCE = new BigDecimal("0.03");
 
     static {
         try {
@@ -830,6 +831,14 @@ public class UtilsUse {
                 if (!dustAdjustedAccepted.isEmpty()) {
                     accepted.add(transaction);
                 }
+                continue;
+            }
+            if (isLegacyReplayCentDriftTransfer(transaction, sender, customer, index)) {
+                applyLegacyReplayCentDriftAdjustment(transaction, replayBalances, index);
+                List<DtoTransaction> centDriftAdjustedAccepted = balanceTransaction(Collections.singletonList(transaction), replayBalances, index);
+                if (!centDriftAdjustedAccepted.isEmpty()) {
+                    accepted.add(transaction);
+                }
             }
         }
         return accepted;
@@ -849,6 +858,9 @@ public class UtilsUse {
             Account customer = balances.get(transaction.getCustomer());
             if (isLegacyReplayPrecisionDustTransfer(transaction, sender, customer, index)) {
                 applyLegacyReplayPrecisionDustAdjustment(transaction, balances, index);
+                adjusted = true;
+            } else if (isLegacyReplayCentDriftTransfer(transaction, sender, customer, index)) {
+                applyLegacyReplayCentDriftAdjustment(transaction, balances, index);
                 adjusted = true;
             }
         }
@@ -922,6 +934,40 @@ public class UtilsUse {
         return hasPositiveDust && dollarCovered && stockCovered;
     }
 
+    private static boolean isLegacyReplayCentDriftTransfer(DtoTransaction transaction, Account sender, Account customer, long index) {
+        if (transaction == null || sender == null || customer == null) {
+            return false;
+        }
+        if (index < Seting.CHANGE_DECIMAL_2_INDEX || index >= Seting.V35_RESCUE_FORK_INDEX) {
+            return false;
+        }
+        if (Seting.BASIS_ADDRESS.equals(transaction.getSender()) || Seting.BASIS_ADDRESS.equals(transaction.getCustomer())) {
+            return false;
+        }
+        if (!VoteEnum.YES.equals(transaction.getVoteEnum()) && !VoteEnum.NO.equals(transaction.getVoteEnum())) {
+            return false;
+        }
+        if (transaction.getSender().equals(transaction.getCustomer())) {
+            return false;
+        }
+        if (sender.getDigitalDollarBalance() == null || sender.getDigitalStockBalance() == null) {
+            return false;
+        }
+
+        BigDecimal requiredDollar = BigDecimal.valueOf(transaction.getDigitalDollar()).add(BigDecimal.valueOf(transaction.getBonusForMiner()));
+        BigDecimal requiredStock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
+        if (requiredDollar.compareTo(BigDecimal.ZERO) < 0 || requiredStock.compareTo(BigDecimal.ZERO) < 0
+                || BigDecimal.valueOf(transaction.getBonusForMiner()).compareTo(BigDecimal.ZERO) < 0) {
+            return false;
+        }
+
+        BigDecimal dollarDeficit = requiredDollar.subtract(sender.getDigitalDollarBalance());
+        BigDecimal stockDeficit = requiredStock.subtract(sender.getDigitalStockBalance());
+        return dollarDeficit.compareTo(BigDecimal.ZERO) > 0
+                && dollarDeficit.compareTo(HISTORICAL_REPLAY_CENT_DRIFT_TOLERANCE) <= 0
+                && stockDeficit.compareTo(BigDecimal.ZERO) <= 0;
+    }
+
     private static void applyLegacyReplayPrecisionDustAdjustment(DtoTransaction transaction, Map<String, Account> balances, long index) {
         Account sender = balances.get(transaction.getSender());
         Account customer = balances.get(transaction.getCustomer());
@@ -937,6 +983,18 @@ public class UtilsUse {
         if (sender.getDigitalStockBalance().compareTo(requiredStock) < 0) {
             sender.setDigitalStockBalance(requiredStock);
         }
+        balances.put(sender.getAccount(), sender);
+    }
+
+    private static void applyLegacyReplayCentDriftAdjustment(DtoTransaction transaction, Map<String, Account> balances, long index) {
+        Account sender = balances.get(transaction.getSender());
+        Account customer = balances.get(transaction.getCustomer());
+        if (!isLegacyReplayCentDriftTransfer(transaction, sender, customer, index)) {
+            return;
+        }
+
+        BigDecimal requiredDollar = BigDecimal.valueOf(transaction.getDigitalDollar()).add(BigDecimal.valueOf(transaction.getBonusForMiner()));
+        sender.setDigitalDollarBalance(requiredDollar);
         balances.put(sender.getAccount(), sender);
     }
 

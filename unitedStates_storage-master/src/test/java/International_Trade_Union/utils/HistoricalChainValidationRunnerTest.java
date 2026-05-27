@@ -29,6 +29,8 @@ public class HistoricalChainValidationRunnerTest {
     private static final String BLOCK_301409_STAKING_SENDER = "28eNM7pFKzTgYb8WyUHgttJK9v9oV3TH4jYMxB1xXAK4o";
     private static final String BLOCK_331090_DUST_SENDER = "hK6XwB7LxM5wkqbHV3WTpjhZG1TstggsxqEWMw8FnbGf";
     private static final String BLOCK_331090_DUST_RECIPIENT = "yfudXXYdHx1W9QBZuDubr5ZjiqmdTMuKYkMdJyZYmevc";
+    private static final String BLOCK_335680_DRIFT_SENDER = "otw9wf3DrtiiT1AwiMryu7DYyE6gPTfzd8v9tDmQdWJw";
+    private static final String BLOCK_335680_DRIFT_RECIPIENT = "mLKZnGvEh1kefCZrq2WHwANUrpmP6ejbZsGRQCNWkxvx";
 
     @Test
     public void bundledServerSampleChainLoadsAndValidatesReadOnly() throws Exception {
@@ -212,6 +214,91 @@ public class HistoricalChainValidationRunnerTest {
                 "Historical replay precision handling must not accept meaningful insufficient-balance transfers");
         assertFalse(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(transfer), balances, 331090L),
                 "Meaningful shortages must not be normalized as dust");
+    }
+
+    @Test
+    public void block335680LegacyCentDriftTransferIsAcceptedOnlyForHistoricalReplay() throws Exception {
+        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+        assertFalse(ProtocolVersion.isV35(335680L));
+        assertFalse(BurnAddressPolicy.isNoSpendActive(335680L));
+
+        DtoTransaction driftTransfer = yesTransaction(
+                BLOCK_335680_DRIFT_SENDER,
+                BLOCK_335680_DRIFT_RECIPIENT,
+                68169.77,
+                0.01,
+                new byte[]{8});
+        Map<String, Account> balances = new HashMap<>();
+        balances.put(BLOCK_335680_DRIFT_SENDER,
+                new Account(
+                        BLOCK_335680_DRIFT_SENDER,
+                        new BigDecimal("68169.74710190214898"),
+                        new BigDecimal("2369169.73710190214898"),
+                        new BigDecimal("2300000.0")));
+        balances.put(BLOCK_335680_DRIFT_RECIPIENT,
+                new Account(BLOCK_335680_DRIFT_RECIPIENT, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+
+        BigDecimal requiredDollar = BigDecimal.valueOf(driftTransfer.getDigitalDollar());
+        BigDecimal requiredStock = BigDecimal.valueOf(driftTransfer.getDigitalStockBalance());
+        BigDecimal dollarDeficit = requiredDollar.subtract(balances.get(BLOCK_335680_DRIFT_SENDER).getDigitalDollarBalance());
+        BigDecimal stockSurplus = balances.get(BLOCK_335680_DRIFT_SENDER).getDigitalStockBalance().subtract(requiredStock);
+
+        assertEquals(new BigDecimal("0.02289809785102"), dollarDeficit);
+        assertEquals(new BigDecimal("2369169.72710190214898"), stockSurplus);
+
+        List<DtoTransaction> standardAccepted = UtilsUse.balanceTransaction(
+                List.of(driftTransfer), UtilsUse.balancesClone(balances), 335680L);
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(driftTransfer), UtilsUse.balancesClone(balances), 335680L);
+
+        assertEquals(0, standardAccepted.size(),
+                "Live balance validation remains strict for the legacy replay cent drift");
+        assertEquals(1, historicalAccepted.size(),
+                "Historical replay accepts bounded legacy cent drift when stock is fully covered");
+
+        Map<String, Account> adjustedBalances = UtilsUse.balancesClone(balances);
+        assertTrue(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(driftTransfer), adjustedBalances, 335680L));
+        List<DtoTransaction> acceptedAfterAdjustment = UtilsUse.balanceTransaction(
+                List.of(driftTransfer), adjustedBalances, 335680L);
+        assertEquals(1, acceptedAfterAdjustment.size(),
+                "Replay cent-drift adjustment lets the normal balance application path apply the historical transaction");
+    }
+
+    @Test
+    public void historicalReplayCentDriftStillRejectsMeaningfulDollarShortage() throws Exception {
+        DtoTransaction transfer = yesTransaction("cent-shortage-sender", "cent-shortage-recipient", 100.04, 0.01, new byte[]{9});
+        Map<String, Account> balances = new HashMap<>();
+        balances.put("cent-shortage-sender",
+                new Account("cent-shortage-sender", new BigDecimal("100.00"), new BigDecimal("1.00"), BigDecimal.ZERO));
+        balances.put("cent-shortage-recipient",
+                new Account("cent-shortage-recipient", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(transfer), UtilsUse.balancesClone(balances), 335680L);
+
+        assertEquals(0, historicalAccepted.size(),
+                "Historical replay cent-drift handling must not accept shortages above the bounded legacy drift window");
+        assertFalse(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(transfer), balances, 335680L),
+                "Meaningful dollar shortages must not be normalized as historical cent drift");
+    }
+
+    @Test
+    public void historicalReplayCentDriftStillRejectsStockShortage() throws Exception {
+        DtoTransaction transfer = yesTransaction("stock-shortage-sender", "stock-shortage-recipient", 100.02, 0.01, new byte[]{10});
+        Map<String, Account> balances = new HashMap<>();
+        balances.put("stock-shortage-sender",
+                new Account("stock-shortage-sender", new BigDecimal("100.00"), new BigDecimal("0.009"), BigDecimal.ZERO));
+        balances.put("stock-shortage-recipient",
+                new Account("stock-shortage-recipient", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(transfer), UtilsUse.balancesClone(balances), 335680L);
+
+        assertEquals(0, historicalAccepted.size(),
+                "Historical replay cent-drift handling must not accept insufficient-stock YES/NO transfers");
+        assertFalse(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(transfer), balances, 335680L),
+                "Stock shortages must not be normalized as historical cent drift");
     }
 
     @Test
