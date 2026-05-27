@@ -323,14 +323,6 @@ public class Blockchain implements Cloneable {
                     tipHash = latestTipHash(tipHash, block);
 
                     if (prevBlock == null) {
-                        prevBlock = block;
-                        canonicalContext.add(block);
-                        MyLogger.saveLog("prev block is null: inex: " + block.getIndex());
-                        continue;
-                    }
-
-                    hashCount += UtilsUse.powerDiff(block.getHashCompexity());
-                    try {
                         balances = UtilsBalance.calculateBalanceWithV35JackpotContext(
                                 balances,
                                 canonicalContext,
@@ -339,31 +331,13 @@ public class Blockchain implements Cloneable {
                                 forkIndex,
                                 sign,
                                 new ArrayList<>());
-                    } catch (IOException e) {
-                        MyLogger.saveLog("checkFromFile: ", e);
-                        throw new RuntimeException(e);
-                    } catch (NoSuchAlgorithmException e) {
-                        MyLogger.saveLog("checkFromFile: ", e);
-                        throw new RuntimeException(e);
-                    } catch (SignatureException e) {
-                        MyLogger.saveLog("checkFromFile: ", e);
-                        throw new RuntimeException(e);
-                    } catch (InvalidKeySpecException e) {
-                        MyLogger.saveLog("checkFromFile: ", e);
-                        throw new RuntimeException(e);
-                    } catch (NoSuchProviderException e) {
-                        MyLogger.saveLog("checkFromFile: ", e);
-                        throw new RuntimeException(e);
-                    } catch (InvalidKeyException e) {
-                        MyLogger.saveLog("checkFromFile: ", e);
-                        throw new RuntimeException(e);
+                        prevBlock = block;
+                        canonicalContext.add(block);
+                        MyLogger.saveLog("prev block is null: inex: " + block.getIndex());
+                        continue;
                     }
-                    Account miner = balances.get(block.getMinerAddress());
-                    miner = miner != null ? miner : new Account(block.getMinerAddress(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 
-                    staking = staking.add(stakingForDataShort(miner.getDigitalStakingBalance()));
-                    transactions += block.getDtoTransactions().size();
-                    bigRandomNumber += UtilsUse.bigRandomWinner(block, miner);
+                    hashCount += UtilsUse.powerDiff(block.getHashCompexity());
 
                     if (size < Seting.V34_NEW_ALGO) {
                         tempList.add(prevBlock);
@@ -422,6 +396,41 @@ public class Blockchain implements Cloneable {
                         size++;
                         return shortInfo(size, valid, hashCount, staking, transactions, bigRandomNumber, cumulativeWork, tipHash);
                     }
+
+                    try {
+                        balances = UtilsBalance.calculateBalanceWithV35JackpotContext(
+                                balances,
+                                canonicalContext,
+                                block,
+                                Seting.ADDRESS_FOUNDER,
+                                forkIndex,
+                                sign,
+                                new ArrayList<>());
+                    } catch (IOException e) {
+                        MyLogger.saveLog("checkFromFile: ", e);
+                        throw new RuntimeException(e);
+                    } catch (NoSuchAlgorithmException e) {
+                        MyLogger.saveLog("checkFromFile: ", e);
+                        throw new RuntimeException(e);
+                    } catch (SignatureException e) {
+                        MyLogger.saveLog("checkFromFile: ", e);
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeySpecException e) {
+                        MyLogger.saveLog("checkFromFile: ", e);
+                        throw new RuntimeException(e);
+                    } catch (NoSuchProviderException e) {
+                        MyLogger.saveLog("checkFromFile: ", e);
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeyException e) {
+                        MyLogger.saveLog("checkFromFile: ", e);
+                        throw new RuntimeException(e);
+                    }
+                    Account miner = balances.get(block.getMinerAddress());
+                    miner = miner != null ? miner : new Account(block.getMinerAddress(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+
+                    staking = staking.add(stakingForDataShort(miner.getDigitalStakingBalance()));
+                    transactions += block.getDtoTransactions().size();
+                    bigRandomNumber += UtilsUse.bigRandomWinner(block, miner);
 
                     canonicalContext.add(block);
                     prevBlock = block;
