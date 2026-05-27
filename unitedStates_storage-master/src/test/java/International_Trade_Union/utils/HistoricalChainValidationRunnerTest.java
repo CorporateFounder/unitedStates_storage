@@ -31,6 +31,7 @@ public class HistoricalChainValidationRunnerTest {
     private static final String BLOCK_331090_DUST_RECIPIENT = "yfudXXYdHx1W9QBZuDubr5ZjiqmdTMuKYkMdJyZYmevc";
     private static final String BLOCK_335680_DRIFT_SENDER = "otw9wf3DrtiiT1AwiMryu7DYyE6gPTfzd8v9tDmQdWJw";
     private static final String BLOCK_335680_DRIFT_RECIPIENT = "mLKZnGvEh1kefCZrq2WHwANUrpmP6ejbZsGRQCNWkxvx";
+    private static final String BLOCK_341646_UNSTAKING_SENDER = "2A8vxijdyY5ST1WhLQan3N1P6wSdzBDo9VmEFhck9bArG";
 
     @Test
     public void bundledServerSampleChainLoadsAndValidatesReadOnly() throws Exception {
@@ -302,6 +303,61 @@ public class HistoricalChainValidationRunnerTest {
     }
 
     @Test
+    public void block341646LegacySelfUnstakingIsAcceptedOnlyForHistoricalReplay() throws Exception {
+        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+        assertFalse(ProtocolVersion.isV35(341646L));
+        assertFalse(BurnAddressPolicy.isNoSpendActive(341646L));
+
+        DtoTransaction unstakingDeclaration = unstakingTransaction(BLOCK_341646_UNSTAKING_SENDER, 1_340_000.0, new byte[]{11});
+        Map<String, Account> balances = new HashMap<>();
+        balances.put(BLOCK_341646_UNSTAKING_SENDER,
+                new Account(
+                        BLOCK_341646_UNSTAKING_SENDER,
+                        new BigDecimal("125562.28003514555213"),
+                        new BigDecimal("1352479.11003514555213"),
+                        new BigDecimal("1330000.0")));
+
+        BigDecimal requiredStake = BigDecimal.valueOf(unstakingDeclaration.getDigitalDollar());
+        BigDecimal stakingDeficit = requiredStake.subtract(balances.get(BLOCK_341646_UNSTAKING_SENDER).getDigitalStakingBalance());
+
+        assertEquals(new BigDecimal("10000.0"), stakingDeficit);
+
+        List<DtoTransaction> standardAccepted = UtilsUse.balanceTransaction(
+                List.of(unstakingDeclaration), UtilsUse.balancesClone(balances), 341646L);
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(unstakingDeclaration), UtilsUse.balancesClone(balances), 341646L);
+
+        assertEquals(0, standardAccepted.size(),
+                "Live balance validation remains strict for legacy self-UNSTAKING");
+        assertEquals(1, historicalAccepted.size(),
+                "Historical replay accepts legacy self-UNSTAKING when spendable plus staking balance covers the declaration");
+
+        Map<String, Account> adjustedBalances = UtilsUse.balancesClone(balances);
+        assertTrue(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(unstakingDeclaration), adjustedBalances, 341646L));
+        List<DtoTransaction> acceptedAfterAdjustment = UtilsUse.balanceTransaction(
+                List.of(unstakingDeclaration), adjustedBalances, 341646L);
+        assertEquals(1, acceptedAfterAdjustment.size(),
+                "Replay self-UNSTAKING adjustment lets the normal balance application path apply the historical transaction");
+    }
+
+    @Test
+    public void historicalReplaySelfUnstakingStillRejectsTrulyInsufficientDeclaration() throws Exception {
+        Map<String, Account> balances = new HashMap<>();
+        balances.put("insufficient-unstaking-sender",
+                new Account("insufficient-unstaking-sender", new BigDecimal("9999.99"), BigDecimal.ZERO, new BigDecimal("1330000.0")));
+
+        DtoTransaction impossibleDeclaration = unstakingTransaction("insufficient-unstaking-sender", 1_340_000.0, new byte[]{12});
+        List<DtoTransaction> historicalAccepted = UtilsUse.balanceTransactionForHistoricalReplay(
+                List.of(impossibleDeclaration), UtilsUse.balancesClone(balances), 341646L);
+
+        assertEquals(0, historicalAccepted.size(),
+                "Historical replay must not accept self-UNSTAKING declarations without combined balance coverage");
+        assertFalse(UtilsUse.applyHistoricalReplayPrecisionDustAdjustments(List.of(impossibleDeclaration), balances, 341646L),
+                "Truly insufficient self-UNSTAKING declarations must not be normalized");
+    }
+
+    @Test
     public void optionalExternalHistoricalChainPathCanBeValidatedWhenProvided() throws Exception {
         assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
@@ -342,6 +398,19 @@ public class HistoricalChainValidationRunnerTest {
                 new Laws(),
                 0.0,
                 VoteEnum.STAKING);
+        transaction.setSign(sign);
+        return transaction;
+    }
+
+    private static DtoTransaction unstakingTransaction(String address, double amount, byte[] sign) {
+        DtoTransaction transaction = new DtoTransaction(
+                address,
+                address,
+                amount,
+                0.0,
+                new Laws(),
+                0.0,
+                VoteEnum.UNSTAKING);
         transaction.setSign(sign);
         return transaction;
     }

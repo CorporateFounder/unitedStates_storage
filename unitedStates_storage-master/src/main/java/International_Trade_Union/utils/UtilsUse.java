@@ -824,6 +824,10 @@ public class UtilsUse {
                 accepted.add(transaction);
                 continue;
             }
+            if (isLegacyReplaySelfUnstakingDeclaration(transaction, sender, index)) {
+                accepted.add(transaction);
+                continue;
+            }
             Account customer = replayBalances.get(transaction.getCustomer());
             if (isLegacyReplayPrecisionDustTransfer(transaction, sender, customer, index)) {
                 applyLegacyReplayPrecisionDustAdjustment(transaction, replayBalances, index);
@@ -862,6 +866,9 @@ public class UtilsUse {
             } else if (isLegacyReplayCentDriftTransfer(transaction, sender, customer, index)) {
                 applyLegacyReplayCentDriftAdjustment(transaction, balances, index);
                 adjusted = true;
+            } else if (isLegacyReplaySelfUnstakingDeclaration(transaction, sender, index)) {
+                applyLegacyReplaySelfUnstakingAdjustment(transaction, balances, index);
+                adjusted = true;
             }
         }
         return adjusted;
@@ -893,6 +900,35 @@ public class UtilsUse {
         BigDecimal required = amount.add(bonus);
         BigDecimal declaredStakeAvailable = sender.getDigitalDollarBalance().add(sender.getDigitalStakingBalance());
         return sender.getDigitalDollarBalance().compareTo(required) < 0
+                && declaredStakeAvailable.compareTo(required) >= 0;
+    }
+
+    private static boolean isLegacyReplaySelfUnstakingDeclaration(DtoTransaction transaction, Account sender, long index) {
+        if (sender == null || transaction == null || !VoteEnum.UNSTAKING.equals(transaction.getVoteEnum())) {
+            return false;
+        }
+        if (!transaction.getSender().equals(transaction.getCustomer())) {
+            return false;
+        }
+        if (index <= Seting.BALANCE_CHEKING || index >= Seting.V35_RESCUE_FORK_INDEX) {
+            return false;
+        }
+
+        BigDecimal amount = BigDecimal.valueOf(transaction.getDigitalDollar());
+        BigDecimal stock = BigDecimal.valueOf(transaction.getDigitalStockBalance());
+        BigDecimal bonus = BigDecimal.valueOf(transaction.getBonusForMiner());
+        if (amount.compareTo(BigDecimal.ZERO) < 0 || stock.compareTo(BigDecimal.ZERO) < 0 || bonus.compareTo(BigDecimal.ZERO) < 0) {
+            return false;
+        }
+        if (stock.compareTo(BigDecimal.ZERO) != 0) {
+            return false;
+        }
+        if (sender.getDigitalDollarBalance() == null || sender.getDigitalStakingBalance() == null) {
+            return false;
+        }
+        BigDecimal required = amount.add(bonus);
+        BigDecimal declaredStakeAvailable = sender.getDigitalDollarBalance().add(sender.getDigitalStakingBalance());
+        return sender.getDigitalStakingBalance().compareTo(required) < 0
                 && declaredStakeAvailable.compareTo(required) >= 0;
     }
 
@@ -995,6 +1031,17 @@ public class UtilsUse {
 
         BigDecimal requiredDollar = BigDecimal.valueOf(transaction.getDigitalDollar()).add(BigDecimal.valueOf(transaction.getBonusForMiner()));
         sender.setDigitalDollarBalance(requiredDollar);
+        balances.put(sender.getAccount(), sender);
+    }
+
+    private static void applyLegacyReplaySelfUnstakingAdjustment(DtoTransaction transaction, Map<String, Account> balances, long index) {
+        Account sender = balances.get(transaction.getSender());
+        if (!isLegacyReplaySelfUnstakingDeclaration(transaction, sender, index)) {
+            return;
+        }
+
+        BigDecimal required = BigDecimal.valueOf(transaction.getDigitalDollar()).add(BigDecimal.valueOf(transaction.getBonusForMiner()));
+        sender.setDigitalStakingBalance(required);
         balances.put(sender.getAccount(), sender);
     }
 
