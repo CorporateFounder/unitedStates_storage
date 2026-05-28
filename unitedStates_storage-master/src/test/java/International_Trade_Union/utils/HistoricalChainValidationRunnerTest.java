@@ -358,6 +358,57 @@ public class HistoricalChainValidationRunnerTest {
     }
 
     @Test
+    public void replayCompatibilityCannotWeakenNormalLiveBalanceValidation() throws Exception {
+        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+        assertFalse(ProtocolVersion.isV35(341646L));
+        assertFalse(BurnAddressPolicy.isNoSpendActive(341646L));
+
+        DtoTransaction dollarShortage = yesTransaction("live-dollar-shortage", "live-dollar-recipient", 100.0, 1.0, new byte[]{13});
+        Map<String, Account> dollarBalances = new HashMap<>();
+        dollarBalances.put("live-dollar-shortage", new Account("live-dollar-shortage", new BigDecimal("99.99999999"), new BigDecimal("10.0"), BigDecimal.ZERO));
+        dollarBalances.put("live-dollar-recipient", new Account("live-dollar-recipient", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+        assertEquals(0, UtilsUse.balanceTransaction(List.of(dollarShortage), dollarBalances, 331090L).size(),
+                "Normal live validation must reject replay precision dust dollar shortages");
+
+        DtoTransaction stockShortage = yesTransaction("live-stock-shortage", "live-stock-recipient", 1.0, 100.0, new byte[]{14});
+        Map<String, Account> stockBalances = new HashMap<>();
+        stockBalances.put("live-stock-shortage", new Account("live-stock-shortage", new BigDecimal("10.0"), new BigDecimal("99.99999999"), BigDecimal.ZERO));
+        stockBalances.put("live-stock-recipient", new Account("live-stock-recipient", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+        assertEquals(0, UtilsUse.balanceTransaction(List.of(stockShortage), stockBalances, 331090L).size(),
+                "Normal live validation must reject replay precision dust stock shortages");
+
+        DtoTransaction centDrift = yesTransaction("live-cent-drift", "live-cent-recipient", 100.02, 0.01, new byte[]{15});
+        Map<String, Account> centBalances = new HashMap<>();
+        centBalances.put("live-cent-drift", new Account("live-cent-drift", new BigDecimal("100.00"), new BigDecimal("1.0"), BigDecimal.ZERO));
+        centBalances.put("live-cent-recipient", new Account("live-cent-recipient", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+        assertEquals(0, UtilsUse.balanceTransaction(List.of(centDrift), centBalances, 335680L).size(),
+                "Normal live validation must reject replay-only cent drift shortages");
+
+        DtoTransaction selfStaking = stakingTransaction("live-self-staking", 100.0, new byte[]{16});
+        Map<String, Account> stakingCompatibilityBalances = new HashMap<>();
+        stakingCompatibilityBalances.put("live-self-staking", new Account("live-self-staking", new BigDecimal("10.0"), BigDecimal.ZERO, new BigDecimal("100.0")));
+        assertEquals(0, UtilsUse.balanceTransaction(List.of(selfStaking), UtilsUse.balancesClone(stakingCompatibilityBalances), 301409L).size(),
+                "Normal live validation must reject replay-only self-STAKING compatibility");
+
+        Map<String, Account> normallyValidStakingBalances = new HashMap<>();
+        normallyValidStakingBalances.put("live-self-staking", new Account("live-self-staking", new BigDecimal("100.0"), BigDecimal.ZERO, BigDecimal.ZERO));
+        assertEquals(1, UtilsUse.balanceTransaction(List.of(selfStaking), normallyValidStakingBalances, 301409L).size(),
+                "Normal live validation must still accept self-STAKING when spendable balance is sufficient");
+
+        DtoTransaction selfUnstaking = unstakingTransaction("live-self-unstaking", 100.0, new byte[]{17});
+        Map<String, Account> unstakingCompatibilityBalances = new HashMap<>();
+        unstakingCompatibilityBalances.put("live-self-unstaking", new Account("live-self-unstaking", new BigDecimal("100.0"), BigDecimal.ZERO, new BigDecimal("90.0")));
+        assertEquals(0, UtilsUse.balanceTransaction(List.of(selfUnstaking), UtilsUse.balancesClone(unstakingCompatibilityBalances), 341646L).size(),
+                "Normal live validation must reject replay-only self-UNSTAKING compatibility");
+
+        Map<String, Account> normallyValidUnstakingBalances = new HashMap<>();
+        normallyValidUnstakingBalances.put("live-self-unstaking", new Account("live-self-unstaking", BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("100.0")));
+        assertEquals(1, UtilsUse.balanceTransaction(List.of(selfUnstaking), normallyValidUnstakingBalances, 341646L).size(),
+                "Normal live validation must still accept self-UNSTAKING when staking balance is sufficient");
+    }
+
+    @Test
     public void optionalExternalHistoricalChainPathCanBeValidatedWhenProvided() throws Exception {
         assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
