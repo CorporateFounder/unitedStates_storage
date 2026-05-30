@@ -10,30 +10,33 @@
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container my-4">
-    <h1>V35 pre-activation status</h1>
+    <h1>V35 pre-activation status / Статус подготовки / 预激活状态</h1>
 
-    <section class="alert alert-warning">
-        <h2>V35 is prepared but not active yet</h2>
+    <section class="alert alert-warning" lang="en">
+        <h2>EN - V35 is prepared but not active yet</h2>
         <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
-        <p>No user, exchange, or node-operator action is required yet.</p>
-        <p>Do not upgrade from draft or dry-run artifacts. Wait for the final official release notice.</p>
+        <p>Candidate fork height <strong th:text="${candidateForkIndex}">513332</strong> is planning-only. Final fork height, release tag, artifacts, and checksums will be announced later.</p>
+        <p>No founder burn has occurred. No user action is required yet.</p>
+        <p>Do not use draft or dry-run artifacts as a final production release. Operators and exchanges must wait for final tagged artifacts.</p>
+        <p>Use only official final release artifacts and checksums. Do not send coins to unofficial or fake burn addresses.</p>
     </section>
 
-    <section class="alert alert-info">
-        <h2>Planning status</h2>
-        <ul>
-            <li>Candidate fork height: <strong th:text="${candidateForkIndex}">513332</strong>.</li>
-            <li>The candidate fork height is planning-only. It is not final and has not been activated.</li>
-            <li>Final fork height, release tag, artifact names, and checksums will be announced later.</li>
-            <li>Founder burn is separate and has not been executed.</li>
-            <li>No jackpot payout transaction should be created manually.</li>
-        </ul>
+    <section class="alert alert-warning" lang="ru">
+        <h2>RU - V35 подготовлен, но еще не активирован</h2>
+        <p>V35 не активен, пока V35_RESCUE_FORK_INDEX равен Long.MAX_VALUE.</p>
+        <p>Кандидатная высота форка <strong th:text="${candidateForkIndex}">513332</strong> используется только для планирования. Финальная высота форка, тег релиза, артефакты и контрольные суммы будут объявлены позже.</p>
+        <p>Сжигание средств основателя не выполнялось. Сейчас пользователям не требуется никаких действий.</p>
+        <p>Не используйте черновые артефакты или материалы dry-run как финальный производственный релиз. Операторы и биржи должны дождаться финальных артефактов с тегом.</p>
+        <p>Используйте только официальные финальные артефакты релиза и контрольные суммы. Не отправляйте монеты на неофициальные или поддельные адреса сжигания.</p>
     </section>
 
-    <section class="alert alert-danger">
-        <h2>Public safety notice</h2>
-        <p>Use only official release artifacts and published checksums.</p>
-        <p>Do not send coins to unofficial or fake burn addresses.</p>
+    <section class="alert alert-warning" lang="zh">
+        <h2>ZH - V35 已准备，但尚未激活</h2>
+        <p>当 V35_RESCUE_FORK_INDEX 等于 Long.MAX_VALUE 时，V35 尚未激活。</p>
+        <p>候选分叉高度 <strong th:text="${candidateForkIndex}">513332</strong> 仅用于规划。最终分叉高度、发布标签、构建产物和校验和将在之后公布。</p>
+        <p>创始人销毁尚未执行。用户目前无需采取任何操作。</p>
+        <p>不要将草稿或 dry-run 产物用作最终生产版本。运营方和交易所必须等待带有最终标签的正式产物。</p>
+        <p>仅使用官方最终发布产物和校验和。不要向非官方或伪造的销毁地址发送代币。</p>
     </section>
 </main>
 

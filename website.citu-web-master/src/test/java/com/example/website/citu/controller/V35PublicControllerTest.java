@@ -215,7 +215,14 @@ class V35PublicControllerTest {
         assertTrue(content.contains("Final checksums are not published yet"));
         assertTrue(content.contains("SHA256SUMS.txt.sha256"));
         assertTrue(content.contains("Do not send coins to unofficial or fake burn addresses"));
-        assertTrue(content.contains("The founder burn has not been executed"));
+        assertTrue(content.contains("No founder burn has occurred"));
+        assertTrue(content.contains("lang=\"en\""));
+        assertTrue(content.contains("lang=\"ru\""));
+        assertTrue(content.contains("lang=\"zh\""));
+        assertTrue(content.contains("V35 подготовлен, но еще не активирован"));
+        assertTrue(content.contains("Сжигание средств основателя не выполнялось"));
+        assertTrue(content.contains("V35 已准备，但尚未激活"));
+        assertTrue(content.contains("创始人销毁尚未执行"));
     }
 
     private Path template(String file) {

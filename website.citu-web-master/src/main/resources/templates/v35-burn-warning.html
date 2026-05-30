@@ -10,21 +10,36 @@
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container my-4">
-    <h1>V35 burn-address safety warning</h1>
+    <h1>V35 burn warning / Предупреждение о сжигании / 销毁警告</h1>
 
-    <section class="alert alert-danger">
-        <h2>Do not send coins to unofficial burn addresses</h2>
-        <p>V35 is prepared but not active yet.</p>
-        <p>The founder burn has not been executed.</p>
-        <p>No user action is required yet.</p>
-        <p>Do not copy a burn address from unofficial messages, social posts, or links.</p>
+    <section class="alert alert-danger" lang="en">
+        <h2>EN - Do not send coins to unofficial burn addresses</h2>
+        <p>V35 is prepared but not active yet. Candidate fork height 513332 is planning-only. Final fork height, tag, and checksums remain placeholders and will be announced later.</p>
+        <p>No founder burn has occurred. No user action is required yet.</p>
+        <p>Operators and exchanges must wait for final tagged artifacts. Dry-run artifacts are not a final production release.</p>
+        <p>Use only official final release artifacts and checksums. Do not send coins to unofficial or fake burn addresses.</p>
+    </section>
+
+    <section class="alert alert-danger" lang="ru">
+        <h2>RU - Не отправляйте монеты на неофициальные адреса сжигания</h2>
+        <p>V35 подготовлен, но еще не активирован. Кандидатная высота форка 513332 используется только для планирования. Финальная высота форка, тег и контрольные суммы пока являются заполнителями и будут объявлены позже.</p>
+        <p>Сжигание средств основателя не выполнялось. Сейчас пользователям не требуется никаких действий.</p>
+        <p>Операторы и биржи должны дождаться финальных артефактов с тегом. Материалы dry-run не являются финальным производственным релизом.</p>
+        <p>Используйте только официальные финальные артефакты релиза и контрольные суммы. Не отправляйте монеты на неофициальные или поддельные адреса сжигания.</p>
+    </section>
+
+    <section class="alert alert-danger" lang="zh">
+        <h2>ZH - 不要向非官方销毁地址发送代币</h2>
+        <p>V35 已准备，但尚未激活。候选分叉高度 513332 仅用于规划。最终分叉高度、标签和校验和仍为占位信息，将在之后公布。</p>
+        <p>创始人销毁尚未执行。用户目前无需采取任何操作。</p>
+        <p>运营方和交易所必须等待带有最终标签的正式产物。dry-run 产物不是最终生产版本。</p>
+        <p>仅使用官方最终发布产物和校验和。不要向非官方或伪造的销毁地址发送代币。</p>
     </section>
 
     <section class="alert alert-info">
-        <h2>Current protocol sentinel</h2>
+        <h2>Protocol sentinel / Протокольный адрес / 协议哨兵地址</h2>
         <p>Current configured burn-address sentinel: <strong th:text="${burnAddress}">BURN_ADDRESS</strong>.</p>
-        <p>The final burn proof must publish the exact approved address, snapshot height, block hash, transaction hash, burn block, and verification links.</p>
-        <p>Until real proof is published, treat the burn as planned, not completed.</p>
+        <p>The future public proof must publish the exact approved address, snapshot height, block hash, transaction hash, burn block, and official verification links.</p>
         <p><a href="/v35/founder-burn-proof">Founder burn proof template</a></p>
     </section>
 </main>
