@@ -27,7 +27,7 @@ public class V35JackpotPayoutBuilderTest {
     public void disabledForkReturnsNoPayouts() {
         Fixture fixture = fixture(JackpotCalculator.JackpotPeriod.DAILY);
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertTrue(V35JackpotPayoutBuilder.buildPayoutTransactions(
                 fixture.chain, fixture.payoutIndex, PAYOUT_MINER, FOUNDER).isEmpty());
         assertTrue(V35JackpotPayoutBuilder.buildPayoutCandidates(

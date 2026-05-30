@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BlockchainV35MetadataTest {
     @Test
     public void v35WorkIsZeroWhileV35ForkIsDisabled() {
-        Block block = block(1_000_000L, V35TargetDifficulty.getInitialCompactTarget(), "0001");
+        Block block = block(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex(), V35TargetDifficulty.getInitialCompactTarget(), "0001");
 
         assertEquals(BigInteger.ZERO, Blockchain.v35Work(block));
         assertEquals(BigInteger.TEN, Blockchain.addV35Work(BigInteger.TEN, block));

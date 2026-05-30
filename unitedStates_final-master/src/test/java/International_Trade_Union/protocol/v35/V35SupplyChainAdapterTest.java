@@ -26,7 +26,7 @@ public class V35SupplyChainAdapterTest {
 
     @Test
     public void v35RemainsDisabled() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
     }
 
     @Test

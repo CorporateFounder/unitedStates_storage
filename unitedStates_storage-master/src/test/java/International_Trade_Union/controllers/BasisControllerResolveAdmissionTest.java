@@ -19,7 +19,7 @@ public class BasisControllerResolveAdmissionTest {
         DataShortBlockchainInformation fakeWorkCandidate = data(true, 11, 100,
                 "999999999999999999999999999999999999999999999999", "b");
 
-        assertTrue(Seting.V35_RESCUE_FORK_INDEX == Long.MAX_VALUE);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(BasisController.shouldUseV35ResolveAdmission(local, fakeWorkCandidate, Seting.V35_RESCUE_FORK_INDEX));
         assertTrue(BasisController.shouldAcceptResolveCandidate(local, fakeWorkCandidate));
     }

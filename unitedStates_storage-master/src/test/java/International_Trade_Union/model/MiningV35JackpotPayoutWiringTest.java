@@ -38,7 +38,7 @@ public class MiningV35JackpotPayoutWiringTest {
     public void disabledForkReturnsNoMiningJackpotPayouts() throws Exception {
         Fixture fixture = fixture(JackpotCalculator.JackpotPeriod.DAILY);
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertTrue(Mining.buildV35JackpotPayoutTransactionsForMining(
                 fixture.chain, fixture.payoutIndex, PAYOUT_MINER, FOUNDER, basisPrivateKey()).isEmpty());
     }

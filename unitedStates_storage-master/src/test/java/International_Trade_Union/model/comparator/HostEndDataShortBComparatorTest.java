@@ -37,7 +37,7 @@ public class HostEndDataShortBComparatorTest {
         DataShortBlockchainInformation higherWork = data(true, 10, 1, BigDecimal.ZERO, 0, 0, "100", "ffff");
         DataShortBlockchainInformation legacyBetter = data(true, 10, 1, BigDecimal.valueOf(999999), 999999, 999999, "10", "0001");
 
-        assertTrue(Seting.V35_RESCUE_FORK_INDEX == Long.MAX_VALUE);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(HostEndDataShortBComparator.shouldUseV35Comparison(higherWork, legacyBetter));
         assertTrue(comparator.compare(host("higher", higherWork), host("legacyBetter", legacyBetter)) > 0);
     }

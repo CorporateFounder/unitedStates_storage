@@ -35,7 +35,7 @@ public class HistoricalChainValidationRunnerTest {
 
     @Test
     public void block301393SelfStakingTransactionsRequirePreBlockBalanceContext() throws Exception {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertFalse(ProtocolVersion.isV35(301393L));
         assertFalse(BurnAddressPolicy.isNoSpendActive(301393L));
@@ -80,7 +80,7 @@ public class HistoricalChainValidationRunnerTest {
 
     @Test
     public void block301409LegacySelfStakingDeclarationIsAcceptedOnlyForHistoricalReplay() throws Exception {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertFalse(ProtocolVersion.isV35(301409L));
         assertFalse(BurnAddressPolicy.isNoSpendActive(301409L));
@@ -120,7 +120,7 @@ public class HistoricalChainValidationRunnerTest {
 
     @Test
     public void block331090TinyPrecisionDustTransferIsAcceptedOnlyForHistoricalReplay() throws Exception {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertFalse(ProtocolVersion.isV35(331090L));
         assertFalse(BurnAddressPolicy.isNoSpendActive(331090L));
@@ -174,7 +174,7 @@ public class HistoricalChainValidationRunnerTest {
 
     @Test
     public void block335680LegacyCentDriftTransferIsAcceptedOnlyForHistoricalReplay() throws Exception {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertFalse(ProtocolVersion.isV35(335680L));
         assertFalse(BurnAddressPolicy.isNoSpendActive(335680L));
@@ -224,7 +224,7 @@ public class HistoricalChainValidationRunnerTest {
 
     @Test
     public void block341646LegacySelfUnstakingIsAcceptedOnlyForHistoricalReplay() throws Exception {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertFalse(ProtocolVersion.isV35(341646L));
         assertFalse(BurnAddressPolicy.isNoSpendActive(341646L));
@@ -265,7 +265,7 @@ public class HistoricalChainValidationRunnerTest {
 
     @Test
     public void replayCompatibilityCannotWeakenNormalLiveBalanceValidation() throws Exception {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertFalse(ProtocolVersion.isV35(341646L));
         assertFalse(BurnAddressPolicy.isNoSpendActive(341646L));
@@ -316,7 +316,7 @@ public class HistoricalChainValidationRunnerTest {
 
     @Test
     public void optionalExternalHistoricalChainPathCanBeValidatedWhenProvided() throws Exception {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
 
         String configuredPath = System.getProperty(CHAIN_PATH_PROPERTY);

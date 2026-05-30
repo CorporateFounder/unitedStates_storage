@@ -49,7 +49,7 @@ public class SimulatedV35ForkDryRunTest {
 
     @Test
     public void simulatedForkGateDoesNotMutateProductionActivationConstants() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertFalse(ProtocolVersion.isV35(FORK_INDEX));
         assertFalse(V35JackpotProofService.isV35ActiveAt(FORK_INDEX, Seting.V35_RESCUE_FORK_INDEX));

@@ -31,7 +31,7 @@ public class TournamentServiceTest {
         Block v35WorkPreferred = block("v35", strongerV35WorkButLowerLegacyDifficulty, HASH_ONE, 10L);
         List<Block> candidates = List.of(v35WorkPreferred, legacyPreferred);
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(TournamentService.shouldUseV35CandidatePriority(candidates, Seting.V35_RESCUE_FORK_INDEX));
         assertEquals(legacyPreferred, TournamentService.sortWinner(balances(), candidates).get(0));
     }

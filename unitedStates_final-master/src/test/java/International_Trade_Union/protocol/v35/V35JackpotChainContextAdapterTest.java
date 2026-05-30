@@ -139,7 +139,7 @@ public class V35JackpotChainContextAdapterTest {
     public void productionForkGateRemainsDisabled() {
         Fixture fixture = fixture(JackpotCalculator.JackpotPeriod.DAILY);
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(V35JackpotChainContextAdapter.verifyPayoutWithChainContext(
                 fixture.chain, fixture.payoutBlock, fixture.payoutTransaction, FOUNDER).isValid());
     }

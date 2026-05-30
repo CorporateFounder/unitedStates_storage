@@ -11,8 +11,8 @@ public class ProtocolVersionTest {
     @Test
     public void v35RemainsDisabledForNormalIndexes() {
         assertFalse(ProtocolVersion.isV35(0));
-        assertFalse(ProtocolVersion.isV35(1_000_000L));
+        assertFalse(ProtocolVersion.isV35(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
         assertTrue(ProtocolVersion.isLegacy(0));
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
     }
 }

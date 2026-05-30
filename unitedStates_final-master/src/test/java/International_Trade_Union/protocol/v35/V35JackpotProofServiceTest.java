@@ -179,7 +179,7 @@ public class V35JackpotProofServiceTest {
 
         assertEquals(JackpotCalculator.JackpotPeriod.DAILY,
                 JackpotCalculator.classifyPayoutAmount(fixture.amount.doubleValue()));
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(V35JackpotProofService.verifyPayout(
                 fixture.chain, fixture.payoutBlock, fixture.payoutTransaction, FOUNDER).isValid());
 

@@ -57,7 +57,7 @@ public class AllTransactionsV35BurnHardeningTest {
 
         assertEquals(2, burnSpend.verifyCalls);
         assertTrue(pool.getTransactions().isEmpty());
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
     }
 
     private static AllTransactions activePool() {

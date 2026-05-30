@@ -41,9 +41,9 @@ public class V35PowValidationGateTest {
 
     @Test
     public void protocolVersionKeepsV35DisabledForNormalIndexes() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(ProtocolVersion.isV35(0));
-        assertFalse(ProtocolVersion.isV35(1_000_000L));
-        assertTrue(ProtocolVersion.isLegacy(1_000_000L));
+        assertFalse(ProtocolVersion.isV35(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
+        assertTrue(ProtocolVersion.isLegacy(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
     }
 }

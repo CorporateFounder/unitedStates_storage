@@ -92,7 +92,7 @@ public class Phase6B1LiveControllerDatabaseHardeningTest {
         Block legacyPreferred = tournamentBlock("legacy", V35TargetDifficulty.encodeCompactTarget(BigInteger.valueOf(10_000)), 10L);
         Block v35WorkPreferred = tournamentBlock("v35", V35TargetDifficulty.encodeCompactTarget(BigInteger.valueOf(1_000)), 10L);
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(TournamentService.shouldUseV35CandidatePriority(
                 List.of(v35WorkPreferred, legacyPreferred), Seting.V35_RESCUE_FORK_INDEX));
         assertEquals(legacyPreferred, TournamentService.sortWinner(new HashMap<>(),
@@ -113,7 +113,7 @@ public class Phase6B1LiveControllerDatabaseHardeningTest {
     public void v35RulesDoNotAccidentallyActivateWithProductionForkConstant() throws Exception {
         Fixture fixture = fixture();
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertTrue(Mining.buildV35JackpotPayoutTransactionsForMining(
                 fixture.chain, fixture.payoutIndex, PAYOUT_MINER, FOUNDER, basisPrivateKey()).isEmpty());
     }

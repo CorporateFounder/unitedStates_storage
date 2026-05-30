@@ -24,9 +24,9 @@ public class V35JackpotControllerTest {
 
         Map<String, Object> response = controller.status();
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals(false, response.get("v35Active"));
-        assertEquals("Long.MAX_VALUE", response.get("v35ForkIndex"));
+        assertEquals(International_Trade_Union.protocol.v35.V35TestMode.configuredForkIndexValue(), response.get("v35ForkIndex"));
         assertEquals(200, response.get("blockTimeSeconds"));
         assertEquals(432L, response.get("blocksPerDay"));
         assertEquals("2.00", response.get("jackpotReservePerBlockGold"));
@@ -85,7 +85,7 @@ public class V35JackpotControllerTest {
 
         assertTrue(periods.get(0).get("canonicalPayoutGold") instanceof String);
         assertEquals("302.40", periods.get(0).get("canonicalPayoutGold"));
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
     }
 

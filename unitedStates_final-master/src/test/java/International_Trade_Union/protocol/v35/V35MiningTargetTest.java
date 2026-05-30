@@ -46,8 +46,8 @@ public class V35MiningTargetTest {
             Mining.setCustomDiff(customDiff);
 
             assertEquals(customDiff, Mining.getCustomDiff());
-            assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
-            assertFalse(ProtocolVersion.isV35(1_000_000L));
+            International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
+            assertFalse(ProtocolVersion.isV35(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
         } finally {
             Mining.setCustomDiff(originalCustomDiff);
         }

@@ -30,7 +30,7 @@ public class JackpotPayoutValidationTest {
         JackpotWinnerProof proof = dailyProof();
         int ticketCount = 3;
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(JackpotCalculator.isV35JackpotPayoutAllowedAt(proof.getMaturityBlock()));
         assertFalse(JackpotCalculator.isValidJackpotPayout(proof.getMaturityBlock(),
                 JackpotCalculator.PERIOD_DAILY,

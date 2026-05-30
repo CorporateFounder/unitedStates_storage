@@ -110,11 +110,11 @@ public class V35RewardValidationFixtureTest {
 
     @Test
     public void normalIndexesStayOnLegacyPathWhileV35IsDisabled() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
-        assertFalse(ProtocolVersion.isV35(1_000_000L));
-        assertTrue(ProtocolVersion.isLegacy(1_000_000L));
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
+        assertFalse(ProtocolVersion.isV35(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
+        assertTrue(ProtocolVersion.isLegacy(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
 
-        assertTrue(isAcceptedByV35RewardShape(1_000_000L, Collections.singletonList(
+        assertTrue(isAcceptedByV35RewardShape(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex(), Collections.singletonList(
                 rewardTo(FOUNDER_ADDRESS, 999.00, 999.00))));
     }
 

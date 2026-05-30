@@ -25,9 +25,9 @@ public class V35DashboardControllerTest {
         String view = controller.dashboard(model);
 
         assertEquals("v35-dashboard", view);
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
-        assertEquals(false, model.get("v35Active"));
-        assertEquals("Long.MAX_VALUE", model.get("v35ForkIndex"));
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
+        assertEquals(Seting.V35_RESCUE_FORK_INDEX != Long.MAX_VALUE, model.get("v35Active"));
+        assertEquals(International_Trade_Union.protocol.v35.V35TestMode.configuredForkIndexLabel(), model.get("v35ForkIndex"));
         assertEquals("BURN_ADDRESS", model.get("burnAddress"));
         assertEquals(true, model.get("burnAddressConfigured"));
         assertEquals(false, model.get("isBurnAddressPlaceholder"));

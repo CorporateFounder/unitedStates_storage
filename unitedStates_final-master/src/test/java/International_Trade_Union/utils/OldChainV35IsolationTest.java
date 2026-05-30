@@ -30,19 +30,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OldChainV35IsolationTest {
-    private static final long LEGACY_TEST_INDEX = 1_000_000L;
+    private static final long LEGACY_TEST_INDEX = International_Trade_Union.protocol.v35.V35TestMode.preForkIndex();
     private static final String LEGACY_MINER = "legacy-miner-address";
     private static final String LEGACY_SENDER = "legacy-sender-address";
     private static final String LEGACY_RECIPIENT = "legacy-recipient-address";
 
     @Test
     public void productionForkConstantsKeepNormalHeightsOnLegacyPath() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
 
         assertFalse(ProtocolVersion.isV35(0L));
         assertFalse(ProtocolVersion.isV35(LEGACY_TEST_INDEX));
-        assertFalse(ProtocolVersion.isV35(Long.MAX_VALUE - 1L));
+        assertFalse(ProtocolVersion.isV35(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
         assertTrue(ProtocolVersion.isLegacy(LEGACY_TEST_INDEX));
 
         assertFalse(JackpotCalculator.isV35JackpotPayoutAllowedAt(LEGACY_TEST_INDEX));

@@ -17,7 +17,7 @@ public class V35LongWindowDifficultyDryRunTest {
 
     @Test
     public void productionConstantsRemainDisabledAndV35TimingConstantsMatchPolicy() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
         assertEquals(200, V35TargetDifficulty.getTargetBlockTimeSeconds());
         assertEquals(432, 86_400 / V35TargetDifficulty.getTargetBlockTimeSeconds());

@@ -41,9 +41,9 @@ public class BurnAddressPolicyTest {
         assertTrue(BurnAddressPolicy.isBurnAddress(burnAddress));
         assertFalse(BurnAddressPolicy.isBurnAddress(NORMAL_ADDRESS));
         assertTrue(BurnAddressPolicy.canSpendFromAddress(0, NORMAL_ADDRESS));
-        assertTrue(BurnAddressPolicy.canSpendFromAddress(Long.MAX_VALUE, burnAddress));
-        assertFalse(BurnAddressPolicy.isNoSpendActive(Long.MAX_VALUE));
-        assertFalse(BurnAddressPolicy.isSpendForbidden(Long.MAX_VALUE, burnAddress));
+        assertTrue(BurnAddressPolicy.canSpendFromAddress(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex(), burnAddress));
+        assertFalse(BurnAddressPolicy.isNoSpendActive(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex()));
+        assertFalse(BurnAddressPolicy.isSpendForbidden(International_Trade_Union.protocol.v35.V35TestMode.preForkIndex(), burnAddress));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class BurnAddressPolicyTest {
     public void utilsUsePathDoesNotCrashForBurnSenderWhileV35Disabled() {
         DtoTransaction transaction = burnSenderTransaction();
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertDoesNotThrow(() -> {
             List<DtoTransaction> accepted = UtilsUse.balanceTransaction(
                     Collections.singletonList(transaction),

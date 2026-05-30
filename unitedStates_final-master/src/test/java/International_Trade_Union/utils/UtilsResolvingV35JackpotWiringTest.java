@@ -25,7 +25,7 @@ public class UtilsResolvingV35JackpotWiringTest {
                 basisTransaction("winner", JackpotCalculator.expectedPayoutAmount(JackpotCalculator.JackpotPeriod.DAILY).doubleValue())
         ));
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertTrue(UtilsResolving.containsV35JackpotPayoutCandidate(block));
         assertFalse(UtilsResolving.isV35JackpotAccountingRequired(block));
         assertFalse(UtilsResolving.requiresV35JackpotAccounting(Arrays.asList(block)));

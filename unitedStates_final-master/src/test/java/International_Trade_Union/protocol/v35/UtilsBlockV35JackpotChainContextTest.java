@@ -72,7 +72,7 @@ public class UtilsBlockV35JackpotChainContextTest {
         assertFalse(UtilsBlock.validateV35JackpotPayoutWithChainContext(
                 fixture.chain, wrongAmountBlock, wrongAmount, FOUNDER, FORK_INDEX).isValid());
 
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(UtilsBlock.validateV35JackpotPayoutWithChainContext(
                 fixture.chain, fixture.payoutBlock, fixture.payoutTransaction, FOUNDER).isValid());
     }

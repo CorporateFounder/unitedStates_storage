@@ -48,7 +48,7 @@ public class UtilsBalanceV35JackpotAccountingTest {
         assertFalse(appliesWithDuplicateSamePeriodInBlock(fixture));
 
         Map<String, Account> disabledBalances = new HashMap<>();
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertFalse(UtilsBalance.applyV35JackpotPayoutsWithChainContext(
                 disabledBalances, chainWithPayout(fixture), fixture.payoutBlock,
                 FOUNDER, Seting.V35_RESCUE_FORK_INDEX));
