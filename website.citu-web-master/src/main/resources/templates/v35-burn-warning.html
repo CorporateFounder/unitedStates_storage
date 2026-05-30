@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 burn-address safety warning</h1>
+
+    <section class="alert alert-danger">
+        <h2>Do not send coins to unofficial burn addresses</h2>
+        <p>V35 is prepared but not active yet.</p>
+        <p>The founder burn has not been executed.</p>
+        <p>No user action is required yet.</p>
+        <p>Do not copy a burn address from unofficial messages, social posts, or links.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Current protocol sentinel</h2>
+        <p>Current configured burn-address sentinel: <strong th:text="${burnAddress}">BURN_ADDRESS</strong>.</p>
+        <p>The final burn proof must publish the exact approved address, snapshot height, block hash, transaction hash, burn block, and verification links.</p>
+        <p>Until real proof is published, treat the burn as planned, not completed.</p>
+        <p><a href="/v35/founder-burn-proof">Founder burn proof template</a></p>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>

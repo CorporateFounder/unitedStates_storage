@@ -37,6 +37,10 @@ class V35PublicControllerTest {
         assertEquals("v35-jackpot", controller.jackpot(new ExtendedModelMap()));
         assertEquals("v35-mining", controller.mining(new ExtendedModelMap()));
         assertEquals("v35-faq", controller.faq(new ExtendedModelMap()));
+        assertEquals("v35-preactivation-status", controller.preactivationStatus(new ExtendedModelMap()));
+        assertEquals("v35-operator-guide", controller.operatorGuide(new ExtendedModelMap()));
+        assertEquals("v35-checksums", controller.checksumVerification(new ExtendedModelMap()));
+        assertEquals("v35-burn-warning", controller.burnWarning(new ExtendedModelMap()));
     }
 
     @Test
@@ -48,7 +52,11 @@ class V35PublicControllerTest {
                 "v35-founder-burn-proof.html",
                 "v35-jackpot.html",
                 "v35-mining.html",
-                "v35-faq.html"
+                "v35-faq.html",
+                "v35-preactivation-status.html",
+                "v35-operator-guide.html",
+                "v35-checksums.html",
+                "v35-burn-warning.html"
         );
 
         StringBuilder all = new StringBuilder();
@@ -190,6 +198,24 @@ class V35PublicControllerTest {
         assertTrue(header.contains("href=\"/v35/burn\""));
         assertTrue(header.contains("href=\"/v35/founder-burn-proof\""));
         assertTrue(header.contains("href=\"/v35/jackpot\""));
+        assertTrue(header.contains("href=\"/v35/preactivation-status\""));
+        assertTrue(header.contains("href=\"/v35/operator-guide\""));
+    }
+
+    @Test
+    void preactivationInstructionPagesKeepPublicWordingSafe() throws IOException {
+        String content = Files.readString(template("v35-preactivation-status.html"))
+                + Files.readString(template("v35-operator-guide.html"))
+                + Files.readString(template("v35-checksums.html"))
+                + Files.readString(template("v35-burn-warning.html"));
+
+        assertTrue(content.contains("V35 is prepared but not active yet"));
+        assertTrue(content.contains("planning-only"));
+        assertTrue(content.contains("No user action is required yet"));
+        assertTrue(content.contains("Final checksums are not published yet"));
+        assertTrue(content.contains("SHA256SUMS.txt.sha256"));
+        assertTrue(content.contains("Do not send coins to unofficial or fake burn addresses"));
+        assertTrue(content.contains("The founder burn has not been executed"));
     }
 
     private Path template(String file) {

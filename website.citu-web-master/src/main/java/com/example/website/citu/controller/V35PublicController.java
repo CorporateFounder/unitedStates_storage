@@ -67,6 +67,31 @@ public class V35PublicController {
         return "v35-faq";
     }
 
+    @GetMapping("/v35/preactivation-status")
+    public String preactivationStatus(Model model) {
+        addCommonV35Model(model, "V35 pre-activation status");
+        model.addAttribute("candidateForkIndex", "513332");
+        return "v35-preactivation-status";
+    }
+
+    @GetMapping("/v35/operator-guide")
+    public String operatorGuide(Model model) {
+        addCommonV35Model(model, "V35 operator guide");
+        return "v35-operator-guide";
+    }
+
+    @GetMapping("/v35/checksums")
+    public String checksumVerification(Model model) {
+        addCommonV35Model(model, "V35 checksum verification");
+        return "v35-checksums";
+    }
+
+    @GetMapping("/v35/burn-warning")
+    public String burnWarning(Model model) {
+        addCommonV35Model(model, "V35 burn warning");
+        return "v35-burn-warning";
+    }
+
     private void addCommonV35Model(Model model, String title) {
         model.addAttribute("title", title);
         model.addAttribute("v35Active", false);

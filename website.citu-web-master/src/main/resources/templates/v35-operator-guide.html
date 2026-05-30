@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 exchange and node operator guide</h1>
+
+    <section class="alert alert-warning">
+        <h2>No production upgrade is required yet</h2>
+        <p>V35 is prepared but not active yet.</p>
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>Do not manually change V35_RESCUE_FORK_INDEX or V35_BURN_ADDRESS.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Wait for the final notice</h2>
+        <p>The final official notice must include:</p>
+        <ul>
+            <li>Exact fork height.</li>
+            <li>Final reviewed tag.</li>
+            <li>Final artifact names.</li>
+            <li>Final SHA-256 checksums.</li>
+            <li>Estimated activation time.</li>
+            <li>Upgrade deadline.</li>
+            <li>Rollback and monitoring instructions.</li>
+            <li>Support/contact channel.</li>
+        </ul>
+    </section>
+
+    <section class="alert alert-danger">
+        <h2>Do not use unofficial artifacts</h2>
+        <ul>
+            <li>Do not upgrade from draft or dry-run artifacts.</li>
+            <li>Do not announce a final fork height until the official notice is published.</li>
+            <li>Do not create founder burn, fork activation, or jackpot payout transactions manually.</li>
+            <li>Do not send coins to unofficial or fake burn addresses.</li>
+        </ul>
+        <p><a href="/v35/checksums">Checksum verification instructions</a></p>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>

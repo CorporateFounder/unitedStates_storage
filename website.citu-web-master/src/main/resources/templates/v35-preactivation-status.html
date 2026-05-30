@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 pre-activation status</h1>
+
+    <section class="alert alert-warning">
+        <h2>V35 is prepared but not active yet</h2>
+        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>No user, exchange, or node-operator action is required yet.</p>
+        <p>Do not upgrade from draft or dry-run artifacts. Wait for the final official release notice.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Planning status</h2>
+        <ul>
+            <li>Candidate fork height: <strong th:text="${candidateForkIndex}">513332</strong>.</li>
+            <li>The candidate fork height is planning-only. It is not final and has not been activated.</li>
+            <li>Final fork height, release tag, artifact names, and checksums will be announced later.</li>
+            <li>Founder burn is separate and has not been executed.</li>
+            <li>No jackpot payout transaction should be created manually.</li>
+        </ul>
+    </section>
+
+    <section class="alert alert-danger">
+        <h2>Public safety notice</h2>
+        <p>Use only official release artifacts and published checksums.</p>
+        <p>Do not send coins to unofficial or fake burn addresses.</p>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>

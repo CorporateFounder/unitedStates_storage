@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}"></title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container my-4">
+    <h1>V35 checksum verification</h1>
+
+    <section class="alert alert-warning">
+        <h2>Final checksums are not published yet</h2>
+        <p>V35 is prepared but not active yet.</p>
+        <p>No user action is required yet. Wait for the final official release notice.</p>
+    </section>
+
+    <section class="alert alert-info">
+        <h2>Future verification steps</h2>
+        <ol>
+            <li>Download artifacts only from the official release location.</li>
+            <li>Download the final SHA256SUMS.txt file.</li>
+            <li>Verify SHA256SUMS.txt using SHA256SUMS.txt.sha256.</li>
+            <li>Verify each artifact SHA-256 hash against SHA256SUMS.txt.</li>
+            <li>Confirm the final release tag and exact fork height match the official notice.</li>
+        </ol>
+        <p>Do not use draft, dry-run, unsigned, or unverified artifacts.</p>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>
