@@ -269,6 +269,9 @@ public class UtilsBlock {
         //DIFFICULTY_ADJUSTMENT_INTERVAL = 288
         //BLOCK_GENERATION_INTERVAL =  150000 милисекунд
         long difficulty = 1;
+        if (blocks == null || blocks.isEmpty()) {
+            return difficulty;
+        }
         Block latestBlock = blocks.get(blocks.size() - 1);
         if (latestBlock.getIndex() > Seting.NEW_START_DIFFICULT - 3
                 && latestBlock.getIndex() < Seting.NEW_START_DIFFICULT + 288) {

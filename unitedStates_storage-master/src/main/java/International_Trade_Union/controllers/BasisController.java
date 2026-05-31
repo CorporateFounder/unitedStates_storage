@@ -103,6 +103,12 @@ public class BasisController {
             System.out.println("static: shortDataBlockchain: " + shortDataBlockchain);
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
+            if (blockcheinSize == 0) {
+                prevBlock = null;
+                dificultyOneBlock = 1;
+                System.out.println("empty local chain: bootstrap state");
+                return;
+            }
             prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
 
@@ -950,7 +956,9 @@ public class BasisController {
             shortDataBlockchain = Blockchain.checkFromFile(Seting.ORIGINAL_BLOCKCHAIN_FILE);
             blockcheinSize = (int) shortDataBlockchain.getSize();
             blockchainValid = shortDataBlockchain.isValidation();
-            prevBlock = Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
+            prevBlock = blockcheinSize == 0
+                    ? null
+                    : Blockchain.indexFromFile(blockcheinSize - 1, Seting.ORIGINAL_BLOCKCHAIN_FILE);
 
         }
 
