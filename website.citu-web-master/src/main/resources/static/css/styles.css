@@ -494,6 +494,24 @@ body.v35-public a {
     flex-wrap: wrap;
     gap: .75rem;
 }
+.citu-panel a {
+    overflow-wrap: anywhere;
+}
+.v35-kicker {
+    color: #e7c56f;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+.v35-code {
+    background: #07131b;
+    border: 1px solid #294a56;
+    border-radius: 6px;
+    color: #dce7eb;
+    overflow-x: auto;
+    padding: 1rem;
+}
 @media (max-width: 768px) {
     .v35-site-nav {
         align-items: flex-start;

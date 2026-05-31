@@ -31,11 +31,12 @@
     </div>
 </section>
 <section class="citu-panel p-4 mb-4">
-    <h2>Network indicators</h2>
+    <h2>Legacy / pre-V35 live chain indicators</h2>
+    <p>These are current live-chain values. Block difficulty is legacy data; manual difficulty is not the V35 public mining model. After V35, public mining guidance uses cumulative work.</p>
     <div class="citu-metric-grid mb-4">
         <div class="citu-metric"><span>Blockchain size</span><strong th:text="${size}">Unavailable</strong></div>
-        <div class="citu-metric"><span>Block difficulty</span><strong th:text="${difficulty}">Unavailable</strong></div>
-        <div class="citu-metric"><span>Total chain difficulty</span><strong th:text="${difficultyAll}">Unavailable</strong></div>
+        <div class="citu-metric"><span>Legacy block difficulty</span><strong th:text="${difficulty}">Unavailable</strong></div>
+        <div class="citu-metric"><span>Legacy total chain difficulty</span><strong th:text="${difficultyAll}">Unavailable</strong></div>
         <div class="citu-metric"><span>Total GOLD</span><strong th:text="${#numbers.formatDecimal(totalDollars, 1, 'NONE', 2, 'POINT')}">Unavailable</strong></div>
         <div class="citu-metric"><span>Total accounts</span><strong th:text="${totalAccounts}">Unavailable</strong></div>
         <div class="citu-metric"><span>Transactions today</span><strong th:text="${totalTransactionsDay}">Unavailable</strong></div>

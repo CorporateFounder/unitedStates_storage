@@ -73,3 +73,41 @@ body.citu-wallet-page {
     background: #f4f8f9;
     border: 1px solid #294a56;
 }
+.citu-wallet-page main {
+    max-width: 1120px;
+}
+.citu-wallet-hero {
+    align-items: center;
+    display: flex;
+    gap: 1.5rem;
+}
+.citu-wallet-home-logo {
+    border-radius: 50%;
+    height: 6.5rem;
+    object-fit: cover;
+    width: 6.5rem;
+}
+.citu-wallet-kicker {
+    color: #e7c56f;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-bottom: .4rem;
+    text-transform: uppercase;
+}
+.citu-wallet-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+.citu-wallet-security-note {
+    border-left: 4px solid #d3a640;
+    color: #f0cf73;
+    padding-left: .75rem;
+}
+@media (max-width: 576px) {
+    .citu-wallet-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

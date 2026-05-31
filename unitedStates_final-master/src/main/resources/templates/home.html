@@ -4,6 +4,7 @@
     <title th:text="${title}"/>
     <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/citu-wallet.css">
     <script>
         function setDefaultValues() {
             var dollarField = document.querySelector('input[name="dollar"]');
@@ -19,36 +20,52 @@
         }
     </script>
 </head>
-<body>
+<body class="citu-wallet-page">
 
 <!--<header th:insert="blocks/header :: header "></header>-->
 <header th:insert="blocks/header :: header"></header>
-<div class="container mt 5">
-    <h1 th:text="${title}"></h1>
-    <h1 th:text="'your server: '+${server}"></h1>
-</div>
-
-<div  class="alert alert-info mt-2">
-    <h4 th:text="'miner address: '+${account.account}"/>
-    <p th:text="'digital dollar (citu): '+${#numbers.formatDecimal(account.digitalDollarBalance, 1, 'COMMA', 10, 'POINT')}"/>
+<main class="container mb-5">
+<section class="citu-wallet-hero citu-wallet-panel mb-4">
+    <img src="/images/citu-v35-logo.jpg" alt="Official CITU logo" class="citu-wallet-home-logo"/>
+    <div>
+        <p class="citu-wallet-kicker">CITU local wallet</p>
+        <h1 th:text="${title}">Wallet</h1>
+        <div class="citu-wallet-badges">
+            <span class="citu-wallet-badge">V35 NOT ACTIVE YET</span>
+            <span class="citu-wallet-badge">PLANNING CANDIDATE: 514291</span>
+            <span class="citu-wallet-badge">NO FOUNDER BURN YET</span>
+        </div>
+        <p class="mb-0 mt-3">Use this local interface for wallet operations. Review protocol readiness on the <a href="/v35-dashboard">V35 dashboard</a>.</p>
+    </div>
+</section>
+<div class="citu-wallet-grid mb-4">
+<section class="citu-wallet-panel">
+    <h2 class="h4">Account balances</h2>
+    <p class="text-break" th:text="'miner address: '+${account.account}"/>
+    <p th:text="'digital dollar (CITU): '+${#numbers.formatDecimal(account.digitalDollarBalance, 1, 'COMMA', 10, 'POINT')}"/>
     <p th:text="'digital stock: '+${#numbers.formatDecimal(account.digitalStockBalance, 1, 'COMMA', 10, 'POINT')}"/>
     <p th:text="'digital staking: '+${#numbers.formatDecimal(account.digitalStakingBalance, 1, 'COMMA', 10, 'POINT')}"/>
-    <p th:text="'staking score: '+${score}"/>
-
-
+    <p class="mb-0" th:text="'staking score: '+${score}"/>
+</section>
+<section class="citu-wallet-panel">
+    <h2 class="h4">Connected server</h2>
+    <p class="text-break" th:text="${server}">Unavailable</p>
+    <p th:text="'blockchain local size: ' + ${size}"/>
+    <p th:text="'blockchain global size: ' + ${globalSize}"/>
+    <p th:text="'local version: ' + ${version}"/>
+    <p th:text="'global version: ' + ${global_version}"/>
+    <p class="mb-0" th:text="'local validation: ' + ${validation}"/>
+</section>
+<section class="citu-wallet-panel">
+    <h2 class="h4">Legacy live chain indicators</h2>
+    <p>Difficulty values describe the pre-V35 live chain. After V35, public mining guidance uses cumulative work.</p>
+    <p th:text="'current difficulty of one block: '+${difficultOneBlock}"/>
+    <p class="mb-0" th:text="'current blockchain complexity: '+${difficultAllBlockchain}"/>
+</section>
 </div>
-<div  class="alert alert-info mt-2">
-    <h4 th:text="'blockchain local size: ' + ${size}"/>
-    <h4 th:text="'blockchain global size: ' + ${globalSize}"/>
-    <h4 th:text="'local version: ' + ${version}"/>
-    <h4 th:text="'global version: ' + ${global_version}"/>
-    <h4 th:text="'local validation: ' + ${validation}"/>
-    <h4 th:text="'the current difficulty of one block.: '+${difficultOneBlock}"/>
-    <h4 th:text="'the current complexity of the blockchain.: '+${difficultAllBlockchain}"/>
-
-</div>
-
-<div class="container mt-5 mb-5">
+<section class="citu-wallet-panel mb-4">
+    <h2 class="h4">Legacy send and staking transaction</h2>
+    <p class="citu-wallet-security-note">Local legacy form only. Never expose a private key or password in a production URL, log, screenshot, or support message.</p>
     <form action="/" method="post" onsubmit="setDefaultValues()">
         <input type="text" name="sender" placeholder="enter the sender's address" class="form-control"><br>
         <input type="text" name="recipient" placeholder="enter the recipient's address" class="form-control"><br>
@@ -57,22 +74,16 @@
 
         )" class="form-control"><br>
         <textarea name="password" placeholder="enter private key" rows="8" cols="120" class="form-control"></textarea><br>
-        <button type="submit" class="btn btn-success">Send money</button><br>
+        <button type="submit" class="btn btn-success">Submit local transaction</button><br>
     </form>
-</div>
-
-
-</div>
-
-<div class="container mt-5 mb-5">
+</section>
+<section class="citu-wallet-panel">
+    <h2 class="h4">Local blockchain maintenance</h2>
     <form action="/resolving" method="get">
-        <button type="submit" class="btn btn-success">Update blockchain</button><br>
+        <button type="submit" class="btn btn-success">Update blockchain</button>
     </form>
-</div>
-
-
-
-
+</section>
+</main>
 
 <footer th:insert="blocks/footer :: footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>

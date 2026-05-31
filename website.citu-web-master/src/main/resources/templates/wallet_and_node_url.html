@@ -76,6 +76,31 @@
         </ul>
     </section>
 
+    <section class="alert alert-info">
+        <h2>Recommended exchange integration flow</h2>
+        <ol>
+            <li>Read node readiness and height from <code>GET /confirmReadiness</code> and <code>GET /size</code>.</li>
+            <li>For deposits, inspect customer transaction history and confirm inclusion before crediting an account.</li>
+            <li>For withdrawals, construct and review signed transaction JSON outside URL query strings.</li>
+            <li>Broadcast reviewed signed JSON with <code>POST /addTransaction</code>.</li>
+            <li>Check inclusion with <code>GET /isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;</code> or the Base64 POST variant.</li>
+        </ol>
+        <h3 class="h5">Read-only examples</h3>
+        <pre class="v35-code"><code>curl http://localhost:8083/size
+curl http://localhost:8083/confirmReadiness
+curl "http://localhost:8083/balance?address=&lt;PUBLIC_ADDRESS&gt;"
+curl "http://localhost:8083/customerTransactions?address=&lt;PUBLIC_ADDRESS&gt;&amp;from=0&amp;to=10"</code></pre>
+        <h3 class="h5">Signed JSON broadcast shape</h3>
+        <pre class="v35-code"><code>{
+  "sender": "&lt;PUBLIC_ADDRESS&gt;",
+  "customer": "&lt;RECIPIENT_ADDRESS&gt;",
+  "digitalDollar": 0.01,
+  "digitalStockBalance": 0,
+  "sign": "&lt;REVIEWED_SIGNATURE&gt;"
+}</code></pre>
+        <p>The exact final production endpoint, tagged artifact, and checksum set must come from the final official release announcement.</p>
+    </section>
+
     <section class="alert alert-warning">
         <h2>V35 read-only API</h2>
         <p>These endpoints become production-relevant only after the reviewed V35 server build is deployed. V35 still remains inactive until the approved fork height.</p>

@@ -38,32 +38,28 @@
 <body class="v35-public">
 
 <header th:insert="blocks/header :: header"></header>
-<div class="container mt 5">
-    <h1 th:text="${title}"></h1>
-</div>
-
-
-
 <main class="container py-4">
 <section class="alert alert-info">
 <h1>Explorer</h1>
+<p>Inspect live legacy chain data by block index, transaction signature, or public address. These values do not activate V35.</p>
 <form action="/conductor" method="post">
     <input type="text" name="sign" placeholder="Enter index block or sign transaction" class="form-control"><br>
     <button type="submit" class="btn btn-success">Submit</button><br>
 </form>
 
 
+</section>
+<section class="alert alert-info">
+<h2 class="h4">Address history</h2>
 <form action="/sender" method="get">
     <input type="text" name="pubkey" placeholder="enter sender address " class="form-control"><br>
     <button type="submit" class="btn btn-success" name="action" value="/send">Submit</button><br>
 </form>
-</section>
-
-
 <form action="/customer" method="get">
     <input type="text" name="pubkey" placeholder="enter customer address " class="form-control"><br>
     <button type="submit" class="btn btn-success" name="action" value="/send">Submit</button><br>
 </form>
+</section>
 
 <h4 th:text="'status: ' + ${status}"></h4>
 <h4 th:if="${text != null && text != '' }" th:text="'text: ' + ${text}"></h4>
