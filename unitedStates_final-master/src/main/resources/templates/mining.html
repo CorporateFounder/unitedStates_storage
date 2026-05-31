@@ -4,6 +4,7 @@
     <title th:text="${title}"/>
     <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/citu-wallet.css">
     <script>
         function setDefaultValues() {
             var dollarField = document.querySelector('input[name="dollar"]');
@@ -16,7 +17,7 @@
     </script>
 
 </head>
-<body>
+<body class="citu-wallet-page">
 
 <header th:insert="blocks/header :: header"></header>
 
@@ -27,7 +28,9 @@
     <div class="alert alert-warning" role="alert">
         <h4>Legacy / pre-V35 mining controls</h4>
         <p>This is legacy/pre-V35 UI. Manual difficulty is legacy-only after V35.</p>
+        <p><strong>Legacy default difficulty: 17.</strong> Keep the default unless you understand the pre-V35 mining behavior.</p>
         <p>V35 is currently disabled while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE. Do not confuse these controls, staking, or unstaking with V35 reward rules.</p>
+        <p>These controls do not define the V35 mining or reward model.</p>
         <p>Use the <a href="/v35-dashboard" class="alert-link">V35 dashboard</a> for the prepared V35 protocol model.</p>
     </div>
 
@@ -39,7 +42,7 @@
 
     <h3 th:text="'acutal custom diff: '+${customDiff}"/>
     <form action="/customDiff" class="container mt-1" method="post">
-        <input type="text" name="customDiff" placeholder="enter the new difficult:" class="form-control"><br>
+        <input type="text" name="customDiff" placeholder="17 legacy default" class="form-control"><br>
         <button type="submit" class="btn btn-success">change custom diff</button>
     </form>
 

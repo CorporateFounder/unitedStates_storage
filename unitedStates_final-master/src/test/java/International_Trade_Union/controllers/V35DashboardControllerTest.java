@@ -160,6 +160,10 @@ public class V35DashboardControllerTest {
         assertTrue(template.contains("V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE."));
         assertTrue(template.contains("src=\"/images/citu-v35-logo.jpg\""));
         assertTrue(template.contains("alt=\"Official CITU logo\""));
+        assertTrue(template.contains("/css/citu-wallet.css"));
+        assertTrue(template.contains("V35 NOT ACTIVE YET"));
+        assertTrue(template.contains("PLANNING CANDIDATE: 514291"));
+        assertTrue(template.contains("NO FOUNDER BURN YET"));
         assertTrue(template.contains("Modeled burn values are projections."));
         assertTrue(template.contains("Actual supply and burn"));
         assertTrue(template.contains("Live read-only data"));
@@ -177,12 +181,17 @@ public class V35DashboardControllerTest {
         assertTrue(template.contains("/v35/jackpot/proof/{periodType}/{periodEnd}"));
         assertTrue(header.contains("/v35-dashboard"));
         assertTrue(header.contains("V35 dashboard"));
+        assertTrue(header.contains("/images/citu-v35-logo.jpg"));
+        assertFalse(header.contains("<title>Bootstrap</title>"));
 
         String mining = new String(Files.readAllBytes(Paths.get("src/main/resources/templates/mining.html")),
                 StandardCharsets.UTF_8);
         assertTrue(mining.contains("Legacy / pre-V35 mining controls"));
         assertTrue(mining.contains("Manual difficulty is legacy-only after V35."));
         assertTrue(mining.contains("V35 is currently disabled while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE."));
+        assertTrue(mining.contains("Legacy default difficulty: 17."));
+        assertTrue(mining.contains("placeholder=\"17 legacy default\""));
+        assertTrue(mining.contains("These controls do not define the V35 mining or reward model."));
     }
 
     @SuppressWarnings("unchecked")

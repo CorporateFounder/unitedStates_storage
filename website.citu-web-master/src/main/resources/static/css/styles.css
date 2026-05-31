@@ -425,3 +425,82 @@ body.v35-public a {
     border-top: 1px solid #24424f;
     color: #9fb5bd;
 }
+.v35-site-nav details {
+    position: relative;
+}
+.v35-site-nav summary {
+    color: #e7c56f;
+    cursor: pointer;
+    font-size: .88rem;
+    list-style: none;
+}
+.v35-site-nav summary::-webkit-details-marker {
+    display: none;
+}
+.v35-nav-menu {
+    background: #102630;
+    border: 1px solid #294a56;
+    display: grid;
+    gap: .5rem;
+    min-width: 180px;
+    padding: .75rem;
+    position: absolute;
+    right: 0;
+    top: 1.5rem;
+    z-index: 20;
+}
+.v35-nav-menu a {
+    white-space: nowrap;
+}
+.citu-home-shell {
+    background: #07131b;
+    color: #dce7eb;
+    min-height: 100vh;
+}
+.citu-home-shell h1,
+.citu-home-shell h2,
+.citu-home-shell h3 {
+    color: #f4f8f9;
+}
+.citu-panel {
+    background: #102630 !important;
+    border: 1px solid #294a56 !important;
+    border-radius: 8px !important;
+    color: #dce7eb !important;
+}
+.citu-metric-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.citu-metric {
+    background: #0b1e29;
+    border: 1px solid #294a56;
+    border-radius: 8px;
+    padding: 1rem;
+}
+.citu-metric span {
+    color: #9fb5bd;
+    display: block;
+    font-size: .85rem;
+}
+.citu-metric strong {
+    color: #e7c56f;
+    display: block;
+    margin-top: .35rem;
+}
+.citu-resource-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+@media (max-width: 768px) {
+    .v35-site-nav {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .v35-nav-menu {
+        margin-top: .5rem;
+        position: static;
+    }
+}

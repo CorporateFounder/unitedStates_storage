@@ -196,6 +196,11 @@ class V35PublicControllerTest {
 
         assertTrue(header.contains("@{/images/citu-v35-logo.jpg}"));
         assertTrue(header.contains("alt=\"Official CITU logo\""));
+        assertTrue(header.contains("href=\"/conductor\""));
+        assertTrue(header.contains("href=\"/wallet_and_node_url\""));
+        assertTrue(header.contains("href=\"/white_papper\""));
+        assertTrue(header.contains("href=\"/charter\""));
+        assertTrue(header.contains("href=\"/how_to_install\""));
         assertTrue(header.contains("href=\"/v35\""));
         assertTrue(header.contains("href=\"/v35/tokenomics\""));
         assertTrue(header.contains("href=\"/v35/burn-warning\""));
@@ -204,6 +209,23 @@ class V35PublicControllerTest {
         assertTrue(header.contains("href=\"/v35/jackpot\""));
         assertTrue(header.contains("href=\"/v35/preactivation-status\""));
         assertTrue(header.contains("href=\"/v35/operator-guide\""));
+        assertTrue(header.contains("href=\"/v35/faq\""));
+    }
+
+    @Test
+    void apiDocumentationKeepsExchangeIntegrationSafe() throws IOException {
+        String content = Files.readString(template("wallet_and_node_url.html"));
+
+        assertTrue(content.contains("Exchange / Operator API Documentation"));
+        assertTrue(content.contains("GET /size"));
+        assertTrue(content.contains("GET /prevBlock"));
+        assertTrue(content.contains("POST /statusTransaction58"));
+        assertTrue(content.contains("GET /v35/protocol"));
+        assertTrue(content.contains("GET /v35/supply"));
+        assertTrue(content.contains("GET /v35/jackpot/status"));
+        assertTrue(content.contains("legacy local-only"));
+        assertTrue(content.contains("Never place private keys or passwords in production URLs"));
+        assertTrue(content.contains("final tagged release"));
     }
 
     @Test
@@ -232,6 +254,29 @@ class V35PublicControllerTest {
         assertTrue(content.contains("Сжигание средств основателя не выполнялось"));
         assertTrue(content.contains("V35 已准备，但尚未激活"));
         assertTrue(content.contains("创始人销毁尚未执行"));
+    }
+
+    @Test
+    void protocolPaperReplacesLegacyWhitePaperAndLabelsHistoricalGuides() throws IOException {
+        String paper = Files.readString(template("white_papper.html"));
+        String guide = Files.readString(template("how_to_mining.html"));
+        String charter = Files.readString(template("charter_eng.html"));
+
+        assertTrue(paper.contains("V35 pre-activation protocol model"));
+        assertTrue(paper.contains("PLANNING CANDIDATE: 514291"));
+        assertTrue(paper.contains("200 seconds"));
+        assertTrue(paper.contains("432"));
+        assertTrue(paper.contains("8 GOLD"));
+        assertTrue(paper.contains("6 GOLD"));
+        assertTrue(paper.contains("2 GOLD"));
+        assertTrue(paper.contains("0 GOLD"));
+        assertTrue(paper.contains("cumulativeWork"));
+        assertTrue(paper.contains("No founder burn has occurred"));
+        assertTrue(paper.contains("official burn address has not been published"));
+        assertFalse(paper.contains("difficulty * 15"));
+        assertFalse(paper.contains("0</code> to <code>170"));
+        assertTrue(guide.contains("Legacy / pre-V35 mining guide"));
+        assertTrue(charter.contains("Legacy / pre-V35 protocol note"));
     }
 
     private Path template(String file) {

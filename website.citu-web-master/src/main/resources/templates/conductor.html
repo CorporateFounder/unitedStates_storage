@@ -35,7 +35,7 @@
         }
     </style>
 </head>
-<body>
+<body class="v35-public">
 
 <header th:insert="blocks/header :: header"></header>
 <div class="container mt 5">
@@ -44,6 +44,9 @@
 
 
 
+<main class="container py-4">
+<section class="alert alert-info">
+<h1>Explorer</h1>
 <form action="/conductor" method="post">
     <input type="text" name="sign" placeholder="Enter index block or sign transaction" class="form-control"><br>
     <button type="submit" class="btn btn-success">Submit</button><br>
@@ -54,6 +57,7 @@
     <input type="text" name="pubkey" placeholder="enter sender address " class="form-control"><br>
     <button type="submit" class="btn btn-success" name="action" value="/send">Submit</button><br>
 </form>
+</section>
 
 
 <form action="/customer" method="get">
@@ -125,6 +129,7 @@
 </form>
 
 <footer th:insert="blocks/footer :: footer"></footer>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
