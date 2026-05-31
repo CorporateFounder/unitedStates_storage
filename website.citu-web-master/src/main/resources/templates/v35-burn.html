@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
+<body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container my-4">
@@ -21,10 +21,9 @@
     <section class="alert alert-info">
         <h2>Burn address policy</h2>
         <ul>
-            <li>Burn address: <strong th:text="${burnAddress}"></strong>.</li>
-            <li>BURN_ADDRESS is a protocol sink.</li>
-            <li>Sending TO BURN_ADDRESS is allowed.</li>
-            <li>Spending FROM BURN_ADDRESS is blocked after V35 by consensus policy.</li>
+            <li>Official burn address has not been published yet.</li>
+            <li><code>BURN_ADDRESS</code> is an internal protocol sink name, not a public instruction to send funds.</li>
+            <li>Do not send coins to any unofficial burn address.</li>
             <li>Founder burn is planned manually before V35 activation.</li>
             <li>Recommended founder burn: 80%.</li>
         </ul>
@@ -35,7 +34,7 @@
         <h2>Public proof checklist</h2>
         <ul>
             <li>founder address: <span th:text="${founderAddress}"></span></li>
-            <li>burn address: <span th:text="${burnAddress}"></span></li>
+            <li>burn address: Pending official publication</li>
             <li>snapshot height/hash</li>
             <li>burn amount</li>
             <li>burn tx hash</li>

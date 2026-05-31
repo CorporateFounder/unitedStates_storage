@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
+<body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container my-4">
@@ -24,12 +24,11 @@
         <h2>Planned burn policy</h2>
         <ul>
             <li>Founder address: <span th:text="${founderAddress}">nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</span></li>
-            <li>Burn address: <strong th:text="${burnAddress}"></strong></li>
+            <li>Burn address: Pending official publication</li>
             <li>Recommended burn: <span th:text="${recommendedBurnPercent}">80</span>% of snapshot founder balance.</li>
             <li>Founder reward after V35: <span th:text="${founderRewardGold}"></span> GOLD.</li>
-            <li>BURN_ADDRESS is a protocol sink.</li>
-            <li>Sending TO BURN_ADDRESS is allowed.</li>
-            <li>Spending FROM BURN_ADDRESS is blocked after V35 by consensus policy.</li>
+            <li><code>BURN_ADDRESS</code> is an internal protocol sink name, not a public instruction to send funds.</li>
+            <li>Do not send coins to any unofficial burn address.</li>
         </ul>
         <p>Recommended burn is 80% of snapshot founder balance.</p>
     </section>
@@ -65,7 +64,7 @@
             <tr><th>Actual founder reserve</th><td th:text="${liveFounderReserveGold}">Unavailable</td></tr>
             <tr><th>Actual jackpot paid</th><td th:text="${liveJackpotPaidGold}">Unavailable</td></tr>
             <tr><th>Annual emission</th><td th:text="${liveAnnualEmissionGold}">1,261,440 GOLD/year</td></tr>
-            <tr><th>Live burn address</th><td th:text="${liveBurnAddress}">BURN_ADDRESS</td></tr>
+            <tr><th>Live protocol sink value</th><td th:text="${liveBurnAddress}">BURN_ADDRESS</td></tr>
             <tr><th>Live founder address</th><td th:text="${liveFounderAddress}">nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</td></tr>
             <tr><th>Burn transaction created by API</th><td th:text="${liveBurnTransactionCreated}">false</td></tr>
             <tr><th>Snapshot height from API</th><td th:text="${liveSnapshotHeight}">Unavailable</td></tr>
@@ -107,7 +106,7 @@
             <tr><th>Burn block hash</th><td>Pending - not executed yet</td></tr>
             <tr><th>Burn timestamp</th><td>Pending - not executed yet</td></tr>
             <tr><th>Sender</th><td th:text="${founderAddress}">nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43</td></tr>
-            <tr><th>Recipient</th><td th:text="${burnAddress}"></td></tr>
+            <tr><th>Recipient</th><td>Pending official publication</td></tr>
             <tr><th>Amount</th><td>Pending - not executed yet</td></tr>
             <tr><th>Fee</th><td>Pending - not executed yet</td></tr>
             <tr><th>Confirmations</th><td>Pending - not executed yet</td></tr>
@@ -122,7 +121,7 @@
         <table class="table table-bordered">
             <tbody>
             <tr><th>Founder balance after burn</th><td>Pending - not executed yet</td></tr>
-            <tr><th>BURN_ADDRESS balance</th><td>Pending - not executed yet</td></tr>
+            <tr><th>Official burn-address balance</th><td>Pending - not executed yet</td></tr>
             <tr><th>Total minted</th><td>Pending - to be verified by /v35/supply</td></tr>
             <tr><th>Burned supply</th><td>Pending - to be verified by /v35/burn</td></tr>
             <tr><th>Circulating supply</th><td>Pending - to be verified by /v35/supply</td></tr>
@@ -140,10 +139,10 @@
             <li>Check the published snapshot height and snapshot block hash.</li>
             <li>Check the founder balance at the snapshot.</li>
             <li>Check that the burn transaction sender is the founder address.</li>
-            <li>Check that the burn transaction recipient is BURN_ADDRESS.</li>
+            <li>Check that the burn transaction recipient exactly matches the officially published burn address.</li>
             <li>Confirm the amount equals 80% of the snapshot founder balance.</li>
             <li>Confirm after-burn supply APIs reflect the burn.</li>
-            <li>Confirm BURN_ADDRESS cannot spend after V35.</li>
+            <li>Confirm the officially published burn address cannot spend after V35.</li>
         </ol>
     </section>
 

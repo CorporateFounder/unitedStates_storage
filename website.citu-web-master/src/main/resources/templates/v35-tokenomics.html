@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
+<body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container my-4">
@@ -37,7 +37,7 @@
         <h2>Supply fields</h2>
         <ul>
             <li>Total minted: actual chain value from valid BASIS emissions.</li>
-            <li>Burned: actual chain value from <strong th:text="${burnAddress}"></strong> balance.</li>
+            <li>Burned: actual chain value from the future officially published burn-address balance.</li>
             <li>Circulating: total minted minus burned.</li>
             <li>Founder reserve: current founder account balance.</li>
             <li>Jackpot paid: canonical jackpot BASIS payouts already present in the chain.</li>

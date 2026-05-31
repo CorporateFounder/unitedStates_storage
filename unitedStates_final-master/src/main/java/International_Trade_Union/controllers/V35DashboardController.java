@@ -339,7 +339,8 @@ public class V35DashboardController {
         warnings.add("V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.");
         warnings.add("Founder burn has not happened until a burn transaction hash and burn block are published.");
         warnings.add("Modeled founder burn values are projections, not actual burned supply.");
-        warnings.add("BURN_ADDRESS is a protocol sink. Sending to it is allowed; spending from it is blocked after V35.");
+        warnings.add("BURN_ADDRESS is an internal protocol sink placeholder, not a final public burn instruction.");
+        warnings.add("Do not send coins to any unofficial burn address.");
         warnings.add("Manual difficulty is legacy-only after V35.");
         return warnings;
     }

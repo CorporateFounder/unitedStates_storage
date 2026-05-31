@@ -30,6 +30,7 @@ class V35PublicControllerTest {
         assertEquals("2", model.get("jackpotReserveGold"));
         assertEquals("0", model.get("founderRewardGold"));
         assertEquals("1,261,440 GOLD/year", model.get("annualEmissionGold"));
+        assertEquals("514291", model.get("candidateForkIndex"));
 
         assertEquals("v35-tokenomics", controller.tokenomics(new ExtendedModelMap()));
         assertEquals("v35-burn", controller.burn(new ExtendedModelMap()));
@@ -193,9 +194,12 @@ class V35PublicControllerTest {
     void headerLinksToPublicV35Pages() throws IOException {
         String header = Files.readString(template("blocks/header.html"));
 
+        assertTrue(header.contains("@{/images/citu-v35-logo.jpg}"));
+        assertTrue(header.contains("alt=\"Official CITU logo\""));
         assertTrue(header.contains("href=\"/v35\""));
         assertTrue(header.contains("href=\"/v35/tokenomics\""));
-        assertTrue(header.contains("href=\"/v35/burn\""));
+        assertTrue(header.contains("href=\"/v35/burn-warning\""));
+        assertTrue(header.contains("href=\"/v35/checksums\""));
         assertTrue(header.contains("href=\"/v35/founder-burn-proof\""));
         assertTrue(header.contains("href=\"/v35/jackpot\""));
         assertTrue(header.contains("href=\"/v35/preactivation-status\""));
@@ -216,6 +220,11 @@ class V35PublicControllerTest {
         assertTrue(content.contains("SHA256SUMS.txt.sha256"));
         assertTrue(content.contains("Do not send coins to unofficial or fake burn addresses"));
         assertTrue(content.contains("No founder burn has occurred"));
+        assertTrue(content.contains("514291"));
+        assertFalse(content.contains("513332"));
+        assertFalse(content.contains("513858"));
+        assertTrue(content.contains("Official burn address has not been published yet"));
+        assertTrue(content.contains("Do not send coins to any unofficial burn address"));
         assertTrue(content.contains("lang=\"en\""));
         assertTrue(content.contains("lang=\"ru\""));
         assertTrue(content.contains("lang=\"zh\""));

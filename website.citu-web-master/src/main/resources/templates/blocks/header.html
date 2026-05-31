@@ -1,21 +1,22 @@
-<div th:fragment="header" class="header-custom">
-    <div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4">
-        <a href="/" class="d-flex align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="32" class="me-2" viewBox="0 0 118 94" role="img">
-                <!-- ... -->
-            </svg>
-            <span class="fs-4">Corporation International Trade Union.</span>
+<div th:fragment="header" class="header-custom v35-site-header">
+    <div class="container d-flex flex-column flex-xl-row align-items-xl-center gap-3">
+        <a href="/" class="d-flex align-items-center v35-brand">
+            <img class="v35-brand-logo" th:src="@{/images/citu-v35-logo.jpg}" alt="Official CITU logo"/>
+            <span>
+                <strong>CITU</strong>
+                <small>Corporation International Trade Union</small>
+            </span>
         </a>
-
-        <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
-            <a class="me-3 py-2" href="/">Main page</a>
-            <a class="me-3 py-2" href="/v35">V35</a>
-            <a class="me-3 py-2" href="/v35/tokenomics">Tokenomics</a>
-            <a class="me-3 py-2" href="/v35/burn">Burn</a>
-            <a class="me-3 py-2" href="/v35/founder-burn-proof">Burn proof</a>
-            <a class="me-3 py-2" href="/v35/jackpot">Jackpot</a>
-            <a class="me-3 py-2" href="/v35/preactivation-status">Status</a>
-            <a class="me-3 py-2" href="/v35/operator-guide">Operators</a>
+        <nav class="v35-site-nav ms-xl-auto" aria-label="V35 navigation">
+            <a href="/">Home</a>
+            <a href="/v35">V35 overview</a>
+            <a href="/v35/preactivation-status">Pre-activation status</a>
+            <a href="/v35/operator-guide">Operator guide</a>
+            <a href="/v35/tokenomics">Tokenomics</a>
+            <a href="/v35/burn-warning">Burn warning</a>
+            <a href="/v35/checksums">Checksums</a>
+            <a href="/v35/jackpot">Jackpot</a>
+            <a href="/v35/founder-burn-proof">Burn proof</a>
         </nav>
     </div>
 </div>

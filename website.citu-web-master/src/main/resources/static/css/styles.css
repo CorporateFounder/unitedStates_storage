@@ -327,3 +327,101 @@ footer {
     padding: 10px;
     margin-top: 20px;
 }
+
+/* V35 public information pages */
+body.v35-public {
+    background: #07131b;
+    color: #dce7eb;
+    font-family: Arial, sans-serif;
+}
+body.v35-public h1,
+body.v35-public h2,
+body.v35-public h3,
+body.v35-public h4 {
+    color: #f4f8f9;
+}
+.v35-site-header {
+    background: #0b1e29;
+    border-bottom: 1px solid #24424f;
+    padding: 1rem 0;
+}
+.v35-brand {
+    color: #f4f8f9;
+    border: 0;
+    gap: .75rem;
+}
+.v35-brand:hover {
+    color: #ffffff;
+    border: 0;
+    text-decoration: none;
+}
+.v35-brand small {
+    color: #9fb5bd;
+    display: block;
+    font-size: .72rem;
+}
+.v35-brand-logo {
+    border-radius: 50%;
+    height: 2.5rem;
+    object-fit: cover;
+    width: 2.5rem;
+}
+.v35-site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+}
+.v35-site-nav a {
+    border: 0;
+    color: #b9cbd1;
+    font-size: .88rem;
+}
+.v35-site-nav a:hover {
+    border: 0;
+    color: #ffffff;
+}
+body.v35-public main {
+    max-width: 1120px;
+}
+body.v35-public main > h1 {
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    margin: 2rem 0 1.5rem;
+}
+body.v35-public .alert,
+body.v35-public .card {
+    background: #102630 !important;
+    border: 1px solid #294a56 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .16);
+    color: #dce7eb !important;
+    margin-bottom: 1rem;
+    padding: 1.25rem;
+}
+body.v35-public .alert-warning {
+    border-left: 4px solid #d3a640 !important;
+}
+body.v35-public .alert-danger {
+    border-left: 4px solid #df6b62 !important;
+}
+body.v35-public .alert-info,
+body.v35-public .alert-primary {
+    border-left: 4px solid #48a1bd !important;
+}
+body.v35-public .table {
+    background: #102630 !important;
+    color: #dce7eb !important;
+}
+body.v35-public .table > :not(caption) > * > * {
+    background: transparent !important;
+    border-color: #294a56 !important;
+    color: #dce7eb !important;
+}
+body.v35-public a {
+    border-bottom: 1px solid rgba(211, 166, 64, .55);
+    color: #e7c56f;
+}
+.v35-site-footer {
+    background: #0b1e29;
+    border-top: 1px solid #24424f;
+    color: #9fb5bd;
+}

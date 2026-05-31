@@ -9,6 +9,7 @@
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container mt-4 mb-5">
+    <img src="/images/citu-v35-logo.jpg" alt="Official CITU logo" class="img-fluid mb-3" style="max-width: 132px;"/>
     <h1>V35 dashboard</h1>
 
     <section class="alert alert-warning mt-3">
@@ -16,6 +17,7 @@
         <p><strong>V35 active:</strong> <span th:text="${v35Active}">false</span></p>
         <p><strong>Fork index:</strong> <span th:text="${v35ForkIndex}">Long.MAX_VALUE</span></p>
         <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p><strong>Before activation, <code>false</code> is expected.</strong> It confirms that this wallet is still showing pre-fork status.</p>
     </section>
 
     <section class="mt-4">
@@ -23,6 +25,10 @@
         <p>
             Static protocol policy is always shown. Live chain values are server-reported read-only values when the
             configured V35 endpoints are available.
+        </p>
+        <p>
+            Endpoint values reported as <code>false</code> from <code>http://194.87.236.238:82</code> are expected until
+            the reviewed V35 server build is deployed. They do not mean that the local wallet build failed.
         </p>
         <div class="table-responsive">
             <table class="table table-sm table-bordered align-middle">
@@ -57,7 +63,7 @@
                 <tr><th>Jackpot reserve</th><td th:text="${jackpotReservePerBlockGold + ' GOLD'}">2.00 GOLD</td></tr>
                 <tr><th>Founder reward</th><td th:text="${founderRewardGold + ' GOLD'}">0.00 GOLD</td></tr>
                 <tr><th>Annual emission</th><td th:text="${annualEmissionGold + ' GOLD/year'}">1261440.00 GOLD/year</td></tr>
-                <tr><th>Burn address</th><td class="text-break" th:text="${burnAddress}">BURN_ADDRESS</td></tr>
+                <tr><th>Internal burn sink placeholder</th><td class="text-break" th:text="${burnAddress}">BURN_ADDRESS</td></tr>
                 </tbody>
             </table>
         </div>
@@ -91,9 +97,11 @@
     <section class="mt-4">
         <h2 class="h4">Founder burn snapshot</h2>
         <p>Modeled burn values are projections. They are not actual burned supply until a founder-signed burn transaction is confirmed.</p>
-        <p>BURN_ADDRESS is a protocol sink. Sending to it is allowed; spending from it is blocked after V35.</p>
+        <p><code>BURN_ADDRESS</code> is an internal protocol sink placeholder, not a final public burn instruction.</p>
+        <p>No founder burn has occurred until a signed burn transaction hash and burn block are published.</p>
+        <p>Do not send coins to any unofficial burn address.</p>
         <p><strong>Founder address:</strong> <span class="text-break" th:text="${founderAddress}">founder</span></p>
-        <p><strong>Burn address:</strong> <span class="text-break" th:text="${burnAddress}">BURN_ADDRESS</span></p>
+        <p><strong>Internal sink placeholder:</strong> <span class="text-break" th:text="${burnAddress}">BURN_ADDRESS</span></p>
         <p><strong>Snapshot height:</strong> <span th:text="${snapshotHeight}">Unavailable</span></p>
         <p><strong>Snapshot block hash:</strong> <span class="text-break" th:text="${snapshotBlockHash}">Unavailable</span></p>
         <p><strong>Founder balance at snapshot:</strong> <span th:text="${founderBalanceGold}">Unavailable</span></p>

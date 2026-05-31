@@ -10,6 +10,7 @@ public class V35PublicController {
     static final String BURN_ADDRESS = "BURN_ADDRESS";
     static final String FOUNDER_ADDRESS = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
     static final String ANNUAL_EMISSION = "1,261,440 GOLD/year";
+    static final String PLANNING_CANDIDATE_FORK_INDEX = "514291";
 
     private final V35FounderBurnProofApiClient founderBurnProofApiClient;
 
@@ -70,7 +71,7 @@ public class V35PublicController {
     @GetMapping("/v35/preactivation-status")
     public String preactivationStatus(Model model) {
         addCommonV35Model(model, "V35 pre-activation status");
-        model.addAttribute("candidateForkIndex", "513332");
+        model.addAttribute("candidateForkIndex", PLANNING_CANDIDATE_FORK_INDEX);
         return "v35-preactivation-status";
     }
 
@@ -105,6 +106,7 @@ public class V35PublicController {
         model.addAttribute("jackpotReserveGold", "2");
         model.addAttribute("founderRewardGold", "0");
         model.addAttribute("annualEmissionGold", ANNUAL_EMISSION);
+        model.addAttribute("candidateForkIndex", PLANNING_CANDIDATE_FORK_INDEX);
     }
 
     private void addFounderBurnLiveStatus(Model model, V35FounderBurnProofApiClient.LiveStatus status) {

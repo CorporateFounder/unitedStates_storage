@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
+<body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container my-4">
@@ -19,14 +19,14 @@
         <h2>Has the founder burn happened?</h2>
         <p>No. The founder burn has not happened until a burn transaction hash and burn block are published.</p>
 
-        <h2>What is BURN_ADDRESS?</h2>
-        <p>BURN_ADDRESS is a protocol sink configured for the planned founder burn.</p>
+        <h2>Has an official burn address been published?</h2>
+        <p>No. Official burn address has not been published yet. BURN_ADDRESS is an internal protocol sink name, not a public instruction to send funds.</p>
 
-        <h2>Can BURN_ADDRESS spend?</h2>
-        <p>Spending FROM BURN_ADDRESS is blocked after V35 by consensus policy. Sending TO BURN_ADDRESS is allowed.</p>
+        <h2>Should users send coins to a burn address?</h2>
+        <p>No. Do not send coins to any unofficial burn address.</p>
 
         <h2>What is actual vs modeled supply?</h2>
-        <p>Actual burned supply is based on the BURN_ADDRESS balance. Modeled founder burn is a projection and is not actual burned supply.</p>
+        <p>Actual burned supply is based on the future officially published burn-address balance. Modeled founder burn is a projection and is not actual burned supply.</p>
 
         <h2>How does jackpot choose winners?</h2>
         <p>The jackpot uses deterministic delayed future block hashes and selects the minerAddress of an eligible mined block.</p>

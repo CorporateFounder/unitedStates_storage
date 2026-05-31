@@ -95,6 +95,13 @@ java -jar target\website.citu-0.0.24-SNAPSHOT.jar `
   --server.ssl.enabled=false
 ```
 
+If port `8080` is busy, use the local fallback port `8085`:
+
+```powershell
+cd C:\citu\website.citu-web-master
+java -jar target\website.citu-0.0.24-SNAPSHOT.jar --server.address=localhost --server.port=8085 --server.ssl.enabled=false
+```
+
 Open:
 
 - `http://localhost:8080/`
@@ -103,6 +110,15 @@ Open:
 - `http://localhost:8080/v35/operator-guide`
 - `http://localhost:8080/v35/checksums`
 - `http://localhost:8080/v35/burn-warning`
+
+Fallback URLs:
+
+- `http://localhost:8085/`
+- `http://localhost:8085/v35`
+- `http://localhost:8085/v35/preactivation-status`
+- `http://localhost:8085/v35/operator-guide`
+- `http://localhost:8085/v35/checksums`
+- `http://localhost:8085/v35/burn-warning`
 
 ## 3. Stop commands
 
@@ -155,4 +171,3 @@ Capture or record:
 - no jackpot payout was created
 
 Empty isolated local databases may produce empty-chain values. That is expected for this manual smoke test. Do not substitute production blockchain data.
-

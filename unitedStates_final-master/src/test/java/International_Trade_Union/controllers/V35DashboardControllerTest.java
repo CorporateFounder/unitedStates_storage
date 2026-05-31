@@ -158,11 +158,16 @@ public class V35DashboardControllerTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(template.contains("V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE."));
+        assertTrue(template.contains("src=\"/images/citu-v35-logo.jpg\""));
+        assertTrue(template.contains("alt=\"Official CITU logo\""));
         assertTrue(template.contains("Modeled burn values are projections."));
         assertTrue(template.contains("Actual supply and burn"));
         assertTrue(template.contains("Live read-only data"));
         assertTrue(template.contains("Live V35 data unavailable"));
-        assertTrue(template.contains("BURN_ADDRESS is a protocol sink"));
+        assertTrue(template.contains("BURN_ADDRESS</code> is an internal protocol sink placeholder"));
+        assertTrue(template.contains("not a final public burn instruction"));
+        assertTrue(template.contains("No founder burn has occurred until a signed burn transaction hash and burn block are published."));
+        assertTrue(template.contains("false</code> from <code>http://194.87.236.238:82</code> are expected"));
         assertTrue(template.contains("Manual difficulty is legacy-only after V35."));
         assertTrue(template.contains("Live jackpot status"));
         assertTrue(template.contains("Live jackpot data unavailable"));
@@ -172,6 +177,12 @@ public class V35DashboardControllerTest {
         assertTrue(template.contains("/v35/jackpot/proof/{periodType}/{periodEnd}"));
         assertTrue(header.contains("/v35-dashboard"));
         assertTrue(header.contains("V35 dashboard"));
+
+        String mining = new String(Files.readAllBytes(Paths.get("src/main/resources/templates/mining.html")),
+                StandardCharsets.UTF_8);
+        assertTrue(mining.contains("Legacy / pre-V35 mining controls"));
+        assertTrue(mining.contains("Manual difficulty is legacy-only after V35."));
+        assertTrue(mining.contains("V35 is currently disabled while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE."));
     }
 
     @SuppressWarnings("unchecked")

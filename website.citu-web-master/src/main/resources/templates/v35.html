@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
+<body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 
 <main class="container my-4">
@@ -27,13 +27,14 @@
             <li>Blocks per day: 432 blocks/day.</li>
             <li>Bitcoin-like PoW: hash &lt;= target.</li>
             <li>Stronger chain after V35 is selected by cumulativeWork chain selection.</li>
-            <li>Burn address = <strong th:text="${burnAddress}"></strong>.</li>
+            <li>Official burn address has not been published yet.</li>
         </ul>
     </section>
 
     <section class="alert alert-info">
         <h2>Read-only public pages</h2>
         <p>These pages explain V35 policy only. They do not activate V35, do not create a burn transaction, and do not mutate balances.</p>
+        <p>Planning candidate <strong th:text="${candidateForkIndex}">514291</strong> is not final. Final fork height, release tag, artifacts, and checksums will be announced only after final approval and a fresh chain-height check.</p>
         <p>
             <a href="/v35/tokenomics">Tokenomics</a> |
             <a href="/v35/burn">Burn policy</a> |

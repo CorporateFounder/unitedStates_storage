@@ -24,6 +24,13 @@
 <div class="container mt-5">
     <h3 th:text="${title}"/>
 
+    <div class="alert alert-warning" role="alert">
+        <h4>Legacy / pre-V35 mining controls</h4>
+        <p>This is legacy/pre-V35 UI. Manual difficulty is legacy-only after V35.</p>
+        <p>V35 is currently disabled while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE. Do not confuse these controls, staking, or unstaking with V35 reward rules.</p>
+        <p>Use the <a href="/v35-dashboard" class="alert-link">V35 dashboard</a> for the prepared V35 protocol model.</p>
+    </div>
+
     <form action="/constantMining" class="container mt-1">
         <button type="submit" class="btn btn-success">start</button>
     </form>
