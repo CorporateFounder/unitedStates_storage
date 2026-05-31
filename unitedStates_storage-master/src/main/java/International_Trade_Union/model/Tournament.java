@@ -17,6 +17,7 @@ import International_Trade_Union.utils.base.Base;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -56,6 +57,8 @@ public class Tournament implements Runnable {
 
     @Autowired
     private BlockService blockService;
+    @Value("${citu.smoke.offline:false}")
+    private boolean offlineSmoke;
     private static final long TOURNAMENT_INTERVAL = 100 * 1000; // 100 секунд в миллисекундах
     private static final long MAX_METHOD_EXECUTION_TIME = 18 * 1000; // 14 секунд в миллисекундах
     private static final long GET_ALL_WINNERS_ADVANCE_TIME = MAX_METHOD_EXECUTION_TIME + 40 * 1000; // 34 секунд в миллисекундах
@@ -65,6 +68,10 @@ public class Tournament implements Runnable {
         Blockchain.setBlockService(blockService);
         UtilsBalance.setBlockService(blockService);
         UtilsBlock.setBlockService(blockService);
+        if (!shouldStartNetworkServices(offlineSmoke)) {
+            System.out.println("offline smoke mode: tournament network services disabled");
+            return;
+        }
 
         // Первоначальная синхронизация времени при запуске
         try {
@@ -89,6 +96,10 @@ public class Tournament implements Runnable {
             }
         }, 4, 4, TimeUnit.HOURS); // Интервал - каждые 24 часа
 
+    }
+
+    static boolean shouldStartNetworkServices(boolean offlineSmoke) {
+        return !offlineSmoke;
     }
 
     private void deleteBlockedHosts() {
