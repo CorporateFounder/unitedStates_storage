@@ -16,6 +16,11 @@
 <!-- Header, который потом стилизуется классом .header-custom из вашего styles.css -->
 <header th:insert="blocks/header :: header"></header>
 
+<div class="alert alert-warning" style="margin: 1rem; padding: 1rem;">
+    <strong>Legacy / pre-V35 protocol note:</strong>
+    Historical mining formulas preserved in this charter are not the V35 public model. Use the <a href="/v35-dashboard">V35 dashboard</a> for the prepared V35 status. V35 is not active yet.
+</div>
+
 <!-- Вместо alert alert-info используем вашу .alert-info,
      которая определяется в вашем styles.css (фон #f7e4d8, цвет #3e261a, и т.д.) -->
 <div class="alert-info" style="margin: 1rem; padding: 1rem;">
