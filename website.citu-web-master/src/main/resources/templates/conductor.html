@@ -16,9 +16,6 @@
         table td, table th {
             border: 1px solid grey;
         }
-        table th {
-            background: #eee;
-        }
         .pagination-div {
             user-select: none;
         }
@@ -70,7 +67,7 @@
     <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
     <h4 th:if="${block?.previousHash != null}" th:text="'previous hash: ' + ${block?.previousHash}"></h4>
     <h4 th:if="${block?.minerAddress != null}" th:text="'miner address: ' + ${block?.minerAddress}"></h4>
-    <h4 th:if="${block?.hashCompexity != null}" th:text="'block difficulty: ' + ${block?.hashCompexity}"></h4>
+    <h4 th:if="${block?.hashCompexity != null}" th:text="'legacy / pre-V35 block difficulty: ' + ${block?.hashCompexity}"></h4>
     <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
     <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
     <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>
@@ -98,7 +95,7 @@
     <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
         <h4 th:if="${block?.previousHash != null}" th:text="'previous hash: ' + ${block?.previousHash}"></h4>
     <h4 th:if="${block?.minerAddress != null}" th:text="'miner address: ' + ${block?.minerAddress}"></h4>
-    <h4 th:if="${block?.hashCompexity != null}" th:text="'block difficulty: ' + ${block?.hashCompexity}"></h4>
+    <h4 th:if="${block?.hashCompexity != null}" th:text="'legacy / pre-V35 block difficulty: ' + ${block?.hashCompexity}"></h4>
     <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
     <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
     <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>

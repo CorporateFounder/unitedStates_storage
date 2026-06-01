@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Exchange / Operator API Documentation</title>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
@@ -13,97 +13,92 @@
 
     <section class="alert alert-warning">
         <h2>Pre-activation notice</h2>
-        <p>V35 is prepared but not active yet. Exchanges and operators must wait for the final tagged release, final checksums, and official deployment notice.</p>
-        <p>The final production endpoint will be announced with the final release. Local smoke examples use <code>http://localhost:8083</code> for the node and <code>http://localhost:8082</code> for the wallet.</p>
-        <p>No founder burn has occurred until an official burn transaction hash and burn block are published.</p>
+        <p>V35 is prepared but not active yet. Candidate fork height <strong>514291</strong> is planning-only and must be refreshed before final approval.</p>
+        <p>Exchanges and operators must wait for the final tagged release, final checksums, reviewed artifacts, and official deployment notice. No founder burn has occurred.</p>
     </section>
 
     <section class="alert alert-danger">
         <h2>Security boundary</h2>
-        <p>Never place private keys or passwords in production URLs, logs, screenshots, support messages, or exchange integration scripts.</p>
-        <p>Wallet <code>/keys</code> and <code>/sendCoin?...&amp;password=...</code> are legacy local-only surfaces. They are not production exchange integration endpoints.</p>
-        <p>Exchanges should use public read-only node endpoints and submit reviewed signed transaction JSON only through <code>POST /addTransaction</code>.</p>
+        <p>Never place private keys or passwords in production URLs, logs, screenshots, scripts, or support messages.</p>
+        <p>Wallet <code>/keys</code> and <code>/sendCoin?...&amp;password=...</code> are legacy local-only surfaces. They remain available for backward compatibility but are not production exchange integration endpoints.</p>
+        <p>Exchange integrations should use public node checks and submit reviewed signed transaction JSON through <code>POST /addTransaction</code>.</p>
     </section>
 
     <section class="alert alert-info">
-        <h2>Node API: status and height</h2>
-        <ul>
-            <li><code>GET /size</code> - blockchain size. Example: <code>http://localhost:8083/size</code></li>
-            <li><code>GET /status</code> - node status.</li>
-            <li><code>GET /confirmReadiness</code> - readiness state: <code>ready</code> or <code>not_ready</code>.</li>
-            <li><code>GET /version</code> - node version.</li>
-            <li><code>GET /datashort</code> - compact blockchain metadata.</li>
-            <li><code>GET /prevBlock</code> - latest block JSON.</li>
-        </ul>
-    </section>
-
-    <section class="alert alert-info">
-        <h2>Node API: blocks and balances</h2>
-        <ul>
-            <li><code>GET /conductorBlock?index=&lt;INDEX&gt;</code> - block lookup by index.</li>
-            <li><code>POST /sub-blocks</code> - bounded range lookup. Body: <code>{"start":0,"finish":10}</code></li>
-            <li><code>GET /blockHash?hash=&lt;HASH&gt;</code> - block lookup by hash.</li>
-            <li><code>GET /account?address=&lt;PUBLIC_ADDRESS&gt;</code> - account balances.</li>
-            <li><code>GET /balance?address=&lt;PUBLIC_ADDRESS&gt;</code> - balance snapshot.</li>
-            <li><code>GET /totalDollars</code> - total GOLD supply under the legacy endpoint name.</li>
-        </ul>
-    </section>
-
-    <section class="alert alert-info">
-        <h2>Node API: transactions</h2>
-        <ul>
-            <li><code>GET /getTransactions</code> - pending transaction list.</li>
-            <li><code>GET /senderTransactions?address=&lt;ADDRESS&gt;&amp;from=0&amp;to=10</code> - sent transactions.</li>
-            <li><code>GET /customerTransactions?address=&lt;ADDRESS&gt;&amp;from=0&amp;to=10</code> - received transactions.</li>
-            <li><code>POST /statusTransaction58</code> - Base58 signature status. Body: <code>{"sign":"&lt;BASE58_SIGNATURE&gt;"}</code></li>
-            <li><code>POST /statusTransaction64</code> - Base64 signature status. Body: <code>{"sign":"&lt;BASE64_SIGNATURE&gt;"}</code></li>
-            <li><code>GET /isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;</code> - inclusion boolean.</li>
-            <li><code>POST /isTransactionAddBase64</code> - Base64 inclusion boolean.</li>
-            <li><code>POST /findBlocksFromSign58</code> and <code>POST /findBlocksFromSign64</code> - find containing blocks.</li>
-            <li><code>POST /addTransaction</code> - submit reviewed signed transaction JSON.</li>
-        </ul>
-    </section>
-
-    <section class="alert alert-info">
-        <h2>Wallet API: local-only surfaces</h2>
-        <ul>
-            <li><code>GET http://localhost:8082/keys</code> - local key generation. Keep private output local.</li>
-            <li><code>GET http://localhost:8082/account?address=&lt;PUBLIC_ADDRESS&gt;</code> - account view.</li>
-            <li><code>GET http://localhost:8082/dollar?address=&lt;PUBLIC_ADDRESS&gt;</code> - GOLD balance.</li>
-            <li><code>GET http://localhost:8082/stock?address=&lt;PUBLIC_ADDRESS&gt;</code> - stock balance.</li>
-            <li><code>GET http://localhost:8082/sendCoin?...&amp;password=&lt;PRIVATE_KEY&gt;</code> - legacy local-only send path. Do not use for production integration.</li>
-            <li><code>POST http://localhost:8082/isTransactionAddBase64</code> - local inclusion check.</li>
-        </ul>
-    </section>
-
-    <section class="alert alert-info">
-        <h2>Recommended exchange integration flow</h2>
+        <h2>Recommended exchange flow</h2>
         <ol>
-            <li>Read node readiness and height from <code>GET /confirmReadiness</code> and <code>GET /size</code>.</li>
-            <li>For deposits, inspect customer transaction history and confirm inclusion before crediting an account.</li>
-            <li>For withdrawals, construct and review signed transaction JSON outside URL query strings.</li>
+            <li>Read <code>GET /size</code> and <code>GET /confirmReadiness</code>.</li>
+            <li>Read public account data with <code>GET /account?address=</code> or <code>GET /balance?address=</code>.</li>
+            <li>Monitor deposits with <code>GET /customerTransactions</code>, <code>GET /senderTransactions</code>, and inclusion checks.</li>
             <li>Broadcast reviewed signed JSON with <code>POST /addTransaction</code>.</li>
-            <li>Check inclusion with <code>GET /isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;</code> or the Base64 POST variant.</li>
+            <li>Verify inclusion through <code>/isTransactionAdd</code>, <code>/statusTransaction58</code>, <code>/statusTransaction64</code>, or <code>/findBlocksFromSign58</code> and <code>/findBlocksFromSign64</code>.</li>
         </ol>
-        <h3 class="h5">Read-only examples</h3>
-        <pre class="v35-code"><code>curl http://localhost:8083/size
-curl http://localhost:8083/confirmReadiness
-curl "http://localhost:8083/balance?address=&lt;PUBLIC_ADDRESS&gt;"
-curl "http://localhost:8083/customerTransactions?address=&lt;PUBLIC_ADDRESS&gt;&amp;from=0&amp;to=10"</code></pre>
-        <h3 class="h5">Signed JSON broadcast shape</h3>
-        <pre class="v35-code"><code>{
-  "sender": "&lt;PUBLIC_ADDRESS&gt;",
-  "customer": "&lt;RECIPIENT_ADDRESS&gt;",
-  "digitalDollar": 0.01,
-  "digitalStockBalance": 0,
-  "sign": "&lt;REVIEWED_SIGNATURE&gt;"
-}</code></pre>
-        <p>The exact final production endpoint, tagged artifact, and checksum set must come from the final official release announcement.</p>
+    </section>
+
+    <section class="citu-panel p-4 mb-4">
+        <h2>Server / node API: backward-compatible legacy surface</h2>
+        <p>These existing routes remain visible for compatibility. Do not rename or remove them during V35 preparation.</p>
+        <p class="mb-3">Compatibility quick reference: <code>GET /size</code>, <code>GET /prevBlock</code>, <code>POST /statusTransaction58</code>, <code>POST /statusTransaction64</code>, <code>POST /addTransaction</code>.</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <thead><tr><th>Method</th><th>Route</th><th>Purpose and request shape</th><th>Response meaning</th></tr></thead>
+                <tbody>
+                <tr><td>GET</td><td><code>/size</code></td><td>Read blockchain size.</td><td>Current node chain size.</td></tr>
+                <tr><td>GET</td><td><code>/status</code></td><td>Read node status.</td><td>Node synchronization/status view.</td></tr>
+                <tr><td>GET</td><td><code>/confirmReadiness</code></td><td>Read readiness state.</td><td><code>ready</code> or <code>not_ready</code>.</td></tr>
+                <tr><td>GET</td><td><code>/version</code></td><td>Read node version.</td><td>Server version string.</td></tr>
+                <tr><td>GET</td><td><code>/datashort</code></td><td>Read compact chain metadata.</td><td>Short blockchain information.</td></tr>
+                <tr><td>GET</td><td><code>/prevBlock</code></td><td>Read latest block.</td><td>Latest block JSON.</td></tr>
+                <tr><td>GET</td><td><code>/conductorBlock?index=&lt;INDEX&gt;</code></td><td>Lookup block by index.</td><td>Matching block JSON.</td></tr>
+                <tr><td>POST</td><td><code>/sub-blocks</code></td><td>Body: <code>{"start":0,"finish":10}</code>.</td><td>Bounded block range.</td></tr>
+                <tr><td>GET</td><td><code>/blockHash?hash=&lt;HASH&gt;</code></td><td>Lookup block by hash.</td><td>Matching block JSON.</td></tr>
+                <tr><td>GET</td><td><code>/account?address=&lt;ADDRESS&gt;</code></td><td>Read a public account.</td><td>Account balances.</td></tr>
+                <tr><td>GET</td><td><code>/balance?address=&lt;ADDRESS&gt;</code></td><td>Read a public balance snapshot.</td><td>Balance data for the address.</td></tr>
+                <tr><td>GET</td><td><code>/totalDollars</code></td><td>Read legacy-named GOLD supply total.</td><td>Aggregate amount.</td></tr>
+                <tr><td>GET</td><td><code>/getTransactions</code></td><td>Read pending transactions.</td><td>Transaction list.</td></tr>
+                <tr><td>GET</td><td><code>/senderTransactions?address=&lt;ADDRESS&gt;&amp;from=0&amp;to=10</code></td><td>Read sent transaction range.</td><td>Transactions sent by address.</td></tr>
+                <tr><td>GET</td><td><code>/customerTransactions?address=&lt;ADDRESS&gt;&amp;from=0&amp;to=10</code></td><td>Read received transaction range.</td><td>Transactions received by address.</td></tr>
+                <tr><td>POST</td><td><code>/statusTransaction58</code></td><td>Body contains Base58 signature.</td><td>Transaction status.</td></tr>
+                <tr><td>POST</td><td><code>/statusTransaction64</code></td><td>Body contains Base64 signature.</td><td>Transaction status.</td></tr>
+                <tr><td>GET</td><td><code>/isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;</code></td><td>Check Base58 signature inclusion.</td><td>Inclusion boolean.</td></tr>
+                <tr><td>POST</td><td><code>/isTransactionAddBase64</code></td><td>Body contains Base64 signature.</td><td>Inclusion boolean.</td></tr>
+                <tr><td>POST</td><td><code>/findBlocksFromSign58</code></td><td>Body contains Base58 signature.</td><td>Containing blocks.</td></tr>
+                <tr><td>POST</td><td><code>/findBlocksFromSign64</code></td><td>Body contains Base64 signature.</td><td>Containing blocks.</td></tr>
+                <tr><td>POST</td><td><code>/addTransaction</code></td><td>Body is reviewed signed transaction JSON.</td><td>Submission result.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="citu-panel p-4 mb-4">
+        <h2>Server compatibility appendix</h2>
+        <p>Additional discovered legacy routes remain available where deployed:</p>
+        <p><code>/keys</code>, <code>/time</code>, <code>/TransactionAddBase</code>, <code>/TransactionAddBase64</code>, <code>/conductorHashTran</code>, <code>/senderCountDto</code>, <code>/customerCountDto</code>, <code>/addresses</code>, <code>/getBlocksBySenderInRange</code>, <code>/findBlocksByCustomerInRange</code>, <code>/putNode</code>, <code>/pool/add</code>, <code>/pool/getPoolBlockMap</code>, <code>/pool/ConfirmedBalances</code>, <code>/pool/getPendingTxMap</code>, <code>/pool/getPoolAddress</code>, <code>/isWait58</code>, <code>/winnerList</code>, <code>/allwinners</code>, <code>/powerWiners</code>, <code>/countTransactionsWiner</code>, <code>/stakingWiners</code>, <code>/bigRandomWiner</code>, <code>/v28Index</code>, <code>/allAccounts</code>, <code>/totalStaking</code>, <code>/totalAll</code>, <code>/totalTransactionsDay</code>, <code>/totalTransactionsSum</code>, <code>/multiplier</code>, <code>/dayReduce</code>, <code>/getNodes</code>, <code>/block</code>, <code>/isSaveFile</code>, <code>/nodes/resolve_from_to_block</code>, <code>/nodes/register</code>, <code>/findAddresses</code>, <code>/difficultyBlockchain</code>, and <code>/timentp</code>.</p>
+    </section>
+
+    <section class="citu-panel p-4 mb-4">
+        <h2>Wallet API: local legacy compatibility</h2>
+        <p>Wallet endpoints are preserved for local wallet compatibility. They are not recommended as production exchange integration endpoints.</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+                <thead><tr><th>Method</th><th>Route</th><th>Scope</th><th>Safety note</th></tr></thead>
+                <tbody>
+                <tr><td>GET</td><td><code>/keys</code></td><td>Local key generation.</td><td>Private output must remain local.</td></tr>
+                <tr><td>GET</td><td><code>/account?address=&lt;ADDRESS&gt;</code></td><td>Local account lookup.</td><td>Public address only.</td></tr>
+                <tr><td>GET</td><td><code>/dollar?address=&lt;ADDRESS&gt;</code></td><td>Local GOLD balance lookup.</td><td>Public address only.</td></tr>
+                <tr><td>GET</td><td><code>/stock?address=&lt;ADDRESS&gt;</code></td><td>Local stock lookup.</td><td>Public address only.</td></tr>
+                <tr><td>GET</td><td><code>/sendCoin?...&amp;password=&lt;PRIVATE_KEY&gt;</code></td><td>Legacy local send path.</td><td>Private-key risk: never use for exchange integration.</td></tr>
+                <tr><td>POST</td><td><code>/isTransactionAddBase64</code></td><td>Local Base64 inclusion check.</td><td>Use public signature only.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>Other discovered local wallet compatibility routes include <code>/TransactionAddBase</code>, <code>/TransactionAddBase64</code>, <code>/blockHash</code>, <code>/findBlocksFromSign58</code>, <code>/findBlocksFromSign64</code>, <code>/conductorBlock</code>, <code>/conductorHashTran</code>, <code>/senderTransactions</code>, <code>/customerTransactions</code>, <code>/senderCountDto</code>, <code>/customerCountDto</code>, <code>/addresses</code>, <code>/TopAddress</code>, <code>/getBlocksBySenderInRange</code>, and <code>/findBlocksByCustomerInRange</code>.</p>
     </section>
 
     <section class="alert alert-warning">
         <h2>V35 read-only API</h2>
-        <p>These endpoints become production-relevant only after the reviewed V35 server build is deployed. V35 still remains inactive until the approved fork height.</p>
+        <p>These endpoints are read-only. Calling them does not activate V35, burn funds, or create jackpot payouts. They become production-relevant only after the reviewed V35 server build is deployed.</p>
+        <p><code>BURN_ADDRESS</code> is an internal placeholder while the official public burn address is not published. Do not send funds to it or to unofficial burn addresses.</p>
         <ul>
             <li><code>GET /v35/protocol</code></li>
             <li><code>GET /v35/supply</code></li>
@@ -114,6 +109,26 @@ curl "http://localhost:8083/customerTransactions?address=&lt;PUBLIC_ADDRESS&gt;&
             <li><code>GET /v35/jackpot/periods</code></li>
             <li><code>GET /v35/jackpot/history</code></li>
         </ul>
+    </section>
+
+    <section class="citu-panel p-4 mb-4">
+        <h2>Curl examples</h2>
+        <h3 class="h5">Read height</h3>
+        <pre class="v35-code"><code>curl http://localhost:8083/size</code></pre>
+        <h3 class="h5">Read account</h3>
+        <pre class="v35-code"><code>curl "http://localhost:8083/account?address=&lt;PUBLIC_ADDRESS&gt;"</code></pre>
+        <h3 class="h5">Read received transactions</h3>
+        <pre class="v35-code"><code>curl "http://localhost:8083/customerTransactions?address=&lt;PUBLIC_ADDRESS&gt;&amp;from=0&amp;to=10"</code></pre>
+        <h3 class="h5">Submit reviewed signed JSON</h3>
+        <pre class="v35-code"><code>curl -X POST http://localhost:8083/addTransaction ^
+  -H "Content-Type: application/json" ^
+  --data-binary @reviewed-signed-transaction.json</code></pre>
+        <h3 class="h5">Check inclusion</h3>
+        <pre class="v35-code"><code>curl "http://localhost:8083/isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;"</code></pre>
+        <h3 class="h5">Read V35 protocol</h3>
+        <pre class="v35-code"><code>curl http://localhost:8083/v35/protocol</code></pre>
+        <h3 class="h5">Read V35 burn status</h3>
+        <pre class="v35-code"><code>curl http://localhost:8083/v35/burn</code></pre>
     </section>
 </main>
 <footer th:insert="blocks/footer :: footer"></footer>
