@@ -131,6 +131,10 @@ public final class V35JackpotApiResponseBuilder {
         response.put("randomDelayBlocks", JackpotCalculator.JACKPOT_RANDOM_DELAY_BLOCKS);
         response.put("firstPayoutBlockOffset", FIRST_PAYOUT_BLOCK_OFFSET);
         response.put("burnAddress", Seting.V35_BURN_ADDRESS);
+        response.put("isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress());
+        response.put("burnAddressConfigured", BurnAddressPolicy.isBurnAddressConfigured());
+        response.put("publicBurnAddressPublished", BurnAddressPolicy.isPublicBurnAddressPublished());
+        response.put("burnAddressWarning", BurnAddressPolicy.publicBurnAddressWarning());
         response.put("winnerSource", "minerAddress");
         response.put("senderEligibilityAllowed", false);
         response.put("currentHeight", currentHeight);

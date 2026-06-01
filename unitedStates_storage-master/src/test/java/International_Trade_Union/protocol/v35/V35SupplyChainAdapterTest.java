@@ -84,7 +84,7 @@ public class V35SupplyChainAdapterTest {
     }
 
     @Test
-    public void configuredBurnAddressReturnsActualBurnedBalance() {
+    public void placeholderBurnAddressDoesNotReturnBurnedBalance() {
         Map<String, Account> balances = new HashMap<>();
         balances.put(Seting.V35_BURN_ADDRESS, new Account(Seting.V35_BURN_ADDRESS, bd("2.00")));
         balances.put(FOUNDER, new Account(FOUNDER, bd("15.00")));
@@ -93,9 +93,9 @@ public class V35SupplyChainAdapterTest {
                 Collections.singletonList(tx(Seting.BASIS_ADDRESS, "miner", 6.00)),
                 balances);
 
-        assertTrue(snapshot.isBurnAddressConfigured());
-        assertEquals(bd("2.00"), snapshot.getBurnedGold());
-        assertEquals(bd("4.00"), snapshot.getCirculatingGold());
+        assertFalse(snapshot.isBurnAddressConfigured());
+        assertEquals(bd("0.00"), snapshot.getBurnedGold());
+        assertEquals(bd("6.00"), snapshot.getCirculatingGold());
     }
 
     @Test

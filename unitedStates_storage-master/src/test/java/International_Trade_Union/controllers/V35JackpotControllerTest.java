@@ -32,6 +32,10 @@ public class V35JackpotControllerTest {
         assertEquals("2.00", response.get("jackpotReservePerBlockGold"));
         assertEquals(60L, response.get("randomDelayBlocks"));
         assertEquals("BURN_ADDRESS", response.get("burnAddress"));
+        assertEquals(true, response.get("isBurnAddressPlaceholder"));
+        assertEquals(false, response.get("burnAddressConfigured"));
+        assertEquals(false, response.get("publicBurnAddressPublished"));
+        assertTrue(response.get("burnAddressWarning").toString().contains("not published yet"));
         assertEquals("minerAddress", response.get("winnerSource"));
         assertEquals(false, response.get("senderEligibilityAllowed"));
         assertEquals("V35 jackpot policy is configured but not active yet.", response.get("warning"));

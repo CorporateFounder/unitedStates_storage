@@ -36,20 +36,23 @@ public class V35SupplyControllerTest {
         assertEquals("2.00", response.get("jackpotReservePerBlockGold"));
         assertEquals("0.00", response.get("founderRewardGold"));
         assertEquals("BURN_ADDRESS", response.get("burnAddress"));
-        assertEquals(false, response.get("isBurnAddressPlaceholder"));
-        assertEquals(true, response.get("burnAddressConfigured"));
+        assertEquals(true, response.get("isBurnAddressPlaceholder"));
+        assertEquals(false, response.get("burnAddressConfigured"));
+        assertEquals(false, response.get("publicBurnAddressPublished"));
+        assertTrue(response.get("burnAddressWarning").toString().contains("not published yet"));
     }
 
     @Test
-    public void supplyReportsConfiguredBurnAddressAndActualValues() throws IOException {
+    public void supplyReportsPlaceholderBurnAddressAndActualValues() throws IOException {
         FakeBlockService blockService = new FakeBlockService();
         V35SupplyController controller = new V35SupplyController(blockService);
 
         Map<String, Object> response = controller.supply();
 
         assertEquals("BURN_ADDRESS", response.get("burnAddress"));
-        assertEquals(false, response.get("isBurnAddressPlaceholder"));
-        assertEquals(true, response.get("burnAddressConfigured"));
+        assertEquals(true, response.get("isBurnAddressPlaceholder"));
+        assertEquals(false, response.get("burnAddressConfigured"));
+        assertEquals(false, response.get("publicBurnAddressPublished"));
         assertEquals("0.00", response.get("burnedGold"));
         assertEquals(response.get("totalMintedGold"), response.get("circulatingGold"));
         assertEquals("1261440.00", response.get("annualEmissionGold"));
@@ -64,8 +67,10 @@ public class V35SupplyControllerTest {
         Map<String, Object> response = controller.burn();
 
         assertEquals(Seting.V35_BURN_ADDRESS, response.get("burnAddress"));
-        assertEquals(false, response.get("isBurnAddressPlaceholder"));
-        assertEquals(true, response.get("burnAddressConfigured"));
+        assertEquals(true, response.get("isBurnAddressPlaceholder"));
+        assertEquals(false, response.get("burnAddressConfigured"));
+        assertEquals(false, response.get("publicBurnAddressPublished"));
+        assertTrue(response.get("burnAddressWarning").toString().contains("not published yet"));
         assertEquals("0.00", response.get("burnedGold"));
         assertEquals(true, response.get("noSpendAfterV35"));
         assertEquals(false, response.get("burnTransactionCreated"));
@@ -99,7 +104,7 @@ public class V35SupplyControllerTest {
     }
 
     @Test
-    public void founderBurnSnapshotEndpointIsReadOnlyAndReportsConfiguredBurnAddress() throws IOException {
+    public void founderBurnSnapshotEndpointIsReadOnlyAndReportsPlaceholderBurnAddress() throws IOException {
         FakeBlockService blockService = new FakeBlockService();
         V35SupplyController controller = new V35SupplyController(blockService);
 
@@ -107,8 +112,9 @@ public class V35SupplyControllerTest {
 
         assertEquals(Seting.ADDRESS_FOUNDER, response.get("founderAddress"));
         assertEquals("BURN_ADDRESS", response.get("burnAddress"));
-        assertEquals(true, response.get("burnAddressConfigured"));
-        assertEquals(false, response.get("isBurnAddressPlaceholder"));
+        assertEquals(false, response.get("burnAddressConfigured"));
+        assertEquals(true, response.get("isBurnAddressPlaceholder"));
+        assertEquals(false, response.get("publicBurnAddressPublished"));
         assertEquals(-1L, response.get("snapshotHeight"));
         assertEquals("UNKNOWN", response.get("snapshotBlockHash"));
         assertEquals("100.00", response.get("founderBalanceGold"));

@@ -37,7 +37,10 @@ public class BurnAddressPolicyTest {
 
         assertEquals("BURN_ADDRESS", burnAddress);
         assertEquals(burnAddress, BurnAddressPolicy.getBurnAddress());
-        assertFalse(BurnAddressPolicy.isPlaceholderBurnAddress());
+        assertTrue(BurnAddressPolicy.isPlaceholderBurnAddress());
+        assertFalse(BurnAddressPolicy.isBurnAddressConfigured());
+        assertFalse(BurnAddressPolicy.isPublicBurnAddressPublished());
+        assertTrue(BurnAddressPolicy.publicBurnAddressWarning().contains("not published yet"));
         assertTrue(BurnAddressPolicy.isBurnAddress(burnAddress));
         assertFalse(BurnAddressPolicy.isBurnAddress(NORMAL_ADDRESS));
         assertTrue(BurnAddressPolicy.canSpendFromAddress(0, NORMAL_ADDRESS));

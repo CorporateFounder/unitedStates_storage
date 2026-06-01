@@ -112,9 +112,7 @@ public final class V35SupplyCalculator {
                                                          BigDecimal jackpotPaidGold,
                                                          String burnAddress,
                                                          String founderAddress) {
-        boolean burnConfigured = burnAddress != null
-                && !burnAddress.trim().isEmpty()
-                && !BurnAddressPolicy.PLACEHOLDER_BURN_ADDRESS.equals(burnAddress);
+        boolean burnConfigured = !BurnAddressPolicy.isPlaceholderBurnAddress(burnAddress);
         BigDecimal burned = burnConfigured ? accountGoldBalance(balances, burnAddress) : ZERO_GOLD;
         BigDecimal founder = accountGoldBalance(balances, founderAddress);
         return snapshot(totalMintedGold, burned, founder, jackpotPaidGold, burnConfigured);

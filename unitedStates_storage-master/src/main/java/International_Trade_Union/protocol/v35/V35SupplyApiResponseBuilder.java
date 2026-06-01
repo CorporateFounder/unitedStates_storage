@@ -47,6 +47,8 @@ public final class V35SupplyApiResponseBuilder {
         response.put("burnAddress", BurnAddressPolicy.getBurnAddress());
         response.put("isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress());
         response.put("burnAddressConfigured", snapshot.isBurnAddressConfigured());
+        response.put("publicBurnAddressPublished", BurnAddressPolicy.isPublicBurnAddressPublished());
+        response.put("burnAddressWarning", BurnAddressPolicy.publicBurnAddressWarning());
         response.put("burnedGold", gold(snapshot.getBurnedGold()));
         response.put("noSpendAfterV35", true);
         response.put("burnTransactionCreated", false);
@@ -63,6 +65,11 @@ public final class V35SupplyApiResponseBuilder {
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("founderAddress", Seting.ADDRESS_FOUNDER);
+        response.put("burnAddress", BurnAddressPolicy.getBurnAddress());
+        response.put("isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress());
+        response.put("burnAddressConfigured", snapshot.isBurnAddressConfigured());
+        response.put("publicBurnAddressPublished", BurnAddressPolicy.isPublicBurnAddressPublished());
+        response.put("burnAddressWarning", BurnAddressPolicy.publicBurnAddressWarning());
         response.put("founderReserveGold", gold(founderReserve));
         response.put("founderRewardGold", gold(Seting.V35_EXPECTED_FOUNDER_REWARD));
         response.put("modeledBurnPercent", "80");
@@ -86,6 +93,8 @@ public final class V35SupplyApiResponseBuilder {
         response.put("burnAddress", BurnAddressPolicy.getBurnAddress());
         response.put("burnAddressConfigured", snapshot.isBurnAddressConfigured());
         response.put("isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress());
+        response.put("publicBurnAddressPublished", BurnAddressPolicy.isPublicBurnAddressPublished());
+        response.put("burnAddressWarning", BurnAddressPolicy.publicBurnAddressWarning());
         response.put("snapshotHeight", snapshotHeight);
         response.put("snapshotBlockHash", safeUnknown(snapshotBlockHash));
         response.put("founderBalanceGold", gold(snapshot.getFounderReserveGold()));
@@ -117,7 +126,9 @@ public final class V35SupplyApiResponseBuilder {
         response.put("burnAddress", BurnAddressPolicy.getBurnAddress());
         response.put("founderAddress", Seting.ADDRESS_FOUNDER);
         response.put("isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress());
-        response.put("burnAddressConfigured", !BurnAddressPolicy.isPlaceholderBurnAddress());
+        response.put("burnAddressConfigured", BurnAddressPolicy.isBurnAddressConfigured());
+        response.put("publicBurnAddressPublished", BurnAddressPolicy.isPublicBurnAddressPublished());
+        response.put("burnAddressWarning", BurnAddressPolicy.publicBurnAddressWarning());
         return response;
     }
 
