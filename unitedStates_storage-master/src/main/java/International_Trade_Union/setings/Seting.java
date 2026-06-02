@@ -345,7 +345,7 @@ public interface Seting {
 
     // V35 constants are placeholders only. V35 is disabled by default until
     // consensus logic explicitly gates on this fork index in a later phase.
-    long V35_RESCUE_FORK_INDEX = Long.MAX_VALUE;
+    long V35_RESCUE_FORK_INDEX = 514291;
 
     double V35_GOLD_REWARD = 8.00;
     double V35_INSTANT_MINER_REWARD = 6.00;

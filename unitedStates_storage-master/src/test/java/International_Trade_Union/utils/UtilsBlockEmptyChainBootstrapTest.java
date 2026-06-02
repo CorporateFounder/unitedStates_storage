@@ -1,11 +1,14 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35TestMode;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class UtilsBlockEmptyChainBootstrapTest {
     @Test
@@ -25,8 +28,9 @@ public class UtilsBlockEmptyChainBootstrapTest {
     }
 
     @Test
-    public void v35RemainsDisabledDuringBootstrapHardening() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+    public void v35RemainsInactiveBeforeForkDuringBootstrapHardening() {
+        V35TestMode.assertConfiguredForkSafety();
+        assertFalse(ProtocolVersion.isV35(0L));
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
     }
 }

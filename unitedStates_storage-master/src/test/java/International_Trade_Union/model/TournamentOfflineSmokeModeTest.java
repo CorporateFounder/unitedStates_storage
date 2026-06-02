@@ -1,6 +1,8 @@
 package International_Trade_Union.model;
 
 import International_Trade_Union.setings.Seting;
+import International_Trade_Union.protocol.v35.ProtocolVersion;
+import International_Trade_Union.protocol.v35.V35TestMode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,8 +21,9 @@ public class TournamentOfflineSmokeModeTest {
     }
 
     @Test
-    public void v35RemainsDisabledDuringOfflineSmokeHardening() {
-        assertEquals(Long.MAX_VALUE, Seting.V35_RESCUE_FORK_INDEX);
+    public void v35RemainsInactiveBeforeForkDuringOfflineSmokeHardening() {
+        V35TestMode.assertConfiguredForkSafety();
+        assertFalse(ProtocolVersion.isV35(0L));
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
     }
 }
