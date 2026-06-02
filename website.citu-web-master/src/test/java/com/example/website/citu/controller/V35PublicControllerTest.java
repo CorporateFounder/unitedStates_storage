@@ -226,6 +226,66 @@ class V35PublicControllerTest {
         assertTrue(content.contains("legacy local-only"));
         assertTrue(content.contains("Never place private keys or passwords in production URLs"));
         assertTrue(content.contains("final tagged release"));
+        assertTrue(content.contains("Future official V35 release downloads"));
+        assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_storage"));
+        assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_final"));
+        assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_storage/releases"));
+        assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_final/releases"));
+        assertTrue(content.contains("citu-node-v35-activation-514291-0.0.423.jar"));
+        assertTrue(content.contains("citu-wallet-v35-activation-514291-0.32.216.jar"));
+        assertTrue(content.contains("--server.port=8083"));
+        assertTrue(content.contains("--server.port=8082"));
+        assertTrue(content.contains("SHA256SUMS.txt.sha256"));
+        assertTrue(content.contains("releases/tag/v35-node-activation-514291"));
+        assertTrue(content.contains("releases/tag/v35-wallet-activation-514291"));
+        assertTrue(content.contains("releases/download/v35-node-activation-514291"));
+        assertTrue(content.contains("releases/download/v35-wallet-activation-514291"));
+        assertTrue(content.contains("will work after final GitHub Release is published"));
+        assertTrue(content.contains("Important API request and response examples"));
+        assertTrue(content.contains("SAFE READ-ONLY"));
+        assertTrue(content.contains("V35 READ-ONLY"));
+        assertTrue(content.contains("REVIEW SIGNED JSON"));
+        assertTrue(content.contains("\"digitalDollar\": 0.01"));
+        assertTrue(content.contains("\"burnAddressConfigured\":false"));
+        assertTrue(content.contains("GET /isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;"));
+        assertTrue(content.contains("internal placeholder"));
+        assertTrue(content.contains("внутренний placeholder"));
+        assertTrue(content.contains("内部占位符"));
+
+        String overview = Files.readString(template("v35.html"));
+        assertTrue(overview.contains("/wallet_and_node_url#future-v35-release-downloads"));
+    }
+
+    @Test
+    void publicVisualLayerPresentsUsefulHomepageMetricsAndDarkTransactionCards() throws IOException {
+        String homepage = Files.readString(template("main.html"));
+        String footer = Files.readString(template("blocks/footer.html"));
+        String transactions = Files.readString(template("detail-transactions.html"));
+        String jackpot = Files.readString(template("v35-jackpot.html"));
+        String styles = Files.readString(Path.of("src", "main", "resources", "static", "css", "styles.css"));
+
+        assertTrue(homepage.contains("V35 PRE-ACTIVATION"));
+        assertTrue(homepage.contains("Active / circulating GOLD supply"));
+        assertTrue(homepage.contains("Burned GOLD"));
+        assertTrue(homepage.contains("Legacy total GOLD endpoint value"));
+        assertTrue(homepage.contains("8 GOLD/block"));
+        assertTrue(homepage.contains("6 GOLD"));
+        assertTrue(homepage.contains("2 GOLD"));
+        assertTrue(homepage.contains("0 GOLD"));
+        assertTrue(homepage.contains("No winner yet before V35 activation"));
+        assertTrue(homepage.contains("Legacy / pre-V35 technical details"));
+        assertFalse(homepage.contains("Every 4 month the multiplier decreases"));
+        assertFalse(homepage.contains("target uniq sender in prev block"));
+        assertTrue(jackpot.contains("Disabled until V35 activation"));
+        assertTrue(jackpot.contains("Expected jackpot schedule after V35"));
+        assertTrue(footer.contains("CITU protocol"));
+        assertTrue(footer.contains("Official source"));
+        assertTrue(footer.contains("Never send funds to <code>BURN_ADDRESS</code>"));
+        assertTrue(transactions.contains("citu-transaction-card"));
+        assertTrue(transactions.contains("citu-transaction-row"));
+        assertFalse(transactions.contains("alert alert-info mt-2"));
+        assertTrue(styles.contains(".v35-site-footer footer"));
+        assertTrue(styles.contains(".citu-api-card"));
     }
 
     @Test

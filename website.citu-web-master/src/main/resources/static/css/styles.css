@@ -424,6 +424,8 @@ body.v35-public a {
     background: #0b1e29;
     border-top: 1px solid #24424f;
     color: #9fb5bd;
+    padding: 0;
+    text-align: left;
 }
 .v35-site-nav details {
     position: relative;
@@ -520,5 +522,182 @@ body.v35-public a {
     .v35-nav-menu {
         margin-top: .5rem;
         position: static;
+    }
+}
+
+/* CITU public production visual layer */
+.citu-home-hero {
+    background: #07131b;
+    border-bottom: 1px solid #24424f;
+    padding: 4rem 0 3.5rem;
+}
+.citu-home-hero h1 {
+    color: #f4f8f9;
+    font-size: clamp(2.6rem, 7vw, 5.4rem);
+    line-height: 1;
+    margin: .5rem 0 1rem;
+}
+.citu-home-hero .lead {
+    color: #b9cbd1;
+    max-width: 760px;
+}
+.v35-status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    margin-top: 1.25rem;
+}
+.v35-status-pill,
+.citu-api-badge {
+    background: #0b1e29;
+    border: 1px solid #d3a640;
+    border-radius: 999px;
+    color: #e7c56f;
+    display: inline-flex;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    padding: .4rem .7rem;
+}
+.citu-section {
+    background: #102630;
+    border: 1px solid #294a56;
+    border-radius: 8px;
+    color: #dce7eb;
+    padding: 1.5rem;
+}
+.citu-section h2 {
+    color: #f4f8f9;
+}
+.citu-section-heading {
+    align-items: end;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+.citu-section-heading > p {
+    color: #9fb5bd;
+    margin: 0;
+    max-width: 620px;
+}
+.citu-metric small,
+.citu-jackpot-card small {
+    color: #9fb5bd;
+    display: block;
+    font-size: .78rem;
+    margin-top: .45rem;
+}
+.citu-jackpot-grid,
+.citu-api-grid,
+.citu-link-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.citu-jackpot-card,
+.citu-api-card {
+    background: #0b1e29;
+    border: 1px solid #294a56;
+    border-radius: 8px;
+    padding: 1rem;
+}
+.citu-jackpot-card span {
+    color: #9fb5bd;
+    display: block;
+    font-size: .85rem;
+}
+.citu-jackpot-card strong {
+    color: #e7c56f;
+    display: block;
+    font-size: 1.35rem;
+    margin-top: .35rem;
+}
+.citu-api-card h3 {
+    color: #f4f8f9;
+    font-size: 1rem;
+    margin-top: .9rem;
+}
+.citu-api-card p {
+    color: #b9cbd1;
+}
+.citu-api-write {
+    border-color: #48a1bd;
+    color: #8fd6e9;
+}
+.citu-link-grid a {
+    background: #0b1e29;
+    border: 1px solid #294a56;
+    border-radius: 6px;
+    color: #e7c56f;
+    padding: .85rem;
+}
+.citu-disclosure summary {
+    color: #e7c56f;
+    cursor: pointer;
+    font-weight: 700;
+}
+.citu-footer-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1.5fr 1fr 1.5fr;
+    text-align: left;
+}
+.v35-site-footer footer {
+    background: #0b1e29;
+    border-top: 0;
+    color: #9fb5bd;
+    margin-top: 0;
+}
+.citu-footer-grid a {
+    border: 0;
+    color: #e7c56f;
+    display: block;
+    margin-bottom: .45rem;
+}
+.citu-footer-title {
+    color: #f4f8f9;
+    font-weight: 700;
+}
+.citu-footer-bottom {
+    border-top: 1px solid #24424f;
+    color: #78919a;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    text-align: left;
+}
+.citu-transaction-card {
+    background: #102630;
+    border: 1px solid #294a56;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+.citu-transaction-row {
+    border-bottom: 1px solid #24424f;
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: minmax(120px, 180px) 1fr;
+    padding: .75rem 0;
+}
+.citu-transaction-row span {
+    color: #9fb5bd;
+}
+.citu-transaction-row strong {
+    color: #f4f8f9;
+    overflow-wrap: anywhere;
+}
+@media (max-width: 768px) {
+    .citu-home-hero {
+        padding: 2.5rem 0;
+    }
+    .citu-section-heading,
+    .citu-transaction-row {
+        align-items: stretch;
+        display: flex;
+        flex-direction: column;
+    }
+    .citu-footer-grid {
+        grid-template-columns: 1fr;
     }
 }

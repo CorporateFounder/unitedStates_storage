@@ -1,8 +1,25 @@
 <div th:fragment="footer" class="footer-custom v35-site-footer">
-    <footer class="py-4">
-        <div class="container">
-            <p class="mb-1"><strong>CITU</strong> protocol information</p>
-            <p class="mb-0">V35 is prepared but not active yet. Use only official final tagged artifacts.</p>
+    <footer class="py-5">
+        <div class="container citu-footer-grid">
+            <div>
+                <p class="v35-kicker mb-2">CITU protocol</p>
+                <p class="mb-1"><strong>Corporation International Trade Union</strong></p>
+                <p class="mb-0">V35 is prepared but not active yet. Use only official final tagged artifacts.</p>
+            </div>
+            <div>
+                <p class="citu-footer-title">Quick links</p>
+                <a href="/v35">V35 overview</a>
+                <a href="/wallet_and_node_url">API / Exchanges</a>
+                <a href="/v35/checksums">Checksums</a>
+                <a href="/v35/burn-warning">Burn warning</a>
+            </div>
+            <div>
+                <p class="citu-footer-title">Official source</p>
+                <a href="https://github.com/CorporateFounder/unitedStates_storage">Server repository</a>
+                <a href="https://github.com/CorporateFounder/unitedStates_final">Wallet repository</a>
+                <p class="mt-2 mb-0">Official burn address is not published. Never send funds to <code>BURN_ADDRESS</code>.</p>
+            </div>
         </div>
+        <div class="container citu-footer-bottom">&copy; CITU protocol information</div>
     </footer>
 </div>

@@ -17,6 +17,40 @@
         <p>Exchanges and operators must wait for the final tagged release, final checksums, reviewed artifacts, and official deployment notice. No founder burn has occurred.</p>
     </section>
 
+    <section id="future-v35-release-downloads" class="citu-panel p-4 mb-4">
+        <h2>Future official V35 release downloads / Будущие официальные загрузки V35 / V35 未来正式版本下载</h2>
+        <p><strong>Preparation only:</strong> the V35 activation release has not been published. V35 is not active yet. Do not use dry-run artifacts or current disabled-mode JAR files as production activation builds.</p>
+
+        <h3>Official repositories and future GitHub Releases pages</h3>
+        <ul>
+            <li>Server repository: <a href="https://github.com/CorporateFounder/unitedStates_storage" target="_blank" rel="noopener noreferrer">github.com/CorporateFounder/unitedStates_storage</a></li>
+            <li>Wallet repository: <a href="https://github.com/CorporateFounder/unitedStates_final" target="_blank" rel="noopener noreferrer">github.com/CorporateFounder/unitedStates_final</a></li>
+            <li>Future server release link - will work after final GitHub Release is published: <a href="https://github.com/CorporateFounder/unitedStates_storage/releases/tag/v35-node-activation-514291" target="_blank" rel="noopener noreferrer">v35-node-activation-514291</a></li>
+            <li>Future wallet release link - will work after final GitHub Release is published: <a href="https://github.com/CorporateFounder/unitedStates_final/releases/tag/v35-wallet-activation-514291" target="_blank" rel="noopener noreferrer">v35-wallet-activation-514291</a></li>
+        </ul>
+
+        <h3>Planned JAR names and launch commands</h3>
+        <p>These filenames are reserved for a future reviewed release after the activation commit, build, checksum generation, and final tag.</p>
+        <p>Node/server JAR: <a href="https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291/citu-node-v35-activation-514291-0.0.423.jar"><code>citu-node-v35-activation-514291-0.0.423.jar</code></a></p>
+        <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-0.0.423.jar --server.port=8083</code></pre>
+        <p>Wallet JAR: <a href="https://github.com/CorporateFounder/unitedStates_final/releases/download/v35-wallet-activation-514291/citu-wallet-v35-activation-514291-0.32.216.jar"><code>citu-wallet-v35-activation-514291-0.32.216.jar</code></a></p>
+        <pre class="v35-code"><code>java -jar citu-wallet-v35-activation-514291-0.32.216.jar --server.port=8082</code></pre>
+        <p>Java must be installed. Confirm with <code>java -version</code> before starting either application.</p>
+
+        <div lang="en">
+            <h3>EN: safety warning</h3>
+            <p>Candidate fork height <strong>514291</strong> is planning-only. V35 is not active yet, and <code>v35Active=false</code> is expected before an approved activation. No founder burn has occurred. The official public burn address has not been published. Never send funds to <code>BURN_ADDRESS</code>: it is an internal placeholder. Wait for final tagged artifacts and verify the published <code>SHA256SUMS.txt</code> and <code>SHA256SUMS.txt.sha256</code> files before using a release.</p>
+        </div>
+        <div lang="ru">
+            <h3>RU: предупреждение безопасности</h3>
+            <p>Кандидат высоты форка <strong>514291</strong> используется только для планирования. V35 пока не активирован, и до утверждённой активации ожидается <code>v35Active=false</code>. Сжигание средств основателя не выполнялось. Официальный публичный burn-адрес ещё не опубликован. Никогда не отправляйте средства на <code>BURN_ADDRESS</code>: это внутренний placeholder. Дождитесь финальных артефактов с тегом и проверьте опубликованные файлы <code>SHA256SUMS.txt</code> и <code>SHA256SUMS.txt.sha256</code>.</p>
+        </div>
+        <div lang="zh">
+            <h3>ZH: 安全警告</h3>
+            <p>候选分叉高度 <strong>514291</strong> 仅用于规划。V35 尚未激活，在批准激活之前出现 <code>v35Active=false</code> 属于正常情况。创始人销毁尚未执行。官方公开销毁地址尚未发布。切勿向 <code>BURN_ADDRESS</code> 转账：它只是内部占位符。请等待带有最终标签的正式文件，并在使用版本前核验已发布的 <code>SHA256SUMS.txt</code> 和 <code>SHA256SUMS.txt.sha256</code>。</p>
+        </div>
+    </section>
+
     <section class="alert alert-danger">
         <h2>Security boundary</h2>
         <p>Never place private keys or passwords in production URLs, logs, screenshots, scripts, or support messages.</p>
@@ -33,6 +67,77 @@
             <li>Broadcast reviewed signed JSON with <code>POST /addTransaction</code>.</li>
             <li>Verify inclusion through <code>/isTransactionAdd</code>, <code>/statusTransaction58</code>, <code>/statusTransaction64</code>, or <code>/findBlocksFromSign58</code> and <code>/findBlocksFromSign64</code>.</li>
         </ol>
+    </section>
+
+    <section class="citu-panel p-4 mb-4">
+        <h2>Important API request and response examples</h2>
+        <p>Examples use public placeholders only. Never put a private key in an exchange integration request.</p>
+        <div class="citu-api-grid">
+            <article class="citu-api-card">
+                <span class="citu-api-badge">SAFE READ-ONLY</span>
+                <h3><code>GET /size</code></h3>
+                <p>Returns the current blockchain size.</p>
+                <pre class="v35-code"><code>curl http://localhost:8083/size
+506758</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge">SAFE READ-ONLY</span>
+                <h3><code>GET /balance?address=&lt;ADDRESS&gt;</code></h3>
+                <p>Reads the public account balance for an address.</p>
+                <pre class="v35-code"><code>curl "http://localhost:8083/balance?address=&lt;PUBLIC_ADDRESS&gt;"
+{"digitalDollarBalance":0.01,"digitalStockBalance":0.00}</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge">SAFE READ-ONLY</span>
+                <h3><code>GET /account?address=&lt;ADDRESS&gt;</code></h3>
+                <p>Reads a public account record. Input is a public address only.</p>
+                <pre class="v35-code"><code>curl "http://localhost:8083/account?address=&lt;PUBLIC_ADDRESS&gt;"
+{"account":"...","digitalDollarBalance":0.01}</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge">SAFE READ-ONLY</span>
+                <h3><code>GET /customerTransactions?address=&lt;ADDRESS&gt;&amp;from=0&amp;to=10</code></h3>
+                <p>Reads received transaction history for a public address.</p>
+                <pre class="v35-code"><code>curl "http://localhost:8083/customerTransactions?address=&lt;PUBLIC_ADDRESS&gt;&amp;from=0&amp;to=10"
+[{"sender":"...","customer":"...","digitalDollar":0.01,"sign":"..."}]</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge citu-api-write">REVIEW SIGNED JSON</span>
+                <h3><code>POST /addTransaction</code></h3>
+                <p>Submits already reviewed signed transaction JSON. Do not include private keys.</p>
+                <pre class="v35-code"><code>{
+  "sender": "...",
+  "customer": "...",
+  "digitalDollar": 0.01,
+  "sign": "..."
+}</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge">SAFE READ-ONLY</span>
+                <h3><code>GET /isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;</code></h3>
+                <p>Checks whether a public transaction signature is included.</p>
+                <pre class="v35-code"><code>curl "http://localhost:8083/isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;"
+true</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge">V35 READ-ONLY</span>
+                <h3><code>GET /v35/protocol</code></h3>
+                <p>Reads activation status and protocol constants. Before activation, <code>v35Active=false</code> is expected.</p>
+                <pre class="v35-code"><code>{"v35Active":false,"v35ForkIndex":"Long.MAX_VALUE"}</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge">V35 READ-ONLY</span>
+                <h3><code>GET /v35/burn</code></h3>
+                <p>Reads burn status. <code>BURN_ADDRESS</code> remains an internal placeholder.</p>
+                <pre class="v35-code"><code>{"burnAddress":"BURN_ADDRESS","isBurnAddressPlaceholder":true,"burnAddressConfigured":false}</code></pre>
+            </article>
+            <article class="citu-api-card">
+                <span class="citu-api-badge">V35 READ-ONLY</span>
+                <h3><code>GET /v35/jackpot/status</code></h3>
+                <p>Reads protocol jackpot state. Jackpot is disabled before V35 activation.</p>
+                <pre class="v35-code"><code>{"v35Active":false,"status":"DISABLED"}</code></pre>
+            </article>
+        </div>
     </section>
 
     <section class="citu-panel p-4 mb-4">
@@ -129,6 +234,8 @@
         <pre class="v35-code"><code>curl http://localhost:8083/v35/protocol</code></pre>
         <h3 class="h5">Read V35 burn status</h3>
         <pre class="v35-code"><code>curl http://localhost:8083/v35/burn</code></pre>
+        <h3 class="h5">Read V35 jackpot status</h3>
+        <pre class="v35-code"><code>curl http://localhost:8083/v35/jackpot/status</code></pre>
     </section>
 </main>
 <footer th:insert="blocks/footer :: footer"></footer>

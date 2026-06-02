@@ -1,98 +1,125 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <style>
-
-        img {
-            width: 200px; /* задает фиксированную ширину */
-            height: auto; /* сохраняет пропорции */
-        }
-    </style>
     <title th:text="${title}"></title>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
 <body class="citu-home-shell">
-
-<!-- Header (убран класс link-body-emphasis) -->
 <header th:insert="blocks/header :: header"></header>
 
-<main class="container py-4">
-<section class="citu-panel p-4 mb-4">
-    <h1>CITU network</h1>
-    <p>Corporation International Trade Union public network information.</p>
-    <div class="citu-resource-links">
-        <a class="btn btn-primary" href="/conductor">Explorer</a>
-        <a class="btn btn-primary" href="/wallet_and_node_url">API / Exchanges</a>
-        <a class="btn btn-primary" href="/white_papper">V35 protocol paper</a>
-        <a class="btn btn-primary" href="/v35">V35 pre-activation</a>
+<main>
+    <section class="citu-home-hero">
+        <div class="container">
+            <p class="v35-kicker">CITU public network</p>
+            <h1>CITU network</h1>
+            <p class="lead">Corporation International Trade Union is a public blockchain network preparing the reviewed V35 protocol transition.</p>
+            <div class="v35-status-row">
+                <span class="v35-status-pill">V35 PRE-ACTIVATION</span>
+                <span class="v35-status-pill">CANDIDATE HEIGHT: 514291</span>
+                <span class="v35-status-pill">NO FOUNDER BURN YET</span>
+            </div>
+            <div class="citu-resource-links mt-4">
+                <a class="btn btn-primary" href="/wallet_and_node_url#future-v35-release-downloads">Download / Run guide</a>
+                <a class="btn btn-primary" href="/white_papper">V35 protocol</a>
+                <a class="btn btn-primary" href="/wallet_and_node_url">API / Exchanges</a>
+                <a class="btn btn-primary" href="/conductor">Explorer</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-4">
+        <section class="citu-section mb-4">
+            <div class="citu-section-heading">
+                <div>
+                    <p class="v35-kicker">Live chain</p>
+                    <h2>Network snapshot</h2>
+                </div>
+                <p>Useful public values from the current pre-V35 chain. Burned and circulating supply remain explicitly pending until an official burn proof exists.</p>
+            </div>
+            <div class="citu-metric-grid">
+                <div class="citu-metric"><span>Blockchain size</span><strong th:text="${size}">Unavailable</strong></div>
+                <div class="citu-metric"><span>Legacy total GOLD endpoint value</span><strong th:text="${#numbers.formatDecimal(totalDollars, 1, 'NONE', 2, 'POINT')}">Unavailable</strong><small>Not labeled circulating supply until official burn data is published.</small></div>
+                <div class="citu-metric"><span>Burned GOLD</span><strong>0.00 / no founder burn yet</strong></div>
+                <div class="citu-metric"><span>Active / circulating GOLD supply</span><strong>Pending official burn proof</strong></div>
+                <div class="citu-metric"><span>Total accounts</span><strong th:text="${totalAccounts}">Unavailable</strong></div>
+                <div class="citu-metric"><span>Transactions today</span><strong th:text="${totalTransactionsDay}">Unavailable</strong></div>
+                <div class="citu-metric"><span>Legacy / pre-V35 block difficulty</span><strong th:text="${difficulty}">Unavailable</strong><small>Current chain only. V35 uses cumulative work guidance.</small></div>
+            </div>
+        </section>
+
+        <section class="citu-section mb-4">
+            <div class="citu-section-heading">
+                <div>
+                    <p class="v35-kicker">V35 emission</p>
+                    <h2>Predictable mining schedule</h2>
+                </div>
+                <p>Prepared protocol economics. V35 is not active until the approved fork height is committed and released.</p>
+            </div>
+            <div class="citu-metric-grid">
+                <div class="citu-metric"><span>Target block time</span><strong>200 sec/block</strong></div>
+                <div class="citu-metric"><span>Blocks per day</span><strong>432</strong></div>
+                <div class="citu-metric"><span>Total reward</span><strong>8 GOLD/block</strong></div>
+                <div class="citu-metric"><span>Miner reward</span><strong>6 GOLD</strong></div>
+                <div class="citu-metric"><span>Jackpot reserve</span><strong>2 GOLD</strong></div>
+                <div class="citu-metric"><span>Founder reward after V35</span><strong>0 GOLD</strong></div>
+            </div>
+        </section>
+
+        <section class="citu-section mb-4">
+            <div class="citu-section-heading">
+                <div>
+                    <p class="v35-kicker">Protocol jackpot</p>
+                    <h2>Expected jackpot schedule after V35</h2>
+                </div>
+                <p>Status: disabled until V35 activation. No winner yet before V35 activation. Winners will be shown after activation when protocol payout data exists.</p>
+            </div>
+            <div class="citu-jackpot-grid">
+                <div class="citu-jackpot-card"><span>Daily</span><strong>302.40 GOLD</strong><small>Expected after V35</small></div>
+                <div class="citu-jackpot-card"><span>Weekly</span><strong>1209.60 GOLD</strong><small>Expected after V35</small></div>
+                <div class="citu-jackpot-card"><span>Monthly</span><strong>3888.00 GOLD</strong><small>Expected after V35</small></div>
+                <div class="citu-jackpot-card"><span>Quarterly</span><strong>9720.00 GOLD</strong><small>Expected after V35</small></div>
+                <div class="citu-jackpot-card"><span>Half-year</span><strong>15724.80 GOLD</strong><small>Expected after V35</small></div>
+                <div class="citu-jackpot-card"><span>Yearly</span><strong>23652.00 GOLD</strong><small>Expected after V35</small></div>
+            </div>
+            <p class="mt-3 mb-0"><a href="/v35/jackpot">Read jackpot eligibility and payout details</a></p>
+        </section>
+
+        <section class="citu-section mb-4">
+            <details class="citu-disclosure">
+                <summary>Legacy / pre-V35 technical details</summary>
+                <p class="mt-3">Historical metrics remain available for compatibility and operator reference. They are not the V35 public mining model.</p>
+                <div class="citu-metric-grid">
+                    <div class="citu-metric"><span>Legacy total chain difficulty</span><strong th:text="${difficultyAll}">Unavailable</strong></div>
+                    <div class="citu-metric"><span>Legacy multiplier</span><strong th:text="${multiplier}">Unavailable</strong></div>
+                    <div class="citu-metric"><span>Legacy target unique senders</span><strong th:text="${targetTotalUniqAddress}">Unavailable</strong></div>
+                    <div class="citu-metric"><span>Legacy target sender transaction sum</span><strong th:text="${#numbers.formatDecimal(targetTotalSum, 1, 'NONE', 2, 'POINT')}">Unavailable</strong></div>
+                    <div class="citu-metric"><span>Previous block transactions</span><strong th:text="${prevBlockTotalTransaction}">Unavailable</strong></div>
+                    <div class="citu-metric"><span>Previous block transaction sum</span><strong th:text="${#numbers.formatDecimal(prevBlockTotalSum, 1, 'NONE', 2, 'POINT')}">Unavailable</strong></div>
+                    <div class="citu-metric"><span>Transactions value today</span><strong th:text="${#numbers.formatDecimal(totalTransactionsDaySum, 1, 'NONE', 2, 'POINT')}">Unavailable</strong></div>
+                    <div class="citu-metric"><span>Legacy reduction countdown</span><strong th:text="${daysReduce}">Unavailable</strong></div>
+                </div>
+            </details>
+        </section>
+
+        <section class="citu-section mb-4">
+            <p class="v35-kicker">Public links</p>
+            <h2>Official resources</h2>
+            <div class="citu-link-grid">
+                <a th:href="${discord}">Discord</a>
+                <a th:href="'https://t.me/' + ${telegramUsername}" th:text="'Telegram @' + ${telegramUsername}">Telegram</a>
+                <a th:href="'https://twitter.com/' + ${twitter.substring(0)}">Twitter</a>
+                <a th:href="${github}">Wallet source</a>
+                <a th:href="${storage}">Node source</a>
+                <a th:href="'mailto:' + ${gmail}">Email</a>
+                <a href="https://www.livecoinwatch.com/price/CorporationInternationalTradeUnion-CITU" target="_blank">Market overview</a>
+                <a href="https://bitcointalk.org/index.php?topic=5520654.new#new" target="_blank">Bitcointalk announcement</a>
+            </div>
+        </section>
     </div>
-</section>
-<section class="citu-panel p-4 mb-4">
-    <h2>Legacy / pre-V35 live chain indicators</h2>
-    <p>These are current live-chain values. Block difficulty is legacy data; manual difficulty is not the V35 public mining model. After V35, public mining guidance uses cumulative work.</p>
-    <div class="citu-metric-grid mb-4">
-        <div class="citu-metric"><span>Blockchain size</span><strong th:text="${size}">Unavailable</strong></div>
-        <div class="citu-metric"><span>Legacy block difficulty</span><strong th:text="${difficulty}">Unavailable</strong></div>
-        <div class="citu-metric"><span>Legacy total chain difficulty</span><strong th:text="${difficultyAll}">Unavailable</strong></div>
-        <div class="citu-metric"><span>Total GOLD</span><strong th:text="${#numbers.formatDecimal(totalDollars, 1, 'NONE', 2, 'POINT')}">Unavailable</strong></div>
-        <div class="citu-metric"><span>Total accounts</span><strong th:text="${totalAccounts}">Unavailable</strong></div>
-        <div class="citu-metric"><span>Transactions today</span><strong th:text="${totalTransactionsDay}">Unavailable</strong></div>
-    </div>
-    <h2>Legacy chain details</h2>
-    <!-- Ссылки без Bootstrap-классов -->
-    <div><a href="https://bitstorage.finance/spot/trading/CITUUSDT?interface=classic" target="_blank">Go to the exchange Bitstorage</a></div>
-    <div><a href="https://dex-trade.com/spot/trading/CITUUSDT?interface=classic" target="_blank">Go to the exchange Dex trade</a></div>
-    <div><a href="https://app.exbitron.com/exchange/?market=CITU-USDT" target="_blank">Go to the exchange exibition</a></div>
-    <div><a href="https://www.livecoinwatch.com/price/CorporationInternationalTradeUnion-CITU" target="_blank">all prices on 3 exchanges</a></div>
-
-    <h6 th:text="'blockchain size: '+${size}"></h6>
-    <h6 th:text="'difficulty one block: '+${difficulty}"></h6>
-    <h6 th:text="'difficulty all blockchain: '+${difficultyAll}"></h6>
-    <h6 th:text="'multiplier: '+${multiplier}"></h6>
-    <h6 th:text="'target uniq sender in prev block: '+${targetTotalUniqAddress}"></h6>
-    <h6 th:text="'target sum sender transaction in prev block: '+${#numbers.formatDecimal(targetTotalSum, 1, 'NONE', 2, 'POINT')}"></h6>
-
-    <h6 th:text="'total dollars: '+${#numbers.formatDecimal(totalDollars, 1, 'NONE', 2, 'POINT')}"></h6>
-    <h6 th:text="'total accounts: '+${totalAccounts}"></h6>
-    <h6 th:text="'previous block total transaction: ' +${prevBlockTotalTransaction}"></h6>
-    <h6 th:text="'previous block total dollar sum: '+${#numbers.formatDecimal(prevBlockTotalSum, 1, 'NONE', 2, 'POINT')}"></h6>
-
-    <h6 th:text="'total transactions in day: ' +${totalTransactionsDay}"></h6>
-    <h6 th:text="'total dollar sum transactions in day: ' + ${#numbers.formatDecimal(totalTransactionsDaySum, 1, 'NONE', 2, 'POINT')}"></h6>
-
-    <h6 th:text="'Every 4 month the multiplier decreases by one, starting from this block ' +${startReduce}"></h6>
-    <h6 th:text="'A day in this system is 432 blocks, a month is 51,840 blocks.  '"></h6>
-    <h6 th:text="'How many blocks are left until the decline is shown here ' +${daysReduce}"></h6>
-</section>
-
-<section class="citu-panel p-4 mb-4">
-    <h2>Official resources</h2>
-    <!-- Ссылки без text-body-secondary и т.д. -->
-    <h6><a th:href="${discord}" th:text="'discord: '+${discord}"></a></h6>
-    <h6><a th:href="${telegram}" th:text="'telegram channel: '+${telegram}"></a></h6>
-    <h6><a th:href="${telegram}" th:text="'telegram: '+${telegram}"></a></h6>
-    <h6><a th:href="'https://t.me/' + ${telegramUsername}" th:text="'Telegram: @' + ${telegramUsername}"></a></h6>
-    <h6><a th:href="'https://twitter.com/' + ${twitter.substring(0)}" th:text="'twitter: ' +${twitter}"></a></h6>
-    <h6><a th:href="${github}" th:text="'wallet: '+${github}"></a></h6>
-    <h6><a th:href="${storage}" th:text="'global server: '+${storage}"></a></h6>
-    <h6><a th:href="'mailto:' + ${gmail}" th:text="'gmail: ' + ${gmail}"></a></h6>
-
-    <p><a href="https://bitcointalk.org/index.php?topic=5520654.new#new" target="_blank">https://bitcointalk.org announcements</a></p>
-    <p><a href="https://bitcointalk.org/index.php?topic=5520620.new#new" target="_blank">https://bitcointalk.org discussion</a></p>
-    <p><a href="https://bitcointalk.org/index.php?topic=5521289.new#new" target="_blank">https://bitcointalk.org на русском</a></p>
-
-    <div class="alert alert-info mt-2">
-        <h1 th:text="${Summary}"></h1>
-        <h6 th:text="${text}"></h6>
-    </div>
-</section>
 </main>
 
-<!-- Footer -->
 <footer th:insert="blocks/footer :: footer"></footer>
-
 </body>
 </html>
