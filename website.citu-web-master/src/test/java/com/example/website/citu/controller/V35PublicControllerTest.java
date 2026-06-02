@@ -232,8 +232,8 @@ class V35PublicControllerTest {
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_final"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_storage/releases"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_final/releases"));
-        assertTrue(content.contains("citu-node-v35-activation-514291-0.0.423.jar"));
-        assertTrue(content.contains("citu-wallet-v35-activation-514291-0.32.216.jar"));
+        assertTrue(content.contains("citu-node-v35-activation-514291-1.0.0.jar"));
+        assertTrue(content.contains("citu-wallet-v35-activation-514291-1.0.0.jar"));
         assertTrue(content.contains("--server.port=8083"));
         assertTrue(content.contains("--server.port=8082"));
         assertTrue(content.contains("SHA256SUMS.txt.sha256"));

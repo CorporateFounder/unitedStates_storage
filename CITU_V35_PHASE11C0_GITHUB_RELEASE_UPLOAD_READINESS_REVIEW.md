@@ -2,7 +2,7 @@
 
 ## Executive summary
 
-The rebuilt local V35 release package exists and its SHA256 chain is valid. The package is technically ready for a future upload review, but Phase 11C upload is currently blocked: GitHub CLI (`gh`) is not installed or is not available in `PATH`, local Git remotes are not configured, and the connected GitHub account currently reports read-only repository permissions (`push=false`).
+The previous rebuilt local V35 release package existed and its SHA256 chain was valid at the time of this review. That package is now superseded by the public `1.0.0` version normalization and must be rebuilt in Phase 11B-4 before upload. Phase 11C upload is also currently blocked: GitHub CLI (`gh`) is not installed or is not available in `PATH`, local Git remotes are not configured, and the connected GitHub account currently reports read-only repository permissions (`push=false`).
 
 No GitHub Release, upload, tag, push, deployment, or commit was performed.
 
@@ -31,8 +31,8 @@ Verified folder:
 
 Required files found:
 
-- `citu-node-v35-activation-514291-0.0.423.jar`
-- `citu-wallet-v35-activation-514291-0.32.216.jar`
+- `citu-node-v35-activation-514291-1.0.0.jar` (required after Phase 11B-4 rebuild)
+- `citu-wallet-v35-activation-514291-1.0.0.jar` (required after Phase 11B-4 rebuild)
 - `start-node-windows.bat`
 - `start-wallet-windows.bat`
 - `start-node-linux.sh`
@@ -82,7 +82,7 @@ gh release create v35-node-activation-514291 `
   --repo CorporateFounder/unitedStates_storage `
   --title "CITU Node V35 activation 514291" `
   --notes-file CITU_V35_514291_RELEASE_NOTES_EN.md `
-  citu-node-v35-activation-514291-0.0.423.jar `
+  citu-node-v35-activation-514291-1.0.0.jar `
   start-node-windows.bat `
   start-node-linux.sh `
   CITU_V35_514291_START_GUIDE_RU_EN.md `
@@ -103,7 +103,7 @@ gh release create v35-wallet-activation-514291 `
   --repo CorporateFounder/unitedStates_final `
   --title "CITU Wallet V35 activation 514291" `
   --notes-file CITU_V35_514291_RELEASE_NOTES_EN.md `
-  citu-wallet-v35-activation-514291-0.32.216.jar `
+  citu-wallet-v35-activation-514291-1.0.0.jar `
   start-wallet-windows.bat `
   start-wallet-linux.sh `
   CITU_V35_514291_START_GUIDE_RU_EN.md `
