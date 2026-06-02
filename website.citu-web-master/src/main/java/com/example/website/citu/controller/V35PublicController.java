@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class V35PublicController {
-    static final String V35_FORK_INDEX = "Long.MAX_VALUE";
+    static final String V35_FORK_INDEX = "514291";
     static final String BURN_ADDRESS = "BURN_ADDRESS";
     static final String FOUNDER_ADDRESS = "nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43";
     static final String ANNUAL_EMISSION = "1,261,440 GOLD/year";

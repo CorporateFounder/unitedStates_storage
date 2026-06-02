@@ -33,6 +33,7 @@ public class V35DashboardController {
     public String dashboard(Model model) {
         model.addAttribute("title", "V35 dashboard");
         model.addAttribute("v35Active", isV35Active());
+        model.addAttribute("activationScheduled", Seting.V35_RESCUE_FORK_INDEX != Long.MAX_VALUE);
         model.addAttribute("v35ForkIndex", forkIndexValue());
         model.addAttribute("blockTimeSeconds", Seting.V35_TARGET_BLOCK_TIME_SECONDS);
         model.addAttribute("blocksPerDay", JackpotCalculator.dailyWindowBlocks());
@@ -42,8 +43,8 @@ public class V35DashboardController {
         model.addAttribute("founderRewardGold", gold(Seting.V35_EXPECTED_FOUNDER_REWARD));
         model.addAttribute("annualEmissionGold", V35SupplyCalculator.annualEmissionGold().toPlainString());
         model.addAttribute("burnAddress", BurnAddressPolicy.getBurnAddress());
-        model.addAttribute("burnAddressConfigured", !BurnAddressPolicy.isPlaceholderBurnAddress());
-        model.addAttribute("isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress());
+        model.addAttribute("burnAddressConfigured", !isDisplayBurnAddressPlaceholder());
+        model.addAttribute("isBurnAddressPlaceholder", isDisplayBurnAddressPlaceholder());
         model.addAttribute("founderAddress", Seting.ADDRESS_FOUNDER);
 
         model.addAttribute("liveApiBaseUrl", UNAVAILABLE);
@@ -155,9 +156,9 @@ public class V35DashboardController {
         model.addAttribute("founderAddress", V35DashboardApiClient.stringField(protocol, "founderAddress",
                 Seting.ADDRESS_FOUNDER));
         model.addAttribute("burnAddressConfigured", V35DashboardApiClient.booleanField(protocol, "burnAddressConfigured",
-                !BurnAddressPolicy.isPlaceholderBurnAddress()));
+                !isDisplayBurnAddressPlaceholder()));
         model.addAttribute("isBurnAddressPlaceholder", V35DashboardApiClient.booleanField(protocol,
-                "isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress()));
+                "isBurnAddressPlaceholder", isDisplayBurnAddressPlaceholder()));
     }
 
     private void overlaySupply(Model model, Map<String, Object> supply) {
@@ -177,9 +178,9 @@ public class V35DashboardController {
         model.addAttribute("burnAddress", V35DashboardApiClient.stringField(burn, "burnAddress",
                 BurnAddressPolicy.getBurnAddress()));
         model.addAttribute("burnAddressConfigured", V35DashboardApiClient.booleanField(burn, "burnAddressConfigured",
-                !BurnAddressPolicy.isPlaceholderBurnAddress()));
+                !isDisplayBurnAddressPlaceholder()));
         model.addAttribute("isBurnAddressPlaceholder", V35DashboardApiClient.booleanField(burn,
-                "isBurnAddressPlaceholder", BurnAddressPolicy.isPlaceholderBurnAddress()));
+                "isBurnAddressPlaceholder", isDisplayBurnAddressPlaceholder()));
         model.addAttribute("burnTransactionCreated", V35DashboardApiClient.booleanField(burn,
                 "burnTransactionCreated", false));
         if (UNAVAILABLE.equals(model.asMap().get("burnedGold"))) {
@@ -265,7 +266,7 @@ public class V35DashboardController {
     }
 
     private boolean isV35Active() {
-        return Seting.V35_RESCUE_FORK_INDEX != Long.MAX_VALUE;
+        return false;
     }
 
     private String forkIndexValue() {
@@ -273,6 +274,11 @@ public class V35DashboardController {
             return "Long.MAX_VALUE";
         }
         return Long.toString(Seting.V35_RESCUE_FORK_INDEX);
+    }
+
+    private boolean isDisplayBurnAddressPlaceholder() {
+        return BurnAddressPolicy.isPlaceholderBurnAddress()
+                || "BURN_ADDRESS".equals(BurnAddressPolicy.getBurnAddress());
     }
 
     private List<Map<String, Object>> burnOptions() {
@@ -336,7 +342,9 @@ public class V35DashboardController {
 
     private List<String> warnings() {
         List<String> warnings = new ArrayList<>();
-        warnings.add("V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.");
+        warnings.add("V35 activation is scheduled at fork height " + forkIndexValue()
+                + ". It remains inactive until the chain reaches that height.");
+        warnings.add("Live status unavailable means activation status cannot be confirmed from the node; never treat a scheduled fork as active early.");
         warnings.add("Founder burn has not happened until a burn transaction hash and burn block are published.");
         warnings.add("Modeled founder burn values are projections, not actual burned supply.");
         warnings.add("BURN_ADDRESS is an internal protocol sink placeholder, not a final public burn instruction.");

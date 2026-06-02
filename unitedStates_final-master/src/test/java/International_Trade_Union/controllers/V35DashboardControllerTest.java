@@ -26,11 +26,12 @@ public class V35DashboardControllerTest {
 
         assertEquals("v35-dashboard", view);
         International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
-        assertEquals(Seting.V35_RESCUE_FORK_INDEX != Long.MAX_VALUE, model.get("v35Active"));
+        assertEquals(false, model.get("v35Active"));
+        assertEquals(true, model.get("activationScheduled"));
         assertEquals(International_Trade_Union.protocol.v35.V35TestMode.configuredForkIndexLabel(), model.get("v35ForkIndex"));
         assertEquals("BURN_ADDRESS", model.get("burnAddress"));
-        assertEquals(true, model.get("burnAddressConfigured"));
-        assertEquals(false, model.get("isBurnAddressPlaceholder"));
+        assertEquals(false, model.get("burnAddressConfigured"));
+        assertEquals(true, model.get("isBurnAddressPlaceholder"));
         assertEquals(false, model.get("liveProtocolAvailable"));
         assertEquals(false, model.get("liveSupplyAvailable"));
         assertEquals(false, model.get("liveJackpotStatusAvailable"));
@@ -102,7 +103,7 @@ public class V35DashboardControllerTest {
         assertEquals(true, model.get("liveJackpotHistoryAvailable"));
         assertEquals("http://node.test", model.get("liveApiBaseUrl"));
         assertEquals(false, model.get("v35Active"));
-        assertEquals("Long.MAX_VALUE", model.get("v35ForkIndex"));
+        assertEquals("514291", model.get("v35ForkIndex"));
         assertEquals("159550000.00", model.get("totalMintedGold"));
         assertEquals("123.45", model.get("burnedGold"));
         assertEquals("159549876.55", model.get("circulatingGold"));
@@ -157,12 +158,14 @@ public class V35DashboardControllerTest {
         String header = new String(Files.readAllBytes(Paths.get("src/main/resources/templates/blocks/header.html")),
                 StandardCharsets.UTF_8);
 
-        assertTrue(template.contains("V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE."));
+        assertTrue(template.contains("V35 is scheduled for fork height 514291."));
         assertTrue(template.contains("src=\"/images/citu-v35-logo.jpg\""));
         assertTrue(template.contains("alt=\"Official CITU logo\""));
         assertTrue(template.contains("/css/citu-wallet.css"));
         assertTrue(template.contains("V35 NOT ACTIVE YET"));
-        assertTrue(template.contains("PLANNING CANDIDATE: 514291"));
+        assertTrue(template.contains("ACTIVATION SCHEDULED: 514291"));
+        assertTrue(template.contains("Before block 514291, <code>v35Active=false</code> is expected."));
+        assertFalse(template.contains("V35_RESCUE_FORK_INDEX is Long.MAX_VALUE"));
         assertTrue(template.contains("NO FOUNDER BURN YET"));
         assertTrue(template.contains("Modeled burn values are projections."));
         assertTrue(template.contains("Actual supply and burn"));
@@ -188,7 +191,7 @@ public class V35DashboardControllerTest {
                 StandardCharsets.UTF_8);
         assertTrue(mining.contains("Legacy / pre-V35 mining controls"));
         assertTrue(mining.contains("Manual difficulty is legacy-only after V35."));
-        assertTrue(mining.contains("V35 is currently disabled while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE."));
+        assertTrue(mining.contains("V35 activation is scheduled at block 514291."));
         assertTrue(mining.contains("Legacy default difficulty: 17."));
         assertTrue(mining.contains("placeholder=\"17 legacy default\""));
         assertTrue(mining.contains("These controls do not define the V35 mining or reward model."));
@@ -236,7 +239,7 @@ public class V35DashboardControllerTest {
     private static V35DashboardApiClient.LiveData liveData() {
         Map<String, Object> protocol = map(
                 "v35Active", false,
-                "v35ForkIndex", "Long.MAX_VALUE",
+                "v35ForkIndex", 514291,
                 "blockTimeSeconds", 200,
                 "blocksPerDay", 432,
                 "rewardPerBlockGold", "8.00",
@@ -245,8 +248,8 @@ public class V35DashboardControllerTest {
                 "founderRewardGold", "0.00",
                 "burnAddress", "BURN_ADDRESS",
                 "founderAddress", Seting.ADDRESS_FOUNDER,
-                "burnAddressConfigured", true,
-                "isBurnAddressPlaceholder", false,
+                "burnAddressConfigured", false,
+                "isBurnAddressPlaceholder", true,
                 "annualEmissionGold", "1261440.00"
         );
         Map<String, Object> supply = map(
@@ -262,8 +265,8 @@ public class V35DashboardControllerTest {
         );
         Map<String, Object> burn = map(
                 "burnAddress", "BURN_ADDRESS",
-                "burnAddressConfigured", true,
-                "isBurnAddressPlaceholder", false,
+                "burnAddressConfigured", false,
+                "isBurnAddressPlaceholder", true,
                 "burnedGold", "123.45",
                 "burnTransactionCreated", false
         );
@@ -289,7 +292,7 @@ public class V35DashboardControllerTest {
         );
         Map<String, Object> jackpotStatus = map(
                 "v35Active", false,
-                "v35ForkIndex", "Long.MAX_VALUE",
+                "v35ForkIndex", 514291,
                 "currentHeight", -1,
                 "randomDelayBlocks", 60,
                 "winnerSource", "minerAddress",

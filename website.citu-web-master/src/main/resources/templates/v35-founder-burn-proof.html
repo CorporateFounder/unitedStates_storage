@@ -15,7 +15,7 @@
     <section class="alert alert-warning">
         <h2>Founder burn is planned, not executed yet</h2>
         <p>The founder burn has not happened yet. Burn proof will be published only after execution.</p>
-        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>V35 activation is scheduled at block 514291. It remains inactive until the chain reaches that height.</p>
         <p>Fork activation is by block index, not date alone. No real fork index has been selected yet.</p>
         <p>Status: <strong th:text="${burnExecutionStatus}"></strong>.</p>
     </section>
@@ -47,7 +47,7 @@
             <tr><th>/v35/founder</th><td th:text="${founderApiStatus}">Unavailable</td></tr>
             <tr><th>/v35/founder/burn-snapshot</th><td th:text="${snapshotApiStatus}">Unavailable</td></tr>
             <tr><th>Current V35 active</th><td th:text="${liveV35Active}">false</td></tr>
-            <tr><th>Current V35 fork index</th><td th:text="${liveV35ForkIndex}">Long.MAX_VALUE</td></tr>
+            <tr><th>Current V35 fork index</th><td th:text="${liveV35ForkIndex}">514291</td></tr>
             </tbody>
         </table>
         <p>Burn not executed yet unless real transaction proof is published. Pending proof fields below remain pending.</p>

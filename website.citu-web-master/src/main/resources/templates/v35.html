@@ -14,7 +14,7 @@
 
     <section class="alert alert-warning">
         <h2>V35 is not active yet</h2>
-        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
+        <p>V35 activation is scheduled in the reviewed release build at block 514291. It remains inactive until the chain reaches that height.</p>
         <p>Current public status: <strong th:text="${v35Active}"></strong>. Fork index: <strong th:text="${v35ForkIndex}"></strong>.</p>
     </section>
 
@@ -34,7 +34,7 @@
     <section class="alert alert-info">
         <h2>Read-only public pages</h2>
         <p>These pages explain V35 policy only. They do not activate V35, do not create a burn transaction, and do not mutate balances.</p>
-        <p>Planning candidate <strong th:text="${candidateForkIndex}">514291</strong> is not final. Final fork height, release tag, artifacts, and checksums will be announced only after final approval and a fresh chain-height check.</p>
+        <p>Fork height <strong th:text="${candidateForkIndex}">514291</strong> is configured in the reviewed release build. GitHub Release upload and public checksum publication are pending.</p>
         <p>
             <a href="/v35/tokenomics">Tokenomics</a> |
             <a href="/v35/burn">Burn policy</a> |
@@ -51,7 +51,7 @@
 
     <section class="citu-panel p-4 mb-4">
         <h2>Future official release package</h2>
-        <p>The V35 activation release is not published yet. Repositories, future GitHub Releases pages, planned JAR names, launch commands, and checksum warnings are available for preparation only.</p>
+        <p>The reviewed V35 activation build exists locally, but the GitHub Release is not published yet. Use only the official GitHub Release after it is published.</p>
         <p><a href="/wallet_and_node_url#future-v35-release-downloads">Open the future release download preparation section</a></p>
     </section>
 </main>

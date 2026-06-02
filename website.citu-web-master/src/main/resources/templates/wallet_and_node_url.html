@@ -13,13 +13,13 @@
 
     <section class="alert alert-warning">
         <h2>Pre-activation notice</h2>
-        <p>V35 is prepared but not active yet. Candidate fork height <strong>514291</strong> is planning-only and must be refreshed before final approval.</p>
+        <p>V35 activation is scheduled in the reviewed release build at block <strong>514291</strong>. It remains inactive until the chain reaches that height.</p>
         <p>Exchanges and operators must wait for the final tagged release, final checksums, reviewed artifacts, and official deployment notice. No founder burn has occurred.</p>
     </section>
 
     <section id="future-v35-release-downloads" class="citu-panel p-4 mb-4">
         <h2>Future official V35 release downloads / Будущие официальные загрузки V35 / V35 未来正式版本下载</h2>
-        <p><strong>Preparation only:</strong> the V35 activation release has not been published. V35 is not active yet. Do not use dry-run artifacts or current disabled-mode JAR files as production activation builds.</p>
+        <p><strong>GitHub Release upload pending:</strong> the reviewed activation build exists locally but has not been published. V35 is not active yet. Use only the official GitHub Release after it is published.</p>
 
         <h3>Official repositories and future GitHub Releases pages</h3>
         <ul>
@@ -39,7 +39,7 @@
 
         <div lang="en">
             <h3>EN: safety warning</h3>
-            <p>Candidate fork height <strong>514291</strong> is planning-only. V35 is not active yet, and <code>v35Active=false</code> is expected before an approved activation. No founder burn has occurred. The official public burn address has not been published. Never send funds to <code>BURN_ADDRESS</code>: it is an internal placeholder. Wait for final tagged artifacts and verify the published <code>SHA256SUMS.txt</code> and <code>SHA256SUMS.txt.sha256</code> files before using a release.</p>
+            <p>Fork height <strong>514291</strong> is scheduled in the reviewed build. V35 is not active yet, and <code>v35Active=false</code> is expected before block 514291. No founder burn has occurred. The official public burn address has not been published. Never send funds to <code>BURN_ADDRESS</code>: it is an internal placeholder. Wait for the official GitHub Release and verify the published <code>SHA256SUMS.txt</code> and <code>SHA256SUMS.txt.sha256</code> files before using a release.</p>
         </div>
         <div lang="ru">
             <h3>RU: предупреждение безопасности</h3>
@@ -123,7 +123,7 @@ true</code></pre>
                 <span class="citu-api-badge">V35 READ-ONLY</span>
                 <h3><code>GET /v35/protocol</code></h3>
                 <p>Reads activation status and protocol constants. Before activation, <code>v35Active=false</code> is expected.</p>
-                <pre class="v35-code"><code>{"v35Active":false,"v35ForkIndex":"Long.MAX_VALUE"}</code></pre>
+                <pre class="v35-code"><code>{"v35Active":false,"v35ForkIndex":514291}</code></pre>
             </article>
             <article class="citu-api-card">
                 <span class="citu-api-badge">V35 READ-ONLY</span>

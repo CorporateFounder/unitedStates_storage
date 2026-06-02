@@ -14,17 +14,19 @@
     <h1>V35 dashboard</h1>
     <div class="citu-wallet-badges mb-3">
         <span class="citu-wallet-badge">V35 NOT ACTIVE YET</span>
-        <span class="citu-wallet-badge">PLANNING CANDIDATE: 514291</span>
+        <span class="citu-wallet-badge">ACTIVATION SCHEDULED: 514291</span>
         <span class="citu-wallet-badge">NO FOUNDER BURN YET</span>
         <span class="citu-wallet-badge">LIVE ENDPOINTS MAY BE UNAVAILABLE BEFORE DEPLOYMENT</span>
     </div>
 
     <section class="alert alert-warning mt-3">
         <h2 class="h4">Status</h2>
-        <p><strong>V35 active:</strong> <span th:text="${v35Active}">false</span></p>
-        <p><strong>Fork index:</strong> <span th:text="${v35ForkIndex}">Long.MAX_VALUE</span></p>
-        <p>V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE.</p>
-        <p><strong>Before activation, <code>false</code> is expected.</strong> It confirms that this wallet is still showing pre-fork status.</p>
+        <p><strong>Activation scheduled:</strong> <span th:text="${activationScheduled}">true</span></p>
+        <p><strong>V35 active now:</strong> <span th:text="${v35Active}">false</span></p>
+        <p><strong>Fork height:</strong> <span th:text="${v35ForkIndex}">514291</span></p>
+        <p>V35 is scheduled for fork height 514291. It remains inactive until the chain reaches that height.</p>
+        <p><strong>Before block 514291, <code>v35Active=false</code> is expected.</strong></p>
+        <p>Live status unavailable; activation is scheduled at 514291. Do not treat the scheduled fork as active early.</p>
     </section>
 
     <section class="mt-4">

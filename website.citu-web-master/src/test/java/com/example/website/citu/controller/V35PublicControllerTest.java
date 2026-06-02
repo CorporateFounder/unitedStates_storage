@@ -21,7 +21,7 @@ class V35PublicControllerTest {
 
         assertEquals("v35", controller.overview(model));
         assertFalse((Boolean) model.get("v35Active"));
-        assertEquals("Long.MAX_VALUE", model.get("v35ForkIndex"));
+        assertEquals("514291", model.get("v35ForkIndex"));
         assertEquals("BURN_ADDRESS", model.get("burnAddress"));
         assertEquals("200", model.get("blockTimeSeconds"));
         assertEquals("432", model.get("blocksPerDay"));
@@ -66,7 +66,8 @@ class V35PublicControllerTest {
         }
 
         String content = all.toString();
-        assertTrue(content.contains("V35 is not active while V35_RESCUE_FORK_INDEX is Long.MAX_VALUE."));
+        assertTrue(content.contains("V35 activation is scheduled"));
+        assertFalse(content.contains("V35_RESCUE_FORK_INDEX is Long.MAX_VALUE"));
         assertTrue(content.contains("BURN_ADDRESS"));
         assertTrue(content.contains("8 GOLD/block"));
         assertTrue(content.contains("6 GOLD"));
@@ -133,7 +134,7 @@ class V35PublicControllerTest {
         assertEquals("Unavailable", model.get("liveTotalMintedGold"));
         assertEquals("Unavailable", model.get("liveBurnedGold"));
         assertEquals("false", model.get("liveV35Active"));
-        assertEquals("Long.MAX_VALUE", model.get("liveV35ForkIndex"));
+        assertEquals("514291", model.get("liveV35ForkIndex"));
     }
 
     @Test
@@ -141,10 +142,10 @@ class V35PublicControllerTest {
         V35FounderBurnProofApiClient client = new V35FounderBurnProofApiClient(
                 (url, timeoutMillis) -> {
                     if (url.endsWith(V35FounderBurnProofApiClient.SUPPLY_PATH)) {
-                        return "{\"totalMintedGold\":\"100.00\",\"burnedGold\":\"0.00\",\"circulatingGold\":\"100.00\",\"founderReserveGold\":\"80.00\",\"jackpotPaidGold\":\"0.00\",\"annualEmissionGold\":\"1261440.00\",\"v35Active\":false,\"v35ForkIndex\":\"Long.MAX_VALUE\"}";
+                        return "{\"totalMintedGold\":\"100.00\",\"burnedGold\":\"0.00\",\"circulatingGold\":\"100.00\",\"founderReserveGold\":\"80.00\",\"jackpotPaidGold\":\"0.00\",\"annualEmissionGold\":\"1261440.00\",\"v35Active\":false,\"v35ForkIndex\":514291}";
                     }
                     if (url.endsWith(V35FounderBurnProofApiClient.BURN_PATH)) {
-                        return "{\"burnAddress\":\"BURN_ADDRESS\",\"burnTransactionCreated\":false,\"actualBurnedGold\":\"0.00\",\"burnedGold\":\"0.00\",\"v35Active\":false,\"v35ForkIndex\":\"Long.MAX_VALUE\"}";
+                        return "{\"burnAddress\":\"BURN_ADDRESS\",\"burnTransactionCreated\":false,\"actualBurnedGold\":\"0.00\",\"burnedGold\":\"0.00\",\"v35Active\":false,\"v35ForkIndex\":514291}";
                     }
                     if (url.endsWith(V35FounderBurnProofApiClient.FOUNDER_PATH)) {
                         return "{\"founderAddress\":\"nNifuwmFZr7fnV1zvmpiyQDV5z7ETWvqR6GSeqeHTY43\",\"founderReserveGold\":\"80.00\",\"modeledBurnGold\":\"64.00\",\"actualBurnedGold\":\"0.00\"}";
@@ -247,6 +248,7 @@ class V35PublicControllerTest {
         assertTrue(content.contains("REVIEW SIGNED JSON"));
         assertTrue(content.contains("\"digitalDollar\": 0.01"));
         assertTrue(content.contains("\"burnAddressConfigured\":false"));
+        assertTrue(content.contains("{\"v35Active\":false,\"v35ForkIndex\":514291}"));
         assertTrue(content.contains("GET /isTransactionAdd?sign=&lt;BASE58_SIGNATURE&gt;"));
         assertTrue(content.contains("internal placeholder"));
         assertTrue(content.contains("внутренний placeholder"));
@@ -295,10 +297,10 @@ class V35PublicControllerTest {
                 + Files.readString(template("v35-checksums.html"))
                 + Files.readString(template("v35-burn-warning.html"));
 
-        assertTrue(content.contains("V35 is prepared but not active yet"));
-        assertTrue(content.contains("planning-only"));
+        assertTrue(content.contains("V35 activation is scheduled"));
+        assertTrue(content.contains("GitHub Release upload"));
         assertTrue(content.contains("No user action is required yet"));
-        assertTrue(content.contains("Final checksums are not published yet"));
+        assertTrue(content.contains("public checksums are pending upload"));
         assertTrue(content.contains("SHA256SUMS.txt.sha256"));
         assertTrue(content.contains("Do not send coins to unofficial or fake burn addresses"));
         assertTrue(content.contains("No founder burn has occurred"));
@@ -310,9 +312,9 @@ class V35PublicControllerTest {
         assertTrue(content.contains("lang=\"en\""));
         assertTrue(content.contains("lang=\"ru\""));
         assertTrue(content.contains("lang=\"zh\""));
-        assertTrue(content.contains("V35 подготовлен, но еще не активирован"));
+        assertTrue(content.contains("Активация V35 запланирована"));
         assertTrue(content.contains("Сжигание средств основателя не выполнялось"));
-        assertTrue(content.contains("V35 已准备，但尚未激活"));
+        assertTrue(content.contains("已计划在区块 514291 激活 V35"));
         assertTrue(content.contains("创始人销毁尚未执行"));
     }
 
@@ -323,7 +325,9 @@ class V35PublicControllerTest {
         String charter = Files.readString(template("charter_eng.html"));
 
         assertTrue(paper.contains("V35 pre-activation protocol model"));
-        assertTrue(paper.contains("PLANNING CANDIDATE: 514291"));
+        assertTrue(paper.contains("ACTIVATION SCHEDULED: 514291"));
+        assertFalse(paper.contains("Long.MAX_VALUE"));
+        assertFalse(paper.contains("planning-only"));
         assertTrue(paper.contains("200 seconds"));
         assertTrue(paper.contains("432"));
         assertTrue(paper.contains("8 GOLD"));
