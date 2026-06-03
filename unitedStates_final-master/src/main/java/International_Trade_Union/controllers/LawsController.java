@@ -220,6 +220,11 @@ public class LawsController {
         return "voting";
     }
 
+    @GetMapping("/vote")
+    public String voteAlias() {
+        return "redirect:/voting";
+    }
+
     @PostMapping("/voting")
     public String lawVoting(
             @RequestParam
@@ -354,11 +359,17 @@ public class LawsController {
         votesMap = voteMapAndLastIndex.getVotesMap();
 
         //подсчитать голоса за все проголосованные законы (здесь происходит подсчет, на основе монет)
-        List<CurrentLawVotesEndBalance> current = UtilsGovernment.filtersVotes(
-                lawEligibleForParliamentaryApprovals,
-                balances,
-                boardOfShareholders,
-                votesMap);
+        List<CurrentLawVotesEndBalance> current = new ArrayList<>();
+        try {
+            current = UtilsGovernment.filtersVotes(
+                    lawEligibleForParliamentaryApprovals,
+                    balances,
+                    boardOfShareholders,
+                    votesMap);
+        } catch (RuntimeException ex) {
+            model.addAttribute("governanceUnavailable",
+                    "Governance data is unavailable for this local node state: " + ex.getClass().getSimpleName());
+        }
 
 
         //убрать появление всех бюджет и эмиссий из отображения в действующих законах

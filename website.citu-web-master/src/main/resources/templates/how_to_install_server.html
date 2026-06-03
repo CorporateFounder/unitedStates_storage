@@ -1,181 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <title>CITU node install</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <h5>
-        1. Download the latest version of the jar https://github.com/CorporateFounder/unitedStates_storage/tree/master/target
-        2. Using the wallet, download the resources folder and the entire blockchain. Wallet jar here https://github.com/CorporateFounder/unitedStates_final/tree/master/target latest version.
-        3. copy the resources folder to your server in the server folder. that is, C://server/resources should be located like this. The server folder should be at the top level.
-        4. On your server, set the time using these instructions Command prompt as administrator:
-
-        1). net stop w32time
-        2). w32tm /config /manualpeerlist:"0.ch.pool.ntp.org, 1.ch.pool.ntp.org, 2.ch.pool.ntp.org, 3.ch.pool.ntp.org" /syncfromflags: manual /reliable:yes /update
-
-        (an error pops up saying that the service is not running because you stopped it. Continue entering commands.)
-
-        3). net start w32time
-
-        4). w32tm/resync
-
-        5). Wait about 5 minutes,
-
-        6). w32tm /query /peers
-        5. start your java server -Dserver.port=82 -Dserver.address=194.87.236.38 -jar C://unitedStates-0.0.9-SNAPSHOT.jar where enter your port in the port, and your host in the address. Instead, write your version of unitedStates-0.0.198-jar that you downloaded.
-        6. Make sure you have jdk 19 or higher installed.
-        if you did everything correctly, then you can connect to your server like this http://194.87.236.238:82/datashort by specifying the host and port
-        -------------------------------
-        To check the integrity of the server, you must configure your wallet on your server, then take three steps to verify. 1. call localhost:80802/testCalculate on the wallet, if everything is correct, then in the console you will see two [] [] empty square brackets as in the picture. If not, you will see a list of incorrect invoices.
-        If you still see a list of incorrect accounts, it means either there was an error on the wallet or on the server. To fix this problem, try replacing the resources folder on the server,
-        and if after 100 blocks this problem occurs, then download the resources folder from scratch using your wallet. Since the balance file itself and the wallet may have been damaged. Because of this,
-        it is better to turn off the wallet once a day when this test has passed and make a backup of this folder so as not to download from scratch. 2. Click on the update button on the wallet so that your
-        wallet will update to your server and sync with it. Immediately log into your server by registering your http://194.87.236.238:82/datashort host port, and immediately
-        log into the C:\resources\tempblockchain folder on your wallet and go to the file. If the height of your server and wallet are the same, then all other parameters should also be the same.
-        If not, then either the server or the wallet is broken. 3. Compare your meta data with the official one or others. Example http://194.87.236.238:82/datashort and http://37.205.15.167:82/datashort have the
-        same height and necessarily http://194.87.236.238:82/prevBlock http://37.205.15.167:82/prevBlock the hash of the blocks matches, then the meta data in datashort must match.
-        If the height is different or /prevBlock is different, then the meta data will not match and this is normal. But if it’s the same, then the metas must match and one of the servers is broken.
-        If the meta data does not match, to find out if yours is broken, go to the C:\resources\pooAddressBlocked folder and if in this file you find not just one of its servers,
-        but many servers that are blocked. This means it was your server that was broken. Since all servers cannot fail at the same time.
-
-    </h5>
-
-    <h5>
-        posted by @SuprTrupr discord
-        Ubuntu
-        Install PuTTy in your windows PC or something else for remote control.(For VPS server)
-
-        Installation on Ubuntu 22.04 step by step
-
-    </h5>
-
-    <h5>
-
-        sudo apt update && sudo apt upgrade
-
-        apt install openjdk-19-jre-headless
-
-        sudo apt install screen
-
-        sudo ufw allow 82/tcp //or put here your server port
-
-        sudo ufw enable
-
-        sudo ufw status //checking the rules, your port must be allowed
-
-    </h5>
-
-    <h5>
-
-        Copy the .jar and resources folder to the parent folder labeled "/" using FileZilla or similar.
-        In the parent folder labeled "/" (You can see the "root", "etc",... folders in this folder.)
-
-    </h5>
-
-    <h5>
-        (After copying is complete)
-        cd/
-        screen
-        2x put key SPACE
-
-    </h5>
-    <h5>
-        put command where u need change ??? to your IP address and PORT number.
-        java -Dserver.port=??? -Dserver.address=???.???.???.??? -jar unitedStates-0.0.9-SNAPSHOT.jar
-
-    </h5>
-    <h5>
-        U can close PuTTy.
-        -------------------
-
-        After relogin to PuTTy
-        ------------------------
-        screen -r //restores .jar session to the screen
-    </h5>
-
-    <h5>Install PuTTy in your windows PC or something else for remote control.(For VPS server)
-
-        Installation on Ubuntu 22.04 step by step
-        -------------------------------------------
-        You must be logged in as the "root" user
-
-        apt update && sudo apt upgrade
-
-        apt install openjdk-19-jre-headless (or another)
-
-        apt install curl
-
-        apt install screen
-
-        apt install ufw
-
-        ufw allow 82/tcp  (or put here your server port)
-
-        ufw allow 22/tcp  (ssh access)
-
-        ufw allow 123/udp (NTP access)
-
-        ufw enable
-
-        ufw status  (checking the rules, your port must be allowed)
-
-        apt install chrony
-
-        sudo nano /etc/chrony/chrony.conf
-        (change the NTP provider in the configuration file to this:)
-        server 0.ch.pool.ntp.org
-        server 1.ch.pool.ntp.org
-        server 2.ch.pool.ntp.org
-        server 3.ch.pool.ntp.org
-
-        crtl+O, Enter, ctrl+x.
-
-        systemctl restart chrony
-
-        chronyc makestep (manual time sync)
-
-        systemctl enable chrony
-
-        --------------------------------------------------------------------
-        ----------------------------------------------------------------------
-        Download .jar
-
-        curl -L -o unitedStates-0.0.64-SNAPSHOT.jar https://github.com/CorporateFounder/unitedStates_storage/blob/master/target/unitedStates-0.0.64-SNAPSHOT.jar?raw=true
-
-        create a "server" folder at location "/" (parent folder) and copy "resources" folder to the folder "server" using FileZilla or similar.
-        In the parent folder labeled "/" (You can see the "root", "etc",... folders in this folder.)
-        ------------------------------------------------------------------------------
-        (After copying is complete)
-        cd /
-        screen
-        2x put key SPACE
-        -------------------------------------------------------------------------
-        put command where u need change ??? to your IP address and PORT number.
-        java -Dserver.port=??? -Dserver.address=???.???.???.??? -jar unitedStates-0.0.0-SNAPSHOT.jar
-        -------------------------------------------------------------------------------------------------
-        U can close PuTTy. (The screen command will make the .jar run in the background.)
-        -------------------
-
-        After relogin to PuTTy
-        ------------------------
-        screen -r (restores .jar session to the screen)
-
-
-    </h5>
-    <h4 error/>
-    <img th:src="@{/server/error.png}"/>
-    <h4 normal/>
-    <img th:src="@{/server/normal.png}"/>
-    <h4 normal datashort/>
-    <img th:src="@{/server/normal-datashort.png}"/>
-    <h4 normal datashort in two server/>
-    <img th:src="@{/server/normal-datashort-2.png}"/>
-    <h4 normal equals prev block in two server/>
-    <img th:src="@{/server/normal-datashort-3.png}"/>
-
 </head>
-<body>
-
+<body class="v35-public">
+<header th:insert="blocks/header :: header"></header>
+<main class="container my-4">
+    <h1>Run a CITU node</h1>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Download and verify</h2>
+        <p>Use the official V35 1.0.0 node JAR and verify SHA256 before running.</p>
+        <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
+    </section>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Windows / local node</h2>
+        <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083</code></pre>
+        <p>Check local node: <a href="http://127.0.0.1:8083/size">http://127.0.0.1:8083/size</a></p>
+    </section>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Public and operator nodes</h2>
+        <p>Official public node for simple wallet use: <a href="http://194.87.236.238:82">http://194.87.236.238:82</a></p>
+        <p>Node operators and exchanges should run their own node, compare <code>/size</code> and <code>/prevBlock</code>, and verify API responses before relying on deposits or withdrawals.</p>
+    </section>
+    <section class="alert alert-warning">
+        <p>V35 activation is scheduled at block 514291. Before block 514291, <code>v35Active=false</code> is expected.</p>
+        <p>No founder burn has occurred. Do not send funds to <code>BURN_ADDRESS</code>.</p>
+    </section>
+</main>
+<footer th:insert="blocks/footer :: footer"></footer>
 </body>
 </html>

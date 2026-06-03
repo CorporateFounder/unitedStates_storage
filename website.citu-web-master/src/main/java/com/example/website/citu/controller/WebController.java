@@ -279,6 +279,11 @@ public class WebController {
     public String installServer(){
         return "how_to_install_server";
     }
+
+    @GetMapping("/how_mining_pool")
+    public String howMiningPool(){
+        return "how_mining_pool";
+    }
     @GetMapping("/how_to_open_an_account")
     public String howToOpenAnAccount(Model model) {
         model.addAttribute("title", "How to open an account");

@@ -2,33 +2,24 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Charter</title>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-
-    <!-- Подключаем ваш «осенний» файл со стилями -->
-    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
-
-    <!-- Если нужно оставить Bootstrap для сетки/отступов, оставьте.
-         Если нет необходимости в Bootstrap, можно удалить следующую строку. -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/citu-wallet.css">
 </head>
-<body>
-
-<!-- Header, который потом стилизуется классом .header-custom из вашего styles.css -->
+<body class="citu-wallet-page">
 <header th:insert="blocks/header :: header"></header>
-
-<!-- Вместо alert alert-info используем вашу .alert-info,
-     которая определяется в вашем styles.css (фон #f7e4d8, цвет #3e261a, и т.д.) -->
-
-
-<!-- Charter Content -->
-<div>
-    <a href="/charter_rus" class="p-0">устав на русском</a>
-
-    <a href="/charter_eng" class="p-0">charter in english</a>
-</div>
-
-<!-- Footer, стилизуется классом .footer-custom из вашего styles.css -->
+<main class="container mb-5">
+    <section class="citu-wallet-panel mb-4">
+        <p class="citu-wallet-kicker">Governance reference</p>
+        <h1>Corporate charter</h1>
+        <p>The charter routes are preserved as legacy / pre-V35 governance references. V35 activation is scheduled at block 514291 and does not execute a founder burn.</p>
+    </section>
+    <section class="citu-wallet-grid">
+        <a class="citu-wallet-panel text-decoration-none" href="/charter_rus">Устав на русском</a>
+        <a class="citu-wallet-panel text-decoration-none" href="/charter_eng">Charter in English</a>
+    </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

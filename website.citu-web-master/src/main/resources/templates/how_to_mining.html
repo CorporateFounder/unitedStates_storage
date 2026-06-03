@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
+<body class="v35-public">
 <header th:insert="blocks/header :: header "></header>
 
 <div class="container mt-4">
@@ -15,7 +15,9 @@
         <div class="alert alert-warning">
             <h2>Legacy / pre-V35 mining guide</h2>
             <p>This page preserves legacy mining calculators and historical formulas. It is not the V35 public mining model.</p>
-            <p>For the prepared V35 model, read the <a href="/white_papper" class="alert-link">V35 protocol paper</a>. V35 is not active yet.</p>
+            <p>For the prepared V35 model, read the <a href="/white_papper" class="alert-link">V35 protocol paper</a>. V35 activation is scheduled at block 514291; before block 514291, <code>v35Active=false</code> is expected.</p>
+            <p>Run a local node with <code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083</code>, open local wallet <code>http://127.0.0.1:8082</code>, and use the <a href="/how_mining_pool" class="alert-link">mining pool status guide</a> for legacy pool notes.</p>
+            <p>No founder burn has occurred. <code>BURN_ADDRESS</code> is an internal placeholder, not a public transfer destination.</p>
         </div>
         <h6>Note:</h6>
         <h6>new updating: Milton fridman: valid since 342201</h6>

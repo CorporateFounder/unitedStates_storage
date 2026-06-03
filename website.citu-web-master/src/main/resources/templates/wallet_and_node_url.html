@@ -14,23 +14,24 @@
     <section class="alert alert-warning">
         <h2>Pre-activation notice</h2>
         <p>V35 activation is scheduled in the reviewed release build at block <strong>514291</strong>. It remains inactive until the chain reaches that height.</p>
-        <p>Exchanges and operators must wait for the final tagged release, final checksums, reviewed artifacts, and official deployment notice. No founder burn has occurred.</p>
+        <p>Exchanges and operators must use the official tagged V35 1.0.0 release, verify SHA256 checksums, and follow the official deployment notice. No founder burn has occurred.</p>
     </section>
 
-    <section id="future-v35-release-downloads" class="citu-panel p-4 mb-4">
-        <h2>Future official V35 release downloads / Будущие официальные загрузки V35 / V35 未来正式版本下载</h2>
-        <p><strong>GitHub Release upload pending:</strong> the reviewed activation build exists locally but has not been published. V35 is not active yet. Use only the official GitHub Release after it is published.</p>
+    <section id="official-v35-release-downloads" class="citu-panel p-4 mb-4">
+        <h2>Official V35 1.0.0 release downloads / Официальные загрузки V35 1.0.0 / V35 1.0.0 官方版本下载</h2>
+        <p><strong>Official V35 1.0.0 release is published.</strong> V35 activation is scheduled at block 514291. Before block 514291, <code>v35Active=false</code> is expected.</p>
+        <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
 
-        <h3>Official repositories and future GitHub Releases pages</h3>
+        <h3>Official repositories and GitHub Releases pages</h3>
         <ul>
             <li>Server repository: <a href="https://github.com/CorporateFounder/unitedStates_storage" target="_blank" rel="noopener noreferrer">github.com/CorporateFounder/unitedStates_storage</a></li>
             <li>Wallet repository: <a href="https://github.com/CorporateFounder/unitedStates_final" target="_blank" rel="noopener noreferrer">github.com/CorporateFounder/unitedStates_final</a></li>
-            <li>Future server release link - will work after final GitHub Release is published: <a href="https://github.com/CorporateFounder/unitedStates_storage/releases/tag/v35-node-activation-514291" target="_blank" rel="noopener noreferrer">v35-node-activation-514291</a></li>
-            <li>Future wallet release link - will work after final GitHub Release is published: <a href="https://github.com/CorporateFounder/unitedStates_final/releases/tag/v35-wallet-activation-514291" target="_blank" rel="noopener noreferrer">v35-wallet-activation-514291</a></li>
+            <li>Server GitHub Release: <a href="https://github.com/CorporateFounder/unitedStates_storage/releases/tag/v35-node-activation-514291" target="_blank" rel="noopener noreferrer">v35-node-activation-514291</a></li>
+            <li>Wallet GitHub Release: <a href="https://github.com/CorporateFounder/unitedStates_final/releases/tag/v35-wallet-activation-514291" target="_blank" rel="noopener noreferrer">v35-wallet-activation-514291</a></li>
         </ul>
 
-        <h3>Planned JAR names and launch commands</h3>
-        <p>These filenames are reserved for a future reviewed release after the activation commit, build, checksum generation, and final tag.</p>
+        <h3>Official JAR names and launch commands</h3>
+        <p>Download ready node and wallet JARs from the official GitHub Releases and verify SHA256 before running.</p>
         <p>Node/server JAR: <a href="https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291/citu-node-v35-activation-514291-1.0.0.jar"><code>citu-node-v35-activation-514291-1.0.0.jar</code></a></p>
         <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083</code></pre>
         <p>Wallet JAR: <a href="https://github.com/CorporateFounder/unitedStates_final/releases/download/v35-wallet-activation-514291/citu-wallet-v35-activation-514291-1.0.0.jar"><code>citu-wallet-v35-activation-514291-1.0.0.jar</code></a></p>
@@ -39,15 +40,15 @@
 
         <div lang="en">
             <h3>EN: safety warning</h3>
-            <p>Fork height <strong>514291</strong> is scheduled in the reviewed build. V35 is not active yet, and <code>v35Active=false</code> is expected before block 514291. No founder burn has occurred. The official public burn address has not been published. Never send funds to <code>BURN_ADDRESS</code>: it is an internal placeholder. Wait for the official GitHub Release and verify the published <code>SHA256SUMS.txt</code> and <code>SHA256SUMS.txt.sha256</code> files before using a release.</p>
+            <p>Fork height <strong>514291</strong> is scheduled in the reviewed build. V35 is not active yet, and <code>v35Active=false</code> is expected before block 514291. No founder burn has occurred. The official public burn address has not been published. Never send funds to <code>BURN_ADDRESS</code>: it is an internal placeholder. Use the official GitHub Release and verify the published <code>SHA256SUMS.txt</code> and <code>SHA256SUMS.txt.sha256</code> files before using a release.</p>
         </div>
         <div lang="ru">
             <h3>RU: предупреждение безопасности</h3>
-            <p>Кандидат высоты форка <strong>514291</strong> используется только для планирования. V35 пока не активирован, и до утверждённой активации ожидается <code>v35Active=false</code>. Сжигание средств основателя не выполнялось. Официальный публичный burn-адрес ещё не опубликован. Никогда не отправляйте средства на <code>BURN_ADDRESS</code>: это внутренний placeholder. Дождитесь финальных артефактов с тегом и проверьте опубликованные файлы <code>SHA256SUMS.txt</code> и <code>SHA256SUMS.txt.sha256</code>.</p>
+            <p>Высота форка <strong>514291</strong> запланирована в проверенной сборке. До блока 514291 ожидается <code>v35Active=false</code>. Сжигание средств основателя не выполнялось. Официальный публичный burn-адрес ещё не опубликован. Никогда не отправляйте средства на <code>BURN_ADDRESS</code>: это внутренний placeholder. Используйте официальный GitHub Release и проверьте опубликованные файлы <code>SHA256SUMS.txt</code> и <code>SHA256SUMS.txt.sha256</code>.</p>
         </div>
         <div lang="zh">
             <h3>ZH: 安全警告</h3>
-            <p>候选分叉高度 <strong>514291</strong> 仅用于规划。V35 尚未激活，在批准激活之前出现 <code>v35Active=false</code> 属于正常情况。创始人销毁尚未执行。官方公开销毁地址尚未发布。切勿向 <code>BURN_ADDRESS</code> 转账：它只是内部占位符。请等待带有最终标签的正式文件，并在使用版本前核验已发布的 <code>SHA256SUMS.txt</code> 和 <code>SHA256SUMS.txt.sha256</code>。</p>
+            <p>分叉高度 <strong>514291</strong> 已安排在审核版本中。在区块 514291 之前出现 <code>v35Active=false</code> 属于正常情况。创始人销毁尚未执行。官方公开销毁地址尚未发布。切勿向 <code>BURN_ADDRESS</code> 转账：它只是内部占位符。请使用官方 GitHub Release，并在运行前核验已发布的 <code>SHA256SUMS.txt</code> 和 <code>SHA256SUMS.txt.sha256</code>。</p>
         </div>
     </section>
 

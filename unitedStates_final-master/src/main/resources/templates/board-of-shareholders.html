@@ -1,26 +1,27 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title th:text="${title}"/>
-  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+  <title th:text="${title}">Board of shareholders</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/citu-wallet.css">
 </head>
-<body>
+<body class="citu-wallet-page">
 <header th:insert="blocks/header :: header"></header>
-
-<div class="container mt-5">
-  <h3 th:text="${title}"/>
-
-  <div th:each="el : ${boardOfShareholders}" class="alert alert-info mt-2">
-    <h4 th:text="'address: '+${el.account}"/>
-    <p th:text="' digital stock Balance: '+${#numbers.formatDecimal(el.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}"/>
-
-  </div>
-
-</div>
-
+<main class="container mb-5">
+  <section class="citu-wallet-panel mb-4">
+    <p class="citu-wallet-kicker">Governance</p>
+    <h1 th:text="${title}">Board of shareholders</h1>
+    <p>Legacy / pre-V35 stock-based governance view. V35 changes mining rewards at block 514291, but this route remains available for historical governance data.</p>
+  </section>
+  <section class="citu-wallet-grid">
+    <article th:each="el : ${boardOfShareholders}" class="citu-wallet-panel">
+      <h2 class="h5 text-break" th:text="${el.account}">Address</h2>
+      <p th:text="'Digital stock balance: '+${#numbers.formatDecimal(el.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}">Stock balance</p>
+    </article>
+  </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,52 +1,72 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}"/>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <title th:text="${title}">Statistics</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/citu-wallet.css">
 </head>
-<body>
+<body class="citu-wallet-page">
 <header th:insert="blocks/header :: header"></header>
-<div class="container mt-5">
-    <h3 th:text="${title}"/>
-    <form action="/statistics" method="post">
+<main class="container mb-5">
+    <section class="citu-wallet-panel mb-4">
+        <p class="citu-wallet-kicker">Legacy / pre-V35 statistics</p>
+        <h1 th:text="${title}">Statistics</h1>
+        <p>These values describe historical and pre-V35 wallet statistics when data is available. V35 changes the reward model at block <strong>514291</strong>.</p>
+        <p class="mb-0">Unavailable values are left empty by the node and are not fabricated by the wallet.</p>
+    </section>
 
-        <select  name="periudStr" class="form-control">
-            <option value="DAY" >DAY</option>
-            <option value="WEEK">WEEK</option>
-            <option value="MONTH">MONTH</option>
-            <option value="YEAR">YEAR</option>
+    <section class="citu-wallet-panel mb-4">
+        <form action="/statistics" method="post" class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label" for="periudStr">Period</label>
+                <select id="periudStr" name="periudStr" class="form-select">
+                    <option value="DAY">DAY</option>
+                    <option value="WEEK">WEEK</option>
+                    <option value="MONTH">MONTH</option>
+                    <option value="YEAR">YEAR</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-success w-100">Choose period</button>
+            </div>
+        </form>
+    </section>
 
-        </select><br>
+    <section class="citu-wallet-panel mb-4" th:if="${statisticsUnavailable != null}">
+        <p class="citu-wallet-kicker">Local node state</p>
+        <h2 class="h5">Statistics unavailable</h2>
+        <p class="mb-0" th:text="${statisticsUnavailable}">Statistics are unavailable for this local node state.</p>
+    </section>
 
-        <button type="submit" class="btn btn-success">choose periud</button><br>
-    </form>
-
-    <div th:each="el : ${statistics}" class="alert alert-info mt-2">
-        <h4 th:text="'index block: '+${el.indexBlock}"/>
-        <h4 th:text="'period: '+${el.periud}"/>
-        <p th:text="'all digital dollar: '+${#numbers.formatDecimal(el.allDigitalDollars, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'all digital stock: '+${#numbers.formatDecimal(el.allDigitalStocks, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'velocity of money dollar: '+${#numbers.formatDecimal(el.velocity_of_money_dollar, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'velocity of money dollar model 2: '+${#numbers.formatDecimal(el.velocity_of_money_dollar_model2, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'velocity of money stock: '+${#numbers.formatDecimal(el.velocity_of_money_stock, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'velocity of money stock model 2: '+${#numbers.formatDecimal(el.velocity_of_money_stock_model2, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'count transactions: '+${el.transactions}"/>
-        <p th:text="'count transactions dollar: '+${el.countDollarTransactions}"/>
-        <p th:text="'count transactions stock: '+${el.countStocktransactions}"/>
-        <p th:text="'sum transactions dollar: '+${#numbers.formatDecimal(el.sumTransactionsDollar, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'sum transactions stock: '+${#numbers.formatDecimal(el.sumTransactionsStock, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'median transactions dollar: '+${#numbers.formatDecimal(el.medianTransactionsDollar, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'median transactions stock: '+${#numbers.formatDecimal(el.medianTransactionsStock, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'count unique miner in period: '+${el.uniqueMinerInDays}"/>
-        <p th:text="'all account balance upper zero: '+${el.uniqueAddressBalanceUpperZero}"/>
-        <p th:text="'median balance dollar in accounts from period: '+${#numbers.formatDecimal(el.medianBalanceDollar, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'median balance stock in accounts from period: '+${#numbers.formatDecimal(el.medianBalanceStock, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'mode difficult: '+${el.difficultyMod}"/>
-        <p th:text="'increase in accounts of the current period, in relation to the previous one, in percent: '+${#numbers.formatDecimal(el.growthAccountPercent, 1, 'COMMA', 16, 'POINT')}"/>
-    </div>
-
-</div>
+    <section class="citu-wallet-grid">
+        <article th:each="el : ${statistics}" class="citu-wallet-panel">
+            <h2 class="h5" th:text="'Block index: '+${el.indexBlock}">Block index</h2>
+            <p class="citu-wallet-legacy-note" th:text="'Period: '+${el.periud}">Period</p>
+            <div class="citu-wallet-stat-list">
+                <p th:text="'Total GOLD / digital dollar: '+${#numbers.formatDecimal(el.allDigitalDollars, 1, 'COMMA', 16, 'POINT')}">Total GOLD</p>
+                <p th:text="'Total stock (legacy): '+${#numbers.formatDecimal(el.allDigitalStocks, 1, 'COMMA', 16, 'POINT')}">Total stock</p>
+                <p th:text="'Transaction count: '+${el.transactions}">Transaction count</p>
+                <p th:text="'Dollar transaction count: '+${el.countDollarTransactions}">Dollar transaction count</p>
+                <p th:text="'Stock transaction count: '+${el.countStocktransactions}">Stock transaction count</p>
+                <p th:text="'Velocity GOLD / dollar: '+${#numbers.formatDecimal(el.velocity_of_money_dollar, 1, 'COMMA', 16, 'POINT')}">Velocity</p>
+                <p th:text="'Velocity GOLD model 2: '+${#numbers.formatDecimal(el.velocity_of_money_dollar_model2, 1, 'COMMA', 16, 'POINT')}">Velocity model 2</p>
+                <p th:text="'Velocity stock: '+${#numbers.formatDecimal(el.velocity_of_money_stock, 1, 'COMMA', 16, 'POINT')}">Velocity stock</p>
+                <p th:text="'Velocity stock model 2: '+${#numbers.formatDecimal(el.velocity_of_money_stock_model2, 1, 'COMMA', 16, 'POINT')}">Velocity stock model 2</p>
+                <p th:text="'Sum transactions GOLD / dollar: '+${#numbers.formatDecimal(el.sumTransactionsDollar, 1, 'COMMA', 16, 'POINT')}">Sum GOLD</p>
+                <p th:text="'Sum transactions stock: '+${#numbers.formatDecimal(el.sumTransactionsStock, 1, 'COMMA', 16, 'POINT')}">Sum stock</p>
+                <p th:text="'Median transaction GOLD / dollar: '+${#numbers.formatDecimal(el.medianTransactionsDollar, 1, 'COMMA', 16, 'POINT')}">Median GOLD</p>
+                <p th:text="'Median transaction stock: '+${#numbers.formatDecimal(el.medianTransactionsStock, 1, 'COMMA', 16, 'POINT')}">Median stock</p>
+                <p th:text="'Unique miners in period: '+${el.uniqueMinerInDays}">Unique miners</p>
+                <p th:text="'Accounts with balance above zero: '+${el.uniqueAddressBalanceUpperZero}">Accounts</p>
+                <p th:text="'Median account GOLD / dollar balance: '+${#numbers.formatDecimal(el.medianBalanceDollar, 1, 'COMMA', 16, 'POINT')}">Median balance</p>
+                <p th:text="'Median stock balance: '+${#numbers.formatDecimal(el.medianBalanceStock, 1, 'COMMA', 16, 'POINT')}">Median stock balance</p>
+                <p th:text="'Mode difficulty: '+${el.difficultyMod}">Difficulty</p>
+                <p th:text="'Account growth percent: '+${#numbers.formatDecimal(el.growthAccountPercent, 1, 'COMMA', 16, 'POINT')}">Growth</p>
+            </div>
+        </article>
+    </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

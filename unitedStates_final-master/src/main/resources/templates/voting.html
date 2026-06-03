@@ -1,49 +1,51 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title th:text="${title}"/>
-  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+  <title th:text="${title}">Vote</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/citu-wallet.css">
 </head>
-<body>
+<body class="citu-wallet-page">
 <header th:insert="blocks/header :: header"></header>
-
-<div class="container mt-5">
-  <h3 th:text="${title}"></h3>
-
-  <form action="/voting" method="post">
-    <input type="text"
-           name="sender"
-           th:value="${sender}"
-           placeholder="enter the sender's address"
-           class="form-control"><br>
-
-    <input type="text"
-           name="recipient"
-           th:value="${recipient}"
-           placeholder="enter the address of the Law"
-           class="form-control"><br>
-
-    <input type="text"
-           name="reward"
-           placeholder="block miner reward"
-           th:value="${reward != null ? reward : 0}"
-           class="form-control"><br>
-
-    <h5>Vote YES (YES) or NO (NO)</h5>
-    <select name="vote" class="form-control">
-      <option value="YES" th:selected="${vote} == 'YES'">YES</option>
-      <option value="NO" th:selected="${vote} == 'NO'">NO</option>
-      <option value="REMOVE_YOUR_VOICE" th:selected="${vote} == 'REMOVE_YOUR_VOICE'">
-        REMOVE_YOUR_VOICE
-      </option>
-    </select><br>
-
-    <textarea name="password" placeholder="enter password" th:rows="8" th:cols="120"></textarea><br>
-    <button type="submit" class="btn btn-success">Submit Voice</button><br>
-  </form>
-</div>
-
+<main class="container mb-5">
+  <section class="citu-wallet-panel mb-4">
+    <p class="citu-wallet-kicker">Governance vote</p>
+    <h1 th:text="${title}">Vote</h1>
+    <p>Legacy / pre-V35 stock-based voting route. Vote transactions are public; the password/private key field is secret and must never be shared.</p>
+  </section>
+  <section class="citu-wallet-panel">
+    <form action="/voting" method="post" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="sender">Sender public address</label>
+        <input id="sender" type="text" name="sender" th:value="${sender}" placeholder="Sender address" class="form-control">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="recipient">Law/package address</label>
+        <input id="recipient" type="text" name="recipient" th:value="${recipient}" placeholder="Law address" class="form-control">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="reward">Miner reward</label>
+        <input id="reward" type="text" name="reward" th:value="${reward != null ? reward : 0}" class="form-control">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="vote">Vote</label>
+        <select id="vote" name="vote" class="form-select">
+          <option value="YES" th:selected="${vote} == 'YES'">YES</option>
+          <option value="NO" th:selected="${vote} == 'NO'">NO</option>
+          <option value="REMOVE_YOUR_VOICE" th:selected="${vote} == 'REMOVE_YOUR_VOICE'">REMOVE_YOUR_VOICE</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label citu-wallet-secret" for="password">Password / private key - secret</label>
+        <textarea id="password" name="password" placeholder="Never share this value" rows="8" class="form-control"></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-success">Submit vote transaction</button>
+      </div>
+    </form>
+  </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

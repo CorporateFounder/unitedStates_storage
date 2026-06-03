@@ -21,7 +21,7 @@
                 <span class="v35-status-pill">NO FOUNDER BURN YET</span>
             </div>
             <div class="citu-resource-links mt-4">
-                <a class="btn btn-primary" href="/wallet_and_node_url#future-v35-release-downloads">Download / Run guide</a>
+                <a class="btn btn-primary" href="/wallet_and_node_url#official-v35-release-downloads">Download / Run guide</a>
                 <a class="btn btn-primary" href="/white_papper">V35 protocol</a>
                 <a class="btn btn-primary" href="/wallet_and_node_url">API / Exchanges</a>
                 <a class="btn btn-primary" href="/conductor">Explorer</a>
@@ -55,7 +55,7 @@
                     <p class="v35-kicker">V35 emission</p>
                     <h2>Predictable mining schedule</h2>
                 </div>
-                <p>Prepared protocol economics. V35 is not active until the approved fork height is committed and released.</p>
+                <p>Official V35 1.0.0 release is published. Activation is scheduled at block 514291; before that block, <code>v35Active=false</code> is expected.</p>
             </div>
             <div class="citu-metric-grid">
                 <div class="citu-metric"><span>Target block time</span><strong>200 sec/block</strong></div>
@@ -65,6 +65,7 @@
                 <div class="citu-metric"><span>Jackpot reserve</span><strong>2 GOLD</strong></div>
                 <div class="citu-metric"><span>Founder reward after V35</span><strong>0 GOLD</strong></div>
             </div>
+            <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
         </section>
 
         <section class="citu-section mb-4">

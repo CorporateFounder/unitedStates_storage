@@ -1,48 +1,64 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}"/>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <title th:text="${title}">Transactions</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/citu-wallet.css">
 </head>
-<body>
+<body class="citu-wallet-page">
 <header th:insert="blocks/header :: header"></header>
-<div class="container mt-5">
-    <h3 th:text="${title}"/>
-    <div class="container mt-5 mb-5">
-        <form action="/transactions" method="post">
-            <h5>enter number block from </h5>
-            <input type="text" name="from" th:value="0" placeholder="enter from block" class="form-control"><br>
-           <h5>enter number block to </h5>
-            <input type="text" name="to" th:value="0" placeholder="enter to block" class="form-control"><br>
-            <h5>sent transactions or received transactions</h5>
-            <select  name="isSent" class="form-control">
-                <option value="true" >sent transactions</option>
-                <option value="false">received transactions</option>
-            </select><br>
+<main class="container mb-5">
+    <section class="citu-wallet-panel mb-4">
+        <p class="citu-wallet-kicker">Public transaction lookup</p>
+        <h1 th:text="${title}">Transactions</h1>
+        <p>Search sent or received public transactions by block range. This page uses public blockchain data only and does not need a private key.</p>
+        <p class="citu-wallet-security-note mb-0">Do not enter passwords or private keys on public transaction query pages.</p>
+    </section>
 
-            <button type="submit" class="btn btn-success">check </button><br>
+    <section class="citu-wallet-panel mb-4">
+        <form action="/transactions" method="post" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label" for="from">From block</label>
+                <input id="from" type="text" name="from" th:value="0" placeholder="0" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="to">To block</label>
+                <input id="to" type="text" name="to" th:value="0" placeholder="0" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="isSent">Direction</label>
+                <select id="isSent" name="isSent" class="form-select">
+                    <option value="true">Sent transactions</option>
+                    <option value="false">Received transactions</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-success">Check public transactions</button>
+            </div>
         </form>
+    </section>
 
+    <section class="citu-wallet-panel mb-4">
+        <div class="citu-wallet-grid">
+            <p th:text="'From block: ' + ${fromBlock}">From block</p>
+            <p th:text="'To block: ' + ${toBlock}">To block</p>
+            <p th:text="'Blockchain size: ' + ${size}">Blockchain size</p>
+        </div>
+    </section>
 
-    </div>
-
-    <h3 th:text="'from block: ' + ${fromBlock}"></h3>
-    <h3 th:text="'to block: ' + ${toBlock}"></h3>
-    <h3 th:text="'blockchain size: ' + ${size}"></h3>
-    <div th:each="el : ${transactions}" class="alert alert-info mt-2">
-        <h4 th:text="'number block: '+${el.numberBlock}"/>
-        <h4 th:text="'sender: '+${el.sender}"/>
-        <h4 th:text="'customer: '+${el.customer}"/>
-        <p th:text="'digital dollar: '+${#numbers.formatDecimal(el.digitalDollar, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'digital stock: '+${#numbers.formatDecimal(el.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}"/>
-        <p th:text="'digital bonus miner: '+${#numbers.formatDecimal(el.bonusForMiner, 1, 'COMMA', 16, 'POINT')}"/>
-        <h4 th:text="'voteEnum: '+${el.voteEnum}"/>
-
-
-    </div>
-
-</div>
+    <section class="citu-wallet-grid">
+        <article th:each="el : ${transactions}" class="citu-wallet-panel">
+            <h2 class="h5" th:text="'Block: '+${el.numberBlock}">Block</h2>
+            <p class="text-break" th:text="'Sender: '+${el.sender}">Sender</p>
+            <p class="text-break" th:text="'Recipient: '+${el.customer}">Recipient</p>
+            <p th:text="'Digital dollar / GOLD: '+${#numbers.formatDecimal(el.digitalDollar, 1, 'COMMA', 16, 'POINT')}">GOLD</p>
+            <p th:text="'Digital stock: '+${#numbers.formatDecimal(el.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}">Stock</p>
+            <p th:text="'Miner bonus: '+${#numbers.formatDecimal(el.bonusForMiner, 1, 'COMMA', 16, 'POINT')}">Miner bonus</p>
+            <p class="mb-0" th:text="'Vote type: '+${el.voteEnum}">Vote type</p>
+        </article>
+    </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

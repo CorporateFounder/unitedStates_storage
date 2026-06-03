@@ -14,7 +14,7 @@
 
     <section class="alert alert-danger" lang="en">
         <h2>EN - Do not send coins to unofficial burn addresses</h2>
-        <p>V35 activation is scheduled in the reviewed release build at block 514291. It remains inactive until the chain reaches that height. GitHub Release upload is pending.</p>
+        <p>V35 activation is scheduled in the reviewed release build at block 514291. It remains inactive until the chain reaches that height. Official V35 1.0.0 GitHub Releases are published.</p>
         <p>No founder burn has occurred. No user action is required yet.</p>
         <p>Operators and exchanges must wait for final tagged artifacts. Dry-run artifacts are not a final production release.</p>
         <p>Use only official final release artifacts and checksums. Do not send coins to unofficial or fake burn addresses.</p>
@@ -22,7 +22,7 @@
 
     <section class="alert alert-danger" lang="ru">
         <h2>RU - Не отправляйте монеты на неофициальные адреса сжигания</h2>
-        <p>Активация V35 запланирована в проверенной сборке на блоке 514291. До достижения этой высоты сетью V35 остаётся неактивным. Загрузка GitHub Release ожидается.</p>
+        <p>Активация V35 запланирована в проверенной сборке на блоке 514291. До достижения этой высоты сетью V35 остаётся неактивным. Официальные GitHub Releases V35 1.0.0 опубликованы.</p>
         <p>Сжигание средств основателя не выполнялось. Сейчас пользователям не требуется никаких действий.</p>
         <p>Операторы и биржи должны дождаться финальных артефактов с тегом. Материалы dry-run не являются финальным производственным релизом.</p>
         <p>Используйте только официальные финальные артефакты релиза и контрольные суммы. Не отправляйте монеты на неофициальные или поддельные адреса сжигания.</p>
@@ -30,7 +30,7 @@
 
     <section class="alert alert-danger" lang="zh">
         <h2>ZH - 不要向非官方销毁地址发送代币</h2>
-        <p>经过审核的构建已计划在区块 514291 激活 V35。在链达到该高度之前，V35 仍未激活。GitHub Release 上传仍在等待中。</p>
+        <p>经过审核的构建已计划在区块 514291 激活 V35。在链达到该高度之前，V35 仍未激活。官方 V35 1.0.0 GitHub Releases 已发布。</p>
         <p>创始人销毁尚未执行。用户目前无需采取任何操作。</p>
         <p>运营方和交易所必须等待带有最终标签的正式产物。dry-run 产物不是最终生产版本。</p>
         <p>仅使用官方最终发布产物和校验和。不要向非官方或伪造的销毁地址发送代币。</p>
@@ -44,6 +44,7 @@
         <p>The future public proof must publish the exact approved address, snapshot height, block hash, transaction hash, burn block, and official verification links.</p>
         <p><a href="/v35/founder-burn-proof">Founder burn proof template</a></p>
     </section>
+    <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
 </main>
 
 <footer th:insert="blocks/footer :: footer"></footer>

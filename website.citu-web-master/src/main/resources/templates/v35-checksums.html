@@ -13,28 +13,29 @@
     <h1>V35 checksum verification / Проверка контрольных сумм / 校验和验证</h1>
 
     <section class="alert alert-warning" lang="en">
-        <h2>EN - Local checksums exist; public checksums are pending upload</h2>
-        <p>V35 activation is scheduled in the reviewed release build at block 514291. It remains inactive until the chain reaches that height. Public checksums will be published with the GitHub Release.</p>
+        <h2>EN - Official SHA256 checksums are published</h2>
+        <p>V35 activation is scheduled in the reviewed release build at block 514291. It remains inactive until the chain reaches that height. Download and verify the published SHA256 checksums before running.</p>
         <p>No founder burn has occurred. No user action is required yet. Do not send coins to unofficial or fake burn addresses.</p>
         <p>Operators and exchanges must wait for final tagged artifacts. Dry-run artifacts are not a final production release.</p>
     </section>
 
     <section class="alert alert-warning" lang="ru">
-        <h2>RU - Финальные контрольные суммы еще не опубликованы</h2>
-        <p>Активация V35 запланирована в проверенной сборке на блоке 514291. До достижения этой высоты сетью V35 остаётся неактивным. Публичные контрольные суммы будут опубликованы вместе с GitHub Release.</p>
+        <h2>RU - Официальные контрольные суммы SHA256 опубликованы</h2>
+        <p>Активация V35 запланирована в проверенной сборке на блоке 514291. До достижения этой высоты сетью V35 остаётся неактивным. Перед запуском загрузите и проверьте опубликованные контрольные суммы SHA256.</p>
         <p>Сжигание средств основателя не выполнялось. Сейчас пользователям не требуется никаких действий. Не отправляйте монеты на неофициальные или поддельные адреса сжигания.</p>
         <p>Операторы и биржи должны дождаться финальных артефактов с тегом. Материалы dry-run не являются финальным производственным релизом.</p>
     </section>
 
     <section class="alert alert-warning" lang="zh">
-        <h2>ZH - 最终校验和尚未发布</h2>
-        <p>经过审核的构建已计划在区块 514291 激活 V35。在链达到该高度之前，V35 仍未激活。公开校验和将随 GitHub Release 一起发布。</p>
+        <h2>ZH - 官方 SHA256 校验和已发布</h2>
+        <p>经过审核的构建已计划在区块 514291 激活 V35。在链达到该高度之前，V35 仍未激活。运行前请下载并核验已发布的 SHA256 校验和。</p>
         <p>创始人销毁尚未执行。用户目前无需采取任何操作。不要向非官方或伪造的销毁地址发送代币。</p>
         <p>运营方和交易所必须等待带有最终标签的正式产物。dry-run 产物不是最终生产版本。</p>
     </section>
 
     <section class="alert alert-info">
-        <h2>Future verification steps / Будущая проверка / 后续验证步骤</h2>
+        <h2>Verification steps / Проверка / 验证步骤</h2>
+        <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
         <ol>
             <li>Download artifacts only from the official release location.</li>
             <li>Download final SHA256SUMS.txt and SHA256SUMS.txt.sha256.</li>

@@ -15,10 +15,11 @@
     <section class="alert alert-warning" lang="en">
         <h2>EN - No production upgrade is required yet</h2>
         <p>V35 activation is scheduled in the reviewed release build at block 514291. It remains inactive until the chain reaches that height.</p>
-        <p>GitHub Release upload and public checksums are pending. No founder burn has occurred. No user action is required yet.</p>
-        <p>Operators and exchanges must wait for final tagged artifacts. Do not use draft or dry-run artifacts as a final production release.</p>
+        <p>Official V35 1.0.0 tagged artifacts and public SHA256 checksums are published. No founder burn has occurred.</p>
+        <p>Operators and exchanges must verify SHA256 before running. Do not use draft or dry-run artifacts as a final production release.</p>
         <p>Use only official final release artifacts and checksums. Do not send coins to unofficial or fake burn addresses.</p>
     </section>
+    <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
 
     <section class="alert alert-warning" lang="ru">
         <h2>RU - Производственное обновление пока не требуется</h2>

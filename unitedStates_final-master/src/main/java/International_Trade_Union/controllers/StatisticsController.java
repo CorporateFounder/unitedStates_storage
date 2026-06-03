@@ -65,51 +65,56 @@ public class StatisticsController {
 
 
 
-        Blockchain blockchain = Mining.getBlockchain(
-                Seting.ORIGINAL_BLOCKCHAIN_FILE,
-                BlockchainFactoryEnum.ORIGINAL);
-
-        Statistic prevStatistic = null;
-        System.out.println("start statistics method");
-        Map<String, Account> balances = new HashMap<>();
         List<Statistic> statistics = new ArrayList<>();
-        List<String> signs = new ArrayList<>();
-        for (Block block : blockchain.getBlockchainList()) {
-            System.out.println("index: " + block.getIndex());
+        try {
+            Blockchain blockchain = Mining.getBlockchain(
+                    Seting.ORIGINAL_BLOCKCHAIN_FILE,
+                    BlockchainFactoryEnum.ORIGINAL);
+
+            Statistic prevStatistic = null;
+            System.out.println("start statistics method");
+            Map<String, Account> balances = new HashMap<>();
+            List<String> signs = new ArrayList<>();
+            for (Block block : blockchain.getBlockchainList()) {
+                System.out.println("index: " + block.getIndex());
 //            balances = UtilsBalance.calculateBalance(balances, block, signs);
-            balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
+                balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(blockService.findAllAccounts());
 
-            if (block.getIndex() > 576 && block.getIndex() % periud.getPeriud() == 0) {
-                System.out.println("per index: " + block.getIndex() + ":"
-                +(block.getIndex()-periud.getPeriud()) + ": " + block.getIndex()+1);
-                List<Block> tempBlocks = blockchain.subBlock(
-                        (int) (block.getIndex()- periud.getPeriud()),
-                        (int) block.getIndex()+1);
-                Statistic statistic = UtilsStatistics.statistic(tempBlocks, balances, periud);
-                if (prevStatistic == null || prevStatistic.getUniqueAddressBalanceUpperZero() == 0){
-                    statistic.setGrowthAccountPercent(0);
-                }else {
-                    double percnet = ((double) statistic.getUniqueAddressBalanceUpperZero() -
-                            prevStatistic.getUniqueAddressBalanceUpperZero()) /
-                            (double) prevStatistic.getUniqueAddressBalanceUpperZero() * Seting.HUNDRED_PERCENT;
-                    statistic.setGrowthAccountPercent(percnet);
+                if (block.getIndex() > 576 && block.getIndex() % periud.getPeriud() == 0) {
+                    System.out.println("per index: " + block.getIndex() + ":"
+                            +(block.getIndex()-periud.getPeriud()) + ": " + block.getIndex()+1);
+                    List<Block> tempBlocks = blockchain.subBlock(
+                            (int) (block.getIndex()- periud.getPeriud()),
+                            (int) block.getIndex()+1);
+                    Statistic statistic = UtilsStatistics.statistic(tempBlocks, balances, periud);
+                    if (prevStatistic == null || prevStatistic.getUniqueAddressBalanceUpperZero() == 0){
+                        statistic.setGrowthAccountPercent(0);
+                    }else {
+                        double percnet = ((double) statistic.getUniqueAddressBalanceUpperZero() -
+                                prevStatistic.getUniqueAddressBalanceUpperZero()) /
+                                (double) prevStatistic.getUniqueAddressBalanceUpperZero() * Seting.HUNDRED_PERCENT;
+                        statistic.setGrowthAccountPercent(percnet);
+                    }
+                    statistics.add(statistic);
+
+                    prevStatistic = statistic;
                 }
-                statistics.add(statistic);
-
-                prevStatistic = statistic;
             }
+
+            statistics = statistics.stream()
+                    .sorted(Comparator.comparing(Statistic::getIndexBlock))
+                    .collect(Collectors.toList());
+
+            statistics = statistics.stream()
+                    .sorted(Comparator.comparing(Statistic::getIndexBlock).reversed())
+                    .collect(Collectors.toList());
+            System.out.println("blockchain size: " + blockchain.getBlockchainList().size());
+        } catch (RuntimeException ex) {
+            model.addAttribute("statisticsUnavailable",
+                    "Statistics are unavailable for this local node state: " + ex.getClass().getSimpleName());
         }
-
-        statistics = statistics.stream()
-                .sorted(Comparator.comparing(Statistic::getIndexBlock))
-                .collect(Collectors.toList());
-
-        statistics = statistics.stream()
-                .sorted(Comparator.comparing(Statistic::getIndexBlock).reversed())
-                .collect(Collectors.toList());
-        model.addAttribute("title statistics: " + periud);
+        model.addAttribute("title", "Statistics: " + periud);
         model.addAttribute("statistics", statistics);
-        System.out.println("blockchain size: " + blockchain.getBlockchainList().size());
         return "statistics";
     }
 

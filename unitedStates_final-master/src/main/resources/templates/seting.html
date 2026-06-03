@@ -18,8 +18,14 @@
         </div>
     </section>
     <section class="citu-wallet-panel mb-4">
-        <h2 class="h4">Balance source</h2>
-        <p>Balance is shown for the currently configured miner address. Change miner address here if the wallet home page is not showing your account.</p>
+        <h2 class="h4">Node connection help</h2>
+        <div class="citu-wallet-grid">
+            <p><strong>Official public node:</strong><br><code>http://194.87.236.238:82</code></p>
+            <p><strong>Local node:</strong><br><code>http://127.0.0.1:8083</code></p>
+            <p><strong>Local wallet:</strong><br><code>http://127.0.0.1:8082</code></p>
+        </div>
+        <p>Users can connect to the official public node for simple wallet use. Node operators and exchanges should run their own node and verify API responses.</p>
+        <p class="mb-0">Balance is shown for the currently configured miner address. Change miner address here if the wallet home page is not showing your account.</p>
     </section>
     <div class="citu-wallet-grid">
         <section class="citu-wallet-panel">
@@ -33,6 +39,7 @@
         <section class="citu-wallet-panel">
             <h2 class="h4">Pool host</h2>
             <p class="text-break" th:text="${poolhost}">Current pool host</p>
+            <p class="citu-wallet-legacy-note">Pool configuration is legacy / pre-V35 wallet support. Do not present an unsupported pool flow as a current V35 production feature.</p>
             <form action="/poolhost" method="post">
                 <input type="text" name="host" placeholder="http://194.87.236.238:82" class="form-control mb-3">
                 <button type="submit" class="btn btn-success">Change pool host</button>
@@ -49,6 +56,7 @@
         <section class="citu-wallet-panel">
             <h2 class="h4">Pool address</h2>
             <p class="text-break" th:text="${setPoolAddress}">Current pool address</p>
+            <p class="citu-wallet-legacy-note">Use only a public pool address. Never paste a private key here.</p>
             <form action="/setPoolAddress" method="post">
                 <input type="text" name="poolAddress" placeholder="Public pool address" class="form-control mb-3">
                 <button type="submit" class="btn btn-success">Change pool address</button>

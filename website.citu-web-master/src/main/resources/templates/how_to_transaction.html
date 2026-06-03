@@ -1,27 +1,31 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}"/>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-
+    <title th:text="${title}">Transactions</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
-<header th:insert="blocks/header :: header "></header>
-
-
-<div class="alert alert-info mt-2">
-    <h6 th:text="':' + ${text1}"/>
-    <img  th:src="@{/how_to_transaction_p/update_blockchainEng.png}"/>
-    <h6 th:text="':' + ${text2}"/>
-    <img  th:src="@{/how_to_transaction_p/send-moneyEng.png}"/>
-</div>
-
-
-
-</div>
+<body class="v35-public">
+<header th:insert="blocks/header :: header"></header>
+<main class="container my-4">
+    <h1>CITU transaction guide</h1>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Start wallet and node</h2>
+        <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083
+java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code></pre>
+        <p>Local wallet: <a href="http://127.0.0.1:8082">http://127.0.0.1:8082</a></p>
+        <p>Local node: <a href="http://127.0.0.1:8083/size">http://127.0.0.1:8083/size</a></p>
+    </section>
+    <section class="alert alert-danger">
+        <h2>Private key safety</h2>
+        <p>Transaction query pages use public data only. Never paste a password/private key into screenshots, support chats, public forms, logs, or URLs.</p>
+    </section>
+    <section class="citu-panel p-4 mb-4">
+        <h2>V35 status</h2>
+        <p>V35 activation is scheduled at block 514291. Before block 514291, <code>v35Active=false</code> is expected. No founder burn has occurred.</p>
+    </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
-
 </body>
 </html>

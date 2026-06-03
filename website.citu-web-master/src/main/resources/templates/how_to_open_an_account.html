@@ -1,27 +1,32 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title th:text="${title}"/>
-  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <title th:text="${title}">Open an account</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
-<header th:insert="blocks/header :: header "></header>
-
-
-<div class="alert alert-info mt-2">
-    <h6 th:text="':' + ${text1}"/>
-    <img  th:src="@{/how_to_open_an_account_p/create-accountEng.png}"/>
-    <h6 th:text="':' + ${text2}"/>
-    <img  th:src="@{/how_to_open_an_account_p/change-minerEng.png}"/>
-</div>
-
-
-
-</div>
+<body class="v35-public">
+<header th:insert="blocks/header :: header"></header>
+<main class="container my-4">
+    <h1>Create a CITU wallet account</h1>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Open the local wallet</h2>
+        <p>Start the wallet JAR and open <a href="http://127.0.0.1:8082/create-account">http://127.0.0.1:8082/create-account</a>.</p>
+        <pre class="v35-code"><code>java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code></pre>
+    </section>
+    <section class="alert alert-danger">
+        <h2>Password / private key safety</h2>
+        <p>Address, login, and public key can be public.</p>
+        <p>Password / private key is secret. Never share it in screenshots, chats, support messages, URLs, logs, or public forms.</p>
+        <p>Save credentials offline in a safe place. If password/private key is lost, account recovery may be impossible.</p>
+    </section>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Connect to a node</h2>
+        <p>For simple wallet use you can configure the official public node: <code>http://194.87.236.238:82</code>.</p>
+        <p>For local operation use your own node: <code>http://127.0.0.1:8083</code>.</p>
+    </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
-
 </body>
 </html>

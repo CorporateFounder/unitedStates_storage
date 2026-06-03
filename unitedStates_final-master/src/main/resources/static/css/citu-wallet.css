@@ -69,9 +69,62 @@ body.citu-wallet-page {
     padding: .35rem .65rem;
 }
 .citu-wallet-page .form-control,
+.citu-wallet-page .form-select,
 .citu-wallet-page textarea {
     background: #f4f8f9;
     border: 1px solid #294a56;
+}
+.citu-wallet-page .dropdown-menu {
+    background: #102630;
+    border: 1px solid #294a56;
+    border-radius: 8px;
+}
+.citu-wallet-page .dropdown-item {
+    color: #dce7eb;
+}
+.citu-wallet-page .dropdown-item:focus,
+.citu-wallet-page .dropdown-item:hover {
+    background: #0b1e29;
+    color: #e7c56f;
+}
+.citu-wallet-page .nav-link,
+.citu-wallet-page .btn-link {
+    color: #e7c56f;
+}
+.citu-wallet-page .btn-success,
+.citu-wallet-page .btn-primary {
+    background: #d3a640;
+    border-color: #d3a640;
+    color: #07131b;
+    font-weight: 700;
+}
+.citu-wallet-page .btn-outline-warning {
+    border-color: #d3a640;
+    color: #e7c56f;
+}
+.citu-wallet-page code,
+.citu-wallet-secret {
+    color: #f0cf73;
+    overflow-wrap: anywhere;
+}
+.citu-wallet-value {
+    background: #07131b;
+    border: 1px solid #294a56;
+    border-radius: 6px;
+    color: #f4f8f9;
+    overflow-wrap: anywhere;
+    padding: .85rem;
+    white-space: pre-wrap;
+}
+.citu-wallet-page img {
+    max-width: 100%;
+}
+.citu-wallet-page td,
+.citu-wallet-page th,
+.citu-wallet-page p,
+.citu-wallet-page h4,
+.citu-wallet-page h5 {
+    overflow-wrap: anywhere;
 }
 .citu-wallet-page main {
     max-width: 1120px;
@@ -104,6 +157,19 @@ body.citu-wallet-page {
     border-left: 4px solid #d3a640;
     color: #f0cf73;
     padding-left: .75rem;
+}
+.citu-wallet-legacy-note {
+    color: #9fb5bd;
+    font-size: .92rem;
+}
+.citu-wallet-stat-list {
+    display: grid;
+    gap: .55rem;
+}
+.citu-wallet-stat-list p {
+    border-bottom: 1px solid #24424f;
+    margin: 0;
+    padding-bottom: .45rem;
 }
 @media (max-width: 576px) {
     .citu-wallet-hero {

@@ -34,7 +34,7 @@
     <section class="alert alert-info">
         <h2>Read-only public pages</h2>
         <p>These pages explain V35 policy only. They do not activate V35, do not create a burn transaction, and do not mutate balances.</p>
-        <p>Fork height <strong th:text="${candidateForkIndex}">514291</strong> is configured in the reviewed release build. GitHub Release upload and public checksum publication are pending.</p>
+        <p>Fork height <strong th:text="${candidateForkIndex}">514291</strong> is configured in the reviewed release build. Official V35 1.0.0 GitHub Releases and SHA256 checksums are published.</p>
         <p>
             <a href="/v35/tokenomics">Tokenomics</a> |
             <a href="/v35/burn">Burn policy</a> |
@@ -50,9 +50,10 @@
     </section>
 
     <section class="citu-panel p-4 mb-4">
-        <h2>Future official release package</h2>
-        <p>The reviewed V35 activation build exists locally, but the GitHub Release is not published yet. Use only the official GitHub Release after it is published.</p>
-        <p><a href="/wallet_and_node_url#future-v35-release-downloads">Open the future release download preparation section</a></p>
+        <h2>Official V35 1.0.0 release package</h2>
+        <p>Download ready node and wallet JARs only from the official GitHub Releases. Verify SHA256 before running.</p>
+        <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
+        <p><a href="/wallet_and_node_url#official-v35-release-downloads">Open the download and launch guide</a></p>
     </section>
 </main>
 

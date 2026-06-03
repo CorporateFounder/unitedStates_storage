@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CITU mining pool guide</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body class="v35-public">
+<header th:insert="blocks/header :: header"></header>
+<main class="container my-4">
+    <h1>Mining pool status</h1>
+    <section class="alert alert-warning">
+        <h2>Legacy / pre-V35 mining pool information</h2>
+        <p>Pool host and pool address fields exist in the wallet settings as legacy / pre-V35 configuration. This page does not present an unsupported pool flow as a current V35 production feature.</p>
+        <p>V35 activation is scheduled at block 514291. After V35, reward model changes to 8 GOLD/block = 6 miner + 2 jackpot reserve + 0 founder.</p>
+    </section>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Current operator guidance</h2>
+        <p>Run a local node with:</p>
+        <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083</code></pre>
+        <p>Configure wallet node URL to <code>http://127.0.0.1:8083</code> for your own node, or <code>http://194.87.236.238:82</code> for simple public-node wallet use.</p>
+        <p>Set miner address only to a public address. Never use a password/private key as a miner or pool address.</p>
+    </section>
+    <section class="alert alert-danger">
+        <p>No founder burn has occurred. <code>BURN_ADDRESS</code> is an internal placeholder, not a public transfer destination.</p>
+    </section>
+</main>
+<footer th:insert="blocks/footer :: footer"></footer>
+</body>
+</html>

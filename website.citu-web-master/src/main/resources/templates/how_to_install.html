@@ -1,42 +1,35 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}"/>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-
+    <title th:text="${title}">Install CITU</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
-<header th:insert="blocks/header :: header "></header>
-
-
-<div class="alert alert-info mt-2">
-    <p>an alternative option is to download the suprtrupr application. You will no longer work through a browser</p>
-    <li class="nav-item mb-2"><a href="/mining-app-guide-win" class="nav-link p-0 text-body-secondary">mining-app-guide-win</a></li>
-
-
-
-    <h6 th:text="${text}"/>
-
-    <img  th:src="@{/install/step1install.png}"/>
-    <img  th:src="@{/install/step2install.png}"/>
-    <img  th:src="@{/install/step3install.png}"/>
-    <img  th:src="@{/install/step4install.png}"/>
-    <img  th:src="@{/install/step5install.png}"/>
-    <img  th:src="@{/install/step6install.png}"/>
-    <img  th:src="@{/install/step7install.png}"/>
-    <img  th:src="@{/install/step8install.png}"/>
-
-
-
-</div>
-
-
-
-
-</div>
+<body class="v35-public">
+<header th:insert="blocks/header :: header"></header>
+<main class="container my-4">
+    <h1>Install CITU 1.0.0</h1>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Official downloads</h2>
+        <p>Download ready V35 1.0.0 node and wallet JARs from the official GitHub Releases. Verify SHA256 before running.</p>
+        <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
+    </section>
+    <section class="citu-panel p-4 mb-4">
+        <h2>Start locally</h2>
+        <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083
+java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code></pre>
+        <p>Open local node check: <a href="http://127.0.0.1:8083/size">http://127.0.0.1:8083/size</a></p>
+        <p>Open local wallet: <a href="http://127.0.0.1:8082">http://127.0.0.1:8082</a></p>
+        <p>Open V35 dashboard: <a href="http://127.0.0.1:8082/v35-dashboard">http://127.0.0.1:8082/v35-dashboard</a></p>
+    </section>
+    <section class="alert alert-warning">
+        <h2>Safety notes</h2>
+        <p>V35 activation is scheduled at block <strong>514291</strong>. Before block 514291, <code>v35Active=false</code> is expected.</p>
+        <p>No founder burn has occurred. <code>BURN_ADDRESS</code> is an internal placeholder, not a public transfer destination.</p>
+        <p>Legacy screenshots may remain in archive pages for history, but this page is the current install flow.</p>
+    </section>
+</main>
 <footer th:insert="blocks/footer :: footer"></footer>
-
 </body>
 </html>

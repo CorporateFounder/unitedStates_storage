@@ -484,5 +484,10 @@ public class MainController {
         return "seting";
     }
 
+    @GetMapping("/settings")
+    public String settingsAlias() {
+        return "redirect:/seting";
+    }
+
 
 }

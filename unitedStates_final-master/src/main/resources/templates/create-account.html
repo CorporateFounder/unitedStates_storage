@@ -1,32 +1,60 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}"/>
-
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <title th:text="${title}">Create account</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/citu-wallet.css">
 </head>
-<body>
-
+<body class="citu-wallet-page">
 <header th:insert="blocks/header :: header"></header>
 
-<div class="container mt-5">
-    <h3 th:text="${title}"/>
-    <h3>
-        copy the address and password and save it in a secure place, also set as the miner's address in the text file minerAccount.txt this address will be set during mining.</h3>
+<main class="container mb-5">
+    <section class="citu-wallet-panel citu-wallet-hero mb-4">
+        <img src="/images/citu-v35-logo.jpg" alt="Official CITU logo" class="citu-wallet-home-logo"/>
+        <div>
+            <p class="citu-wallet-kicker">Wallet identity</p>
+            <h1 th:text="${title}">Create account</h1>
+            <p class="mb-0">Generate a local CITU account. Public account data can be shared; private credentials must stay secret.</p>
+        </div>
+    </section>
 
-    <div class="alert alert-info mt-2">
-        <h4 th:text="'new address: ' + ${login}"  class="form-control"/><br>
-        <textarea th:text="'pasword: ' + ${password}" class="form-control" rows="12"></textarea><br>
+    <section class="citu-wallet-panel mb-4">
+        <h2 class="h4">Credential safety</h2>
+        <div class="citu-wallet-grid">
+            <div>
+                <p><strong>Address / login / public key can be public.</strong> You can use this value for receiving funds and for public account lookup.</p>
+                <p><strong>Password / private key is secret.</strong> Never share it in screenshots, chats, support messages, public forms, URLs, or logs.</p>
+            </div>
+            <div>
+                <p>Save credentials offline in a safe place. If the password or private key is lost, account recovery may be impossible.</p>
+                <p class="citu-wallet-security-note">No CITU support channel should ask for your password or private key.</p>
+            </div>
+        </div>
+    </section>
 
+    <section class="citu-wallet-grid mb-4">
+        <article class="citu-wallet-panel">
+            <h2 class="h5">Public address</h2>
+            <div class="citu-wallet-value" th:text="${login}">Generated public address</div>
+        </article>
+        <article class="citu-wallet-panel">
+            <h2 class="h5">Public key / login</h2>
+            <div class="citu-wallet-value" th:text="${login}">Generated login</div>
+        </article>
+        <article class="citu-wallet-panel">
+            <h2 class="h5 citu-wallet-secret">Private key / password - secret</h2>
+            <div class="citu-wallet-value citu-wallet-secret" th:text="${password}">Generated secret password</div>
+        </article>
+    </section>
+
+    <section class="citu-wallet-panel">
         <form action="/create-account" method="post">
-        <button type="submit" class="btn btn-success">generate new account</button><br>
+            <button type="submit" class="btn btn-success">Generate new account</button>
         </form>
+    </section>
+</main>
 
-    </div>
-
-
-</div>
 <footer th:insert="blocks/footer :: footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

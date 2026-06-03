@@ -24,7 +24,8 @@
     <section class="alert alert-warning">
         <h2>Pre-activation boundary</h2>
         <p>V35 activation is scheduled in the reviewed release build at block <strong>514291</strong>. It remains inactive until the chain reaches that height.</p>
-        <p>GitHub Release upload and public checksum publication are pending. Do not use dry-run artifacts as a production release.</p>
+        <p>Official V35 1.0.0 GitHub Releases and public SHA256 checksums are published. Verify SHA256 before running. Do not use dry-run artifacts as a production release.</p>
+        <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
     </section>
 
     <section class="citu-panel p-4 mb-4">

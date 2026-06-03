@@ -15,7 +15,7 @@
     <section class="alert alert-warning" lang="en">
         <h2>EN - V35 activation is scheduled but not active yet</h2>
         <p>V35 activation is scheduled in the reviewed release build at block <strong th:text="${candidateForkIndex}">514291</strong>. It remains inactive until the chain reaches that height.</p>
-        <p>GitHub Release upload and public checksum publication are pending. Use only the official GitHub Release after it is published.</p>
+        <p>Official V35 1.0.0 GitHub Releases and SHA256 checksums are published. Download ready JARs only from the official release pages and verify SHA256 before running.</p>
         <p>No founder burn has occurred. No user action is required yet.</p>
         <p>Do not use draft or dry-run artifacts as a final production release. Operators and exchanges must wait for final tagged artifacts.</p>
         <p>Use only official final release artifacts and checksums. Do not send coins to unofficial or fake burn addresses.</p>
@@ -24,7 +24,7 @@
     <section class="alert alert-warning" lang="ru">
         <h2>RU - V35 подготовлен, но еще не активирован</h2>
         <p>Активация V35 запланирована в проверенной сборке на блоке <strong th:text="${candidateForkIndex}">514291</strong>. До достижения этой высоты сетью V35 остаётся неактивным.</p>
-        <p>Загрузка GitHub Release и публикация контрольных сумм ожидаются. Используйте только официальный GitHub Release после публикации.</p>
+        <p>Официальные GitHub Releases V35 1.0.0 и контрольные суммы SHA256 опубликованы. Загружайте готовые JAR только со страниц официальных релизов и проверяйте SHA256 перед запуском.</p>
         <p>Сжигание средств основателя не выполнялось. Сейчас пользователям не требуется никаких действий.</p>
         <p>Не используйте черновые артефакты или материалы dry-run как финальный производственный релиз. Операторы и биржи должны дождаться финальных артефактов с тегом.</p>
         <p>Используйте только официальные финальные артефакты релиза и контрольные суммы. Не отправляйте монеты на неофициальные или поддельные адреса сжигания.</p>
@@ -33,11 +33,12 @@
     <section class="alert alert-warning" lang="zh">
         <h2>ZH - V35 已准备，但尚未激活</h2>
         <p>经过审核的构建已计划在区块 <strong th:text="${candidateForkIndex}">514291</strong> 激活 V35。在链达到该高度之前，V35 仍未激活。</p>
-        <p>GitHub Release 上传和公开校验和发布仍在等待中。发布后请仅使用官方 GitHub Release。</p>
+        <p>官方 V35 1.0.0 GitHub Releases 和 SHA256 校验和已发布。请仅从官方发布页面下载 JAR，并在运行前核验 SHA256。</p>
         <p>创始人销毁尚未执行。用户目前无需采取任何操作。</p>
         <p>不要将草稿或 dry-run 产物用作最终生产版本。运营方和交易所必须等待带有最终标签的正式产物。</p>
         <p>仅使用官方最终发布产物和校验和。不要向非官方或伪造的销毁地址发送代币。</p>
     </section>
+    <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
 </main>
 
 <footer th:insert="blocks/footer :: footer"></footer>
