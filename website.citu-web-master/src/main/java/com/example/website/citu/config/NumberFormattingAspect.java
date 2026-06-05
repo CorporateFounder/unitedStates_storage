@@ -3,6 +3,7 @@ package com.example.website.citu.config;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -15,10 +16,22 @@ import java.util.regex.Pattern;
 public class NumberFormattingAspect {
     private static final int SCALE = 10;
     private static final Pattern CLEAN_NUMERIC_STRING = Pattern.compile("-?(?:0|[1-9]\\d*)(?:\\.\\d+)?");
+    private final boolean enabled;
+
+    public NumberFormattingAspect() {
+        this(false);
+    }
+
+    public NumberFormattingAspect(@Value("${citu.number-formatting.enabled:false}") boolean enabled) {
+        this.enabled = enabled;
+    }
 
     @Around("execution(* com.example.website.citu.controller..*.*(..))")
     public Object formatNumbers(ProceedingJoinPoint joinPoint) throws Throwable {
         Object result = joinPoint.proceed();
+        if (!enabled) {
+            return result;
+        }
         return formatObject(result);
     }
 

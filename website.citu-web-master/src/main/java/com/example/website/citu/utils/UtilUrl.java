@@ -12,12 +12,18 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 public class UtilUrl {
-    private static final HttpClient client = HttpClient.newHttpClient();
+    public static final int CONNECT_TIMEOUT_MILLIS = 1500;
+    public static final int READ_TIMEOUT_MILLIS = 3000;
+    private static final HttpClient client = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT_MILLIS))
+            .build();
     private static final ObjectMapper mapper = new ObjectMapper();
     public static String readJsonFromUrl(String url) throws IOException {
-        InputStream is = new URL(url).openStream();
+        HttpURLConnection connection = openConnection(url, "GET");
+        InputStream is = connection.getInputStream();
         try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
@@ -39,12 +45,7 @@ public class UtilUrl {
     }
 
     public static String getObject(String jsonObject, String requstStr) throws IOException {
-        URL url = new URL(requstStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.connect();
-        conn.setReadTimeout(35000);
-        conn.setConnectTimeout(35000);
-        conn.setRequestMethod("POST");
+        HttpURLConnection conn = openConnection(requstStr, "POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
@@ -72,11 +73,7 @@ public class UtilUrl {
 
     }
     public static String getObject(String jsonObject, String requstStr, String requestMethod) throws IOException {
-        URL url = new URL(requstStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(35000);
-        conn.setConnectTimeout(35000);
-        conn.setRequestMethod(requestMethod);
+        HttpURLConnection conn = openConnection(requstStr, requestMethod);
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
 
@@ -106,13 +103,8 @@ public class UtilUrl {
         }
     }
     public static String getObject(String jsonObject, String requstStr, boolean isPost) throws IOException {
-        URL url = new URL(requstStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.connect();
-        conn.setReadTimeout(95000);
-        conn.setConnectTimeout(95000);
         String str = isPost?"POST":"GET";
-        conn.setRequestMethod(str);
+        HttpURLConnection conn = openConnection(requstStr, str);
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
@@ -142,10 +134,7 @@ public class UtilUrl {
 
     public static String getObject(String url) throws IOException {
 
-        URL requestURL = new URL(url);
-        HttpURLConnection conn = (HttpURLConnection) requestURL.openConnection();
-
-        conn.setRequestMethod("GET");
+        HttpURLConnection conn = openConnection(url, "GET");
 
         conn.connect();
 
@@ -172,12 +161,7 @@ public class UtilUrl {
 
     public static int sendPost(String jsonObject, String requestStr) throws IOException {
         int response;
-        URL url = new URL(requestStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.connect();
-        conn.setReadTimeout(95000);
-        conn.setConnectTimeout(95000);
-        conn.setRequestMethod("POST");
+        HttpURLConnection conn = openConnection(requestStr, "POST");
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
@@ -201,6 +185,7 @@ public class UtilUrl {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofMillis(READ_TIMEOUT_MILLIS))
                 .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
@@ -216,5 +201,14 @@ public class UtilUrl {
         return response.body();
     }
 
+    public static HttpURLConnection openConnection(String requestUrl, String method) throws IOException {
+        URL url = new URL(requestUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setReadTimeout(READ_TIMEOUT_MILLIS);
+        conn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
+        conn.setRequestMethod(method);
+        conn.setUseCaches(false);
+        return conn;
+    }
 
 }

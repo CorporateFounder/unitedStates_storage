@@ -1,6 +1,7 @@
 package com.example.website.citu.config;
 
 import org.junit.jupiter.api.Test;
+import org.aspectj.lang.ProceedingJoinPoint;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -80,5 +81,36 @@ class NumberFormattingAspectTest {
             aspect.formatString("BURN_ADDRESS is internal placeholder");
             aspect.formatString("1,261,440 GOLD/year");
         });
+    }
+
+    @Test
+    void aspectIsDisabledByDefaultForControllerResults() throws Throwable {
+        NumberFormattingAspect disabled = new NumberFormattingAspect();
+        ProceedingJoinPoint joinPoint = new StaticResultJoinPoint("514291");
+
+        assertEquals("514291", disabled.formatNumbers(joinPoint));
+    }
+
+    @Test
+    void aspectCanBeEnabledExplicitly() throws Throwable {
+        NumberFormattingAspect enabled = new NumberFormattingAspect(true);
+        ProceedingJoinPoint joinPoint = new StaticResultJoinPoint("514291");
+
+        assertEquals("514291.0000000000", enabled.formatNumbers(joinPoint));
+    }
+
+    private record StaticResultJoinPoint(Object value) implements ProceedingJoinPoint {
+        @Override public Object proceed() { return value; }
+        @Override public Object proceed(Object[] args) { return value; }
+        @Override public String toShortString() { return "static"; }
+        @Override public String toLongString() { return "static"; }
+        @Override public Object getThis() { return null; }
+        @Override public Object getTarget() { return null; }
+        @Override public Object[] getArgs() { return new Object[0]; }
+        @Override public org.aspectj.lang.Signature getSignature() { return null; }
+        @Override public org.aspectj.lang.reflect.SourceLocation getSourceLocation() { return null; }
+        @Override public String getKind() { return "method-execution"; }
+        @Override public org.aspectj.lang.JoinPoint.StaticPart getStaticPart() { return null; }
+        @Override public void set$AroundClosure(org.aspectj.runtime.internal.AroundClosure aroundClosure) {}
     }
 }

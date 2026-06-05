@@ -34,32 +34,25 @@ public class WebController {
     String BASIS_ADDRESS = "faErFrDnBhfSfNnj1hYjxydKNH28cRw1PBwDQEXH3QsJ";
 
     public static String getResult(String url, String errorText) {
-        String str = "-1";
         try {
-            str = UtilUrl.readJsonFromUrl(address + url);
+            return UtilUrl.readJsonFromUrl(address + url);
         } catch (NoRouteToHostException e) {
             System.out.println(errorText);
-            str = "-1";
         } catch (SocketException e) {
             System.out.println(errorText);
-            str = "-1";
         } catch (IOException e) {
-            throw new RuntimeException(e);
-
-        } finally {
-            return str;
+            System.out.println(errorText + ": " + e.getClass().getSimpleName());
         }
-
+        return "temporarily unavailable";
     }
 
     private String uriBase = "http://localhost:8080"; // change this to your server address
     static String address = ExplorerController.getAddress();
 
     @GetMapping("/")
-    public String mainPage(Model model) throws IOException {
+    public String mainPage(Model model) {
         //first api size blockchain
-        String sizeStr = "-1";
-        sizeStr = getResult("/size", "home page you cannot connect to global server,\" +\n" +
+        String sizeStr = getResult("/size", "home page you cannot connect to global server,\" +\n" +
                 "                    \"you can't give size global server");
 
         model.addAttribute("size", sizeStr);
@@ -72,7 +65,7 @@ public class WebController {
             String json = UtilUrl.readJsonFromUrl(address + "/difficultyBlockchain");
             infoDificultyBlockchain = UtilsJson.jsonToInfoDifficulty(json);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("home page difficulty unavailable: " + e.getClass().getSimpleName());
         }
 
         String startReduce = getResult("/v28Index", "you can't give start index global server");
@@ -85,34 +78,29 @@ public class WebController {
         String multiplier = getResult("/multiplier", "you can't give multiplier global server");
         String daysReduce = getResult("/dayReduce", "you can't give day reduce global server");
 
-        long size = Long.valueOf(sizeStr);
+        long size = safeLong(sizeStr, 0);
+        Block prev = loadPreviousBlock(size);
 
-        String urlPrev = address + "/conductorBlock?index=" + (size - 1);
-
-        String prevJson = UtilUrl.getObject(urlPrev);
-
-        Block prev = (Block) UtilsJson.jsonToClass(prevJson, Block.class);
-
-        int prevBlockTotalTransaction = prev.getDtoTransactions().size();
-        double prevBlockTotalSum = prev.getDtoTransactions()
+        int prevBlockTotalTransaction = prev == null ? 0 : prev.getDtoTransactions().size();
+        double prevBlockTotalSum = prev == null ? 0 : prev.getDtoTransactions()
                 .stream().mapToDouble(t->t.getDigitalDollar())
                 .sum();
 
 
         String totalTransactionsJson = getResult("/totalTransactionsDay", "you can't give total transactions day global server");
-        int totalTransactionsDay = Integer.valueOf(totalTransactionsJson);
+        int totalTransactionsDay = safeInt(totalTransactionsJson, 0);
         String totalTransactionsSumJson = getResult("/totalTransactionsSum", "you can't give total transactions sum global server");
 
         cleanedValue = totalTransactionsSumJson.replaceAll("\"", "");
         System.out.println("cleaneValue: " + cleanedValue);
-        double totalTransactionsDaySum =  Double.parseDouble(cleanedValue);
+        double totalTransactionsDaySum =  safeDouble(cleanedValue, 0);
         System.out.println("totalTransactionsDaySum: " + totalTransactionsDaySum);
 
-        double targetTotalSum = prev.getDtoTransactions().stream()
+        double targetTotalSum = prev == null ? 0 : prev.getDtoTransactions().stream()
                 .filter(t->!t.getSender().equals(BASIS_ADDRESS))
                 .mapToDouble(t->t.getDigitalDollar())
                 .sum();
-        long targetTotalUniqAddress = prev.getDtoTransactions().stream()
+        long targetTotalUniqAddress = prev == null ? 0 : prev.getDtoTransactions().stream()
                 .filter(t->!t.getSender().equals(BASIS_ADDRESS))
                 .map(t->t.getSender())
                 .distinct()
@@ -164,6 +152,48 @@ public class WebController {
                         "\n" +
                         "This cryptocurrency is especially suitable as a reserve currency. Its limited supply makes it attractive due to its scarcity, enhancing its market value.");
         return "main";
+    }
+
+    private Block loadPreviousBlock(long size) {
+        if (size <= 0) {
+            return null;
+        }
+        try {
+            String urlPrev = address + "/conductorBlock?index=" + (size - 1);
+            String prevJson = UtilUrl.getObject(urlPrev);
+            return (Block) UtilsJson.jsonToClass(prevJson, Block.class);
+        } catch (Exception e) {
+            System.out.println("home page previous block unavailable: " + e.getClass().getSimpleName());
+            return null;
+        }
+    }
+
+    static long safeLong(String value, long fallback) {
+        try {
+            return Long.parseLong(cleanNumberText(value));
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    static int safeInt(String value, int fallback) {
+        try {
+            return Integer.parseInt(cleanNumberText(value));
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    static double safeDouble(String value, double fallback) {
+        try {
+            return Double.parseDouble(cleanNumberText(value));
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private static String cleanNumberText(String value) {
+        return value == null ? "" : value.replace("\"", "").trim();
     }
 
     @GetMapping("/summary_and_benefits")
