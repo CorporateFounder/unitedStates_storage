@@ -1,49 +1,77 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}"/>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <title th:text="${title}">Winners</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
-<header th:insert="blocks/header :: header "></header>
+<body class="v35-public">
+<header th:insert="blocks/header :: header"></header>
 
+<main class="container py-4">
+    <section class="citu-section mb-4">
+        <p class="v35-kicker">Legacy winners</p>
+        <h1 th:text="${title}">Winners</h1>
+        <p class="text-muted mb-3" th:if="${sourceEndpoint != null}" th:text="'Source: ' + ${sourceEndpoint}">Source endpoint</p>
+        <div class="citu-resource-links">
+            <a class="btn btn-primary" href="/blocks">Blocks</a>
+            <a class="btn btn-primary" href="/winners">Winners</a>
+            <a class="btn btn-primary" href="/winnerList">Winner list</a>
+        </div>
+    </section>
 
-<div class="container mt-5">
-    <h5  th:text="${title}"></h5>
-    <p><a href="/conductor">Explorer</a> | <a href="/blocks">Blocks list</a> | <a href="/allwinners">All winners</a> | <a href="/winnerList">Winner list</a> | <a href="/winerList">Winer list</a></p>
-    <h5 th:if="${sourceEndpoint != null}" th:text="'source endpoint: ' + ${sourceEndpoint}"></h5>
-    <h5 th:if="${status != null && status != ''}" th:text="${status}"></h5>
-    <h5 th:text="'all winners: ' + ${allWinnerCount}"/>
-    <h5 th:text="'all uniq address: ' + ${uniq}"/>
-    <div th:each="el : ${allWiners}" class="alert alert-info mt-2">
-        <h5 th:text="'index: '+${el?.index}"/>
-        <h5 th:text="'miner address: '+${el?.address}"/>
-        <h5 th:text="'hash block: '+${el?.hash}"/>
-        <h5 th:text="'count transactions in block: '+${el?.countTransactions}"/>
-        <h5 th:text="'staking miner: '+${el?.staking}"/>
-        <h5 th:text="'big random number in block: '+${el?.bigRandom}"/>
-        <h5 th:text="'block difficult: '+${el?.diff}"/>
-    </div>
+    <section th:if="${status != null && status != ''}" class="citu-section mb-4">
+        <h2 class="h4" th:text="${status}">temporarily unavailable</h2>
+    </section>
 
+    <section class="citu-section mb-4">
+        <div class="citu-section-heading">
+            <div>
+                <p class="v35-kicker">Summary</p>
+                <h2 th:text="${title}">Winners</h2>
+            </div>
+            <p>Legacy node winner data. Values are shown only when the node endpoint responds.</p>
+        </div>
+        <div class="citu-metric-grid">
+            <div class="citu-metric"><span>Total rows</span><strong th:text="${allWinnerCount}">0</strong></div>
+            <div class="citu-metric"><span>Unique addresses</span><strong th:text="${uniq}">0</strong></div>
+            <div class="citu-metric"><span>Big random rows</span><strong th:text="${bigRandomCount}">0</strong></div>
+        </div>
+    </section>
 
+    <section th:if="${allWiners != null && allWiners.size() > 0}" class="citu-section mb-4">
+        <h2>Winner rows</h2>
+        <div class="citu-winner-grid">
+            <article th:each="el : ${allWiners}" class="citu-winner-card">
+                <div class="citu-transaction-row"><span>Index</span><strong th:text="${el?.index}"></strong></div>
+                <div class="citu-transaction-row"><span>Miner address</span><strong th:text="${el?.address}"></strong></div>
+                <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${el?.hash}"></strong></div>
+                <div class="citu-transaction-row"><span>Transactions</span><strong th:text="${el?.countTransactions}"></strong></div>
+                <div class="citu-transaction-row"><span>Staking miner</span><strong th:text="${el?.staking}"></strong></div>
+                <div class="citu-transaction-row"><span>Big random</span><strong th:text="${el?.bigRandom}"></strong></div>
+                <div class="citu-transaction-row"><span>Difficulty</span><strong th:text="${el?.diff}"></strong></div>
+            </article>
+        </div>
+    </section>
 
-    <h5 class="container mt-5" th:text="'all big random winners: ' + ${bigRandomCount}"/>
-    <div th:each="el : ${bigRandom}" class="alert alert-info mt-2">
-        <h5 th:text="'index: '+${el?.index}"/>
-        <h5 th:text="'miner address: '+${el?.address}"/>
-        <h5 th:text="'hash block: '+${el?.hash}"/>
-        <h5 th:text="'count transactions in block: '+${el?.countTransactions}"/>
-        <h5 th:text="'staking miner: '+${el?.staking}"/>
-        <h5 th:text="'big random number in block: '+${el?.bigRandom}"/>
-        <h5 th:text="'block difficult: '+${el?.diff}"/>
-    </div>
-</div>
+    <section th:if="${bigRandom != null && bigRandom.size() > 0}" class="citu-section mb-4">
+        <h2>Big random winners</h2>
+        <div class="citu-winner-grid">
+            <article th:each="el : ${bigRandom}" class="citu-winner-card">
+                <div class="citu-transaction-row"><span>Index</span><strong th:text="${el?.index}"></strong></div>
+                <div class="citu-transaction-row"><span>Miner address</span><strong th:text="${el?.address}"></strong></div>
+                <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${el?.hash}"></strong></div>
+                <div class="citu-transaction-row"><span>Transactions</span><strong th:text="${el?.countTransactions}"></strong></div>
+                <div class="citu-transaction-row"><span>Staking miner</span><strong th:text="${el?.staking}"></strong></div>
+                <div class="citu-transaction-row"><span>Big random</span><strong th:text="${el?.bigRandom}"></strong></div>
+                <div class="citu-transaction-row"><span>Difficulty</span><strong th:text="${el?.diff}"></strong></div>
+            </article>
+        </div>
+    </section>
+</main>
 
-
-</div>
 <footer th:insert="blocks/footer :: footer"></footer>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

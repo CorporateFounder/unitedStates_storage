@@ -1,44 +1,64 @@
+<!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>About us</title>
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
-
-
+    <title th:text="${title}">Customer transactions</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
-<body>
-
+<body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 
+<main class="container py-4">
+    <section class="citu-section mb-4">
+        <p class="v35-kicker">Explorer</p>
+        <h1 th:text="${title}">Customer transactions</h1>
+        <p class="text-muted">Source: <code>GET /customerTransactions?address=&lt;ADDRESS&gt;&amp;from=&lt;FROM&gt;&amp;to=&lt;TO&gt;</code></p>
+        <form action="/customer" method="get" class="row g-2">
+            <div class="col-12 col-lg-6">
+                <input type="text" name="address" th:value="${address}" placeholder="Customer address" class="form-control">
+            </div>
+            <div class="col-6 col-lg-2">
+                <input type="number" name="from" th:value="${from}" min="0" class="form-control">
+            </div>
+            <div class="col-6 col-lg-2">
+                <input type="number" name="to" th:value="${to}" min="1" class="form-control">
+            </div>
+            <div class="col-12 col-lg-2">
+                <button type="submit" class="btn btn-success w-100">Search</button>
+            </div>
+        </form>
+    </section>
 
-<div class="container mt-5">
-    <h1 th:text="${title}"></h1>
-    <div th:each="el : ${transactions}" class="alert alert-info mt-2">
-        <h5 th:if="${el?.sender != null}" th:text="'sender: ' + ${el?.sender}"></h5>
-        <h5 th:if="${el?.customer != null}" th:text="'customen: ' + ${el?.customer}"></h5>
-        <h5 th:if="${el?.voteEnum != null}" th:text="'voteEnum: ' + ${el?.voteEnum}"></h5>
-        <h5 th:if="${el?.signStr != null}" th:text="'sign: ' + ${el?.signStr}"></h5>
-        <h5 th:if="${el?.bonusForMiner != null}" th:text="'bonusForMiner: ' + ${el?.bonusForMiner}"></h5>
-        <h5 th:if="${el?.digitalDollar != null}" th:text="'dollar: '+${#numbers.formatDecimal(el?.digitalDollar, 1, 'COMMA', 16, 'POINT')}"/>
-        <h5 th:if="${el?.digitalStockBalance != null}" th:text="'stock: '+${#numbers.formatDecimal(el?.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}"/>
-        <a th:if="${el?.signStr != null && el?.laws?.packetLawName != null && el?.laws?.packetLawName != ''}" th:href="'/detail-laws/' + ${el?.hex}" class="btn btn-warning">Details</a>
-    </div>
-</div>
+    <section th:if="${status != null && status != ''}" class="citu-section mb-4">
+        <h2 class="h4" th:text="${status}">temporarily unavailable</h2>
+    </section>
 
-<form  action="/customer" method="post">
+    <section th:if="${transactions != null && transactions.size() > 0}" class="mb-4">
+        <div th:each="el : ${transactions}" class="citu-transaction-card">
+            <div th:if="${el?.sender != null}" class="citu-transaction-row"><span>Sender</span><strong th:text="${el?.sender}"></strong></div>
+            <div th:if="${el?.customer != null}" class="citu-transaction-row"><span>Customer</span><strong th:text="${el?.customer}"></strong></div>
+            <div th:if="${el?.digitalDollar != null}" class="citu-transaction-row"><span>GOLD amount</span><strong th:text="${#numbers.formatDecimal(el?.digitalDollar, 1, 'COMMA', 16, 'POINT')}"></strong></div>
+            <div th:if="${el?.digitalStockBalance != null}" class="citu-transaction-row"><span>Stock amount</span><strong th:text="${#numbers.formatDecimal(el?.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}"></strong></div>
+            <div th:if="${el?.voteEnum != null}" class="citu-transaction-row"><span>Vote type</span><strong th:text="${el?.voteEnum}"></strong></div>
+            <div th:if="${el?.signStr != null && el?.signStr != ''}" class="citu-transaction-row"><span>Signature</span><strong th:text="${el?.signStr}"></strong></div>
+            <div th:if="${el?.bonusForMiner != null}" class="citu-transaction-row"><span>Miner bonus</span><strong th:text="${el?.bonusForMiner}"></strong></div>
+            <div th:if="${el?.laws?.hashLaw != null}" class="citu-transaction-row"><span>Law hash</span><strong th:text="${el?.laws?.hashLaw}"></strong></div>
+            <div th:if="${el?.laws?.packetLawName != null && el?.laws?.packetLawName != ''}" class="citu-transaction-row"><span>Law package</span><strong th:text="${el?.laws?.packetLawName}"></strong></div>
+            <a th:if="${el?.signStr != null && el?.signStr != '' && el?.laws?.packetLawName != null && el?.laws?.packetLawName != ''}" th:href="'/detail-laws/' + ${el?.hex}" class="btn btn-warning mt-3">Details</a>
+        </div>
+    </section>
 
-    <input type="hidden" name="pubkey" th:value="${pubkey}">
-    <input type="hidden" name="page" th:value="${page}">
-    <input type="hidden" name="size" th:value="${size}">
-
-
-    <button type="submit" class="btn btn-success" name="action" value="/send">Submit</button><br>
-    <button th:if="${page > 0}" type="submit" class="btn btn-primary" name="action" value="/prev">Prev Page</button><br>
-    <button th:if="${page < totalPages - 1}" type="submit" class="btn btn-primary" name="action" value="/next">Next Page sender</button><br>
-</form>
-
-
+    <form action="/customer" method="get" class="citu-section mb-4">
+        <input type="hidden" name="address" th:value="${address}">
+        <input type="hidden" name="from" th:value="${from}">
+        <input type="hidden" name="to" th:value="${to}">
+        <div class="d-flex flex-wrap gap-2">
+            <a th:if="${from > 0}" class="btn btn-primary" th:href="@{/customer(address=${address},from=${prevFrom},to=${prevTo})}">Prev</a>
+            <a class="btn btn-primary" th:href="@{/customer(address=${address},from=${nextFrom},to=${nextTo})}">Next</a>
+        </div>
+    </form>
+</main>
 
 <footer th:insert="blocks/footer :: footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>

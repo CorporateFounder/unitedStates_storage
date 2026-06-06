@@ -32,6 +32,9 @@ public class DtoTransaction {
     private String signStr;
 
     public String hex(){
+        if (sign == null) {
+            return "";
+        }
         return UtilsUse.bytesToHex(sign);
     }
 
@@ -57,6 +60,9 @@ public class DtoTransaction {
     }
 
     public String getSignStr() {
+        if (sign == null) {
+            return signStr == null ? "" : signStr;
+        }
         return Base64.getEncoder().encodeToString(sign);
 
     }

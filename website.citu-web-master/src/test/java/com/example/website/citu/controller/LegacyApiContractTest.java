@@ -12,12 +12,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -93,6 +95,95 @@ class LegacyApiContractTest {
         assertTrue(requests.contains("GET /winnerList"));
     }
 
+    @Test
+    void senderRoutesUseSenderTransactionsEndpointWithAddressFromTo() throws Exception {
+        mockMvc.perform(get("/sender")
+                        .param("pubkey", "sender-address")
+                        .param("action", "/send"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("sender-address")))
+                .andExpect(content().string(containsString("LAW_HASH")));
+
+        mockMvc.perform(get("/sender")
+                        .param("address", "sender-address")
+                        .param("from", "0")
+                        .param("to", "10"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Sender transactions")));
+
+        mockMvc.perform(get("/send")
+                        .param("pubkey", "sender-address"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Sender transactions")));
+
+        assertTrue(requests.contains("GET /senderTransactions?address=sender-address&from=0&to=10"));
+        assertFalse(requests.stream().anyMatch(request -> request.contains("/customerTransactions?address=sender-address")));
+    }
+
+    @Test
+    void emptySenderResultRendersNotFoundSafely() throws Exception {
+        mockMvc.perform(get("/sender")
+                        .param("address", "empty-sender")
+                        .param("from", "0")
+                        .param("to", "10"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("not found")));
+    }
+
+    @Test
+    void customerRoutesUseCustomerTransactionsEndpointWithAddressFromTo() throws Exception {
+        mockMvc.perform(get("/customer")
+                        .param("pubkey", "customer-address")
+                        .param("action", "/send"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("customer-address")));
+
+        mockMvc.perform(get("/customer")
+                        .param("address", "customer-address")
+                        .param("from", "0")
+                        .param("to", "10"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Customer transactions")));
+
+        assertTrue(requests.contains("GET /customerTransactions?address=customer-address&from=0&to=10"));
+    }
+
+    @Test
+    void publicNavigationHasCleanUniqueRoutes() throws Exception {
+        String header = Files.readString(Path.of("src", "main", "resources", "templates", "blocks", "header.html"));
+
+        assertTrue(header.contains("href=\"/\""));
+        assertTrue(header.contains("href=\"/conductor\""));
+        assertTrue(header.contains("href=\"/blocks\""));
+        assertTrue(header.contains("href=\"/winners\""));
+        assertTrue(header.contains("href=\"/wallet_and_node_url\""));
+        assertTrue(header.contains("href=\"/white_papper\""));
+        assertTrue(header.contains("href=\"/charter\""));
+        assertTrue(header.contains("href=\"/v35\""));
+        assertFalse(header.contains("winerList"));
+        assertFalse(header.contains("winnerList"));
+        assertTrue(header.indexOf("href=\"/conductor\"") == header.lastIndexOf("href=\"/conductor\""));
+        assertTrue(header.indexOf("href=\"/blocks\"") == header.lastIndexOf("href=\"/blocks\""));
+        assertTrue(header.indexOf("href=\"/winners\"") == header.lastIndexOf("href=\"/winners\""));
+    }
+
+    @Test
+    void winnersAndTransactionPagesUseDarkSharedLayout() throws Exception {
+        String winners = Files.readString(Path.of("src", "main", "resources", "templates", "winners.html"));
+        String sender = Files.readString(Path.of("src", "main", "resources", "templates", "transactionsSender.html"));
+
+        assertTrue(winners.contains("body class=\"v35-public\""));
+        assertTrue(winners.contains("blocks/header :: header"));
+        assertTrue(winners.contains("citu-section"));
+        assertTrue(winners.contains("citu-winner-card"));
+        assertFalse(winners.contains("alert alert-info"));
+        assertFalse(winners.contains("winerList"));
+        assertTrue(sender.contains("body class=\"v35-public\""));
+        assertTrue(sender.contains("citu-transaction-card"));
+        assertTrue(sender.contains("Law hash"));
+        assertTrue(sender.contains("Law package"));
+    }
+
     private void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().toString();
@@ -102,6 +193,8 @@ class LegacyApiContractTest {
         String response = switch (exchange.getRequestURI().getPath()) {
             case "/conductorBlock" -> duplicateIndexBlocks();
             case "/sub-blocks" -> blocksRange();
+            case "/senderTransactions" -> senderTransactions(exchange.getRequestURI().getRawQuery());
+            case "/customerTransactions" -> customerTransactions(exchange.getRequestURI().getRawQuery());
             case "/allwinners", "/allWinners" -> winner("winner-address");
             case "/winnerList", "/winerList" -> winner("winner-list-address");
             case "/bigRandomWiner", "/bigRandomWinner" -> winner("big-random-address");
@@ -137,5 +230,27 @@ class LegacyApiContractTest {
 
     private String winner(String address) {
         return "[{\"index\":1,\"address\":\"" + address + "\",\"hash\":\"winner-hash\",\"countTransactions\":2,\"staking\":3.5,\"bigRandom\":4,\"diff\":5}]";
+    }
+
+    private String senderTransactions(String query) {
+        if (query != null && query.contains("empty-sender")) {
+            return "[]";
+        }
+        return "[" + transaction("sender-address", "recipient-address") + "]";
+    }
+
+    private String customerTransactions(String query) {
+        return "[" + transaction("sender-address", "customer-address") + "]";
+    }
+
+    private String transaction(String sender, String customer) {
+        return "{\"sender\":\"" + sender + "\","
+                + "\"customer\":\"" + customer + "\","
+                + "\"digitalDollar\":1.0E-4,"
+                + "\"digitalStockBalance\":2.5,"
+                + "\"bonusForMiner\":0.01,"
+                + "\"voteEnum\":\"YES\","
+                + "\"signStr\":\"SIGNATURE\","
+                + "\"laws\":{\"packetLawName\":\"LAW_PACKET\",\"hashLaw\":\"LAW_HASH\",\"laws\":[\"line\"]}}";
     }
 }

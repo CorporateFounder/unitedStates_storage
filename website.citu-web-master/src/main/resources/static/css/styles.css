@@ -673,6 +673,17 @@ body.v35-public a {
     margin-bottom: 1rem;
     padding: 1rem;
 }
+.citu-winner-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.citu-winner-card {
+    background: #0b1e29;
+    border: 1px solid #294a56;
+    border-radius: 8px;
+    padding: 1rem;
+}
 .citu-transaction-row {
     border-bottom: 1px solid #24424f;
     display: grid;
