@@ -54,15 +54,11 @@ public class ExplorerController {
 
     @GetMapping({"/blocks", "/conductor/blocks"})
     public String blocks(
-            @RequestParam(defaultValue = "0") int start,
-            @RequestParam(defaultValue = "10") int finish,
+            @RequestParam(required = false) Integer start,
+            @RequestParam(required = false) Integer finish,
             Model model) throws IOException {
-        List<Block> blocks = loadBlocks(start, finish);
-        model.addAttribute("blocks", blocks);
-        model.addAttribute("start", Math.max(0, start));
-        model.addAttribute("finish", Math.max(Math.max(0, start), finish));
-        model.addAttribute("status", blocks.isEmpty() ? ApiFallback.UNAVAILABLE : "");
-        return "conductor";
+        Range range = start == null && finish == null ? latestRange() : manualRange(start, finish);
+        return renderBlocks(range, model);
     }
 
     @PostMapping("/blocks")
@@ -70,7 +66,7 @@ public class ExplorerController {
             @RequestParam(defaultValue = "0") int start,
             @RequestParam(defaultValue = "10") int finish,
             Model model) throws IOException {
-        return blocks(start, finish, model);
+        return renderBlocks(manualRange(start, finish), model);
     }
 
     @PostMapping("/conductor/blocks")
@@ -78,7 +74,7 @@ public class ExplorerController {
             @RequestParam(defaultValue = "0") int start,
             @RequestParam(defaultValue = "10") int finish,
             Model model) throws IOException {
-        return blocks(start, finish, model);
+        return renderBlocks(manualRange(start, finish), model);
     }
 
     @GetMapping("/conductor/lookup")
@@ -185,6 +181,35 @@ public class ExplorerController {
         return ApiFallback.blocks(jsonList).stream()
                 .sorted(Comparator.comparing(Block::getIndex).reversed())
                 .collect(Collectors.toList());
+    }
+
+    private String renderBlocks(Range range, Model model) throws IOException {
+        List<Block> blocks = loadBlocks(range.start(), range.finish());
+        model.addAttribute("title", "Blocks");
+        model.addAttribute("blocks", blocks);
+        model.addAttribute("start", range.start());
+        model.addAttribute("finish", range.finish());
+        model.addAttribute("blockCount", blocks.size());
+        model.addAttribute("currentSize", range.currentSize());
+        model.addAttribute("status", range.status().isEmpty() && blocks.isEmpty() ? ApiFallback.UNAVAILABLE : range.status());
+        return "blocks";
+    }
+
+    private Range latestRange() throws IOException {
+        int currentSize = ApiFallback.intValue(UtilUrl.getObject(address + "/size", UtilUrl.EXPLORER_READ_TIMEOUT_MILLIS), -1);
+        if (currentSize <= 0) {
+            return new Range(0, 10, -1, "latest size temporarily unavailable; showing fallback range");
+        }
+        return new Range(Math.max(0, currentSize - 10), currentSize, currentSize, "");
+    }
+
+    private Range manualRange(Integer start, Integer finish) {
+        int safeStart = Math.max(0, start == null ? 0 : start);
+        int safeFinish = finish == null ? safeStart + 10 : Math.max(safeStart, finish);
+        return new Range(safeStart, safeFinish, -1, "");
+    }
+
+    private record Range(int start, int finish, int currentSize, String status) {
     }
 
     private void addBlockSearchResult(String info, RedirectAttributes redirectAttrs) throws IOException {

@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">Blocks</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body class="v35-public">
+<header th:insert="blocks/header :: header"></header>
+
+<main class="container py-4">
+    <section class="citu-section mb-4">
+        <p class="v35-kicker">Explorer</p>
+        <h1>Blocks</h1>
+        <p>Latest block range by default, with manual range search available for historical inspection.</p>
+        <p>
+            <a class="btn btn-primary" href="/conductor">Explorer search</a>
+            <a class="btn btn-primary" href="/winners">Winners</a>
+        </p>
+    </section>
+
+    <section th:if="${status != null && status != ''}" class="citu-section mb-4">
+        <h2 class="h4" th:text="${status}">status</h2>
+    </section>
+
+    <section class="citu-section mb-4">
+        <div class="citu-section-heading">
+            <div>
+                <p class="v35-kicker">Displayed range</p>
+                <h2><span th:text="${start}">0</span> to <span th:text="${finish}">10</span></h2>
+                <p th:text="'Range: ' + ${start} + ' to ' + ${finish}">Range: 0 to 10</p>
+            </div>
+            <p th:if="${currentSize != null && currentSize >= 0}" th:text="'Current chain size: ' + ${currentSize}">Current chain size</p>
+        </div>
+        <div class="citu-metric-grid">
+            <div class="citu-metric"><span>Start</span><strong th:text="${start}">0</strong></div>
+            <div class="citu-metric"><span>Finish</span><strong th:text="${finish}">10</strong></div>
+            <div class="citu-metric"><span>Block count</span><strong th:text="${blockCount}">0</strong></div>
+        </div>
+    </section>
+
+    <section class="citu-section mb-4">
+        <h2 class="h4">Manual range</h2>
+        <form action="/blocks" method="post" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label" for="start">Start</label>
+                <input id="start" type="number" name="start" th:value="${start != null ? start : 0}" min="0" class="form-control">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" for="finish">Finish</label>
+                <input id="finish" type="number" name="finish" th:value="${finish != null ? finish : 10}" min="0" class="form-control">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-success w-100">Load</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="citu-section mb-4">
+        <h2>Block list</h2>
+        <div th:if="${blocks == null || blocks.size() == 0}" class="citu-block-card">
+            <p>No blocks returned for this range.</p>
+        </div>
+        <div th:if="${blocks != null && blocks.size() > 0}" class="citu-block-grid">
+            <article th:each="block : ${blocks}" class="citu-block-card">
+                <div class="citu-transaction-row"><span>Index</span><strong th:text="${block?.index}">0</strong></div>
+                <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${block?.hashBlock}">hash</strong></div>
+                <div class="citu-transaction-row"><span>Previous hash</span><strong th:text="${block?.previousHash}">previous</strong></div>
+                <div class="citu-transaction-row"><span>Miner address</span><strong th:text="${block?.minerAddress}">miner</strong></div>
+                <div class="citu-transaction-row"><span>Founder address</span><strong th:text="${block?.founderAddress}">founder</strong></div>
+                <div class="citu-transaction-row"><span>Random proof</span><strong th:text="${block?.randomNumberProof}">0</strong></div>
+                <div class="citu-transaction-row"><span>Miner rewards</span><strong th:text="${block?.minerRewards}">0</strong></div>
+                <div class="citu-transaction-row"><span>Hash complexity</span><strong th:text="${block?.hashCompexity}">0</strong></div>
+                <div class="citu-transaction-row"><span>Timestamp</span><strong th:text="${block?.timestamp}">time</strong></div>
+                <div class="citu-transaction-row"><span>Transactions</span><strong th:text="${block?.dtoTransactions == null ? 0 : block?.dtoTransactions?.size}">0</strong></div>
+                <a th:if="${block != null}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer th:insert="blocks/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

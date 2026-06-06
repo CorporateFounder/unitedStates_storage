@@ -44,7 +44,7 @@ public class WinnersController {
         }
         model.addAttribute("bigRandom", bigRandomList);
         model.addAttribute("bigRandomCount", bigRandomList.size());
-        model.addAttribute("title", "allwinners");
+        model.addAttribute("title", "Winners");
         model.addAttribute("sourceEndpoint", "/allwinners");
         model.addAttribute("status", allWinersList.isEmpty() && bigRandomList.isEmpty() ? ApiFallback.UNAVAILABLE : "");
 
@@ -62,8 +62,8 @@ public class WinnersController {
         model.addAttribute("allWinnerCount", winnerList.size());
         model.addAttribute("bigRandom", new ArrayList<>());
         model.addAttribute("bigRandomCount", 0);
-        model.addAttribute("title", "winnerList / winerList");
-        model.addAttribute("sourceEndpoint", "/winnerList or /winerList");
+        model.addAttribute("title", "Winner list");
+        model.addAttribute("sourceEndpoint", "/winnerList");
         model.addAttribute("status", winnerList.isEmpty() ? ApiFallback.UNAVAILABLE : "");
         return "winners";
     }

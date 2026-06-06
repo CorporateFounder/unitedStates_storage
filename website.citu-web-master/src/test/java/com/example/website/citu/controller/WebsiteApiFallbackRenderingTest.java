@@ -41,6 +41,14 @@ class WebsiteApiFallbackRenderingTest {
     }
 
     @Test
+    void blocksRendersFallbackRangeWhenNodeApiFails() throws Exception {
+        mockMvc.perform(get("/blocks"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("latest size temporarily unavailable; showing fallback range")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("0 to 10")));
+    }
+
+    @Test
     void customerRendersWhenNodeApiFails() throws Exception {
         mockMvc.perform(get("/customer").param("pubkey", "test-public-key").param("action", "/send"))
                 .andExpect(status().isOk())
@@ -65,18 +73,21 @@ class WebsiteApiFallbackRenderingTest {
     void allwinnersRendersFallbackWhenNodeApiFails() throws Exception {
         mockMvc.perform(get("/allwinners"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("citu-section")));
     }
 
     @Test
     void winnerListAliasesRenderFallbackWhenNodeApiFails() throws Exception {
         mockMvc.perform(get("/winnerList"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("winerList"))));
 
         mockMvc.perform(get("/winerList"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("winerList"))));
     }
 
     @Test

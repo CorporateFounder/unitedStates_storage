@@ -36,25 +36,17 @@
 
 <header th:insert="blocks/header :: header"></header>
 <main class="container py-4">
-<section class="alert alert-info">
+<section class="citu-section mb-4">
 <h1>Explorer</h1>
-<p>Inspect live legacy chain data by block index, transaction signature, or public address. These values do not activate V35.</p>
-<p><a href="/blocks">Blocks list</a> | <a href="/winners">Winners</a> | <a href="/winnerList">Winner list</a></p>
+<p>Inspect live chain data by block index, transaction signature, or public address. Open the block range list separately when you want recent blocks.</p>
+<p><a class="btn btn-primary" href="/blocks">Blocks</a> <a class="btn btn-primary" href="/winners">Winners</a></p>
 <form action="/conductor" method="post">
     <input type="text" name="sign" placeholder="Enter index block or sign transaction" class="form-control"><br>
     <button type="submit" class="btn btn-success">Submit</button><br>
 </form>
 </section>
 
-<section class="alert alert-info">
-<h2 class="h4">Blocks range</h2>
-<form action="/blocks" method="post">
-    <input type="number" name="start" th:value="${start != null ? start : 0}" min="0" class="form-control"><br>
-    <input type="number" name="finish" th:value="${finish != null ? finish : 10}" min="0" class="form-control"><br>
-    <button type="submit" class="btn btn-success">Load blocks</button><br>
-</form>
-</section>
-<section class="alert alert-info">
+<section class="citu-section mb-4">
 <h2 class="h4">Address history</h2>
 <form action="/sender" method="get">
     <input type="text" name="pubkey" placeholder="enter sender address " class="form-control"><br>
@@ -70,7 +62,7 @@
 <h4 th:if="${text != null && text != '' }" th:text="'text: ' + ${text}"></h4>
 
 
-<div class="alert alert-info mt-2">
+<div class="citu-section mt-2">
     <h4 th:if="${block?.index != null}" th:text="'index: ' + ${block?.index}"></h4>
     <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
     <h4 th:if="${block?.previousHash != null}" th:text="'previous hash: ' + ${block?.previousHash}"></h4>
@@ -95,10 +87,10 @@
 
 </div>
 
-<h2>Blocks</h2>
-
-<tr th:if="${blocks?.size > 0}" th:each="block : ${blocks}">
-    <div class="alert alert-info mt-2">
+<section th:if="${blocks != null && blocks.size() > 0}" class="citu-section mb-4">
+<h2>Matching blocks</h2>
+<div class="citu-block-grid">
+    <article th:each="block : ${blocks}" class="citu-block-card">
     <h4 th:if="${block?.index != null}" th:text="'index: ' + ${block?.index}"></h4>
 
     <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
@@ -116,9 +108,9 @@
 
 
 
-    </div>
-
-</tr>
+    </article>
+</div>
+</section>
 
 <footer th:insert="blocks/footer :: footer"></footer>
 </main>

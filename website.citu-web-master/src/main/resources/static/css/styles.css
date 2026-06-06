@@ -684,6 +684,18 @@ body.v35-public a {
     border-radius: 8px;
     padding: 1rem;
 }
+.citu-block-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.citu-block-card {
+    background: #0b1e29;
+    border: 1px solid #294a56;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-wrap: anywhere;
+}
 .citu-transaction-row {
     border-bottom: 1px solid #24424f;
     display: grid;

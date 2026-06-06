@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LegacyApiContractTest {
     private final List<String> requests = new ArrayList<>();
     private HttpServer server;
+    private boolean sizeUnavailable;
 
     @Autowired
     private MockMvc mockMvc;
@@ -73,23 +75,69 @@ class LegacyApiContractTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("hash-range")));
 
+        assertFalse(requests.contains("GET /size"));
         assertTrue(requests.stream().anyMatch(value -> value.startsWith("POST /sub-blocks ")));
         assertTrue(requests.stream().anyMatch(value -> value.contains("\"start\":0") && value.contains("\"finish\":10")));
+    }
+
+    @Test
+    void blocksPageDefaultsToLatestRangeFromSize() throws Exception {
+        mockMvc.perform(get("/blocks"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("110 to 120")))
+                .andExpect(content().string(containsString("hash-range")));
+
+        assertTrue(requests.contains("GET /size"));
+        assertTrue(requests.stream().anyMatch(value -> value.startsWith("POST /sub-blocks ")
+                && value.contains("\"start\":110")
+                && value.contains("\"finish\":120")));
+    }
+
+    @Test
+    void blocksPageFallsBackToZeroTenWhenSizeUnavailable() throws Exception {
+        sizeUnavailable = true;
+
+        mockMvc.perform(get("/blocks"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("latest size temporarily unavailable; showing fallback range")))
+                .andExpect(content().string(containsString("0 to 10")));
+
+        assertTrue(requests.contains("GET /size"));
+        assertTrue(requests.stream().anyMatch(value -> value.startsWith("POST /sub-blocks ")
+                && value.contains("\"start\":0")
+                && value.contains("\"finish\":10")));
+    }
+
+    @Test
+    void blocksManualPostStillUsesSubmittedRange() throws Exception {
+        mockMvc.perform(post("/blocks")
+                        .param("start", "40")
+                        .param("finish", "45"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("40 to 45")));
+
+        assertFalse(requests.contains("GET /size"));
+        assertTrue(requests.stream().anyMatch(value -> value.startsWith("POST /sub-blocks ")
+                && value.contains("\"start\":40")
+                && value.contains("\"finish\":45")));
     }
 
     @Test
     void winnersCompatibilityRoutesRenderFromOldEndpoints() throws Exception {
         mockMvc.perform(get("/allwinners"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("winner-address")));
+                .andExpect(content().string(containsString("winner-address")))
+                .andExpect(content().string(containsString("citu-section")));
 
         mockMvc.perform(get("/winnerList"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("winner-list-address")));
+                .andExpect(content().string(containsString("winner-list-address")))
+                .andExpect(content().string(containsString("citu-section")));
 
         mockMvc.perform(get("/winerList"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("winner-list-address")));
+                .andExpect(content().string(containsString("winner-list-address")))
+                .andExpect(content().string(containsString("citu-section")));
 
         assertTrue(requests.contains("GET /allwinners"));
         assertTrue(requests.contains("GET /winnerList"));
@@ -178,6 +226,10 @@ class LegacyApiContractTest {
         assertTrue(winners.contains("citu-winner-card"));
         assertFalse(winners.contains("alert alert-info"));
         assertFalse(winners.contains("winerList"));
+        String blocks = Files.readString(Path.of("src", "main", "resources", "templates", "blocks.html"));
+        assertTrue(blocks.contains("body class=\"v35-public\""));
+        assertTrue(blocks.contains("citu-block-card"));
+        assertFalse(blocks.contains("alert alert-info"));
         assertTrue(sender.contains("body class=\"v35-public\""));
         assertTrue(sender.contains("citu-transaction-card"));
         assertTrue(sender.contains("Law hash"));
@@ -192,6 +244,7 @@ class LegacyApiContractTest {
 
         String response = switch (exchange.getRequestURI().getPath()) {
             case "/conductorBlock" -> duplicateIndexBlocks();
+            case "/size" -> sizeUnavailable ? "" : "120";
             case "/sub-blocks" -> blocksRange();
             case "/senderTransactions" -> senderTransactions(exchange.getRequestURI().getRawQuery());
             case "/customerTransactions" -> customerTransactions(exchange.getRequestURI().getRawQuery());
