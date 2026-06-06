@@ -35,6 +35,8 @@ import static International_Trade_Union.setings.Seting.*;
 
 @RestController
 public class TransactionController {
+    static final int MAX_GET_TRANSACTIONS_RESPONSE = 500;
+
     @Autowired
     BlockService blockService;
 
@@ -80,6 +82,16 @@ public class TransactionController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return transactions;
+        return limitTransactionsForResponse(transactions);
+    }
+
+    static List<DtoTransaction> limitTransactionsForResponse(List<DtoTransaction> transactions) {
+        if (transactions == null || transactions.isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (transactions.size() <= MAX_GET_TRANSACTIONS_RESPONSE) {
+            return transactions;
+        }
+        return new ArrayList<>(transactions.subList(0, MAX_GET_TRANSACTIONS_RESPONSE));
     }
 }

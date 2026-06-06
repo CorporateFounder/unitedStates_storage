@@ -52,6 +52,8 @@ import static International_Trade_Union.utils.UtilsBalance.rollbackCalculateBala
 
 @Component
 public class UtilsResolving {
+    static final int MAX_PROPAGATION_HOSTS = Math.max(1, RANDOM_HOSTS);
+
     @Autowired
     BlockService blockService;
 
@@ -178,11 +180,14 @@ public class UtilsResolving {
 
 
     public Map<String, DataShortBlockchainInformation> fetchDataFromHosts(List<HostEndDataShortB> hostsList) {
-        ExecutorService executorService = Executors.newFixedThreadPool(10); // Настройка пула потоков
+        List<HostEndDataShortB> boundedHosts = hostsList == null
+                ? Collections.emptyList()
+                : hostsList.stream().limit(MAX_PROPAGATION_HOSTS).collect(Collectors.toList());
+        ExecutorService executorService = Executors.newFixedThreadPool(boundedPeerPoolSize(boundedHosts.size())); // Настройка пула потоков
         Map<String, DataShortBlockchainInformation> hostDataMap = new ConcurrentHashMap<>();
 
         // Асинхронная обработка узлов
-        List<CompletableFuture<Void>> futures = hostsList.stream()
+        List<CompletableFuture<Void>> futures = boundedHosts.stream()
                 .map(host -> CompletableFuture.runAsync(() -> {
                     String s = host.getHost();
                     try {
@@ -1286,13 +1291,15 @@ public class UtilsResolving {
                         }
                 ));
 
+        if (selectedHosts.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         // Потокобезопасный набор для отслеживания обработанных узлов
         Set<String> processedHosts = ConcurrentHashMap.newKeySet();
 
         // Пул потоков с динамическим размером
-        ExecutorService executor = Executors.newFixedThreadPool(
-                Math.min(selectedHosts.size(), Runtime.getRuntime().availableProcessors())
-        );
+        ExecutorService executor = Executors.newFixedThreadPool(boundedPeerPoolSize(selectedHosts.size()));
 
         // Асинхронная обработка узлов
         List<CompletableFuture<HostEndDataShortB>> futures = selectedHosts.stream()
@@ -1383,24 +1390,34 @@ public class UtilsResolving {
 
         // Получаем список узлов и сортируем их
 
-        List<HostEndDataShortB> sortPriorityHost = Tournament.hostsG;
+        List<HostEndDataShortB> sortPriorityHost = Tournament.hostsG == null
+                ? Collections.emptyList()
+                : Tournament.hostsG;
 
         // Убираем исключенные адреса и удаляем дубли
         Set<String> processedAddresses = new HashSet<>();
         List<HostEndDataShortB> uniqueHosts = sortPriorityHost.stream()
                 .filter(host -> !BasisController.getExcludedAddresses().contains(host.getHost()))
                 .filter(host -> processedAddresses.add(host.getHost())) // фильтруем дубли
+                .limit(MAX_PROPAGATION_HOSTS)
                 .collect(Collectors.toList());
 
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        if (uniqueHosts.isEmpty()) {
+            return BasisController.getBlockchainSize() > 0 ? 1 : 0;
+        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(boundedPeerPoolSize(uniqueHosts.size()));
         List<CompletableFuture<Void>> futures = uniqueHosts.stream()
                 .map(host -> processNodeAsync(host, blocks, blocksCurrentSize, executor))
                 .collect(Collectors.toList());
 
         // Дожидаемся завершения всех операций
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        allFutures.join();
-        executor.shutdown();
+        try {
+            allFutures.orTimeout(12, TimeUnit.SECONDS).join();
+        } finally {
+            executor.shutdownNow();
+        }
         System.out.println(":BasisController: finish: sendAllBlocksToStorage: hash: " + blocks.get(0).getHashBlock());
         // Логика сравнения размеров блокчейна
         int bigsize = 0; // Возможно, вам нужно изменить способ определения значения bigsize
@@ -1436,6 +1453,13 @@ public class UtilsResolving {
                 System.out.println(":exception resolve_from_to_block: " + address + " e " + e.getMessage());
             }
         }, executor);
+    }
+
+    static int boundedPeerPoolSize(int hostCount) {
+        if (hostCount <= 0) {
+            return 1;
+        }
+        return Math.max(1, Math.min(hostCount, Math.min(Runtime.getRuntime().availableProcessors(), MAX_PROPAGATION_HOSTS)));
     }
 
 

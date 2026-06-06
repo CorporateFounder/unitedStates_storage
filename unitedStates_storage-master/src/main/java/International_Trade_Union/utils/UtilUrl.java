@@ -1,121 +1,78 @@
 package International_Trade_Union.utils;
 
 import International_Trade_Union.model.NodeState;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
 public class UtilUrl {
-    ////модифицированный ими код
-    public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
-        URLConnection conn = new URL(url).openConnection();
-        conn.setConnectTimeout(6000); // Таймаут соединения в миллисекундах
-        conn.setReadTimeout(6000); // Таймаут чтения в миллисекундах
+    public static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 3000;
+    public static final int DEFAULT_READ_TIMEOUT_MILLIS = 6000;
+    public static final int SILENT_TIMEOUT_MILLIS = 3000;
+    public static final int MAX_GET_RESPONSE_CHARS = 1_000_000;
 
+    public static String readJsonFromUrl_silent(String url) throws IOException, JSONException {
+        URLConnection conn = openConnection(url, SILENT_TIMEOUT_MILLIS, SILENT_TIMEOUT_MILLIS);
         try (InputStream is = conn.getInputStream();
              BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
-            String jsonText = readAll(rd);
-
-            return jsonText;
+            return readAll(rd, MAX_GET_RESPONSE_CHARS);
         } finally {
-            if (conn instanceof HttpURLConnection) {
-                ((HttpURLConnection) conn).disconnect();
-            }
+            disconnect(conn);
         }
     }
+
     public static String readJsonFromUrl(String url, int timeoutMillis) throws IOException, JSONException {
-        URL url1 = new URL(url);
-        URLConnection conn = url1.openConnection();
-        conn.setConnectTimeout(timeoutMillis); // Устанавливаем таймаут соединения
-        conn.setReadTimeout(timeoutMillis); // Устанавливаем таймаут чтения
-        InputStream is = conn.getInputStream();
-        BufferedReader rd = null;
-        try {
-            rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            String jsonText = readAll(rd);
-            return jsonText;
+        URLConnection conn = openConnection(url, timeoutMillis, timeoutMillis);
+        try (InputStream is = conn.getInputStream();
+             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
+            return readAll(rd, MAX_GET_RESPONSE_CHARS);
         } finally {
-            if (rd != null) {
-                try {
-                    rd.close();
-                } catch (IOException e) {
-                    e.printStackTrace(); // Логируем исключение
-                }
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace(); // Логируем исключение
-                }
-            }
-            if (conn instanceof HttpURLConnection) {
-                ((HttpURLConnection) conn).disconnect();
-            }
+            disconnect(conn);
         }
     }
 
     public static String readJsonFromUrl(String url) throws IOException, JSONException {
-        URL url1 = new URL(url);
-        URLConnection conn = url1.openConnection();
-        conn.setConnectTimeout(18000); // Устанавливаем таймаут соединения в 6 секунд
-        conn.setReadTimeout(18000); // Устанавливаем таймаут чтения в 6 секунд
-        InputStream is = conn.getInputStream();
-        BufferedReader rd = null;
-        try {
-            rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            String jsonText = readAll(rd);
-            return jsonText;
+        URLConnection conn = openConnection(url, DEFAULT_CONNECT_TIMEOUT_MILLIS, DEFAULT_READ_TIMEOUT_MILLIS);
+        try (InputStream is = conn.getInputStream();
+             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
+            return readAll(rd, MAX_GET_RESPONSE_CHARS);
         } finally {
-            if (rd != null) {
-                try {
-                    rd.close();
-                } catch (IOException e) {
-                    e.printStackTrace(); // Логируем исключение
-                }
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace(); // Логируем исключение
-                }
-            }
-            if (conn instanceof HttpURLConnection) {
-                ((HttpURLConnection) conn).disconnect();
-            }
-
+            disconnect(conn);
         }
     }
 
-
-    private static String readAll(Reader rd) throws IOException {
+    static String readAll(Reader rd, int maxChars) throws IOException {
         StringBuilder sb = new StringBuilder();
         int cp;
         while ((cp = rd.read()) != -1) {
+            if (sb.length() >= maxChars) {
+                throw new IOException("Response is too large");
+            }
             sb.append((char) cp);
         }
         return sb.toString();
     }
 
     public static String getObject(String jsonObject, String requstStr) throws IOException {
-        URL url = new URL(requstStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = openHttpConnection(
+                requstStr,
+                "POST",
+                DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                DEFAULT_READ_TIMEOUT_MILLIS
+        );
         try {
-
-
-            conn.setReadTimeout(6000);
-            conn.setConnectTimeout(6000);
-            conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoOutput(true);
-
 
             try (OutputStream outputStream = conn.getOutputStream()) {
                 byte[] input = jsonObject.getBytes("utf-8");
@@ -123,82 +80,86 @@ public class UtilUrl {
                 conn.getResponseCode();
             }
 
-
-            conn.connect();
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
                 StringBuilder response = new StringBuilder();
-                String responseLine = null;
+                String responseLine;
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
                 return response.toString();
-
             }
         } finally {
             conn.disconnect();
         }
-
     }
-
 
     public static int sendPost(String jsonObject, String requestStr) throws IOException {
-        int response;
+        HttpURLConnection conn = openHttpConnection(
+                requestStr,
+                "POST",
+                DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                DEFAULT_READ_TIMEOUT_MILLIS
+        );
+        try {
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
 
-        URL url = new URL(requestStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.connect();
-        conn.setReadTimeout(6000);
-        conn.setConnectTimeout(6000);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json; utf-8");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setDoOutput(true);
-
-        try (OutputStream outputStream = conn.getOutputStream()) {
-            byte[] input = jsonObject.getBytes("utf-8");
-            outputStream.write(input, 0, input.length);
-            response = conn.getResponseCode();
-        } catch (IOException e) {
-            // Обработка исключения при записи данных
-            e.printStackTrace();
-            // Можно добавить логирование или другую обработку
-            throw e; // Перебросить исключение выше
-        } finally {
-            conn.disconnect(); // Закрыть соединение независимо от исключения
-        }
-
-        return response;
-    }
-    public static int sendJsonToUrl(String requestStr, NodeState state, int timeoutMillis) throws IOException {
-        int response;
-
-        URL url = new URL(requestStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(timeoutMillis);
-        conn.setConnectTimeout(timeoutMillis);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json; utf-8");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setDoOutput(true);
-
-        String jsonObject = UtilsJson.objToStringJson(state);
-
-        try (OutputStream outputStream = conn.getOutputStream()) {
-            byte[] input = jsonObject.getBytes("utf-8");
-            outputStream.write(input, 0, input.length);
-            response = conn.getResponseCode();
+            try (OutputStream outputStream = conn.getOutputStream()) {
+                byte[] input = jsonObject.getBytes("utf-8");
+                outputStream.write(input, 0, input.length);
+                return conn.getResponseCode();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             throw e;
         } finally {
             conn.disconnect();
         }
-
-        return response;
     }
 
+    public static int sendJsonToUrl(String requestStr, NodeState state, int timeoutMillis) throws IOException {
+        HttpURLConnection conn = openHttpConnection(requestStr, "POST", timeoutMillis, timeoutMillis);
+        try {
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
 
+            String jsonObject = UtilsJson.objToStringJson(state);
+            try (OutputStream outputStream = conn.getOutputStream()) {
+                byte[] input = jsonObject.getBytes("utf-8");
+                outputStream.write(input, 0, input.length);
+                return conn.getResponseCode();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            conn.disconnect();
+        }
+    }
 
+    public static URLConnection openConnection(String requestUrl, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
+        URLConnection conn = new URL(requestUrl).openConnection();
+        conn.setConnectTimeout(connectTimeoutMillis);
+        conn.setReadTimeout(readTimeoutMillis);
+        return conn;
+    }
 
+    public static HttpURLConnection openHttpConnection(
+            String requestUrl,
+            String method,
+            int connectTimeoutMillis,
+            int readTimeoutMillis
+    ) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) openConnection(requestUrl, connectTimeoutMillis, readTimeoutMillis);
+        conn.setRequestMethod(method);
+        return conn;
+    }
+
+    private static void disconnect(URLConnection conn) {
+        if (conn instanceof HttpURLConnection) {
+            ((HttpURLConnection) conn).disconnect();
+        }
+    }
 }
