@@ -5,12 +5,17 @@ import com.example.website.citu.model.Block;
 import com.example.website.citu.model.DtoTransaction;
 import com.example.website.citu.model.StatusTransaction;
 import com.example.website.citu.utils.UtilsJson;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 final class ApiFallback {
     static final String UNAVAILABLE = "temporarily unavailable";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final TypeReference<List<Block>> BLOCK_LIST_TYPE = new TypeReference<>() {};
 
     private ApiFallback() {
     }
@@ -36,13 +41,29 @@ final class ApiFallback {
     }
 
     static Block block(String json) {
+        List<Block> blocks = blockResults(json);
+        return blocks.isEmpty() ? null : blocks.get(0);
+    }
+
+    static List<Block> blockResults(String json) {
         if (isBlank(json)) {
-            return null;
+            return Collections.emptyList();
         }
+        String trimmed = json.trim();
         try {
-            return (Block) UtilsJson.jsonToClass(json, Block.class);
+            if (trimmed.startsWith("[")) {
+                List<Block> blocks = MAPPER.readValue(trimmed, BLOCK_LIST_TYPE);
+                return blocks == null ? Collections.emptyList() : blocks;
+            }
+            Block block = MAPPER.readValue(trimmed, Block.class);
+            if (block == null) {
+                return Collections.emptyList();
+            }
+            List<Block> blocks = new ArrayList<>();
+            blocks.add(block);
+            return blocks;
         } catch (Exception e) {
-            return null;
+            return Collections.emptyList();
         }
     }
 

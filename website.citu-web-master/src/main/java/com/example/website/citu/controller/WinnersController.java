@@ -31,17 +31,40 @@ public class WinnersController {
     List<String> raitings = new ArrayList<>();
     private long lastUpdateTime = 0L;
 
-    @GetMapping("/winners")
+    @GetMapping({"/winners", "/allwinners", "/allWinners"})
     public String winners(Model model) throws JsonProcessingException {
         List<LiteVersionWiner> allWinersList = safeLiteWinners(WebController.getResult("/allwinners", "error allWiners"));
         model.addAttribute("allWiners", allWinersList);
         model.addAttribute("uniq", allWinersList.stream().filter(UtilsUse.distinctByKey(LiteVersionWiner::getAddress)).collect(Collectors.toList()).size());
         model.addAttribute("allWinnerCount", allWinersList.size());
 
-        List<LiteVersionWiner> bigRandomList = safeLiteWinners(WebController.getResult("/bigRandomWiner", "error bigRandom"));
+        List<LiteVersionWiner> bigRandomList = safeLiteWinners(WebController.getResult("/bigRandomWiner", "error bigRandomWiner"));
+        if (bigRandomList.isEmpty()) {
+            bigRandomList = safeLiteWinners(WebController.getResult("/bigRandomWinner", "error bigRandomWinner"));
+        }
         model.addAttribute("bigRandom", bigRandomList);
         model.addAttribute("bigRandomCount", bigRandomList.size());
+        model.addAttribute("title", "allwinners");
+        model.addAttribute("sourceEndpoint", "/allwinners");
+        model.addAttribute("status", allWinersList.isEmpty() && bigRandomList.isEmpty() ? ApiFallback.UNAVAILABLE : "");
 
+        return "winners";
+    }
+
+    @GetMapping({"/winnerList", "/winerList"})
+    public String winnerList(Model model) throws JsonProcessingException {
+        List<LiteVersionWiner> winnerList = safeLiteWinners(WebController.getResult("/winnerList", "error winnerList"));
+        if (winnerList.isEmpty()) {
+            winnerList = safeLiteWinners(WebController.getResult("/winerList", "error winerList"));
+        }
+        model.addAttribute("allWiners", winnerList);
+        model.addAttribute("uniq", winnerList.stream().filter(UtilsUse.distinctByKey(LiteVersionWiner::getAddress)).collect(Collectors.toList()).size());
+        model.addAttribute("allWinnerCount", winnerList.size());
+        model.addAttribute("bigRandom", new ArrayList<>());
+        model.addAttribute("bigRandomCount", 0);
+        model.addAttribute("title", "winnerList / winerList");
+        model.addAttribute("sourceEndpoint", "/winnerList or /winerList");
+        model.addAttribute("status", winnerList.isEmpty() ? ApiFallback.UNAVAILABLE : "");
         return "winners";
     }
 

@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 public class UtilUrl {
     public static final int CONNECT_TIMEOUT_MILLIS = 1500;
     public static final int READ_TIMEOUT_MILLIS = 3000;
+    public static final int EXPLORER_READ_TIMEOUT_MILLIS = 10000;
     private static final Logger LOGGER = Logger.getLogger(UtilUrl.class.getName());
     private static final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofMillis(CONNECT_TIMEOUT_MILLIS))
@@ -30,8 +31,12 @@ public class UtilUrl {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static String readJsonFromUrl(String url) throws IOException {
+        return readJsonFromUrl(url, READ_TIMEOUT_MILLIS);
+    }
+
+    public static String readJsonFromUrl(String url, int readTimeoutMillis) throws IOException {
         try {
-            HttpURLConnection connection = openConnection(url, "GET");
+            HttpURLConnection connection = openConnection(url, "GET", readTimeoutMillis);
             try (InputStream is = connection.getInputStream();
                  BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
                 return readAll(rd);
@@ -55,6 +60,10 @@ public class UtilUrl {
         return requestWithBody(jsonObject, requestStr, "POST");
     }
 
+    public static String getObjectLongRead(String jsonObject, String requestStr) throws IOException {
+        return requestWithBody(jsonObject, requestStr, "POST", EXPLORER_READ_TIMEOUT_MILLIS);
+    }
+
     public static String getObject(String jsonObject, String requestStr, String requestMethod) throws IOException {
         return requestWithBody(jsonObject, requestStr, requestMethod);
     }
@@ -64,8 +73,12 @@ public class UtilUrl {
     }
 
     public static String getObject(String url) throws IOException {
+        return getObject(url, READ_TIMEOUT_MILLIS);
+    }
+
+    public static String getObject(String url, int readTimeoutMillis) throws IOException {
         try {
-            HttpURLConnection conn = openConnection(url, "GET");
+            HttpURLConnection conn = openConnection(url, "GET", readTimeoutMillis);
             conn.connect();
 
             int responseCode = conn.getResponseCode();
@@ -126,9 +139,13 @@ public class UtilUrl {
     }
 
     public static HttpURLConnection openConnection(String requestUrl, String method) throws IOException {
+        return openConnection(requestUrl, method, READ_TIMEOUT_MILLIS);
+    }
+
+    public static HttpURLConnection openConnection(String requestUrl, String method, int readTimeoutMillis) throws IOException {
         URL url = new URL(requestUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(READ_TIMEOUT_MILLIS);
+        conn.setReadTimeout(readTimeoutMillis);
         conn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
         conn.setRequestMethod(method);
         conn.setUseCaches(false);
@@ -136,9 +153,13 @@ public class UtilUrl {
     }
 
     private static String requestWithBody(String jsonObject, String requestStr, String requestMethod) {
+        return requestWithBody(jsonObject, requestStr, requestMethod, READ_TIMEOUT_MILLIS);
+    }
+
+    private static String requestWithBody(String jsonObject, String requestStr, String requestMethod, int readTimeoutMillis) {
         String method = requestMethod == null || requestMethod.isBlank() ? "GET" : requestMethod;
         try {
-            HttpURLConnection conn = openConnection(requestStr, method);
+            HttpURLConnection conn = openConnection(requestStr, method, readTimeoutMillis);
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
 

@@ -39,12 +39,20 @@
 <section class="alert alert-info">
 <h1>Explorer</h1>
 <p>Inspect live legacy chain data by block index, transaction signature, or public address. These values do not activate V35.</p>
+<p><a href="/blocks">Blocks list</a> | <a href="/winners">Winners</a> | <a href="/winnerList">Winner list</a></p>
 <form action="/conductor" method="post">
     <input type="text" name="sign" placeholder="Enter index block or sign transaction" class="form-control"><br>
     <button type="submit" class="btn btn-success">Submit</button><br>
 </form>
+</section>
 
-
+<section class="alert alert-info">
+<h2 class="h4">Blocks range</h2>
+<form action="/blocks" method="post">
+    <input type="number" name="start" th:value="${start != null ? start : 0}" min="0" class="form-control"><br>
+    <input type="number" name="finish" th:value="${finish != null ? finish : 10}" min="0" class="form-control"><br>
+    <button type="submit" class="btn btn-success">Load blocks</button><br>
+</form>
 </section>
 <section class="alert alert-info">
 <h2 class="h4">Address history</h2>
@@ -71,6 +79,7 @@
     <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
     <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
     <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>
+    <h4 th:text="'miner rewards: ' + ${block?.minerRewards}"></h4>
     <h4 th:if="${block?.dtoTransactions != null}" th:text="'count transaction: ' + ${block?.dtoTransactions?.size}"></h4>
 
     <a th:if="${block?.index != null && block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/0'" class="btn btn-warning">Details</a>
@@ -99,6 +108,7 @@
     <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
     <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
     <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>
+    <h4 th:text="'miner rewards: ' + ${block?.minerRewards}"></h4>
     <h4 th:if="${block?.dtoTransactions != null}" th:text="'count transaction: ' + ${block?.dtoTransactions?.size}"></h4>
 
         <a th:if="${block?.index != null && block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/0'" class="btn btn-warning">Details</a>
@@ -109,17 +119,6 @@
     </div>
 
 </tr>
-
-<form th:if="${blocks != null && blocks.size() > 0}" th:action="@{/conductor}" method="post" class="alert alert-info mt-2">
-    <div th:if="${blocks[0].index != size}">
-        <!-- Передаём индекс последнего блока текущей страницы для перелистывания "Next" -->
-        <button type="submit" name="page" th:value="'next:' + ${blocks[blocks.size() - 1].index}">Next Page</button>
-    </div>
-    <div th:if="${blocks[blocks.size() - 1].index != 1}">
-        <!-- Передаём индекс первого блока текущей страницы для перелистывания "Prev" -->
-        <button type="submit" name="page" th:value="'prev:' + ${blocks[0].index}">Prev Page</button>
-    </div>
-</form>
 
 <footer th:insert="blocks/footer :: footer"></footer>
 </main>

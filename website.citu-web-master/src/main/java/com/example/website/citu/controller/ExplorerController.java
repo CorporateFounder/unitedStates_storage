@@ -47,16 +47,46 @@ public class ExplorerController {
 
     @GetMapping("/conductor")
     public String conductors(Model model, HttpSession session) throws IOException {
-        List<Block> blocks = (List<Block>) session.getAttribute("blocks");
-        if (blocks == null || blocks.isEmpty()) {
-            blocks = loadRecentBlocks();
-            if (blocks.isEmpty()) {
-                model.addAttribute("status", ApiFallback.UNAVAILABLE);
-            } else {
-                session.setAttribute("blocks", blocks);
-            }
-        }
+        model.addAttribute("blocks", Collections.emptyList());
+        model.addAttribute("status", "");
+        return "conductor";
+    }
+
+    @GetMapping({"/blocks", "/conductor/blocks"})
+    public String blocks(
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "10") int finish,
+            Model model) throws IOException {
+        List<Block> blocks = loadBlocks(start, finish);
         model.addAttribute("blocks", blocks);
+        model.addAttribute("start", Math.max(0, start));
+        model.addAttribute("finish", Math.max(Math.max(0, start), finish));
+        model.addAttribute("status", blocks.isEmpty() ? ApiFallback.UNAVAILABLE : "");
+        return "conductor";
+    }
+
+    @PostMapping("/blocks")
+    public String postBlocks(
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "10") int finish,
+            Model model) throws IOException {
+        return blocks(start, finish, model);
+    }
+
+    @PostMapping("/conductor/blocks")
+    public String postConductorBlocks(
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "10") int finish,
+            Model model) throws IOException {
+        return blocks(start, finish, model);
+    }
+
+    @GetMapping("/conductor/lookup")
+    public String lookup(@RequestParam(value = "index", defaultValue = "1") String index, Model model) throws IOException {
+        List<Block> blocks = findBlocksByIndex(index);
+        model.addAttribute("block", blocks.isEmpty() ? null : blocks.get(0));
+        model.addAttribute("blocks", blocks);
+        model.addAttribute("status", blocks.isEmpty() ? "not found" : "");
         return "conductor";
     }
 
@@ -69,13 +99,6 @@ public class ExplorerController {
         String info = signRequest.getSign();
         if (info == null || info.isEmpty()) {
             info = "0";
-        }
-
-        List<Block> blocks = loadPagedBlocks(page);
-        session.setAttribute("blocks", blocks);
-        redirectAttrs.addFlashAttribute("blocks", blocks);
-        if (blocks.isEmpty()) {
-            redirectAttrs.addFlashAttribute("status", ApiFallback.UNAVAILABLE);
         }
 
         if (isNumeric(info)) {
@@ -151,60 +174,33 @@ public class ExplorerController {
         return "redirect:/detail-laws";
     }
 
-    private List<Block> loadRecentBlocks() throws IOException {
-        return loadBlocks(null);
-    }
-
-    private List<Block> loadPagedBlocks(String page) throws IOException {
-        return loadBlocks(page);
-    }
-
-    private List<Block> loadBlocks(String page) throws IOException {
-        int different = 10;
-        String sizeStr = UtilUrl.readJsonFromUrl(address + "/size");
-        int size = ApiFallback.intValue(sizeStr, 0);
-        if (size <= 0) {
-            return Collections.emptyList();
+    private List<Block> loadBlocks(int start, int finish) throws IOException {
+        start = Math.max(0, start);
+        finish = Math.max(start, finish);
+        if (finish - start > 50) {
+            finish = start + 50;
         }
-
-        int start = size - different;
-        int end = size - 1;
-        if (page != null) {
-            String[] str = page.split(":");
-            if (str.length == 2) {
-                String direction = str[0];
-                int index = ApiFallback.intValue(str[1], 0);
-                if (direction.equals("next")) {
-                    start = index - different;
-                    end = index - 1;
-                } else if (direction.equals("prev")) {
-                    start = index + 1;
-                    end = index + different;
-                }
-                if (start < 0) {
-                    start = 0;
-                }
-                if (end >= size) {
-                    end = size - 1;
-                }
-            }
-        }
-
-        String subBlockchainJson = UtilsJson.objToStringJson(new SubBlockchainEntity(start, end));
-        String jsonList = UtilUrl.getObject(subBlockchainJson, address + "/sub-blocks");
+        String subBlockchainJson = UtilsJson.objToStringJson(new SubBlockchainEntity(start, finish));
+        String jsonList = UtilUrl.getObjectLongRead(subBlockchainJson, address + "/sub-blocks");
         return ApiFallback.blocks(jsonList).stream()
                 .sorted(Comparator.comparing(Block::getIndex).reversed())
                 .collect(Collectors.toList());
     }
 
     private void addBlockSearchResult(String info, RedirectAttributes redirectAttrs) throws IOException {
-        String text = UtilUrl.getObject(address + "/conductorBlock?index=" + info);
-        Block block = ApiFallback.block(text);
+        List<Block> blocks = findBlocksByIndex(info);
+        Block block = blocks.isEmpty() ? null : blocks.get(0);
         if ("0".equals(info)) {
             redirectAttrs.addFlashAttribute("text", "The peculiarity of this blockchain is that the genesis block also has an index of 1, as does the block following it. This is normal, the entire block chain is correct and each block is unique, with unique content. Thus, in the blockchain, two blocks have identical indices, but different contents. This is simply a feature of this blockchain.\n");
         }
         redirectAttrs.addFlashAttribute("block", block);
-        redirectAttrs.addFlashAttribute("status", block == null ? ApiFallback.UNAVAILABLE : "");
+        redirectAttrs.addFlashAttribute("blocks", blocks);
+        redirectAttrs.addFlashAttribute("status", block == null ? "not found" : "");
+    }
+
+    private List<Block> findBlocksByIndex(String info) throws IOException {
+        String text = UtilUrl.getObject(address + "/conductorBlock?index=" + info, UtilUrl.EXPLORER_READ_TIMEOUT_MILLIS);
+        return ApiFallback.blockResults(text);
     }
 
     private void addTransactionSearchResult(SignRequest signRequest, RedirectAttributes redirectAttrs) throws IOException {

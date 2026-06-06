@@ -37,7 +37,7 @@ class WebsiteApiFallbackRenderingTest {
     void conductorRendersWhenNodeApiFails() throws Exception {
         mockMvc.perform(get("/conductor"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Explorer")));
     }
 
     @Test
@@ -52,5 +52,37 @@ class WebsiteApiFallbackRenderingTest {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+    }
+
+    @Test
+    void senderRendersWhenNodeApiFails() throws Exception {
+        mockMvc.perform(get("/sender").param("pubkey", "test-public-key").param("action", "/send"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("test-public-key")));
+    }
+
+    @Test
+    void allwinnersRendersFallbackWhenNodeApiFails() throws Exception {
+        mockMvc.perform(get("/allwinners"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+    }
+
+    @Test
+    void winnerListAliasesRenderFallbackWhenNodeApiFails() throws Exception {
+        mockMvc.perform(get("/winnerList"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+
+        mockMvc.perform(get("/winerList"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("temporarily unavailable")));
+    }
+
+    @Test
+    void v35RendersWhenNodeApiFails() throws Exception {
+        mockMvc.perform(get("/v35"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("V35")));
     }
 }

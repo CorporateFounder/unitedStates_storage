@@ -12,29 +12,32 @@
 
 <div class="container mt-5">
     <h5  th:text="${title}"></h5>
+    <p><a href="/conductor">Explorer</a> | <a href="/blocks">Blocks list</a> | <a href="/allwinners">All winners</a> | <a href="/winnerList">Winner list</a> | <a href="/winerList">Winer list</a></p>
+    <h5 th:if="${sourceEndpoint != null}" th:text="'source endpoint: ' + ${sourceEndpoint}"></h5>
+    <h5 th:if="${status != null && status != ''}" th:text="${status}"></h5>
     <h5 th:text="'all winners: ' + ${allWinnerCount}"/>
     <h5 th:text="'all uniq address: ' + ${uniq}"/>
     <div th:each="el : ${allWiners}" class="alert alert-info mt-2">
-        <h5 th:text="'index: '+${el.index}"/>
-        <h5 th:text="'miner address: '+${el.address}"/>
-        <h5 th:text="'hash block: '+${el.hash}"/>
-        <h5 th:text="'count transactions in block: '+${el.countTransactions}"/>
-        <h5 th:text="'staking miner: '+${el.staking}"/>
-        <h5 th:text="'big random number in block: '+${el.bigRandom}"/>
-        <h5 th:text="'block difficult: '+${el.diff}"/>
+        <h5 th:text="'index: '+${el?.index}"/>
+        <h5 th:text="'miner address: '+${el?.address}"/>
+        <h5 th:text="'hash block: '+${el?.hash}"/>
+        <h5 th:text="'count transactions in block: '+${el?.countTransactions}"/>
+        <h5 th:text="'staking miner: '+${el?.staking}"/>
+        <h5 th:text="'big random number in block: '+${el?.bigRandom}"/>
+        <h5 th:text="'block difficult: '+${el?.diff}"/>
     </div>
 
 
 
     <h5 class="container mt-5" th:text="'all big random winners: ' + ${bigRandomCount}"/>
     <div th:each="el : ${bigRandom}" class="alert alert-info mt-2">
-        <h5 th:text="'index: '+${el.index}"/>
-        <h5 th:text="'miner address: '+${el.address}"/>
-        <h5 th:text="'hash block: '+${el.hash}"/>
-        <h5 th:text="'count transactions in block: '+${el.countTransactions}"/>
-        <h5 th:text="'staking miner: '+${el.staking}"/>
-        <h5 th:text="'big random number in block: '+${el.bigRandom}"/>
-        <h5 th:text="'block difficult: '+${el.diff}"/>
+        <h5 th:text="'index: '+${el?.index}"/>
+        <h5 th:text="'miner address: '+${el?.address}"/>
+        <h5 th:text="'hash block: '+${el?.hash}"/>
+        <h5 th:text="'count transactions in block: '+${el?.countTransactions}"/>
+        <h5 th:text="'staking miner: '+${el?.staking}"/>
+        <h5 th:text="'big random number in block: '+${el?.bigRandom}"/>
+        <h5 th:text="'block difficult: '+${el?.diff}"/>
     </div>
 </div>
 
