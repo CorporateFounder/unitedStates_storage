@@ -3,6 +3,7 @@ package com.example.website.citu.config;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.util.regex.Pattern;
 
 @Aspect
 @Component
+@ConditionalOnProperty(prefix = "citu.number-formatting", name = "enabled", havingValue = "true")
 public class NumberFormattingAspect {
     private static final int SCALE = 10;
     private static final Pattern CLEAN_NUMERIC_STRING = Pattern.compile("-?(?:0|[1-9]\\d*)(?:\\.\\d+)?");
@@ -32,7 +34,12 @@ public class NumberFormattingAspect {
         if (!enabled) {
             return result;
         }
-        return formatObject(result);
+        try {
+            return formatObject(result);
+        } catch (Exception e) {
+            System.out.println("NumberFormattingAspect skipped formatting: " + e.getClass().getSimpleName());
+            return result;
+        }
     }
 
 

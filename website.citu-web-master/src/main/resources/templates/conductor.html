@@ -110,7 +110,7 @@
 
 </tr>
 
-<form th:if="${blocks != null}" th:action="@{/conductor}" method="post" class="alert alert-info mt-2">
+<form th:if="${blocks != null && blocks.size() > 0}" th:action="@{/conductor}" method="post" class="alert alert-info mt-2">
     <div th:if="${blocks[0].index != size}">
         <!-- Передаём индекс последнего блока текущей страницы для перелистывания "Next" -->
         <button type="submit" name="page" th:value="'next:' + ${blocks[blocks.size() - 1].index}">Next Page</button>

@@ -22,17 +22,17 @@ public class VotingController {
         String url =  "http://localhost:8082/current-laws-body";
 
         String str = UtilUrl.readJsonFromUrl(address + "/size");
-        if(!str.isBlank()){
-            long size = Integer.valueOf(str);
+        if(!ApiFallback.isBlank(str)){
+            long size = ApiFallback.longValue(str, 0);
             String json = UtilUrl.readJsonFromUrl(url);
             if(size - prevSize > 432){
                 prevSize = size;
-                currentLawVotesEndBalances =UtilsJson.jsonToCurrentVoting(json);
+                currentLawVotesEndBalances = safeCurrentVoting(json);
 
             }
             if(currentLawVotesEndBalances.isEmpty()){
                 json = UtilUrl.readJsonFromUrl(url);
-                currentLawVotesEndBalances =  UtilsJson.jsonToCurrentVoting(json);
+                currentLawVotesEndBalances = safeCurrentVoting(json);
                 prevSize = size;
 
             }
@@ -40,5 +40,17 @@ public class VotingController {
         model.addAttribute("currentLaw", currentLawVotesEndBalances);
         System.out.println("prevSize in voting: " + prevSize);
         return "voting";
+    }
+
+    private List<CurrentLawVotesEndBalance> safeCurrentVoting(String json) {
+        if (ApiFallback.isBlank(json)) {
+            return new ArrayList<>();
+        }
+        try {
+            List<CurrentLawVotesEndBalance> result = UtilsJson.jsonToCurrentVoting(json);
+            return result == null ? new ArrayList<>() : result;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 }

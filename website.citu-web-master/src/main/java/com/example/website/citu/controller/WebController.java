@@ -35,7 +35,8 @@ public class WebController {
 
     public static String getResult(String url, String errorText) {
         try {
-            return UtilUrl.readJsonFromUrl(address + url);
+            String result = UtilUrl.readJsonFromUrl(address + url);
+            return ApiFallback.isBlank(result) ? ApiFallback.UNAVAILABLE : result;
         } catch (NoRouteToHostException e) {
             System.out.println(errorText);
         } catch (SocketException e) {
@@ -43,7 +44,7 @@ public class WebController {
         } catch (IOException e) {
             System.out.println(errorText + ": " + e.getClass().getSimpleName());
         }
-        return "temporarily unavailable";
+        return ApiFallback.UNAVAILABLE;
     }
 
     private String uriBase = "http://localhost:8080"; // change this to your server address
@@ -61,19 +62,20 @@ public class WebController {
         InfoDificultyBlockchain infoDificultyBlockchain = new InfoDificultyBlockchain(-1, -1);
         String difficultOneBlock = ":";
         String difficultAllBlockchain = ":";
+        String json = null;
         try {
-            String json = UtilUrl.readJsonFromUrl(address + "/difficultyBlockchain");
-            infoDificultyBlockchain = UtilsJson.jsonToInfoDifficulty(json);
+            json = UtilUrl.readJsonFromUrl(address + "/difficultyBlockchain");
         } catch (IOException e) {
             System.out.println("home page difficulty unavailable: " + e.getClass().getSimpleName());
         }
+        infoDificultyBlockchain = ApiFallback.difficulty(json);
 
         String startReduce = getResult("/v28Index", "you can't give start index global server");
 
         String cleanedValue = "";
-        String totalDollars = getResult("/totalDollars", "you can't give total dollars global server");
-        cleanedValue = totalDollars.replaceAll("\"", "");
-        totalDollars = cleanedValue;
+        String totalDollarsJson = getResult("/totalDollars", "you can't give total dollars global server");
+        cleanedValue = totalDollarsJson.replaceAll("\"", "");
+        double totalDollars = safeDouble(cleanedValue, 0);
         String totalAccounts = getResult("/allAccounts", "you can't give total accounts global server");
         String multiplier = getResult("/multiplier", "you can't give multiplier global server");
         String daysReduce = getResult("/dayReduce", "you can't give day reduce global server");
@@ -161,7 +163,7 @@ public class WebController {
         try {
             String urlPrev = address + "/conductorBlock?index=" + (size - 1);
             String prevJson = UtilUrl.getObject(urlPrev);
-            return (Block) UtilsJson.jsonToClass(prevJson, Block.class);
+            return ApiFallback.block(prevJson);
         } catch (Exception e) {
             System.out.println("home page previous block unavailable: " + e.getClass().getSimpleName());
             return null;

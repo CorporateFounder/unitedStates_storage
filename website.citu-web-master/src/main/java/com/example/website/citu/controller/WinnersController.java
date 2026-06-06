@@ -1,7 +1,6 @@
 package com.example.website.citu.controller;
 
 import com.example.website.citu.entity.Account;
-import com.example.website.citu.entity.EntityBlock;
 import com.example.website.citu.entity.SubBlockchainEntity;
 import com.example.website.citu.model.Block;
 import com.example.website.citu.model.LiteVersionWiner;
@@ -10,7 +9,6 @@ import com.example.website.citu.utils.UtilsJson;
 import com.example.website.citu.utils.UtilsTime;
 import com.example.website.citu.utils.UtilsUse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.bouncycastle.math.raw.Mod;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,95 +33,67 @@ public class WinnersController {
 
     @GetMapping("/winners")
     public String winners(Model model) throws JsonProcessingException {
-        String allWiners = WebController.getResult("/allwinners", "error allWiners");
-        List<LiteVersionWiner> allWinersList = UtilsJson.jsonToLiteVersionWiners(allWiners);
+        List<LiteVersionWiner> allWinersList = safeLiteWinners(WebController.getResult("/allwinners", "error allWiners"));
         model.addAttribute("allWiners", allWinersList);
-
-        int uniq = allWinersList.stream().filter(UtilsUse.distinctByKey(LiteVersionWiner::getAddress)).collect(Collectors.toList()).size();
-        model.addAttribute("uniq", uniq);
+        model.addAttribute("uniq", allWinersList.stream().filter(UtilsUse.distinctByKey(LiteVersionWiner::getAddress)).collect(Collectors.toList()).size());
         model.addAttribute("allWinnerCount", allWinersList.size());
 
-        String bigRandom = WebController.getResult("/bigRandomWiner", "error bigRandom");
-        List<LiteVersionWiner> bigRandomList = UtilsJson.jsonToLiteVersionWiners(bigRandom);
+        List<LiteVersionWiner> bigRandomList = safeLiteWinners(WebController.getResult("/bigRandomWiner", "error bigRandom"));
         model.addAttribute("bigRandom", bigRandomList);
         model.addAttribute("bigRandomCount", bigRandomList.size());
 
         return "winners";
     }
 
-
-
     @GetMapping("/daily_rating")
-    public String raitings(Model model){
-        Integer size = -1;
+    public String raitings(Model model) {
+        int size = -1;
         try {
-            String sizeStr = UtilUrl.readJsonFromUrl(address + "/size");
-            size = Integer.valueOf(sizeStr);
-        }catch (Exception e){
-            e.printStackTrace();
+            size = ApiFallback.intValue(UtilUrl.readJsonFromUrl(address + "/size"), -1);
+        } catch (Exception e) {
+            System.out.println("daily rating size unavailable: " + e.getClass().getSimpleName());
         }
 
         long currentTime = UtilsTime.getUniversalTimestamp();
         long timeElapsed = UtilsTime.differentMillSecondTime(lastUpdateTime, currentTime);
 
-        // Проверка, нужно ли обновить рейтинг
-        if(raitings.isEmpty() || timeElapsed >= 86400000L ){
-            try{
+        if (raitings.isEmpty() || timeElapsed >= 86400000L) {
+            try {
                 raitings = percent();
-                lastUpdateTime = currentTime; // обновляем время последнего обновления
-            }catch (Exception e){
-                e.printStackTrace();
+                lastUpdateTime = currentTime;
+            } catch (Exception e) {
+                System.out.println("daily rating unavailable: " + e.getClass().getSimpleName());
             }
         }
 
-        // Вычисление времени до следующего обновления
-        long timeRemaining = (86400000L - timeElapsed) / 1000; // Оставшееся время до следующего обновления в секундах
-
+        long timeRemaining = (86400000L - timeElapsed) / 1000;
         model.addAttribute("time", timeRemaining);
         model.addAttribute("title", "daily_rating");
-        model.addAttribute("day", (size/576));
+        model.addAttribute("day", size <= 0 ? 0 : (size / 576));
         model.addAttribute("raitings", raitings);
         return "daily_rating";
     }
-
-
 
     public List<String> percent() throws IOException {
         List<String> result = new ArrayList<>();
 
         try {
-            // Получить размер блокчейна
-            String sizeStr = UtilUrl.readJsonFromUrl(address + "/size");
-            if (sizeStr == null || sizeStr.isBlank()) {
-                throw new IOException("Failed to retrieve blockchain size.");
+            int size = ApiFallback.intValue(UtilUrl.readJsonFromUrl(address + "/size"), 0);
+            if (size <= 0) {
+                return result;
             }
 
-            Integer size = Integer.valueOf(sizeStr);
-
-            // Создать запрос на подцепочку
-            SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(size - 576, size);
+            SubBlockchainEntity subBlockchainEntity = new SubBlockchainEntity(Math.max(0, size - 576), size);
             String subBlockchainJson = UtilsJson.objToStringJson(subBlockchainEntity);
-
-            // Получить подцепочку
-            String str = UtilUrl.getObject(subBlockchainJson, address + "/sub-blocks");
-            if (str == null || str.isBlank()) {
-                System.out.println("Subblocks response is empty.");
+            List<Block> subBlocks = ApiFallback.blockList(UtilUrl.getObject(subBlockchainJson, address + "/sub-blocks"));
+            if (subBlocks.isEmpty()) {
                 return result;
             }
 
-            // Преобразовать JSON в список блоков
-            List<Block> subBlocks = UtilsJson.jsonToListBLock(str);
-            if (subBlocks == null || subBlocks.isEmpty()) {
-                System.out.println("No blocks found in sub-blockchain.");
-                return result;
-            }
-
-            // Карты для подсчета
             Map<String, Integer> addressCountMap = new HashMap<>();
             Map<String, Long> addressComplexityMap = new HashMap<>();
             Map<String, Map<Long, Integer>> complexityFrequencyMap = new HashMap<>();
 
-            // Обработка блоков
             for (Block block : subBlocks) {
                 String minerAddress = block.getMinerAddress();
                 long blockComplexity = block.getHashCompexity();
@@ -138,15 +108,10 @@ public class WinnersController {
 
             int totalBlocks = subBlocks.size();
             List<Map.Entry<String, Integer>> entryList = new ArrayList<>(addressCountMap.entrySet());
+            entryList.sort((e1, e2) -> Double.compare(
+                    (e2.getValue() * 100.0) / totalBlocks,
+                    (e1.getValue() * 100.0) / totalBlocks));
 
-            // Сортировка по проценту
-            entryList.sort((e1, e2) -> {
-                double percentage1 = (e1.getValue() * 100.0) / totalBlocks;
-                double percentage2 = (e2.getValue() * 100.0) / totalBlocks;
-                return Double.compare(percentage2, percentage1);
-            });
-
-            // Формирование результата
             for (Map.Entry<String, Integer> entry : entryList) {
                 String pubkey = entry.getKey();
                 int count = entry.getValue();
@@ -163,10 +128,8 @@ public class WinnersController {
                     }
                 }
 
-                // Получение данных аккаунта
                 String json = UtilUrl.readJsonFromUrl(address + "/account?address=" + URLEncoder.encode(pubkey, StandardCharsets.UTF_8));
-                if (json == null || json.isBlank()) {
-                    System.out.println("Account data not found for address: " + pubkey);
+                if (ApiFallback.isBlank(json)) {
                     continue;
                 }
 
@@ -174,14 +137,22 @@ public class WinnersController {
                 long staking = UtilsUse.calculateScore(account.getDigitalStakingBalance(), BigDecimal.valueOf(1));
                 result.add(String.format("pubkey: %s - blocks: %d - percent: %.2f%% - difficult: %d (moda: %d) - points for staking: %d", pubkey, count, percentage, totalComplexity, modeComplexity, staking));
             }
-
         } catch (Exception e) {
-            System.err.println("Error in percent method: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error in percent method: " + e.getClass().getSimpleName());
         }
 
         return result;
     }
 
-
+    private List<LiteVersionWiner> safeLiteWinners(String json) {
+        if (ApiFallback.isBlank(json)) {
+            return new ArrayList<>();
+        }
+        try {
+            List<LiteVersionWiner> result = UtilsJson.jsonToLiteVersionWiners(json);
+            return result == null ? new ArrayList<>() : result;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
 }
