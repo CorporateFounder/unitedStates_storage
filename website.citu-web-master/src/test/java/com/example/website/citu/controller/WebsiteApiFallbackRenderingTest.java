@@ -37,7 +37,20 @@ class WebsiteApiFallbackRenderingTest {
     void conductorRendersWhenNodeApiFails() throws Exception {
         mockMvc.perform(get("/conductor"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Explorer")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Explorer")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("latest blocks temporarily unavailable")));
+    }
+
+    @Test
+    void detailRoutesRenderFriendlyFallbackWhenNodeApiFails() throws Exception {
+        mockMvc.perform(get("/detail-transactions"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Select a block or transaction from Explorer.")));
+
+        mockMvc.perform(get("/detail-transactions/999999"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Block not found or temporarily unavailable.")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(">null<"))));
     }
 
     @Test

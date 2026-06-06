@@ -65,16 +65,16 @@
         <div th:if="${blocks != null && blocks.size() > 0}" class="citu-block-grid">
             <article th:each="block : ${blocks}" class="citu-block-card">
                 <div class="citu-transaction-row"><span>Index</span><strong th:text="${block?.index}">0</strong></div>
-                <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${block?.hashBlock}">hash</strong></div>
-                <div class="citu-transaction-row"><span>Previous hash</span><strong th:text="${block?.previousHash}">previous</strong></div>
-                <div class="citu-transaction-row"><span>Miner address</span><strong th:text="${block?.minerAddress}">miner</strong></div>
-                <div class="citu-transaction-row"><span>Founder address</span><strong th:text="${block?.founderAddress}">founder</strong></div>
+                <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${block?.hashBlock == null || block?.hashBlock == '' ? 'not available' : block?.hashBlock}">hash</strong></div>
+                <div class="citu-transaction-row"><span>Previous hash</span><strong th:text="${block?.previousHash == null || block?.previousHash == '' ? 'not available' : block?.previousHash}">previous</strong></div>
+                <div class="citu-transaction-row"><span>Miner address</span><strong th:text="${block?.minerAddress == null || block?.minerAddress == '' ? 'not available' : block?.minerAddress}">miner</strong></div>
+                <div class="citu-transaction-row"><span>Founder address</span><strong th:text="${block?.founderAddress == null || block?.founderAddress == '' ? 'not available' : block?.founderAddress}">founder</strong></div>
                 <div class="citu-transaction-row"><span>Random proof</span><strong th:text="${block?.randomNumberProof}">0</strong></div>
                 <div class="citu-transaction-row"><span>Miner rewards</span><strong th:text="${block?.minerRewards}">0</strong></div>
                 <div class="citu-transaction-row"><span>Hash complexity</span><strong th:text="${block?.hashCompexity}">0</strong></div>
-                <div class="citu-transaction-row"><span>Timestamp</span><strong th:text="${block?.timestamp}">time</strong></div>
+                <div class="citu-transaction-row"><span>Timestamp</span><strong th:text="${block?.timestamp == null ? 'not available' : block?.timestamp}">time</strong></div>
                 <div class="citu-transaction-row"><span>Transactions</span><strong th:text="${block?.dtoTransactions == null ? 0 : block?.dtoTransactions?.size}">0</strong></div>
-                <a th:if="${block != null}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
+                <a th:if="${block?.index != null}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
             </article>
         </div>
     </section>

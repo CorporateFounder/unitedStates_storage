@@ -47,7 +47,7 @@ public class ExplorerController {
 
     @GetMapping("/conductor")
     public String conductors(Model model, HttpSession session) throws IOException {
-        model.addAttribute("blocks", Collections.emptyList());
+        populateConductorBase(model);
         model.addAttribute("status", "");
         return "conductor";
     }
@@ -79,10 +79,12 @@ public class ExplorerController {
 
     @GetMapping("/conductor/lookup")
     public String lookup(@RequestParam(value = "index", defaultValue = "1") String index, Model model) throws IOException {
+        populateConductorBase(model);
         List<Block> blocks = findBlocksByIndex(index);
         model.addAttribute("block", blocks.isEmpty() ? null : blocks.get(0));
         model.addAttribute("blocks", blocks);
         model.addAttribute("status", blocks.isEmpty() ? "not found" : "");
+        model.addAttribute("duplicateNote", blocks.size() > 1 ? "Duplicate block indexes can exist; all matching blocks are shown below." : "");
         return "conductor";
     }
 
@@ -113,20 +115,31 @@ public class ExplorerController {
         return str.matches("[-+]?\\d+(\\.\\d+)?");
     }
 
-    @GetMapping("detail-transactions")
+    @GetMapping({"detail-transactions", "/detail", "/details", "/detail-block"})
     public String details(Model model) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        model.addAttribute("title", "Block details");
+        model.addAttribute("message", "Select a block or transaction from Explorer.");
+        model.addAttribute("blocks", Collections.emptyList());
+        model.addAttribute("transactions", Collections.emptyList());
+        model.addAttribute("status", "");
         return "detail-transactions";
     }
 
-    @GetMapping("/detail-transactions/{index}")
-    public String detailTransactionIndex(@PathVariable(value = "index") String index, RedirectAttributes redirectAttrs) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
-        String text = UtilUrl.getObject(address + "/conductorBlock?index=" + index);
-        Block block = ApiFallback.block(text);
+    @GetMapping({"/detail-transactions/{index}", "/detail/{index}", "/details/{index}", "/detail-block/{index}"})
+    public String detailTransactionIndex(@PathVariable(value = "index") String index, Model model) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        List<Block> blocks = isNumeric(index) ? findBlocksByIndex(index) : Collections.emptyList();
+        Block block = blocks.isEmpty() ? null : blocks.get(0);
         List<DtoTransaction> transactions = block == null || block.getDtoTransactions() == null
                 ? Collections.emptyList()
                 : block.getDtoTransactions();
-        redirectAttrs.addFlashAttribute("transactions", transactions);
-        return "redirect:/detail-transactions";
+        model.addAttribute("title", "Block details");
+        model.addAttribute("message", block == null ? "Block not found or temporarily unavailable." : "");
+        model.addAttribute("block", block);
+        model.addAttribute("blocks", blocks);
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("status", block == null ? "not found" : "");
+        model.addAttribute("duplicateNote", blocks.size() > 1 ? "Duplicate block indexes can exist; all matching blocks are shown below." : "");
+        return "detail-transactions";
     }
 
     @GetMapping("detail-laws")
@@ -193,6 +206,25 @@ public class ExplorerController {
         model.addAttribute("currentSize", range.currentSize());
         model.addAttribute("status", range.status().isEmpty() && blocks.isEmpty() ? ApiFallback.UNAVAILABLE : range.status());
         return "blocks";
+    }
+
+    private void populateConductorBase(Model model) throws IOException {
+        Range range;
+        List<Block> recentBlocks;
+        try {
+            range = latestRange();
+            recentBlocks = loadBlocks(range.start(), range.finish());
+        } catch (Exception e) {
+            range = new Range(0, 10, -1, "latest blocks temporarily unavailable");
+            recentBlocks = Collections.emptyList();
+        }
+        model.addAttribute("title", "Explorer");
+        model.addAttribute("recentBlocks", recentBlocks);
+        model.addAttribute("recentStart", range.start());
+        model.addAttribute("recentFinish", range.finish());
+        model.addAttribute("recentBlockCount", recentBlocks.size());
+        model.addAttribute("recentStatus", recentBlocks.isEmpty() || !range.status().isEmpty() ? "latest blocks temporarily unavailable" : "");
+        model.addAttribute("blocks", Collections.emptyList());
     }
 
     private Range latestRange() throws IOException {

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${title}">Transaction details</title>
+    <title th:text="${title}">Block details</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
@@ -9,18 +9,76 @@
 <body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 <main class="container py-4">
-    <p class="v35-kicker">Explorer</p>
-    <h1 th:text="${title}">Transaction details</h1>
-    <div th:each="el : ${transactions}" class="citu-transaction-card">
-        <div th:if="${el?.sender != null}" class="citu-transaction-row"><span>Sender</span><strong th:text="${el?.sender}"></strong></div>
-        <div th:if="${el?.customer != null}" class="citu-transaction-row"><span>Customer</span><strong th:text="${el?.customer}"></strong></div>
-        <div th:if="${el?.voteEnum != null}" class="citu-transaction-row"><span>Vote type</span><strong th:text="${el?.voteEnum}"></strong></div>
-        <div th:if="${el?.signStr != null}" class="citu-transaction-row"><span>Signature</span><strong th:text="${el?.signStr}"></strong></div>
-        <div th:if="${el?.bonusForMiner != null}" class="citu-transaction-row"><span>Miner bonus</span><strong th:text="${el?.bonusForMiner}"></strong></div>
-        <div th:if="${el?.digitalDollar != null}" class="citu-transaction-row"><span>GOLD amount</span><strong th:text="${#numbers.formatDecimal(el?.digitalDollar, 1, 'COMMA', 16, 'POINT')}"></strong></div>
-        <div th:if="${el?.digitalStockBalance != null}" class="citu-transaction-row"><span>Stock amount</span><strong th:text="${#numbers.formatDecimal(el?.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}"></strong></div>
-        <a th:if="${el?.signStr != null && el?.laws?.packetLawName != null && el?.laws?.packetLawName != ''}" th:href="'/detail-laws/' + ${el?.hex}" class="btn btn-warning">Details</a>
-    </div>
+    <section class="citu-section mb-4">
+        <p class="v35-kicker">Explorer</p>
+        <h1 th:text="${title}">Block details</h1>
+        <p>
+            <a class="btn btn-primary" href="/conductor">Explorer</a>
+            <a class="btn btn-primary" href="/blocks">Blocks</a>
+        </p>
+    </section>
+
+    <section th:if="${message != null && message != ''}" class="citu-section mb-4">
+        <h2 class="h4" th:text="${message}">Select a block or transaction from Explorer.</h2>
+    </section>
+
+    <section th:if="${duplicateNote != null && duplicateNote != ''}" class="citu-section mb-4">
+        <p th:text="${duplicateNote}">Duplicate block indexes can exist.</p>
+    </section>
+
+    <section th:if="${block != null}" class="citu-section mb-4">
+        <div class="citu-section-heading">
+            <div>
+                <p class="v35-kicker">Block</p>
+                <h2 th:text="'Index ' + ${block?.index}">Index</h2>
+            </div>
+            <p th:text="'Transactions: ' + ${block?.dtoTransactions == null ? 0 : block?.dtoTransactions?.size}">Transactions</p>
+        </div>
+        <div class="citu-block-card">
+            <div class="citu-transaction-row"><span>Index</span><strong th:text="${block?.index}">0</strong></div>
+            <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${block?.hashBlock == null || block?.hashBlock == '' ? 'not available' : block?.hashBlock}">hash</strong></div>
+            <div class="citu-transaction-row"><span>Previous hash</span><strong th:text="${block?.previousHash == null || block?.previousHash == '' ? 'not available' : block?.previousHash}">previous</strong></div>
+            <div class="citu-transaction-row"><span>Miner address</span><strong th:text="${block?.minerAddress == null || block?.minerAddress == '' ? 'not available' : block?.minerAddress}">miner</strong></div>
+            <div class="citu-transaction-row"><span>Founder address</span><strong th:text="${block?.founderAddress == null || block?.founderAddress == '' ? 'not available' : block?.founderAddress}">founder</strong></div>
+            <div class="citu-transaction-row"><span>Random proof</span><strong th:text="${block?.randomNumberProof}">0</strong></div>
+            <div class="citu-transaction-row"><span>Miner rewards</span><strong th:text="${block?.minerRewards}">0</strong></div>
+            <div class="citu-transaction-row"><span>Hash complexity</span><strong th:text="${block?.hashCompexity}">0</strong></div>
+            <div class="citu-transaction-row"><span>Timestamp</span><strong th:text="${block?.timestamp == null ? 'not available' : block?.timestamp}">time</strong></div>
+            <div class="citu-transaction-row"><span>dtoTransactions count</span><strong th:text="${block?.dtoTransactions == null ? 0 : block?.dtoTransactions?.size}">0</strong></div>
+        </div>
+    </section>
+
+    <section th:if="${blocks != null && blocks.size() > 1}" class="citu-section mb-4">
+        <h2>All matching blocks</h2>
+        <div class="citu-block-grid">
+            <article th:each="match : ${blocks}" class="citu-block-card">
+                <div class="citu-transaction-row"><span>Index</span><strong th:text="${match?.index}">0</strong></div>
+                <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${match?.hashBlock == null || match?.hashBlock == '' ? 'not available' : match?.hashBlock}">hash</strong></div>
+                <div class="citu-transaction-row"><span>Transactions</span><strong th:text="${match?.dtoTransactions == null ? 0 : match?.dtoTransactions?.size}">0</strong></div>
+            </article>
+        </div>
+    </section>
+
+    <section class="citu-section mb-4">
+        <h2>Transactions</h2>
+        <div th:if="${transactions == null || transactions.size() == 0}" class="citu-transaction-card">
+            <p>not available</p>
+        </div>
+        <div th:if="${transactions != null && transactions.size() > 0}">
+            <article th:each="el : ${transactions}" class="citu-transaction-card">
+                <div class="citu-transaction-row"><span>Sender</span><strong th:text="${el?.sender == null || el?.sender == '' ? 'not available' : el?.sender}">sender</strong></div>
+                <div class="citu-transaction-row"><span>Customer</span><strong th:text="${el?.customer == null || el?.customer == '' ? 'not available' : el?.customer}">customer</strong></div>
+                <div class="citu-transaction-row"><span>GOLD amount</span><strong th:text="${#numbers.formatDecimal(el?.digitalDollar, 1, 'COMMA', 16, 'POINT')}">0</strong></div>
+                <div class="citu-transaction-row"><span>Stock amount</span><strong th:text="${#numbers.formatDecimal(el?.digitalStockBalance, 1, 'COMMA', 16, 'POINT')}">0</strong></div>
+                <div class="citu-transaction-row"><span>Vote type</span><strong th:text="${el?.voteEnum == null ? 'not available' : el?.voteEnum}">vote</strong></div>
+                <div class="citu-transaction-row"><span>Sign</span><strong th:text="${el?.signStr == null || el?.signStr == '' ? 'not available' : el?.signStr}">signature</strong></div>
+                <div class="citu-transaction-row"><span>Miner bonus</span><strong th:text="${el?.bonusForMiner}">0</strong></div>
+                <div class="citu-transaction-row"><span>Law hash</span><strong th:text="${el?.laws?.hashLaw == null || el?.laws?.hashLaw == '' ? 'not available' : el?.laws?.hashLaw}">law hash</strong></div>
+                <div class="citu-transaction-row"><span>Law package</span><strong th:text="${el?.laws?.packetLawName == null || el?.laws?.packetLawName == '' ? 'not available' : el?.laws?.packetLawName}">law package</strong></div>
+                <a th:if="${el?.signStr != null && el?.signStr != '' && el?.laws?.packetLawName != null && el?.laws?.packetLawName != ''}" th:href="'/detail-laws/' + ${el?.hex}" class="btn btn-warning">Law details</a>
+            </article>
+        </div>
+    </section>
 </main>
 <footer th:insert="blocks/footer :: footer"></footer>
 </body>

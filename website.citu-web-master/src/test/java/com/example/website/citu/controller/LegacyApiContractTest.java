@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -64,9 +65,27 @@ class LegacyApiContractTest {
         mockMvc.perform(get("/conductor/lookup").param("index", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("hash-one")))
-                .andExpect(content().string(containsString("hash-duplicate")));
+                .andExpect(content().string(containsString("hash-duplicate")))
+                .andExpect(content().string(containsString("Duplicate block indexes can exist")))
+                .andExpect(content().string(containsString("/detail-transactions/1")));
 
         assertTrue(requests.contains("GET /conductorBlock?index=1"));
+    }
+
+    @Test
+    void conductorRendersSearchFormsAndRecentBlockPreviewWithDetailsLinks() throws Exception {
+        mockMvc.perform(get("/conductor"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Enter index block or sign transaction")))
+                .andExpect(content().string(containsString("Address history")))
+                .andExpect(content().string(containsString("Latest block preview")))
+                .andExpect(content().string(containsString("hash-range")))
+                .andExpect(content().string(containsString("/detail-transactions/0")));
+
+        assertTrue(requests.contains("GET /size"));
+        assertTrue(requests.stream().anyMatch(value -> value.startsWith("POST /sub-blocks ")
+                && value.contains("\"start\":110")
+                && value.contains("\"finish\":120")));
     }
 
     @Test
@@ -85,7 +104,9 @@ class LegacyApiContractTest {
         mockMvc.perform(get("/blocks"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("110 to 120")))
-                .andExpect(content().string(containsString("hash-range")));
+                .andExpect(content().string(containsString("hash-range")))
+                .andExpect(content().string(containsString("/detail-transactions/0")))
+                .andExpect(content().string(not(containsString(">null<"))));
 
         assertTrue(requests.contains("GET /size"));
         assertTrue(requests.stream().anyMatch(value -> value.startsWith("POST /sub-blocks ")
@@ -120,6 +141,29 @@ class LegacyApiContractTest {
         assertTrue(requests.stream().anyMatch(value -> value.startsWith("POST /sub-blocks ")
                 && value.contains("\"start\":40")
                 && value.contains("\"finish\":45")));
+    }
+
+    @Test
+    void detailRoutesFromBlocksAndConductorRenderBlockDetails() throws Exception {
+        mockMvc.perform(get("/detail-transactions/0"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Block details")))
+                .andExpect(content().string(containsString("hash-one")))
+                .andExpect(content().string(containsString("Transactions")))
+                .andExpect(content().string(not(containsString(">null<"))));
+
+        mockMvc.perform(get("/detail-block/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("hash-duplicate")))
+                .andExpect(content().string(containsString("Duplicate block indexes can exist")));
+    }
+
+    @Test
+    void detailTransactionsWithoutParamsShowsFriendlyPage() throws Exception {
+        mockMvc.perform(get("/detail-transactions"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Select a block or transaction from Explorer.")))
+                .andExpect(content().string(not(containsString(">null<"))));
     }
 
     @Test
@@ -229,7 +273,14 @@ class LegacyApiContractTest {
         String blocks = Files.readString(Path.of("src", "main", "resources", "templates", "blocks.html"));
         assertTrue(blocks.contains("body class=\"v35-public\""));
         assertTrue(blocks.contains("citu-block-card"));
+        assertTrue(blocks.contains("/detail-transactions/"));
         assertFalse(blocks.contains("alert alert-info"));
+        String conductor = Files.readString(Path.of("src", "main", "resources", "templates", "conductor.html"));
+        assertTrue(conductor.contains("Latest block preview"));
+        assertTrue(conductor.contains("/detail-transactions/"));
+        String details = Files.readString(Path.of("src", "main", "resources", "templates", "detail-transactions.html"));
+        assertTrue(details.contains("Select a block or transaction from Explorer."));
+        assertTrue(details.contains("not available"));
         assertTrue(sender.contains("body class=\"v35-public\""));
         assertTrue(sender.contains("citu-transaction-card"));
         assertTrue(sender.contains("Law hash"));

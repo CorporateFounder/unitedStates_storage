@@ -38,7 +38,7 @@
 <main class="container py-4">
 <section class="citu-section mb-4">
 <h1>Explorer</h1>
-<p>Inspect live chain data by block index, transaction signature, or public address. Open the block range list separately when you want recent blocks.</p>
+<p>Inspect live chain data by block index, transaction signature, or public address. Recent blocks are shown below for quick navigation.</p>
 <p><a class="btn btn-primary" href="/blocks">Blocks</a> <a class="btn btn-primary" href="/winners">Winners</a></p>
 <form action="/conductor" method="post">
     <input type="text" name="sign" placeholder="Enter index block or sign transaction" class="form-control"><br>
@@ -58,24 +58,24 @@
 </form>
 </section>
 
-<h4 th:text="'status: ' + ${status}"></h4>
+<h4 th:if="${status != null && status != ''}" th:text="'status: ' + ${status}"></h4>
 <h4 th:if="${text != null && text != '' }" th:text="'text: ' + ${text}"></h4>
+<h4 th:if="${duplicateNote != null && duplicateNote != ''}" th:text="${duplicateNote}"></h4>
 
 
-<div class="citu-section mt-2">
+<div th:if="${block != null}" class="citu-section mt-2">
     <h4 th:if="${block?.index != null}" th:text="'index: ' + ${block?.index}"></h4>
-    <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
-    <h4 th:if="${block?.previousHash != null}" th:text="'previous hash: ' + ${block?.previousHash}"></h4>
-    <h4 th:if="${block?.minerAddress != null}" th:text="'miner address: ' + ${block?.minerAddress}"></h4>
+    <h4 th:text="'hash: ' + ${block?.hashBlock == null || block?.hashBlock == '' ? 'not available' : block?.hashBlock}"></h4>
+    <h4 th:text="'previous hash: ' + ${block?.previousHash == null || block?.previousHash == '' ? 'not available' : block?.previousHash}"></h4>
+    <h4 th:text="'miner address: ' + ${block?.minerAddress == null || block?.minerAddress == '' ? 'not available' : block?.minerAddress}"></h4>
     <h4 th:if="${block?.hashCompexity != null}" th:text="'legacy / pre-V35 block difficulty: ' + ${block?.hashCompexity}"></h4>
     <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
-    <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
-    <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>
+    <h4 th:text="'founder address: ' + ${block?.founderAddress == null || block?.founderAddress == '' ? 'not available' : block?.founderAddress}"></h4>
+    <h4 th:text="'time: ' + ${block?.timestamp == null ? 'not available' : block?.timestamp}"></h4>
     <h4 th:text="'miner rewards: ' + ${block?.minerRewards}"></h4>
     <h4 th:if="${block?.dtoTransactions != null}" th:text="'count transaction: ' + ${block?.dtoTransactions?.size}"></h4>
 
-    <a th:if="${block?.index != null && block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/0'" class="btn btn-warning">Details</a>
-    <a th:if="${block?.index != null && !block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
+    <a th:if="${block?.index != null}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
 
     <h4 th:if="${dto?.sender != null}" th:text="'sender: ' + ${dto?.sender}"></h4>
     <h4 th:if="${dto?.customer != null}" th:text="'customen: ' + ${dto?.customer}"></h4>
@@ -93,21 +93,40 @@
     <article th:each="block : ${blocks}" class="citu-block-card">
     <h4 th:if="${block?.index != null}" th:text="'index: ' + ${block?.index}"></h4>
 
-    <h4 th:if="${block?.hashBlock != null}" th:text="'hash: ' + ${block?.hashBlock}"></h4>
-        <h4 th:if="${block?.previousHash != null}" th:text="'previous hash: ' + ${block?.previousHash}"></h4>
-    <h4 th:if="${block?.minerAddress != null}" th:text="'miner address: ' + ${block?.minerAddress}"></h4>
+    <h4 th:text="'hash: ' + ${block?.hashBlock == null || block?.hashBlock == '' ? 'not available' : block?.hashBlock}"></h4>
+        <h4 th:text="'previous hash: ' + ${block?.previousHash == null || block?.previousHash == '' ? 'not available' : block?.previousHash}"></h4>
+    <h4 th:text="'miner address: ' + ${block?.minerAddress == null || block?.minerAddress == '' ? 'not available' : block?.minerAddress}"></h4>
     <h4 th:if="${block?.hashCompexity != null}" th:text="'legacy / pre-V35 block difficulty: ' + ${block?.hashCompexity}"></h4>
     <h4 th:if="${block?.randomNumberProof != null}" th:text="'nonce: ' + ${block?.randomNumberProof}"></h4>
-    <h4 th:if="${block?.founderAddress != null}" th:text="'founder address: ' + ${block?.founderAddress}"></h4>
-    <h4 th:if="${block?.timestamp != null}" th:text="'time: ' + ${block?.timestamp}"></h4>
+    <h4 th:text="'founder address: ' + ${block?.founderAddress == null || block?.founderAddress == '' ? 'not available' : block?.founderAddress}"></h4>
+    <h4 th:text="'time: ' + ${block?.timestamp == null ? 'not available' : block?.timestamp}"></h4>
     <h4 th:text="'miner rewards: ' + ${block?.minerRewards}"></h4>
     <h4 th:if="${block?.dtoTransactions != null}" th:text="'count transaction: ' + ${block?.dtoTransactions?.size}"></h4>
 
-        <a th:if="${block?.index != null && block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/0'" class="btn btn-warning">Details</a>
-        <a th:if="${block?.index != null && !block?.hashBlock.equals('08b1e6634457a40d3481e76ebd377e76322706e4ea27013b773686f7df8f8a4c')}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
+        <a th:if="${block?.index != null}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
 
+    </article>
+</div>
+</section>
 
-
+<section class="citu-section mb-4">
+<div class="citu-section-heading">
+    <div>
+        <p class="v35-kicker">Recent blocks</p>
+        <h2>Latest block preview</h2>
+    </div>
+    <p th:if="${recentStart != null && recentFinish != null}" th:text="'Range: ' + ${recentStart} + ' to ' + ${recentFinish}">Range</p>
+</div>
+<div th:if="${recentStatus != null && recentStatus != ''}" class="citu-block-card mb-3">
+    <p th:text="${recentStatus}">latest blocks temporarily unavailable</p>
+</div>
+<div th:if="${recentBlocks != null && recentBlocks.size() > 0}" class="citu-block-grid">
+    <article th:each="block : ${recentBlocks}" class="citu-block-card">
+        <div class="citu-transaction-row"><span>Index</span><strong th:text="${block?.index}">0</strong></div>
+        <div class="citu-transaction-row"><span>Hash block</span><strong th:text="${block?.hashBlock == null || block?.hashBlock == '' ? 'not available' : block?.hashBlock}">hash</strong></div>
+        <div class="citu-transaction-row"><span>Miner address</span><strong th:text="${block?.minerAddress == null || block?.minerAddress == '' ? 'not available' : block?.minerAddress}">miner</strong></div>
+        <div class="citu-transaction-row"><span>Transactions</span><strong th:text="${block?.dtoTransactions == null ? 0 : block?.dtoTransactions?.size}">0</strong></div>
+        <a th:if="${block?.index != null}" th:href="'/detail-transactions/' + ${block?.index}" class="btn btn-warning">Details</a>
     </article>
 </div>
 </section>
