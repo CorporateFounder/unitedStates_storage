@@ -429,7 +429,7 @@ public final class Block implements Cloneable {
             throw new NotValidTransactionException();
         }
 
-        final int numThreads = Runtime.getRuntime().availableProcessors() - 1;
+        final int numThreads = Mining.defaultMiningThreadCount();
 
         final AtomicBoolean solutionFound = new AtomicBoolean(false);
         final CompletableFuture<String> solution = new CompletableFuture<>();
@@ -495,9 +495,10 @@ public final class Block implements Cloneable {
                             duration = endTime - startTime;  // Time in nanoseconds
                             durationInMilliseconds = duration / 1_000_000.0;  // Convert to milliseconds
 
-                            double hashRate = (k - min) / 1000 / durationInMilliseconds * numThreads;
-                            String formattedHashRate = String.format("%.2f", hashRate);
-                            System.out.print("Hash rate: " + formattedHashRate + " KH/S\r");
+                            long totalAttempts = (k - min) * numThreads;
+                            String formattedHashRate = Mining.formatHashRate(totalAttempts, duration);
+                            Mining.recordMiningStatus(numThreads, totalAttempts, duration, "Legacy/pre-V35 mining in progress");
+                            System.out.print("Hash rate: " + formattedHashRate + "\r");
                             System.out.flush();  // Ensures the printed content is immediately displayed
 
                         }//if (k % 400000 == 0)

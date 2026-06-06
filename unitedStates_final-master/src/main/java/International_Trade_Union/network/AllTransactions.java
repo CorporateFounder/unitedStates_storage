@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AllTransactions {
+    static final int GET_TRANSACTIONS_TIMEOUT_MILLIS = 2500;
+
     private static List<DtoTransaction> instance = new ArrayList<>();
     //все транзакции которые уже добавлены в блок, нужно чтобы повторно
     //не добавлялись в блок если они скачены с дисковери.
@@ -37,31 +39,7 @@ public class AllTransactions {
 
         //считываем с пула транзакции из дисковери.
         for (String s : Seting.ORIGINAL_ADDRESSES) {
-            try {
-                Base base = new Base58();
-                System.out.println("get transactions from server: " + s + "its time 45 seconds");
-                String json = UtilUrl.readJsonFromUrl(s + "/getTransactions");
-                List<DtoTransaction> list;
-                if(!json.isEmpty()){
-                    list= UtilsJson.jsonToDtoTransactionList(json);
-                    list = list.stream()
-                            .filter(t->t.getSign() != null &&!base.encode(t.getSign()).isEmpty())
-                            .filter(t->t.getDigitalDollar() > 0 || t.getDigitalStockBalance() > 0)
-                            .collect(Collectors.toList());
-                    instance.addAll(list);
-                }else {
-                    list = new ArrayList<>();
-                }
-
-
-
-
-
-            } catch (IOException | JSONException e) {
-
-                System.out.println("AllTransaction: getInstance: Error");
-                continue;
-            }
+            instance.addAll(fetchRemoteTransactions(s));
 
 
         }
@@ -74,6 +52,25 @@ public class AllTransactions {
         instance.removeAll(sendedTransaction);
 
         return instance;
+    }
+
+    static List<DtoTransaction> fetchRemoteTransactions(String host) {
+        try {
+            Base base = new Base58();
+            System.out.println("get transactions from server: " + host + " timeout: " + GET_TRANSACTIONS_TIMEOUT_MILLIS + " ms");
+            String json = UtilUrl.readJsonFromUrl(host + "/getTransactions", GET_TRANSACTIONS_TIMEOUT_MILLIS);
+            if (json == null || json.isEmpty()) {
+                return new ArrayList<>();
+            }
+            return UtilsJson.jsonToDtoTransactionList(json).stream()
+                    .filter(t -> t.getSign() != null && !base.encode(t.getSign()).isEmpty())
+                    .filter(t -> t.getDigitalDollar() > 0 || t.getDigitalStockBalance() > 0)
+                    .collect(Collectors.toList());
+        } catch (IOException | JSONException e) {
+            System.out.println("AllTransaction: getInstance: remote transaction fetch unavailable for "
+                    + host + ", mining continues with local/empty transaction fallback");
+            return new ArrayList<>();
+        }
     }
 
     public static synchronized void clearAllTransaction() {

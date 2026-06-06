@@ -36,6 +36,13 @@ import java.sql.Timestamp;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static International_Trade_Union.setings.Seting.*;
@@ -54,6 +61,9 @@ public class Mining {
     private static int customDiff = Seting.V34_MIN_DIFF;
     public static boolean miningIsObsolete = false;
     private static volatile boolean isMiningStop = false;
+    private static volatile int lastMiningThreadCount = defaultMiningThreadCount();
+    private static volatile String lastHashRateDisplay = "temporarily unavailable";
+    private static volatile String lastMiningStatus = "Idle";
 
     public static Blockchain getBlockchain(String filename, BlockchainFactoryEnum factoryEnum) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
 
@@ -148,6 +158,40 @@ public class Mining {
     public static synchronized void setIsMiningStop(boolean isMiningStop) {
 
         Mining.isMiningStop = isMiningStop;
+    }
+
+    public static int getLastMiningThreadCount() {
+        return lastMiningThreadCount;
+    }
+
+    public static String getLastHashRateDisplay() {
+        return lastHashRateDisplay;
+    }
+
+    public static String getLastMiningStatus() {
+        return lastMiningStatus;
+    }
+
+    public static void recordMiningStatus(int miningThreads, long attempts, long elapsedNanos, String status) {
+        lastMiningThreadCount = Math.max(1, miningThreads);
+        lastHashRateDisplay = formatHashRate(attempts, elapsedNanos);
+        lastMiningStatus = status == null || status.isBlank() ? "Mining" : status;
+    }
+
+    public static int defaultMiningThreadCount() {
+        return Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+    }
+
+    public static String formatHashRate(long attempts, long elapsedNanos) {
+        double elapsedSeconds = Math.max(1.0e-9, elapsedNanos / 1_000_000_000.0);
+        double hashesPerSecond = Math.max(0.0, attempts / elapsedSeconds);
+        if (hashesPerSecond >= 1_000_000.0) {
+            return String.format(Locale.US, "%.2f MH/s", hashesPerSecond / 1_000_000.0);
+        }
+        if (hashesPerSecond >= 1_000.0) {
+            return String.format(Locale.US, "%.2f KH/s", hashesPerSecond / 1_000.0);
+        }
+        return String.format(Locale.US, "%.2f H/s", hashesPerSecond);
     }
 
     public Map<String, Account> getBalances(String filename, Blockchain blockchain, Map<String, Account> balances, List<String> signs) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeySpecException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
@@ -524,29 +568,102 @@ public class Mining {
         return block;
     }
 
-    private static Block mineV35Block(List<DtoTransaction> transactions,
-                                      String previousHash,
-                                      String minerAddress,
-                                      String founderAddress,
-                                      double minerRewards,
-                                      long compactTarget,
-                                      long index) throws IOException {
+    static Block mineV35Block(List<DtoTransaction> transactions,
+                              String previousHash,
+                              String minerAddress,
+                              String founderAddress,
+                              double minerRewards,
+                              long compactTarget,
+                              long index) throws IOException {
+        return mineV35Block(transactions, previousHash, minerAddress, founderAddress, minerRewards, compactTarget, index, defaultMiningThreadCount());
+    }
+
+    static Block mineV35Block(List<DtoTransaction> transactions,
+                              String previousHash,
+                              String minerAddress,
+                              String founderAddress,
+                              double minerRewards,
+                              long compactTarget,
+                              long index,
+                              int requestedThreads) throws IOException {
         BigInteger target = V35TargetDifficulty.decodeCompactTarget(compactTarget);
         if (target.signum() <= 0) {
             throw new IllegalArgumentException("V35 compact target must decode to a positive target");
         }
 
         Timestamp timestamp = new Timestamp(UtilsTime.getUniversalTimestamp());
-        long nonce = Block.getRandomNumberProofStatic();
-        while (true) {
-            Block candidate = new Block(transactions, previousHash, minerAddress, founderAddress,
-                    nonce, minerRewards, compactTarget, timestamp, index, "");
-            String hash = candidate.hashForTransaction();
-            if (V35PowValidator.isHashUnderTarget(hash, target)) {
-                return new Block(transactions, previousHash, minerAddress, founderAddress,
-                        nonce, minerRewards, compactTarget, timestamp, index, hash);
-            }
-            nonce++;
+        int threadCount = Math.max(1, requestedThreads);
+        lastMiningThreadCount = threadCount;
+        lastMiningStatus = "V35 mining started";
+        long startNanos = System.nanoTime();
+        AtomicBoolean solutionFound = new AtomicBoolean(false);
+        AtomicLong attempts = new AtomicLong(0);
+        AtomicReference<Block> solution = new AtomicReference<>();
+        AtomicReference<IOException> failure = new AtomicReference<>();
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        List<Future<?>> futures = new ArrayList<>();
+
+        System.out.println("V35 mining threads: " + threadCount + " compactTarget: " + compactTarget + " index: " + index);
+        for (int worker = 0; worker < threadCount; worker++) {
+            final int workerIndex = worker;
+            futures.add(executor.submit(() -> {
+                long nonce = Block.getRandomNumberProofStatic() + workerIndex;
+                while (!solutionFound.get()) {
+                    try {
+                        Block candidate = new Block(transactions, previousHash, minerAddress, founderAddress,
+                                nonce, minerRewards, compactTarget, timestamp, index, "");
+                        String hash = candidate.hashForTransaction();
+                        long currentAttempts = attempts.incrementAndGet();
+                        if (currentAttempts % 100_000 == 0) {
+                            long elapsed = System.nanoTime() - startNanos;
+                            recordMiningStatus(threadCount, currentAttempts, elapsed, "V35 mining in progress");
+                            System.out.println("V35 mining threads: " + threadCount
+                                    + " attempts: " + currentAttempts
+                                    + " elapsed seconds: " + String.format(Locale.US, "%.2f", elapsed / 1_000_000_000.0)
+                                    + " hash rate: " + lastHashRateDisplay);
+                        }
+                        if (V35PowValidator.isHashUnderTarget(hash, target)) {
+                            if (solutionFound.compareAndSet(false, true)) {
+                                solution.set(new Block(transactions, previousHash, minerAddress, founderAddress,
+                                        nonce, minerRewards, compactTarget, timestamp, index, hash));
+                            }
+                            break;
+                        }
+                        nonce += threadCount;
+                    } catch (IOException e) {
+                        failure.compareAndSet(null, e);
+                        solutionFound.set(true);
+                    }
+                }
+            }));
         }
+
+        try {
+            for (Future<?> future : futures) {
+                future.get();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("V35 mining interrupted", e);
+        } catch (ExecutionException e) {
+            throw new IOException("V35 mining worker failed", e);
+        } finally {
+            executor.shutdownNow();
+        }
+
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+        Block block = solution.get();
+        if (block == null) {
+            throw new IOException("V35 mining stopped before finding a block");
+        }
+        long elapsed = System.nanoTime() - startNanos;
+        recordMiningStatus(threadCount, attempts.get(), elapsed, "V35 block found");
+        System.out.println("V35 mining completed: threads: " + threadCount
+                + " attempts: " + attempts.get()
+                + " elapsed seconds: " + String.format(Locale.US, "%.2f", elapsed / 1_000_000_000.0)
+                + " hash rate: " + lastHashRateDisplay);
+        return block;
     }
 }

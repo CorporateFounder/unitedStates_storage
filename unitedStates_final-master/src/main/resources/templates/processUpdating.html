@@ -1,30 +1,68 @@
-
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-
+    <title>Wallet mining status</title>
     <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/citu-wallet.css">
 </head>
-<body>
+<body class="citu-wallet-page">
 
 <header th:insert="blocks/header :: header"></header>
-<div class="container mt-5">
-    <div  class="alert alert-info mt-2">
-        <h3 th:text="'address: ' + ${address}"/>
-        <h3 th:text="'dollar: '+${dollar}"/>
-        <h3 th:text="'stock: '+${stock}"/>
-        <h3 th:text="'is mining: '+${isMining}"/>
-        <h3 th:text="'is updating: '+${isUpdating}"/>
-        <h3 th:text="'is stop: '+${stop}"/>
-        <h3 th:text="'searching difficulty: '+${expectedDifficult}"/>
 
-        <h6>after click stop mining need waiting</h6>
-        <form action="/stopMining" class="container mt-1">
-            <button type="submit" class="btn btn-success">stop mining</button>
+<main class="container mt-4 mb-5">
+    <section class="citu-wallet-panel mb-4">
+        <div class="citu-wallet-kicker">Mining / processing</div>
+        <h1 class="h3 mb-3">Wallet mining status</h1>
+        <p class="citu-wallet-legacy-note">
+            These controls are legacy / pre-V35 until activation. V35 activation is scheduled at block
+            <strong th:text="${activationBlock}">514291</strong>. Before that height,
+            <code>v35Active=false</code> is expected.
+        </p>
+        <div class="citu-wallet-badges mb-3">
+            <span class="citu-wallet-badge" th:text="'Mining: ' + ${isMining}">Mining: false</span>
+            <span class="citu-wallet-badge" th:text="'Updating: ' + ${isUpdating}">Updating: false</span>
+            <span class="citu-wallet-badge" th:text="'V35 active: ' + ${v35Active}">V35 active: false</span>
+        </div>
+        <form action="/stopMining" class="mt-3">
+            <button type="submit" class="btn btn-success">Stop mining</button>
         </form>
-    </div>
-</div>
+    </section>
+
+    <section class="citu-wallet-grid mb-4">
+        <div class="citu-wallet-panel">
+            <h2 class="h5">Node and fork</h2>
+            <div class="citu-wallet-stat-list">
+                <p><strong>Current node size:</strong> <span th:text="${nodeSize}">temporarily unavailable</span></p>
+                <p><strong>V35 activation block:</strong> <span th:text="${activationBlock}">514291</span></p>
+                <p><strong>Current difficulty:</strong> <span th:text="${expectedDifficult}">temporarily unavailable</span></p>
+            </div>
+        </div>
+        <div class="citu-wallet-panel">
+            <h2 class="h5">Mining performance</h2>
+            <div class="citu-wallet-stat-list">
+                <p><strong>Thread count:</strong> <span th:text="${miningThreads}">1</span></p>
+                <p><strong>Hash rate:</strong> <span th:text="${hashRate}">temporarily unavailable</span></p>
+                <p><strong>Last status:</strong> <span th:text="${lastStatus}">Idle</span></p>
+            </div>
+        </div>
+        <div class="citu-wallet-panel">
+            <h2 class="h5">Miner balance</h2>
+            <div class="citu-wallet-stat-list">
+                <p><strong>Address:</strong> <span th:text="${address}">balance has not loaded yet</span></p>
+                <p><strong>GOLD:</strong> <span th:text="${dollar}">balance has not loaded yet</span></p>
+                <p><strong>Stock:</strong> <span th:text="${stock}">balance has not loaded yet</span></p>
+                <p><strong>Stop requested:</strong> <span th:text="${stop}">false</span></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="citu-wallet-panel">
+        <h2 class="h5">Safety notes</h2>
+        <p class="mb-2">If the node API is unavailable, this page uses fallback text and keeps rendering.</p>
+        <p class="mb-0">Do not treat legacy mining controls as V35 reward rules. Use the <a href="/v35-dashboard">V35 dashboard</a> for prepared V35 status.</p>
+    </section>
+</main>
 
 <footer th:insert="blocks/footer :: footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>

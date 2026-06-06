@@ -545,7 +545,7 @@ public class BasisController {
     public synchronized String proccessMining(Model model, Integer number) throws JSONException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, CloneNotSupportedException {
         mining();
         model.addAttribute("title", "mining proccess");
-        return "redirect:/process-mining";
+        return "redirect:/processUpdating";
     }
 
 
@@ -1131,6 +1131,12 @@ public class BasisController {
     public String processUpdating(Model model) {
         model.addAttribute("isMining", isMining());
         model.addAttribute("isUpdating", isUpdating());
+        model.addAttribute("activationBlock", Seting.V35_RESCUE_FORK_INDEX);
+        model.addAttribute("v35Active", blockchainSize >= Seting.V35_RESCUE_FORK_INDEX);
+        model.addAttribute("nodeSize", blockchainSize > 0 ? String.valueOf(blockchainSize) : "temporarily unavailable");
+        model.addAttribute("miningThreads", Mining.getLastMiningThreadCount());
+        model.addAttribute("hashRate", Mining.getLastHashRateDisplay());
+        model.addAttribute("lastStatus", Mining.getLastMiningStatus());
         if (minerShow == null) {
             model.addAttribute("address", "balance has not loaded yet");
             model.addAttribute("dollar", "balance has not loaded yet");
@@ -1157,6 +1163,11 @@ public class BasisController {
 
 
         return "processUpdating";
+    }
+
+    @GetMapping({"/processing", "/procecing"})
+    public String processingCompatibilityRedirect() {
+        return "redirect:/processUpdating";
     }
 
     /**
