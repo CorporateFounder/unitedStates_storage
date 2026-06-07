@@ -39,6 +39,9 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 @Component
 @Scope("singleton")
 public class TournamentService {
+    static final int MAX_TOURNAMENT_HOSTS = 32;
+    static final int TOURNAMENT_HTTP_TIMEOUT_MILLIS = 3000;
+
     @PostConstruct
     public void init() {
         Blockchain.setBlockService(blockService);
@@ -70,6 +73,24 @@ public class TournamentService {
     private List<Block> winnerCountTransaction = new ArrayList<>();
     private List<Block> winnerStaking = new ArrayList<>();
     private List<Block> winner = new ArrayList<>();
+
+    static List<HostEndDataShortB> boundedHostsForTournament(List<HostEndDataShortB> hosts) {
+        if (hosts == null || hosts.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return hosts.stream()
+                .filter(Objects::nonNull)
+                .filter(host -> host.getHost() != null && !host.getHost().isBlank())
+                .limit(MAX_TOURNAMENT_HOSTS)
+                .collect(Collectors.toList());
+    }
+
+    static String memoryStatusForLog() {
+        Runtime runtime = Runtime.getRuntime();
+        return "freeMemory=" + runtime.freeMemory()
+                + ", totalMemory=" + runtime.totalMemory()
+                + ", maxMemory=" + runtime.maxMemory();
+    }
 
     public List<Block> getWinnerDiff() {
         return winnerDiff;
@@ -309,6 +330,7 @@ public class TournamentService {
     }
 
     public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
+        hostEndDataShortBS = boundedHostsForTournament(hostEndDataShortBS);
         // Временное потокобезопасное множество для хранения уникальных блоков
         Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
 
@@ -324,7 +346,7 @@ public class TournamentService {
 
                         CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
                             try {
-                                return UtilUrl.readJsonFromUrl(s + "/winnerList");
+                                return UtilUrl.readJsonFromUrl(s + "/winnerList", TOURNAMENT_HTTP_TIMEOUT_MILLIS);
                             } catch (IOException | JSONException e) {
                                 MyLogger.saveLog("Error reading winnerList from " + s + ": " + e.getMessage());
                                 return "";
@@ -333,7 +355,7 @@ public class TournamentService {
 
                         CompletableFuture<String> prevBlockFuture = CompletableFuture.supplyAsync(() -> {
                             try {
-                                return UtilUrl.readJsonFromUrl(s + "/prevBlock");
+                                return UtilUrl.readJsonFromUrl(s + "/prevBlock", TOURNAMENT_HTTP_TIMEOUT_MILLIS);
                             } catch (IOException | JSONException e) {
                                 MyLogger.saveLog("Error reading prevBlock from " + s + ": " + e.getMessage());
                                 return "";
@@ -425,8 +447,12 @@ public class TournamentService {
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS) {
 
         long timeBefore = UtilsTime.getUniversalTimestamp();
+        System.out.println("SERVER_TOURNAMENT_MEMORY_BEFORE=" + memoryStatusForLog());
+        System.out.println("SERVER_TOURNAMENT_WINNERLIST_SIZE_BEFORE=" + BasisController.getWinnerList().size());
         // Сначала вызываем getAllWinner
         getAllWinner(hostEndDataShortBS);
+        System.out.println("SERVER_TOURNAMENT_WINNERLIST_SIZE_AFTER_GET_ALL_WINNER=" + BasisController.getWinnerList().size());
+        System.out.println("SERVER_TOURNAMENT_MEMORY_AFTER_GET_ALL_WINNER=" + memoryStatusForLog());
         long timeAfter = UtilsTime.getUniversalTimestamp();
         MyLogger.saveLog("getAllWinner: millisecond: " + (timeAfter - timeBefore) + " second: " + ((timeAfter - timeBefore) / 1000));
 
@@ -558,7 +584,12 @@ public class TournamentService {
             if (winner != null && balances != null) {
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
                 winner = winner.stream().filter(UtilsUse.distinctByKey(Block::getIndex)).collect(Collectors.toList());
+                System.out.println("SERVER_TOURNAMENT_PERSIST_START");
+                System.out.println("SERVER_TOURNAMENT_PERSIST_WINNER_INDEX=" + (winner.isEmpty() ? "none" : winner.get(0).getIndex()));
+                System.out.println("SERVER_TOURNAMENT_MEMORY_BEFORE_ADD_BLOCK3=" + memoryStatusForLog());
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
+                System.out.println("SERVER_TOURNAMENT_PERSIST_RESULT=" + save);
+                System.out.println("SERVER_TOURNAMENT_MEMORY_AFTER_ADD_BLOCK3=" + memoryStatusForLog());
             }
 
             //TODO отправка награды пула
@@ -583,6 +614,7 @@ public class TournamentService {
 
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
+                BasisController.recordPersistedBlockFromTournament(prevBlock);
                 if (prevBlock == null) {
                     System.out.println("----------");
                     System.out.println("prevBlock: " + prevBlock);
@@ -591,6 +623,7 @@ public class TournamentService {
                 }
 
             } else {
+                System.out.println("SERVER_BLOCK_ADD_REJECTED=Tournament addBlock3 returned false");
                 MyLogger.saveLog("Tournament addBlock3 has error: " + winner.get(0).getIndex());
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
@@ -810,13 +843,14 @@ public class TournamentService {
     }
 
     public List<DtoTransaction> getInstance(List<HostEndDataShortB> hosts) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        hosts = boundedHostsForTournament(hosts);
         // Асинхронная обработка для получения транзакций с каждого хоста
         List<CompletableFuture<List<DtoTransaction>>> futures = hosts.stream()
                 .map(hostEndDataShortB -> CompletableFuture.supplyAsync(() -> {
                     String host = hostEndDataShortB.getHost();
                     try {
                         System.out.println("Получение транзакций с сервера: " + host + ". Время ожидания 45 секунд.");
-                        String json = UtilUrl.readJsonFromUrl(host + "/getTransactions");
+                        String json = UtilUrl.readJsonFromUrl(host + "/getTransactions", TOURNAMENT_HTTP_TIMEOUT_MILLIS);
                         if (!json.isEmpty()) {
                             List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
                             return utilsTransactions.balanceTransaction(list, blockService);

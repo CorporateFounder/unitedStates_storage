@@ -55,6 +55,18 @@
                 <p><strong>Stop requested:</strong> <span th:text="${stop}">false</span></p>
             </div>
         </div>
+        <div class="citu-wallet-panel">
+            <h2 class="h5">Block submission</h2>
+            <div class="citu-wallet-stat-list">
+                <p><strong>Last found block:</strong> <span th:text="${lastFoundBlockIndex}">not found yet</span></p>
+                <p><strong>Last found hash:</strong> <span th:text="${lastFoundBlockHash}">not found yet</span></p>
+                <p><strong>Last submit URL:</strong> <span th:text="${lastSubmitUrl}">not submitted yet</span></p>
+                <p><strong>Last submit HTTP status:</strong> <span th:text="${lastSubmitHttpStatus}">not submitted yet</span></p>
+                <p><strong>Last submit response:</strong> <span th:text="${lastSubmitResponse}">not submitted yet</span></p>
+                <p><strong>Last submit error:</strong> <span th:text="${lastSubmitError}">none</span></p>
+                <p><strong>Last submit time:</strong> <span th:text="${lastSubmitTime}">not submitted yet</span></p>
+            </div>
+        </div>
     </section>
 
     <section class="citu-wallet-panel">

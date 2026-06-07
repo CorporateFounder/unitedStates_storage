@@ -82,6 +82,21 @@ public class BasisController {
     private static Block prevBlock = null;
     private static Account minerShow = null;
     private static long difficultExpected = 0;
+    private static volatile long lastFoundBlockIndex = -1;
+    private static volatile String lastFoundBlockHash = "not found yet";
+    private static volatile String lastFoundBlockPreviousHash = "not found yet";
+    private static volatile String lastFoundBlockDifficulty = "not found yet";
+    private static volatile String lastFoundBlockNonce = "not found yet";
+    private static volatile int lastFoundBlockTxCount = 0;
+    private static volatile String lastFoundBlockMinerAddress = "not found yet";
+    private static volatile String lastSubmitUrl = "not submitted yet";
+    private static volatile String lastSubmitEndpoint = "not submitted yet";
+    private static volatile String lastSubmitMethod = "not submitted yet";
+    private static volatile int lastSubmitHttpStatus = 0;
+    private static volatile String lastSubmitResponse = "not submitted yet";
+    private static volatile String lastSubmitError = "none";
+    private static volatile String lastSubmitTime = "not submitted yet";
+    private static volatile long lastSubmitElapsedMs = 0;
 
     private static boolean mining = false;
     private static boolean updating = false;
@@ -93,6 +108,40 @@ public class BasisController {
 
     public BlockService getBlockService() {
         return blockService;
+    }
+
+    static void resetMiningSubmitDebugForTests() {
+        lastFoundBlockIndex = -1;
+        lastFoundBlockHash = "not found yet";
+        lastFoundBlockPreviousHash = "not found yet";
+        lastFoundBlockDifficulty = "not found yet";
+        lastFoundBlockNonce = "not found yet";
+        lastFoundBlockTxCount = 0;
+        lastFoundBlockMinerAddress = "not found yet";
+        lastSubmitUrl = "not submitted yet";
+        lastSubmitEndpoint = "not submitted yet";
+        lastSubmitMethod = "not submitted yet";
+        lastSubmitHttpStatus = 0;
+        lastSubmitResponse = "not submitted yet";
+        lastSubmitError = "none";
+        lastSubmitTime = "not submitted yet";
+        lastSubmitElapsedMs = 0;
+    }
+
+    static String getLastSubmitUrlForTests() {
+        return lastSubmitUrl;
+    }
+
+    static String getLastSubmitErrorForTests() {
+        return lastSubmitError;
+    }
+
+    static int getLastSubmitHttpStatusForTests() {
+        return lastSubmitHttpStatus;
+    }
+
+    static String blockSubmitUrlFor(String host) {
+        return host + "/nodes/resolve_from_to_block";
     }
 
     public void setBlockService(BlockService blockService) {
@@ -695,6 +744,26 @@ public class BasisController {
         System.out.println(new Date() + ":BasisController: sendAllBlocksToStorage: start: ");
         int bigsize = 0;
         int blocks_current_size = (int) blocks.get(blocks.size() - 1).getIndex() + 1;
+        Block submitBlock = blocks.get(blocks.size() - 1);
+        lastFoundBlockIndex = submitBlock.getIndex();
+        lastFoundBlockHash = String.valueOf(submitBlock.getHashBlock());
+        lastFoundBlockPreviousHash = String.valueOf(submitBlock.getPreviousHash());
+        lastFoundBlockDifficulty = String.valueOf(submitBlock.getHashCompexity());
+        lastFoundBlockNonce = String.valueOf(submitBlock.getRandomNumberProof());
+        lastFoundBlockTxCount = submitBlock.getDtoTransactions() == null ? 0 : submitBlock.getDtoTransactions().size();
+        lastFoundBlockMinerAddress = String.valueOf(submitBlock.getMinerAddress());
+        lastSubmitHttpStatus = 0;
+        lastSubmitResponse = "block found, submit pending";
+        lastSubmitError = "none";
+        lastSubmitTime = new Date().toString();
+        System.out.println("WALLET_BLOCK_FOUND");
+        System.out.println("WALLET_BLOCK_FOUND_INDEX=" + lastFoundBlockIndex);
+        System.out.println("WALLET_BLOCK_FOUND_HASH=" + lastFoundBlockHash);
+        System.out.println("WALLET_BLOCK_FOUND_PREVIOUS_HASH=" + lastFoundBlockPreviousHash);
+        System.out.println("WALLET_BLOCK_FOUND_DIFFICULTY=" + lastFoundBlockDifficulty);
+        System.out.println("WALLET_BLOCK_FOUND_NONCE=" + lastFoundBlockNonce);
+        System.out.println("WALLET_BLOCK_FOUND_TX_COUNT=" + lastFoundBlockTxCount);
+        System.out.println("WALLET_BLOCK_FOUND_MINER_ADDRESS=" + lastFoundBlockMinerAddress);
         //отправка блокчейна на хранилище блокчейна
         System.out.println(":BasisController: sendAllBlocksToStorage: ");
 
@@ -746,16 +815,52 @@ public class BasisController {
                 //Test start algorithm
                 String originalF = s;
                 System.out.println(":send resolve_from_to_block");
-                String urlFrom = s + "/nodes/resolve_from_to_block";
+                String urlFrom = blockSubmitUrlFor(s);
+                lastSubmitUrl = urlFrom;
+                lastSubmitEndpoint = "/nodes/resolve_from_to_block";
+                lastSubmitMethod = "POST";
+                lastSubmitResponse = "submit started";
+                lastSubmitError = "none";
+                lastSubmitTime = new Date().toString();
+                System.out.println("WALLET_BLOCK_SUBMIT_START");
+                System.out.println("WALLET_BLOCK_SUBMIT_URL=" + lastSubmitUrl);
+                System.out.println("WALLET_BLOCK_SUBMIT_METHOD=" + lastSubmitMethod);
+                System.out.println("WALLET_BLOCK_SUBMIT_INDEX=" + submitBlock.getIndex());
+                System.out.println("WALLET_BLOCK_SUBMIT_HASH=" + submitBlock.getHashBlock());
+                System.out.println("WALLET_BLOCK_SUBMIT_PREVIOUS_HASH=" + submitBlock.getPreviousHash());
+                System.out.println("WALLET_BLOCK_SUBMIT_TX_COUNT=" + lastFoundBlockTxCount);
+                System.out.println("WALLET_BLOCK_SUBMIT_BODY_SIZE=" + jsonFromTo.length());
+                System.out.println("WALLET_BLOCK_SUBMIT_TIMEOUT_READ_MS=9000");
+                System.out.println("WALLET_BLOCK_SUBMIT_TIMEOUT_CONNECT_MS=9000");
 
                 try {
+                    long submitStart = System.currentTimeMillis();
                     response = UtilUrl.sendPost(jsonFromTo, urlFrom, 9000, 9000);
+                    lastSubmitElapsedMs = System.currentTimeMillis() - submitStart;
+                    lastSubmitHttpStatus = response;
+                    lastSubmitResponse = "HTTP " + response;
+                    lastSubmitError = "none";
+                    lastSubmitTime = new Date().toString();
+                    System.out.println("WALLET_BLOCK_SUBMIT_RESPONSE");
+                    System.out.println("WALLET_BLOCK_SUBMIT_HTTP_STATUS=" + response);
+                    System.out.println("WALLET_BLOCK_SUBMIT_ELAPSED_MS=" + lastSubmitElapsedMs);
+                    System.out.println("WALLET_BLOCK_SUBMIT_RESPONSE_BODY=not captured by UtilUrl.sendPost");
                     System.out.println(":CONFLICT TREE, IN GLOBAL DIFFERENT TREE " + HttpStatus.CONFLICT.value());
                     System.out.println(":GOOD: SUCCESS  " + HttpStatus.OK.value());
                     System.out.println(":FAIL BAD BLOCKCHAIN: " + HttpStatus.EXPECTATION_FAILED.value());
                     System.out.println(":CONFLICT VERSION: " + HttpStatus.FAILED_DEPENDENCY.value());
                     System.out.println(":response: " + response + " address: " + s);
                 } catch (Exception e) {
+                    lastSubmitHttpStatus = -1;
+                    lastSubmitResponse = "submit failed";
+                    lastSubmitError = e.getClass().getName() + ": " + e.getMessage();
+                    lastSubmitTime = new Date().toString();
+                    System.out.println("WALLET_BLOCK_SUBMIT_ERROR");
+                    System.out.println("WALLET_BLOCK_SUBMIT_ERROR_CLASS=" + e.getClass().getName());
+                    System.out.println("WALLET_BLOCK_SUBMIT_ERROR_MESSAGE=" + e.getMessage());
+                    System.out.println("WALLET_BLOCK_SUBMIT_ERROR_URL=" + lastSubmitUrl);
+                    System.out.println("WALLET_BLOCK_SUBMIT_ERROR_INDEX=" + submitBlock.getIndex());
+                    System.out.println("WALLET_BLOCK_SUBMIT_ERROR_HASH=" + submitBlock.getHashBlock());
                     e.printStackTrace();
                     System.out.println(":exception resolve_from_to_block: " + originalF + " address: " + s);
 
@@ -840,6 +945,9 @@ public class BasisController {
     public synchronized String mining() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException, JSONException, CloneNotSupportedException {
         mining = true;
         try {
+            System.out.println("WALLET_MINING_STARTED");
+            System.out.println("WALLET_MINING_STARTED_NODE_SIZE=" + blockchainSize);
+            System.out.println("WALLET_MINING_STARTED_V35_ACTIVE=" + (blockchainSize >= Seting.V35_RESCUE_FORK_INDEX));
             String server = UtilsFileSaveRead.read(Seting.YOUR_SERVER);
             if (!server.isBlank() || !server.isEmpty()) {
                 Seting.ORIGINAL_ADDRESSES.removeAll(Seting.ORIGINAL_ADDRESSES);
@@ -1137,6 +1245,14 @@ public class BasisController {
         model.addAttribute("miningThreads", Mining.getLastMiningThreadCount());
         model.addAttribute("hashRate", Mining.getLastHashRateDisplay());
         model.addAttribute("lastStatus", Mining.getLastMiningStatus());
+        model.addAttribute("lastFoundBlockIndex", lastFoundBlockIndex >= 0 ? String.valueOf(lastFoundBlockIndex) : "not found yet");
+        model.addAttribute("lastFoundBlockHash", lastFoundBlockHash);
+        model.addAttribute("lastSubmitUrl", lastSubmitUrl);
+        model.addAttribute("lastSubmitResponse", lastSubmitResponse);
+        model.addAttribute("lastSubmitError", lastSubmitError);
+        model.addAttribute("lastSubmitTime", lastSubmitTime);
+        model.addAttribute("lastSubmitHttpStatus", lastSubmitHttpStatus == 0 ? "not submitted yet" : String.valueOf(lastSubmitHttpStatus));
+        model.addAttribute("lastSubmitElapsedMs", lastSubmitElapsedMs);
         if (minerShow == null) {
             model.addAttribute("address", "balance has not loaded yet");
             model.addAttribute("dollar", "balance has not loaded yet");

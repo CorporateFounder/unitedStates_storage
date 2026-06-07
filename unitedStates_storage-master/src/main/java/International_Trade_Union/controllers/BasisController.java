@@ -520,6 +520,17 @@ public class BasisController {
      * Высота блокчейна
      */
     private static int blockcheinSize = 0;
+    private static volatile long lastReceivedBlockIndex = -1;
+    private static volatile String lastReceivedBlockHash = "none";
+    private static volatile String lastReceivedAt = "never";
+    private static volatile String lastSubmitRemoteAddress = "none";
+    private static volatile String lastValidationResult = "none";
+    private static volatile String lastRejectReason = "none";
+    private static volatile long lastAddedBlockIndex = -1;
+    private static volatile String lastAddedBlockHash = "none";
+    private static volatile String lastAddedAt = "never";
+    private static volatile String lastWalletSubmitEndpoint = "none";
+    private static volatile String lastServerException = "none";
     /**
      * целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
      * удаляется, а сервер автоматически выключается System.exit(0)
@@ -673,6 +684,104 @@ public class BasisController {
 
     public static void setBlockcheinSize(int blockcheinSize) {
         BasisController.blockcheinSize = blockcheinSize;
+    }
+
+    static void resetBlockSubmitDebugForTests() {
+        lastReceivedBlockIndex = -1;
+        lastReceivedBlockHash = "none";
+        lastReceivedAt = "never";
+        lastSubmitRemoteAddress = "none";
+        lastValidationResult = "none";
+        lastRejectReason = "none";
+        lastAddedBlockIndex = -1;
+        lastAddedBlockHash = "none";
+        lastAddedAt = "never";
+        lastWalletSubmitEndpoint = "none";
+        lastServerException = "none";
+    }
+
+    static void recordReceivedBlockForTests(long index, String hash, String remoteAddress) {
+        recordReceivedBlock(index, hash, remoteAddress, "/nodes/resolve_from_to_block");
+    }
+
+    static void recordValidationResultForTests(String result, String rejectReason) {
+        recordValidationResult(result, rejectReason);
+    }
+
+    static void recordAddedBlockForTests(long index, String hash) {
+        recordAddedBlock(index, hash);
+    }
+
+    public static void recordPersistedBlockFromTournament(Block block) {
+        if (block == null) {
+            return;
+        }
+        lastAddedBlockIndex = block.getIndex();
+        lastAddedBlockHash = String.valueOf(block.getHashBlock());
+        lastAddedAt = new Date().toString();
+        lastValidationResult = "persisted";
+        lastRejectReason = "none";
+        System.out.println("SERVER_BLOCK_ADD_SUCCESS");
+        System.out.println("SERVER_BLOCK_ADD_MODE=persisted_by_tournament");
+        System.out.println("SERVER_BLOCK_ADD_SIZE_AFTER=" + blockcheinSize);
+        System.out.println("SERVER_BLOCK_ADD_PERSISTED_INDEX=" + block.getIndex());
+        System.out.println("SERVER_BLOCK_ADD_PERSISTED_HASH=" + block.getHashBlock());
+    }
+
+    static Map<String, Object> blockSubmitStatusSnapshotForTests() {
+        return blockSubmitStatusSnapshot();
+    }
+
+    private static void recordReceivedBlock(long index, String hash, String remoteAddress, String endpoint) {
+        lastReceivedBlockIndex = index;
+        lastReceivedBlockHash = String.valueOf(hash);
+        lastReceivedAt = new Date().toString();
+        lastSubmitRemoteAddress = String.valueOf(remoteAddress);
+        lastWalletSubmitEndpoint = endpoint;
+        lastValidationResult = "received";
+        lastRejectReason = "validation pending";
+        lastServerException = "none";
+    }
+
+    private static void recordValidationResult(String result, String rejectReason) {
+        lastValidationResult = result;
+        lastRejectReason = rejectReason == null || rejectReason.isBlank() ? "none" : rejectReason;
+    }
+
+    private static void recordAddedBlock(long index, String hash) {
+        lastAddedBlockIndex = index;
+        lastAddedBlockHash = String.valueOf(hash);
+        lastAddedAt = new Date().toString();
+        lastValidationResult = "accepted/queued";
+        lastRejectReason = "none";
+    }
+
+    private static Map<String, Object> blockSubmitStatusSnapshot() {
+        Runtime runtime = Runtime.getRuntime();
+        Map<String, Object> status = new LinkedHashMap<>();
+        status.put("currentSize", blockcheinSize);
+        status.put("lastReceivedBlockIndex", lastReceivedBlockIndex);
+        status.put("lastReceivedBlockHash", lastReceivedBlockHash);
+        status.put("lastReceivedAt", lastReceivedAt);
+        status.put("lastSubmitRemoteAddress", lastSubmitRemoteAddress);
+        status.put("lastValidationResult", lastValidationResult);
+        status.put("lastRejectReason", lastRejectReason);
+        status.put("lastAddedBlockIndex", lastAddedBlockIndex);
+        status.put("lastAddedBlockHash", lastAddedBlockHash);
+        status.put("lastAddedAt", lastAddedAt);
+        status.put("lastWalletSubmitEndpoint", lastWalletSubmitEndpoint);
+        status.put("lastServerException", lastServerException);
+        status.put("temporaryBlockQueueSize", winnerList == null ? 0 : winnerList.size());
+        status.put("freeMemory", runtime.freeMemory());
+        status.put("totalMemory", runtime.totalMemory());
+        status.put("maxMemory", runtime.maxMemory());
+        return status;
+    }
+
+    @GetMapping("/debug/block-submit/status")
+    @ResponseBody
+    public Map<String, Object> blockSubmitStatus() {
+        return blockSubmitStatusSnapshot();
     }
 
     public static HttpServletRequest getCurrentRequest() {
@@ -1109,11 +1218,13 @@ public class BasisController {
      * метод добавляет блоки в список ожидания, после чего их них уже формируется кандидаты и победитель
      */
     @PostMapping("/nodes/resolve_from_to_block")
-    public ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo) {
+    public ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo,
+                                                   HttpServletRequest request) {
 
         try {
 
             if (!blockedNewSendBlock.get()) {
+                recordValidationResult("rejected", "START SYNCHORNIZATION: blockedNewSendBlock=false");
                 return new ResponseEntity<>("START SYNCHORNIZATION", HttpStatus.OK);
             }
             if (UtilsBalance.getBlockService() == null)
@@ -1130,13 +1241,33 @@ public class BasisController {
 
             if (sendBlocksEndInfo.getVersion() != Seting.VERSION) {
                 System.out.println("wrong version version " + Seting.VERSION + " but: " + sendBlocksEndInfo.getVersion());
+                recordValidationResult("rejected", "wrong version");
                 return new ResponseEntity<>("FALSE", HttpStatus.FAILED_DEPENDENCY);
             }
 
             List<Block> blocks = sendBlocksEndInfo.getList();
+            Block receivedBlock = blocks == null || blocks.isEmpty() ? null : blocks.get(0);
+            if (receivedBlock != null) {
+                recordReceivedBlock(
+                        receivedBlock.getIndex(),
+                        receivedBlock.getHashBlock(),
+                        request == null ? "unknown" : request.getRemoteAddr(),
+                        "/nodes/resolve_from_to_block");
+                System.out.println("SERVER_BLOCK_RECEIVED");
+                System.out.println("SERVER_BLOCK_RECEIVED_ENDPOINT=/nodes/resolve_from_to_block");
+                System.out.println("SERVER_BLOCK_RECEIVED_REMOTE=" + (request == null ? "unknown" : request.getRemoteAddr()));
+                System.out.println("SERVER_BLOCK_RECEIVED_INDEX=" + receivedBlock.getIndex());
+                System.out.println("SERVER_BLOCK_RECEIVED_HASH=" + receivedBlock.getHashBlock());
+                System.out.println("SERVER_BLOCK_RECEIVED_PREVIOUS_HASH=" + receivedBlock.getPreviousHash());
+                System.out.println("SERVER_BLOCK_RECEIVED_MINER=" + receivedBlock.getMinerAddress());
+                System.out.println("SERVER_BLOCK_RECEIVED_TX_COUNT=" + (receivedBlock.getDtoTransactions() == null ? 0 : receivedBlock.getDtoTransactions().size()));
+                System.out.println("SERVER_BLOCK_RECEIVED_SIZE_BEFORE=" + blockcheinSize);
+                System.out.println("SERVER_BLOCK_RECEIVED_V35_ACTIVE=" + (blockcheinSize >= Seting.V35_RESCUE_FORK_INDEX));
+            }
             ///последовательность временных меток
             if (prevBlock.getTimestamp().getTime() > blocks.get(blocks.size() - 1).getTimestamp().getTime()) {
                 System.out.println("wrong time: prev uper now");
+                recordValidationResult("rejected", "candidate timestamp is below previous block timestamp");
                 return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
             }
             String addressMiner = null;
@@ -1145,6 +1276,7 @@ public class BasisController {
 
             } else {
                 System.out.println("wrong: empty address;");
+                recordValidationResult("rejected", "empty miner address");
                 return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
             }
 
@@ -1156,6 +1288,7 @@ public class BasisController {
                         || addlist.get(0).getIndex() != BasisController.getBlockchainSize()
                         || winnerList.contains(addlist.get(0))) {
                     System.out.println("this block has in system: ");
+                    recordValidationResult("rejected", "empty list, wrong next index, or duplicate winner candidate");
                     return new ResponseEntity<>("FALSE", HttpStatus.OK);
                 }
                 System.out.println("account: " + addressMiner);
@@ -1191,17 +1324,28 @@ public class BasisController {
                 Block checkBlock = addlist.get(0);
                 long timeDifferenceSeconds = (checkBlock.getTimestamp().getTime() - prevBlock().getTimestamp().getTime()) / 1000;
                 long actualTimeCheck = UtilsTime.getUniversalTimestamp() / 1000L;
+                System.out.println("SERVER_BLOCK_VALIDATE_START");
+                System.out.println("SERVER_BLOCK_VALIDATE_EXPECTED_SIZE=" + blockcheinSize);
+                System.out.println("SERVER_BLOCK_VALIDATE_EXPECTED_PREVIOUS_HASH=" + prevBlock.getHashBlock());
+                System.out.println("SERVER_BLOCK_VALIDATE_ACTUAL_PREVIOUS_HASH=" + checkBlock.getPreviousHash());
                 if (!checkBlock.getPreviousHash().equals(prevBlock.getHashBlock())
                         || isResolveBlockBelowMinimumDifficulty(checkBlock)
                         || timeDifferenceSeconds < 100
                         || timeDifferenceSeconds > actualTimeCheck
                         || !checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())) {
+                    String reason = "previousHashMismatch=" + !checkBlock.getPreviousHash().equals(prevBlock.getHashBlock())
+                            + ", belowMinimumDifficulty=" + isResolveBlockBelowMinimumDifficulty(checkBlock)
+                            + ", timeBelow100s=" + (timeDifferenceSeconds < 100)
+                            + ", futureTimestamp=" + (timeDifferenceSeconds > actualTimeCheck)
+                            + ", hashMismatch=" + (!checkBlock.getHashBlock().equals(checkBlock.hashForTransaction()));
                     System.out.println("wrong block: resolve_from_to_block: "
                             + !checkBlock.getPreviousHash().equals(prevBlock.getHashBlock() + ":" +
                             isResolveBlockBelowMinimumDifficulty(checkBlock)) + ":" +
                             (timeDifferenceSeconds < 100) + ":" +
                             (timeDifferenceSeconds > actualTimeCheck) + ":" +
                             (!checkBlock.getHashBlock().equals(checkBlock.hashForTransaction())));
+                    System.out.println("SERVER_BLOCK_ADD_REJECTED=" + reason);
+                    recordValidationResult("rejected", reason);
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
                 }
 
@@ -1241,6 +1385,7 @@ public class BasisController {
 
                 if (!shortDataBlockchain.isValidation()) {
                     System.out.println("wrong block chain, delete blocks: from to block:");
+                    recordValidationResult("rejected", "local shortDataBlockchain invalid");
                     System.exit(0);
                     return new ResponseEntity<>("please retry  wrong blockchain in storage", HttpStatus.CONFLICT);
                 }
@@ -1248,15 +1393,21 @@ public class BasisController {
 
                 if (temp.isValidation()) {
                     System.out.println("from to block is valid");
+                    System.out.println("SERVER_BLOCK_VALIDATE_RESULT=true");
+                    recordValidationResult("valid", "candidate passed shortCheckWithCanonicalContext");
 
                 } else {
                     if (temp.getSize() > shortDataBlockchain.getSize()) {
                         System.out.println("code error: " + HttpStatus.CONFLICT);
+                        System.out.println("SERVER_BLOCK_VALIDATE_RESULT=false");
+                        recordValidationResult("rejected", "candidate has larger invalid temp size");
 
 //                        MyLogger.saveLog("CONFLICT: " + account + " temp: " + temp);
 //                        MyLogger.saveLog("CONFLICT: " + account + " shortDataBlockchain: " + shortDataBlockchain);
                         return new ResponseEntity<>("FALSE", HttpStatus.CONFLICT);
                     }
+                    System.out.println("SERVER_BLOCK_VALIDATE_RESULT=false");
+                    recordValidationResult("rejected", "candidate short check failed");
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
                 }
 
@@ -1270,6 +1421,13 @@ public class BasisController {
 
 
                     winnerList.addAll(addlist);
+                    recordAddedBlock(addlist.get(addlist.size() - 1).getIndex(), addlist.get(addlist.size() - 1).getHashBlock());
+                    System.out.println("SERVER_BLOCK_ADD_SUCCESS");
+                    System.out.println("SERVER_BLOCK_ADD_MODE=queued_for_tournament");
+                    System.out.println("SERVER_BLOCK_ADD_SIZE_BEFORE=" + blockcheinSize);
+                    System.out.println("SERVER_BLOCK_ADD_QUEUED_INDEX=" + addlist.get(addlist.size() - 1).getIndex());
+                    System.out.println("SERVER_BLOCK_ADD_QUEUED_HASH=" + addlist.get(addlist.size() - 1).getHashBlock());
+                    System.out.println("SERVER_BLOCK_ADD_TEMPORARY_QUEUE_SIZE=" + winnerList.size());
 
 
                     utilsResolving.sendAllBlocksToStorage(addlist);
@@ -1288,11 +1446,17 @@ public class BasisController {
 
                     return new ResponseEntity<>("OK", HttpStatus.OK);
                 } else {
+                    recordValidationResult("rejected", "candidate did not beat local chain score");
                     return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
                 }
 
 
             } catch (Exception e) {
+                lastServerException = e.getClass().getName() + ": " + e.getMessage();
+                recordValidationResult("error", lastServerException);
+                System.out.println("SERVER_BLOCK_ADD_ERROR");
+                System.out.println("SERVER_BLOCK_ADD_ERROR_CLASS=" + e.getClass().getName());
+                System.out.println("SERVER_BLOCK_ADD_ERROR_MESSAGE=" + e.getMessage());
                 throw new RuntimeException(e);
             } finally {
 
@@ -1301,6 +1465,11 @@ public class BasisController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            lastServerException = e.getClass().getName() + ": " + e.getMessage();
+            recordValidationResult("error", lastServerException);
+            System.out.println("SERVER_BLOCK_ADD_ERROR");
+            System.out.println("SERVER_BLOCK_ADD_ERROR_CLASS=" + e.getClass().getName());
+            System.out.println("SERVER_BLOCK_ADD_ERROR_MESSAGE=" + e.getMessage());
             MyLogger.saveLog("resolve_conflict:  " + e.getMessage(), e);
 
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
