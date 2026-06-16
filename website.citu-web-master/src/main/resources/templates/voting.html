@@ -11,11 +11,11 @@
 <div class="container mt-5">
     <h3 th:text="${title}">Current Package</h3>
 
-    <!-- Существующий список законов без кнопок -->
+    <!-- Ð¡ÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÑŽÑ‰Ð¸Ð¹ ÑÐ¿Ð¸ÑÐ¾Ðº Ð·Ð°ÐºÐ¾Ð½Ð¾Ð² Ð±ÐµÐ· ÐºÐ½Ð¾Ð¿Ð¾Ðº -->
     <div th:each="el : ${currentLaw}" th:classappend="${el.isValid} ? 'alert-success' : 'alert-danger'" class="alert mt-2">
-        <!-- Отображение статуса голосования пользователя -->
+        <!-- ÐžÑ‚Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ðµ ÑÑ‚Ð°Ñ‚ÑƒÑÐ° Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð½Ð¸Ñ Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»Ñ -->
 
-        <!-- Извлеченный фрагмент без кнопок -->
+        <!-- Ð˜Ð·Ð²Ð»ÐµÑ‡ÐµÐ½Ð½Ñ‹Ð¹ Ñ„Ñ€Ð°Ð³Ð¼ÐµÐ½Ñ‚ Ð±ÐµÐ· ÐºÐ½Ð¾Ð¿Ð¾Ðº -->
         <h4 th:text="'Address Package : ' + ${el.addressLaw}"></h4>
         <p th:text="'Package : ' + (${el.isPosition} ? 'POSITION' : 'SOLUTION/RULE')"></p>
         <p th:text="'who create Package : ' + ${el.whoCreate}"></p>

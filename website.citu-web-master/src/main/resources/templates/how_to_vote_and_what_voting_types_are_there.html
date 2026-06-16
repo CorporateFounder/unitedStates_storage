@@ -4,20 +4,20 @@
     <title th:text="${title}">Charter</title>
     <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
 
-    <!-- Подключаем ваш «осенний» файл со стилями -->
+    <!-- ÐŸÐ¾Ð´ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ Ð²Ð°Ñˆ Â«Ð¾ÑÐµÐ½Ð½Ð¸Ð¹Â» Ñ„Ð°Ð¹Ð» ÑÐ¾ ÑÑ‚Ð¸Ð»ÑÐ¼Ð¸ -->
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 
-    <!-- Если нужно оставить Bootstrap для сетки/отступов, оставьте.
-         Если нет необходимости в Bootstrap, можно удалить следующую строку. -->
+    <!-- Ð•ÑÐ»Ð¸ Ð½ÑƒÐ¶Ð½Ð¾ Ð¾ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ Bootstrap Ð´Ð»Ñ ÑÐµÑ‚ÐºÐ¸/Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ð¾Ð², Ð¾ÑÑ‚Ð°Ð²ÑŒÑ‚Ðµ.
+         Ð•ÑÐ»Ð¸ Ð½ÐµÑ‚ Ð½ÐµÐ¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼Ð¾ÑÑ‚Ð¸ Ð² Bootstrap, Ð¼Ð¾Ð¶Ð½Ð¾ ÑƒÐ´Ð°Ð»Ð¸Ñ‚ÑŒ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰ÑƒÑŽ ÑÑ‚Ñ€Ð¾ÐºÑƒ. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css">
 </head>
 <body>
 
-<!-- Header, который потом стилизуется классом .header-custom из вашего styles.css -->
+<!-- Header, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ð¹ Ð¿Ð¾Ñ‚Ð¾Ð¼ ÑÑ‚Ð¸Ð»Ð¸Ð·ÑƒÐµÑ‚ÑÑ ÐºÐ»Ð°ÑÑÐ¾Ð¼ .header-custom Ð¸Ð· Ð²Ð°ÑˆÐµÐ³Ð¾ styles.css -->
 <header th:insert="blocks/header :: header"></header>
 
-<!-- Вместо alert alert-info используем вашу .alert-info,
-     которая определяется в вашем styles.css (фон #f7e4d8, цвет #3e261a, и т.д.) -->
+<!-- Ð’Ð¼ÐµÑÑ‚Ð¾ alert alert-info Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÐ¼ Ð²Ð°ÑˆÑƒ .alert-info,
+     ÐºÐ¾Ñ‚Ð¾Ñ€Ð°Ñ Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÑÐµÑ‚ÑÑ Ð² Ð²Ð°ÑˆÐµÐ¼ styles.css (Ñ„Ð¾Ð½ #f7e4d8, Ñ†Ð²ÐµÑ‚ #3e261a, Ð¸ Ñ‚.Ð´.) -->
 <div class="alert-info" style="margin: 1rem; padding: 1rem;">
     <img th:src="@{/vote_p/choose position.png}" alt="Choose Position"/>
     <img th:src="@{/vote_p/create law.png}" alt="Create Law"/>
@@ -75,7 +75,7 @@
     </ol>
 </div>
 
-<!-- Footer, стилизуется классом .footer-custom из вашего styles.css -->
+<!-- Footer, ÑÑ‚Ð¸Ð»Ð¸Ð·ÑƒÐµÑ‚ÑÑ ÐºÐ»Ð°ÑÑÐ¾Ð¼ .footer-custom Ð¸Ð· Ð²Ð°ÑˆÐµÐ³Ð¾ styles.css -->
 <footer th:insert="blocks/footer :: footer"></footer>
 
 </body>

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>website.citu</artifactId>
-	<version>0.0.24-SNAPSHOT</version>
+	<version>1.0.7</version>
 	<name>website.citu</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -98,3 +98,4 @@
 	</build>
 
 </project>
+

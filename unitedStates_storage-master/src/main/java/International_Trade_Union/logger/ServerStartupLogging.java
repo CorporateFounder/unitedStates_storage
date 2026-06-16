@@ -44,7 +44,7 @@ public class ServerStartupLogging implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         Runtime runtime = Runtime.getRuntime();
-        String version = "1.0.14";
+        String version = "1.0.15";
         DiagnosticLogRetention.configure(
                 logRetentionEnabled,
                 cleanupEveryBlocks,

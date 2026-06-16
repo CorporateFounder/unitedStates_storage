@@ -1,19 +1,58 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<div th:fragment="releaseLinks" class="citu-resource-links v35-release-links">
-    <a class="btn btn-primary"
-       href="https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291/citu-node-v35-activation-514291-1.0.0.jar">Download Node JAR</a>
-    <a class="btn btn-primary"
-       href="https://github.com/CorporateFounder/unitedStates_final/releases/download/v35-wallet-activation-514291/citu-wallet-v35-activation-514291-1.0.0.jar">Download Wallet JAR</a>
-    <a class="btn btn-outline-primary"
-       href="https://github.com/CorporateFounder/unitedStates_storage/releases/tag/v35-node-activation-514291">Node GitHub Release</a>
-    <a class="btn btn-outline-primary"
-       href="https://github.com/CorporateFounder/unitedStates_final/releases/tag/v35-wallet-activation-514291">Wallet GitHub Release</a>
-    <a class="btn btn-outline-secondary"
-       href="https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291/CITU_V35_514291_SHA256SUMS.txt">SHA256 checksums</a>
-    <a class="btn btn-outline-secondary"
-       href="https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291/CITU_V35_514291_START_GUIDE_RU_EN.md">Start guide</a>
+<div th:fragment="releaseLinks" class="v35-release-links">
+    <div class="alert alert-info">
+        <strong>Recommended operator versions:</strong> Node/server <code>1.0.15 Stable</code> and wallet/miner <code>1.0.2</code>.
+        Website/operator guide <code>1.0.7</code> contains the current Node 1.0.15 Stable link update. V35 activation is scheduled at block <strong>514291</strong>;
+        before that block, <code>v35Active=false</code> is expected and normal.
+    </div>
+    <div class="alert alert-secondary">
+        Older releases are historical and should not be used by operators. Use Node <code>1.0.15 Stable</code> and Wallet <code>1.0.2</code>.
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h5">Node/server 1.0.15 Stable</h3>
+                    <p>Update node infrastructure to 1.0.15 Stable before V35 activation block 514291. This is an emergency stability fix after Node 1.0.12 OOM, not a consensus change.</p>
+                    <p>Node 1.0.15 Stable keeps peer/network limits, bounds peer diagnostic state, bounds temporary peer work, adds a memory guard for non-critical peer work, improves safer peer synchronization, and keeps a hard node log cap targeting under 10MB in stable mode. Diagnostics and heavy forensics are disabled by default.</p>
+                    <p>Artifact: <code>citu-node-v35-activation-514291-1.0.15.jar</code></p>
+                    <p>SHA256: <code>fe1955a34c03f819149713a792d36155483db86bccd57f1506a1e3a7e57e5444</code></p>
+                    <pre class="v35-code"><code>java -Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+ExitOnOutOfMemoryError -Dlogging.file.path=C:\server\logs -Dlogging.level.root=INFO -Dserver.tomcat.threads.max=80 -Dserver.tomcat.accept-count=100 -Dserver.tomcat.max-connections=1024 -Dserver.port=82 -Dserver.address=194.87.236.238 -Dcitu.prePersistPeerPropagation.enabled=false -Dcitu.memoryForensics.enabled=false -Dcitu.memoryForensics.file.enabled=false -Dcitu.memoryForensics.verbose=false -Dcitu.diagnostic.traces.enabled=false -Dcitu.diagnostic.file.enabled=false -Dcitu.peer.maxPeersPerCycle=3 -Dcitu.peer.maxPeersPerTournamentCycle=3 -Dcitu.peer.maxPeersPerResolveCycle=3 -Dcitu.peer.maxPeersPerPropagationCycle=3 -Dcitu.peer.maxPeersPerReadinessCycle=3 -Dcitu.peer.maxRemoteCallsPerCycle=6 -Dcitu.peer.maxRemoteCallsPerMinute=60 -Dcitu.peer.maxHealthEntries=32 -Dcitu.peer.maxErrorEntries=32 -Dcitu.peer.maxBlockedHostEntries=32 -Dcitu.memoryGuard.skipPeerWorkPercent=70 -Dcitu.memoryGuard.emergencyPeerWorkPercent=85 -Dcitu.peer.connectTimeoutMs=2000 -Dcitu.peer.readTimeoutMs=3000 -Dcitu.resolve.maxDurationMs=5000 -jar C:\citu-node-v35-activation-514291-1.0.15.jar</code></pre>
+                    <div class="citu-resource-links">
+                        <a class="btn btn-primary" href="https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291-1.0.15/citu-node-v35-activation-514291-1.0.15.jar">Download Node JAR</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/CorporateFounder/unitedStates_storage/releases/tag/v35-node-activation-514291-1.0.15">Node GitHub Release</a>
+                        <a class="btn btn-outline-secondary" href="https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291-1.0.15/citu-node-v35-activation-514291-1.0.15.jar.sha256">Node SHA256</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h5">Wallet/miner 1.0.2</h3>
+                    <p>Miners should update wallet/miner to 1.0.2. The wallet shows mining submission diagnostics for block found, submit URL, status, and response.</p>
+                    <p>Artifact: <code>citu-wallet-v35-activation-514291-1.0.2.jar</code></p>
+                    <p>SHA256: <code>b2ea4d41925326a8b44115177db17a06ee25e6bfab0e832d7da2153313196179</code></p>
+                    <pre class="v35-code"><code>java -Xms256m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=C:\server\logs\citu-wallet-v35-514291.hprof -Dserver.port=8082 -jar C:\citu-wallet-v35-activation-514291-1.0.2.jar</code></pre>
+                    <div class="citu-resource-links">
+                        <a class="btn btn-primary" href="https://github.com/CorporateFounder/unitedStates_final/releases/download/v35-wallet-activation-514291-1.0.2/citu-wallet-v35-activation-514291-1.0.2.jar">Download Wallet JAR</a>
+                        <a class="btn btn-outline-primary" href="https://github.com/CorporateFounder/unitedStates_final/releases/tag/v35-wallet-activation-514291-1.0.2">Wallet GitHub Release</a>
+                        <a class="btn btn-outline-secondary" href="https://github.com/CorporateFounder/unitedStates_final/releases/download/v35-wallet-activation-514291-1.0.2/CITU_V35_514291_WALLET_1.0.2_SHA256SUMS.txt">Wallet SHA256</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-warning mt-3">
+        No founder burn has occurred. The official public burn address has not been published.
+        <code>BURN_ADDRESS</code> is an internal placeholder only; do not send funds to it.
+        Founder burn is deferred until after the network fully transitions to V35 and remains stable.
+    </div>
 </div>
 </body>
 </html>
+
+
+

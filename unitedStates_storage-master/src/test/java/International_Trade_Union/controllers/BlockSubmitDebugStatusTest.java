@@ -174,6 +174,9 @@ class BlockSubmitDebugStatusTest {
         assertRoute("tournamentTraces", "/debug/tournament/traces");
         assertRoute("addBlockTraces", "/debug/add-block/traces");
         assertRoute("nodeRuntime", "/debug/node/runtime");
+        assertRoute("currentCandidates", "/currentCandidates");
+        assertRoute("lastTournament", "/lastTournament");
+        assertRoute("lastTournamentWinner", "/lastTournamentWinner");
     }
 
     private static void assertRoute(String methodName, String expectedPath) throws NoSuchMethodException {

@@ -13,7 +13,7 @@
     <section class="citu-panel p-4 mb-4">
         <h2>Open the local wallet</h2>
         <p>Start the wallet JAR and open <a href="http://127.0.0.1:8082/create-account">http://127.0.0.1:8082/create-account</a>.</p>
-        <pre class="v35-code"><code>java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code></pre>
+        <pre class="v35-code"><code>java -Xms256m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=C:\server\logs\citu-wallet-v35-514291.hprof -Dserver.port=8082 -jar C:\citu-wallet-v35-activation-514291-1.0.2.jar</code></pre>
     </section>
     <section class="alert alert-danger">
         <h2>Password / private key safety</h2>

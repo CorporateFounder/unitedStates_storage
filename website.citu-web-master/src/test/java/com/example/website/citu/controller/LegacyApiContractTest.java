@@ -33,6 +33,8 @@ class LegacyApiContractTest {
     private final List<String> requests = new ArrayList<>();
     private HttpServer server;
     private boolean sizeUnavailable;
+    private boolean tournamentEmpty;
+    private boolean currentCandidatesEmpty;
 
     @Autowired
     private MockMvc mockMvc;
@@ -167,7 +169,7 @@ class LegacyApiContractTest {
     }
 
     @Test
-    void winnersCompatibilityRoutesRenderFromOldEndpoints() throws Exception {
+    void winnersCompatibilityRoutesRenderFromTournamentEndpoints() throws Exception {
         mockMvc.perform(get("/allwinners"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("winner-address")))
@@ -183,8 +185,25 @@ class LegacyApiContractTest {
                 .andExpect(content().string(containsString("winner-list-address")))
                 .andExpect(content().string(containsString("citu-section")));
 
-        assertTrue(requests.contains("GET /allwinners"));
-        assertTrue(requests.contains("GET /winnerList"));
+        assertTrue(requests.contains("GET /lastTournamentCandidates"));
+        assertTrue(requests.contains("GET /lastTournament"));
+        assertTrue(requests.contains("GET /currentCandidates"));
+    }
+
+    @Test
+    void winnersPagesTreatEmptyArraysAsValidEmptyState() throws Exception {
+        tournamentEmpty = true;
+        mockMvc.perform(get("/allwinners"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("No tournament snapshot yet")))
+                .andExpect(content().string(not(containsString("temporarily unavailable"))));
+
+        currentCandidatesEmpty = true;
+        requests.clear();
+        mockMvc.perform(get("/winnerList"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("No current candidates right now")))
+                .andExpect(content().string(not(containsString("temporarily unavailable"))));
     }
 
     @Test
@@ -299,7 +318,9 @@ class LegacyApiContractTest {
             case "/sub-blocks" -> blocksRange();
             case "/senderTransactions" -> senderTransactions(exchange.getRequestURI().getRawQuery());
             case "/customerTransactions" -> customerTransactions(exchange.getRequestURI().getRawQuery());
-            case "/allwinners", "/allWinners" -> winner("winner-address");
+            case "/lastTournamentCandidates", "/allwinners", "/allWinners" -> tournamentEmpty ? "[]" : winner("winner-address");
+            case "/lastTournament" -> "{\"candidateCount\":1,\"selectedWinnerMinerAddress\":\"winner-address\",\"blockIndex\":1,\"selectionReason\":\"test\",\"selectionStage\":\"test\",\"createdAt\":123}";
+            case "/currentCandidates" -> currentCandidatesEmpty ? "[]" : "[" + blockJson(2, "winner-list-hash", "winner-list-address") + "]";
             case "/winnerList", "/winerList" -> winner("winner-list-address");
             case "/bigRandomWiner", "/bigRandomWinner" -> winner("big-random-address");
             default -> "[]";
@@ -320,11 +341,15 @@ class LegacyApiContractTest {
     }
 
     private String blockJson(Object index, String hash) {
+        return blockJson(index, hash, "miner");
+    }
+
+    private String blockJson(Object index, String hash, String minerAddress) {
         String renderedIndex = index instanceof String ? "\"" + index + "\"" : String.valueOf(index);
         return "{\"index\":" + renderedIndex
                 + ",\"hashBlock\":\"" + hash + "\""
                 + ",\"previousHash\":\"prev\""
-                + ",\"minerAddress\":\"miner\""
+                + ",\"minerAddress\":\"" + minerAddress + "\""
                 + ",\"founderAddress\":\"founder\""
                 + ",\"randomNumberProof\":7"
                 + ",\"minerRewards\":8.5"

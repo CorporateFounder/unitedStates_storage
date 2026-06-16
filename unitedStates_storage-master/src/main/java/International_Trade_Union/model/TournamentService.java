@@ -761,7 +761,14 @@ public class TournamentService {
 
             BasisController.setIsSaveFile(true);
 
-            BasisController.setAllWiners(blockToLiteVersion(winnerList, balances));
+            List<LiteVersionWiner> rankedTournamentCandidates = blockToLiteVersion(winnerList, balances);
+            BasisController.setAllWiners(rankedTournamentCandidates);
+            BasisController.publishTournamentSnapshot(
+                    rankedTournamentCandidates,
+                    lastTournamentStartMillis,
+                    System.currentTimeMillis(),
+                    "tournament after sortWinner",
+                    "ranked_by_tournament_sort");
             BasisController.getCountTransactionsWiner().clear();
             BasisController.getStakingWiners().clear();
             BasisController.getBigRandomWiner().clear();
@@ -798,35 +805,6 @@ public class TournamentService {
                 BasisController.setTotalAll(blockService.getTotalDigitalAllBalance());
 
 
-            }
-
-
-            if (winner == null) {
-                winner = new ArrayList<>();
-            } else {
-                winner.clear();
-            }
-            if (winnerDiff == null) {
-                winnerDiff = new ArrayList<>();
-            } else {
-                winnerDiff.clear();
-            }
-            if (winnerCountTransaction == null) {
-                winnerCountTransaction = new ArrayList<>();
-            } else {
-                winnerCountTransaction.clear();
-            }
-            if (winnerStaking == null) {
-                winnerStaking = new ArrayList<>();
-            } else {
-                winnerStaking.clear();
-            }
-            if (BasisController.getWinnerList() == null) {
-                BasisController.setWinnerList(new CopyOnWriteArrayList<>());
-                BasisController.setSizeWinnerList(0);
-            } else {
-                BasisController.getWinnerList().clear();
-                BasisController.setSizeWinnerList(0);
             }
 
 
@@ -895,12 +873,21 @@ public class TournamentService {
     }
 
     void clearTemporaryTournamentState() {
+        TournamentSnapshot snapshot = BasisController.getLastTournamentSnapshot();
+        MyLogger.saveLog("TOURNAMENT_PUBLIC_SNAPSHOT_BEFORE_CLEAR currentWinnerListSize="
+                + (BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size())
+                + " allWinnersSize=" + (BasisController.getAllWiners() == null ? 0 : BasisController.getAllWiners().size())
+                + " snapshotCandidateCount=" + (snapshot == null ? 0 : snapshot.getCandidateCount())
+                + " selectedWinnerIndex=" + (snapshot == null ? -1 : snapshot.getBlockIndex())
+                + " selectedWinnerMiner=" + (snapshot == null ? "none" : String.valueOf(snapshot.getSelectedWinnerMinerAddress())));
         clearWinners();
-        BasisController.setAllWiners(new ArrayList<>());
         BasisController.setCountTransactionsWiner(new ArrayList<>());
         BasisController.setStakingWiners(new ArrayList<>());
         BasisController.setBigRandomWiner(new ArrayList<>());
         BasisController.setPowerWiners(new ArrayList<>());
+        MyLogger.saveLog("TOURNAMENT_PUBLIC_SNAPSHOT_AFTER_CLEAR currentWinnerListSize="
+                + (BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size())
+                + " snapshotStillAvailable=" + (BasisController.getLastTournamentSnapshot() != null));
         if (poolBlockService != null) {
             poolBlockService.clearPoolBlocks();
         }

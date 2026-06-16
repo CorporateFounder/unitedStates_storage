@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,8 @@ public class WinnersController {
 
     @GetMapping({"/winners", "/allwinners", "/allWinners"})
     public String winners(Model model) throws JsonProcessingException {
-        List<LiteVersionWiner> allWinersList = safeLiteWinners(WebController.getResult("/allwinners", "error allWiners"));
+        EndpointJson winnersJson = firstAvailable("/lastTournamentCandidates", "/allwinners");
+        List<LiteVersionWiner> allWinersList = safeLiteWinners(winnersJson.json());
         model.addAttribute("allWiners", allWinersList);
         model.addAttribute("uniq", allWinersList.stream().filter(UtilsUse.distinctByKey(LiteVersionWiner::getAddress)).collect(Collectors.toList()).size());
         model.addAttribute("allWinnerCount", allWinersList.size());
@@ -44,27 +46,33 @@ public class WinnersController {
         }
         model.addAttribute("bigRandom", bigRandomList);
         model.addAttribute("bigRandomCount", bigRandomList.size());
-        model.addAttribute("title", "Winners");
-        model.addAttribute("sourceEndpoint", "/allwinners");
-        model.addAttribute("status", allWinersList.isEmpty() && bigRandomList.isEmpty() ? ApiFallback.UNAVAILABLE : "");
+        EndpointJson tournamentJson = firstAvailable("/lastTournament");
+        Map<String, Object> tournamentSummary = safeMap(tournamentJson.json());
+        model.addAttribute("lastTournament", tournamentSummary);
+        model.addAttribute("title", "Last tournament winners");
+        model.addAttribute("sourceEndpoint", winnersJson.endpoint());
+        model.addAttribute("status", winnersJson.available()
+                ? (allWinersList.isEmpty() ? "No tournament snapshot yet" : "")
+                : ApiFallback.UNAVAILABLE);
 
         return "winners";
     }
 
     @GetMapping({"/winnerList", "/winerList"})
     public String winnerList(Model model) throws JsonProcessingException {
-        List<LiteVersionWiner> winnerList = safeLiteWinners(WebController.getResult("/winnerList", "error winnerList"));
-        if (winnerList.isEmpty()) {
-            winnerList = safeLiteWinners(WebController.getResult("/winerList", "error winerList"));
-        }
+        EndpointJson candidatesJson = firstAvailable("/currentCandidates", "/winnerList", "/winerList");
+        List<LiteVersionWiner> winnerList = safeCurrentCandidateRows(candidatesJson.json());
         model.addAttribute("allWiners", winnerList);
         model.addAttribute("uniq", winnerList.stream().filter(UtilsUse.distinctByKey(LiteVersionWiner::getAddress)).collect(Collectors.toList()).size());
         model.addAttribute("allWinnerCount", winnerList.size());
         model.addAttribute("bigRandom", new ArrayList<>());
         model.addAttribute("bigRandomCount", 0);
-        model.addAttribute("title", "Winner list");
-        model.addAttribute("sourceEndpoint", "/winnerList");
-        model.addAttribute("status", winnerList.isEmpty() ? ApiFallback.UNAVAILABLE : "");
+        model.addAttribute("lastTournament", Collections.emptyMap());
+        model.addAttribute("title", "Current candidates");
+        model.addAttribute("sourceEndpoint", candidatesJson.endpoint());
+        model.addAttribute("status", candidatesJson.available()
+                ? (winnerList.isEmpty() ? "No current candidates right now" : "")
+                : ApiFallback.UNAVAILABLE);
         return "winners";
     }
 
@@ -177,5 +185,57 @@ public class WinnersController {
         } catch (Exception e) {
             return new ArrayList<>();
         }
+    }
+
+    private List<LiteVersionWiner> safeCurrentCandidateRows(String json) {
+        if (ApiFallback.isBlank(json)) {
+            return new ArrayList<>();
+        }
+        try {
+            List<Block> blocks = UtilsJson.jsonToListBlock(json);
+            List<LiteVersionWiner> rows = new ArrayList<>();
+            if (blocks == null) {
+                return rows;
+            }
+            for (Block block : blocks) {
+                rows.add(new LiteVersionWiner(
+                        block.getIndex(),
+                        block.getMinerAddress(),
+                        block.getHashBlock(),
+                        block.getDtoTransactions() == null ? 0 : block.getDtoTransactions().size(),
+                        0.0,
+                        0,
+                        block.getHashCompexity()));
+            }
+            return rows;
+        } catch (Exception ignored) {
+            return safeLiteWinners(json);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> safeMap(String json) {
+        if (ApiFallback.isBlank(json)) {
+            return Collections.emptyMap();
+        }
+        try {
+            Object parsed = UtilsJson.jsonToClass(json, Map.class);
+            return parsed instanceof Map ? (Map<String, Object>) parsed : Collections.emptyMap();
+        } catch (Exception e) {
+            return Collections.emptyMap();
+        }
+    }
+
+    private EndpointJson firstAvailable(String... endpoints) {
+        for (String endpoint : endpoints) {
+            String json = WebController.getResult(endpoint, "winners endpoint unavailable " + endpoint);
+            if (!ApiFallback.UNAVAILABLE.equals(json)) {
+                return new EndpointJson(endpoint, json, true);
+            }
+        }
+        return new EndpointJson(endpoints.length == 0 ? "" : endpoints[0], ApiFallback.UNAVAILABLE, false);
+    }
+
+    private record EndpointJson(String endpoint, String json, boolean available) {
     }
 }

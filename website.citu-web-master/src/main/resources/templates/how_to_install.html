@@ -9,16 +9,16 @@
 <body class="v35-public">
 <header th:insert="blocks/header :: header"></header>
 <main class="container my-4">
-    <h1>Install CITU 1.0.0</h1>
+    <h1>Install CITU node 1.0.15 Stable / wallet 1.0.2</h1>
     <section class="citu-panel p-4 mb-4">
         <h2>Official downloads</h2>
-        <p>Download ready V35 1.0.0 node and wallet JARs from the official GitHub Releases. Verify SHA256 before running.</p>
+        <p>Download ready V35 Node/server 1.0.15 Stable and wallet/miner 1.0.2 JARs from the official GitHub Releases. Website/operator guide 1.0.7 contains the current Node 1.0.15 Stable link update. Verify SHA256 before running.</p>
         <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
     </section>
     <section class="citu-panel p-4 mb-4">
         <h2>Start locally</h2>
-        <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083
-java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code></pre>
+        <pre class="v35-code"><code>java -Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+ExitOnOutOfMemoryError -Dlogging.file.path=C:\server\logs -Dlogging.level.root=INFO -Dserver.tomcat.threads.max=80 -Dserver.tomcat.accept-count=100 -Dserver.tomcat.max-connections=1024 -Dserver.port=82 -Dserver.address=194.87.236.238 -Dcitu.prePersistPeerPropagation.enabled=false -Dcitu.memoryForensics.enabled=false -Dcitu.memoryForensics.file.enabled=false -Dcitu.memoryForensics.verbose=false -Dcitu.diagnostic.traces.enabled=false -Dcitu.diagnostic.file.enabled=false -Dcitu.peer.maxPeersPerCycle=3 -Dcitu.peer.maxPeersPerTournamentCycle=3 -Dcitu.peer.maxPeersPerResolveCycle=3 -Dcitu.peer.maxPeersPerPropagationCycle=3 -Dcitu.peer.maxRemoteCallsPerCycle=6 -Dcitu.peer.maxRemoteCallsPerMinute=60 -Dcitu.peer.connectTimeoutMs=2000 -Dcitu.peer.readTimeoutMs=3000 -Dcitu.resolve.maxDurationMs=5000 -jar C:\citu-node-v35-activation-514291-1.0.15.jar
+java -Xms256m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=C:\server\logs\citu-wallet-v35-514291.hprof -Dserver.port=8082 -jar C:\citu-wallet-v35-activation-514291-1.0.2.jar</code></pre>
         <p>Open local node check: <a href="http://127.0.0.1:8083/size">http://127.0.0.1:8083/size</a></p>
         <p>Open local wallet: <a href="http://127.0.0.1:8082">http://127.0.0.1:8082</a></p>
         <p>Open V35 dashboard: <a href="http://127.0.0.1:8082/v35-dashboard">http://127.0.0.1:8082/v35-dashboard</a></p>
@@ -26,6 +26,7 @@ java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code><
     <section class="alert alert-warning">
         <h2>Safety notes</h2>
         <p>V35 activation is scheduled at block <strong>514291</strong>. Before block 514291, <code>v35Active=false</code> is expected.</p>
+        <p>The public chain height is increasing again after node 1.0.15 Stable / wallet 1.0.2 deployment. This update is stability and diagnostics only; it does not change consensus, rewards, activation logic, burn logic, or jackpot logic.</p>
         <p>No founder burn has occurred. <code>BURN_ADDRESS</code> is an internal placeholder, not a public transfer destination.</p>
         <p>Legacy screenshots may remain in archive pages for history, but this page is the current install flow.</p>
     </section>
@@ -33,3 +34,7 @@ java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code><
 <footer th:insert="blocks/footer :: footer"></footer>
 </body>
 </html>
+
+
+
+

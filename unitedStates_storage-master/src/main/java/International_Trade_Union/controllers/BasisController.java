@@ -179,6 +179,9 @@ public class BasisController {
     private static CopyOnWriteArrayList<Block> winnerList = new CopyOnWriteArrayList<>();
     private static AtomicInteger sizeWinnerList = new AtomicInteger(0);
     private static final ReentrantLock lock = new ReentrantLock();
+    private static final int MAX_PUBLIC_TOURNAMENT_SNAPSHOTS = 10;
+    private static volatile TournamentSnapshot lastTournamentSnapshot = null;
+    private static final Deque<TournamentSnapshot> lastTournamentSnapshots = new ArrayDeque<>();
 
     public static AtomicInteger getSizeWinnerList() {
         return sizeWinnerList;
@@ -188,9 +191,23 @@ public class BasisController {
         sizeWinnerList.set(size);
     }
 
-    @GetMapping("/winnerList")
+    @GetMapping(value = "/winnerList", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public String winnerList() {
+        if (System.currentTimeMillis() >= 0) {
+            long start = System.currentTimeMillis();
+            long memoryBefore = usedMemory();
+            List<Block> result = currentCandidatesSnapshot();
+            MyLogger.saveLog("PUBLIC_TOURNAMENT_ENDPOINT endpoint=/winnerList resultSize=" + result.size()
+                    + " durationMs=" + (System.currentTimeMillis() - start)
+                    + " memoryDelta=" + (usedMemory() - memoryBefore));
+            try {
+                return UtilsJson.objToStringJson(result);
+            } catch (IOException e) {
+                MyLogger.saveLog("Error serializing current candidates JSON: " + e.getMessage());
+                return "[]";
+            }
+        }
         try {
             // Получаем текущий список победителей
             List<Block> currentWinnerList = BasisController.getWinnerList();
@@ -198,7 +215,7 @@ public class BasisController {
 
             // Быстрая проверка кэша
             if (isCacheValid(currentWinnerList)) {
-                tempList.add(winnerList.get(0));
+                tempList.addAll(winnerList);
                 return UtilsJson.objToStringJson(tempList);
             }
 
@@ -216,7 +233,7 @@ public class BasisController {
 
             // После обновления или если блокировка недоступна, возвращаем результат
             if (!winnerList.isEmpty()) {
-                tempList.add(winnerList.get(0));
+                tempList.addAll(winnerList);
             }
             return UtilsJson.objToStringJson(tempList);
         } catch (IOException e) {
@@ -228,6 +245,18 @@ public class BasisController {
             e.printStackTrace();
             return fallbackJson();
         }
+    }
+
+    @GetMapping(value = "/currentCandidates", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public List<Block> currentCandidates() {
+        long start = System.currentTimeMillis();
+        long memoryBefore = usedMemory();
+        List<Block> result = currentCandidatesSnapshot();
+        MyLogger.saveLog("PUBLIC_TOURNAMENT_ENDPOINT endpoint=/currentCandidates resultSize=" + result.size()
+                + " durationMs=" + (System.currentTimeMillis() - start)
+                + " memoryDelta=" + (usedMemory() - memoryBefore));
+        return result;
     }
 
     // Возвращает JSON пустого массива в случае ошибки
@@ -371,16 +400,36 @@ public class BasisController {
     /**
      * Список кандидатов из которых был выбран победитель в данном сервере
      */
-    @GetMapping("/allwinners")
+    @GetMapping(value = {"/allwinners", "/lastTournamentCandidates"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public String allWinners() {
-        String json = "";
-        try {
-            json = UtilsJson.objToStringJson(allWiners);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return json;
+    public List<LiteVersionWiner> allWinners() {
+        long start = System.currentTimeMillis();
+        long memoryBefore = usedMemory();
+        List<LiteVersionWiner> result = lastTournamentCandidatesSnapshot();
+        MyLogger.saveLog("PUBLIC_TOURNAMENT_ENDPOINT endpoint=/allwinners resultSize=" + result.size()
+                + " durationMs=" + (System.currentTimeMillis() - start)
+                + " memoryDelta=" + (usedMemory() - memoryBefore));
+        return result;
+    }
+
+    @GetMapping(value = "/lastTournament", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public TournamentSnapshot lastTournament() {
+        long start = System.currentTimeMillis();
+        long memoryBefore = usedMemory();
+        TournamentSnapshot snapshot = lastTournamentSnapshot == null ? TournamentSnapshot.empty() : lastTournamentSnapshot;
+        MyLogger.saveLog("PUBLIC_TOURNAMENT_ENDPOINT endpoint=/lastTournament candidateCount=" + snapshot.getCandidateCount()
+                + " winnerMiner=" + String.valueOf(snapshot.getSelectedWinnerMinerAddress())
+                + " durationMs=" + (System.currentTimeMillis() - start)
+                + " memoryDelta=" + (usedMemory() - memoryBefore));
+        return snapshot;
+    }
+
+    @GetMapping(value = "/lastTournamentWinner", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Object lastTournamentWinner() {
+        TournamentSnapshot snapshot = lastTournamentSnapshot;
+        return snapshot == null || snapshot.getSelectedWinner() == null ? Collections.emptyMap() : snapshot.getSelectedWinner();
     }
 
     /**
@@ -488,6 +537,73 @@ public class BasisController {
 
     public static void setAllWiners(List<LiteVersionWiner> allWiners) {
         BasisController.allWiners = allWiners;
+    }
+
+    public static List<Block> currentCandidatesSnapshot() {
+        CopyOnWriteArrayList<Block> current = winnerList;
+        return current == null ? new ArrayList<>() : new ArrayList<>(current);
+    }
+
+    public static List<LiteVersionWiner> lastTournamentCandidatesSnapshot() {
+        TournamentSnapshot snapshot = lastTournamentSnapshot;
+        if (snapshot == null || snapshot.getCandidates() == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(snapshot.getCandidates());
+    }
+
+    public static TournamentSnapshot getLastTournamentSnapshot() {
+        return lastTournamentSnapshot;
+    }
+
+    public static synchronized void publishTournamentSnapshot(List<LiteVersionWiner> rankedCandidates,
+                                                              long tournamentStartTime,
+                                                              long tournamentEndTime,
+                                                              String selectionStage,
+                                                              String selectionReason) {
+        List<LiteVersionWiner> candidates = rankedCandidates == null
+                ? new ArrayList<>()
+                : new ArrayList<>(rankedCandidates);
+        LiteVersionWiner selected = candidates.isEmpty() ? null : candidates.get(0);
+        TournamentSnapshot snapshot = new TournamentSnapshot();
+        snapshot.setBlockIndex(selected == null ? -1L : selected.getIndex());
+        snapshot.setTournamentStartTime(tournamentStartTime);
+        snapshot.setTournamentEndTime(tournamentEndTime);
+        snapshot.setCandidateCount(candidates.size());
+        snapshot.setCandidates(candidates);
+        snapshot.setSelectedWinner(selected);
+        snapshot.setSelectedWinnerMinerAddress(selected == null ? null : selected.getAddress());
+        snapshot.setSelectedWinnerHash(selected == null ? null : selected.getHash());
+        snapshot.setSelectedWinnerBigRandom(selected == null ? 0 : selected.getBigRandom());
+        snapshot.setSelectedWinnerDifficulty(selected == null ? 0L : selected.getDiff());
+        snapshot.setSelectedWinnerTxCount(selected == null ? 0 : selected.getCountTransactions());
+        snapshot.setSelectedWinnerStakingScore(selected == null ? 0.0 : selected.getStaking());
+        snapshot.setSelectionStage(selectionStage == null ? "tournament after sortWinner" : selectionStage);
+        snapshot.setSelectionReason(selectionReason == null ? "ranked_by_tournament_sort" : selectionReason);
+        snapshot.setCreatedAt(new Date().toString());
+        lastTournamentSnapshot = snapshot;
+        lastTournamentSnapshots.addLast(snapshot);
+        while (lastTournamentSnapshots.size() > MAX_PUBLIC_TOURNAMENT_SNAPSHOTS) {
+            lastTournamentSnapshots.removeFirst();
+        }
+        allWiners = new ArrayList<>(candidates);
+    }
+
+    static void resetTournamentSnapshotsForTests() {
+        lastTournamentSnapshot = null;
+        lastTournamentSnapshots.clear();
+        allWiners = new ArrayList<>();
+        if (winnerList == null) {
+            winnerList = new CopyOnWriteArrayList<>();
+        } else {
+            winnerList.clear();
+        }
+        sizeWinnerList.set(0);
+    }
+
+    private static long usedMemory() {
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.totalMemory() - runtime.freeMemory();
     }
 
     private static int totalTransactionsDays = 0;
@@ -735,6 +851,7 @@ public class BasisController {
         BlockGrowthDiagnostics.clearForTests();
         PeerPropagationMonitor.resetForTests();
         UtilsResolving.resetResolveSyncDebugForTests();
+        resetTournamentSnapshotsForTests();
     }
 
     static void recordReceivedBlockForTests(long index, String hash, String remoteAddress) {

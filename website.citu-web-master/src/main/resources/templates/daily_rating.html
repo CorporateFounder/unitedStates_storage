@@ -7,17 +7,17 @@
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
     <style>
         .gold-medal {
-            border: 2px solid #FFD700; /* Золотая рамка */
+            border: 2px solid #FFD700; /* Ð—Ð¾Ð»Ð¾Ñ‚Ð°Ñ Ñ€Ð°Ð¼ÐºÐ° */
             padding: 10px;
             border-radius: 5px;
         }
         .silver-medal {
-            border: 2px solid #C0C0C0; /* Серебряная рамка */
+            border: 2px solid #C0C0C0; /* Ð¡ÐµÑ€ÐµÐ±Ñ€ÑÐ½Ð°Ñ Ñ€Ð°Ð¼ÐºÐ° */
             padding: 10px;
             border-radius: 5px;
         }
         .bronze-medal {
-            border: 2px solid #CD7F32; /* Бронзовая рамка */
+            border: 2px solid #CD7F32; /* Ð‘Ñ€Ð¾Ð½Ð·Ð¾Ð²Ð°Ñ Ñ€Ð°Ð¼ÐºÐ° */
             padding: 10px;
             border-radius: 5px;
         }
@@ -28,23 +28,23 @@
         .tournament-list li {
             margin-bottom: 10px;
             padding: 10px;
-            background-color: #f8f9fa; /* Светло-серый фон */
-            border: 2px solid #dee2e6; /* Серый цвет рамки для остальных блоков */
+            background-color: #f8f9fa; /* Ð¡Ð²ÐµÑ‚Ð»Ð¾-ÑÐµÑ€Ñ‹Ð¹ Ñ„Ð¾Ð½ */
+            border: 2px solid #dee2e6; /* Ð¡ÐµÑ€Ñ‹Ð¹ Ñ†Ð²ÐµÑ‚ Ñ€Ð°Ð¼ÐºÐ¸ Ð´Ð»Ñ Ð¾ÑÑ‚Ð°Ð»ÑŒÐ½Ñ‹Ñ… Ð±Ð»Ð¾ÐºÐ¾Ð² */
             border-radius: 5px;
-            color: #000000; /* Черный текст */
+            color: #000000; /* Ð§ÐµÑ€Ð½Ñ‹Ð¹ Ñ‚ÐµÐºÑÑ‚ */
         }
         .place-number {
             font-weight: bold;
             margin-right: 5px;
         }
         .gold-medal .place-number {
-            color: #FFD700; /* Золотой цвет цифры */
+            color: #FFD700; /* Ð—Ð¾Ð»Ð¾Ñ‚Ð¾Ð¹ Ñ†Ð²ÐµÑ‚ Ñ†Ð¸Ñ„Ñ€Ñ‹ */
         }
         .silver-medal .place-number {
-            color: #C0C0C0; /* Серебряный цвет цифры */
+            color: #C0C0C0; /* Ð¡ÐµÑ€ÐµÐ±Ñ€ÑÐ½Ñ‹Ð¹ Ñ†Ð²ÐµÑ‚ Ñ†Ð¸Ñ„Ñ€Ñ‹ */
         }
         .bronze-medal .place-number {
-            color: #CD7F32; /* Бронзовый цвет цифры */
+            color: #CD7F32; /* Ð‘Ñ€Ð¾Ð½Ð·Ð¾Ð²Ñ‹Ð¹ Ñ†Ð²ÐµÑ‚ Ñ†Ð¸Ñ„Ñ€Ñ‹ */
         }
     </style>
 </head>
@@ -54,7 +54,7 @@
 <div class="container mt-5">
     <h5 th:text="${title}"></h5>
     <h4 th:text="'Today is day ' + ${day} + '. The result is updated every 576 blocks or every 24 hours.'"></h4>
-    <h3>Time remaining until next update: <span id="countdown" th:text="${time}"></span></h3> <!-- Время до следующего обновления -->
+    <h3>Time remaining until next update: <span id="countdown" th:text="${time}"></span></h3> <!-- Ð’Ñ€ÐµÐ¼Ñ Ð´Ð¾ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰ÐµÐ³Ð¾ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ -->
     <h3>Ratings:</h3>
 
     <ul class="tournament-list">
@@ -103,7 +103,7 @@
         }, 1000);
     }
 
-    // Инициализируем таймер обратного отсчета
+    // Ð˜Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð¸Ñ€ÑƒÐµÐ¼ Ñ‚Ð°Ð¹Ð¼ÐµÑ€ Ð¾Ð±Ñ€Ð°Ñ‚Ð½Ð¾Ð³Ð¾ Ð¾Ñ‚ÑÑ‡ÐµÑ‚Ð°
     var remainingTime = parseInt(document.getElementById('countdown').textContent);
     startCountdown(remainingTime);
 </script>

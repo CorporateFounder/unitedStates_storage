@@ -12,8 +12,8 @@
     <h1>CITU transaction guide</h1>
     <section class="citu-panel p-4 mb-4">
         <h2>Start wallet and node</h2>
-        <pre class="v35-code"><code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083
-java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code></pre>
+        <pre class="v35-code"><code>java -Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+ExitOnOutOfMemoryError -Dlogging.file.path=C:\server\logs -Dlogging.level.root=INFO -Dserver.tomcat.threads.max=80 -Dserver.tomcat.accept-count=100 -Dserver.tomcat.max-connections=1024 -Dserver.port=82 -Dserver.address=194.87.236.238 -Dcitu.prePersistPeerPropagation.enabled=false -Dcitu.memoryForensics.enabled=false -Dcitu.memoryForensics.file.enabled=false -Dcitu.memoryForensics.verbose=false -Dcitu.diagnostic.traces.enabled=false -Dcitu.diagnostic.file.enabled=false -Dcitu.peer.maxPeersPerCycle=3 -Dcitu.peer.maxPeersPerTournamentCycle=3 -Dcitu.peer.maxPeersPerResolveCycle=3 -Dcitu.peer.maxPeersPerPropagationCycle=3 -Dcitu.peer.maxRemoteCallsPerCycle=6 -Dcitu.peer.maxRemoteCallsPerMinute=60 -Dcitu.peer.connectTimeoutMs=2000 -Dcitu.peer.readTimeoutMs=3000 -Dcitu.resolve.maxDurationMs=5000 -jar C:\citu-node-v35-activation-514291-1.0.15.jar
+java -Xms256m -Xmx1024m -XX:+UseG1GC -Dserver.port=8082 -jar C:\citu-wallet-v35-activation-514291-1.0.2.jar</code></pre>
         <p>Local wallet: <a href="http://127.0.0.1:8082">http://127.0.0.1:8082</a></p>
         <p>Local node: <a href="http://127.0.0.1:8083/size">http://127.0.0.1:8083/size</a></p>
     </section>
@@ -29,3 +29,6 @@ java -jar citu-wallet-v35-activation-514291-1.0.0.jar --server.port=8082</code><
 <footer th:insert="blocks/footer :: footer"></footer>
 </body>
 </html>
+
+
+

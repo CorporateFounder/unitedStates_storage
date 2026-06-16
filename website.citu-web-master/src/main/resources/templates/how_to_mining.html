@@ -16,7 +16,7 @@
             <h2>Legacy / pre-V35 mining guide</h2>
             <p>This page preserves legacy mining calculators and historical formulas. It is not the V35 public mining model.</p>
             <p>For the prepared V35 model, read the <a href="/white_papper" class="alert-link">V35 protocol paper</a>. V35 activation is scheduled at block 514291; before block 514291, <code>v35Active=false</code> is expected.</p>
-            <p>Run a local node with <code>java -jar citu-node-v35-activation-514291-1.0.0.jar --server.port=8083</code>, open local wallet <code>http://127.0.0.1:8082</code>, and use the <a href="/how_mining_pool" class="alert-link">mining pool status guide</a> for legacy pool notes.</p>
+            <p>Run Node/server 1.0.15 Stable with <code>java -Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+ExitOnOutOfMemoryError -Dlogging.file.path=C:\server\logs -Dlogging.level.root=INFO -Dserver.tomcat.threads.max=80 -Dserver.tomcat.accept-count=100 -Dserver.tomcat.max-connections=1024 -Dserver.port=82 -Dserver.address=194.87.236.238 -Dcitu.prePersistPeerPropagation.enabled=false -Dcitu.memoryForensics.enabled=false -Dcitu.memoryForensics.file.enabled=false -Dcitu.memoryForensics.verbose=false -Dcitu.diagnostic.traces.enabled=false -Dcitu.diagnostic.file.enabled=false -Dcitu.peer.maxPeersPerCycle=3 -Dcitu.peer.maxPeersPerTournamentCycle=3 -Dcitu.peer.maxPeersPerResolveCycle=3 -Dcitu.peer.maxPeersPerPropagationCycle=3 -Dcitu.peer.maxRemoteCallsPerCycle=6 -Dcitu.peer.maxRemoteCallsPerMinute=60 -Dcitu.peer.connectTimeoutMs=2000 -Dcitu.peer.readTimeoutMs=3000 -Dcitu.resolve.maxDurationMs=5000 -jar C:\citu-node-v35-activation-514291-1.0.15.jar</code>, open local wallet <code>http://127.0.0.1:8082</code>, and use the <a href="/how_mining_pool" class="alert-link">mining pool status guide</a> for legacy pool notes.</p>
             <p>No founder burn has occurred. <code>BURN_ADDRESS</code> is an internal placeholder, not a public transfer destination.</p>
         </div>
         <h6>Note:</h6>
@@ -48,7 +48,7 @@
         <p>Your staking: <span th:text="${staking}"></span></p>
         <p>Your calculated score: <span th:text="${score}"></span></p>
 
-        <!-- Форма для обновления значения staking -->
+        <!-- ÃÂ¤ÃÂ¾Ã‘â‚¬ÃÂ¼ÃÂ° ÃÂ´ÃÂ»Ã‘Â ÃÂ¾ÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ¸Ã‘Â ÃÂ·ÃÂ½ÃÂ°Ã‘â€¡ÃÂµÃÂ½ÃÂ¸Ã‘Â staking -->
         <form action="#" th:action="@{/how_to_mining}" method="post">
             <div class="mb-3">
                 <label for="stakingInput" class="form-label">Enter new staking value:</label>
@@ -102,3 +102,6 @@
 
 </body>
 </html>
+
+
+
