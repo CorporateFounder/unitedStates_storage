@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class AllTransactions {
+    static final int MAX_PENDING_TRANSACTIONS = 5_000;
     private final Lock lock = new ReentrantLock();
     private final List<DtoTransaction> instance = new CopyOnWriteArrayList<>();
 
@@ -83,6 +84,7 @@ public class AllTransactions {
             List<DtoTransaction> validatedTransactions = validateAndFilterTransactions(transactionsToValidate);
             if (!validatedTransactions.isEmpty()) {
                 instance.addAll(validatedTransactions);
+                trimPendingTransactions();
             }
         } finally {
             lock.unlock();
@@ -94,8 +96,24 @@ public class AllTransactions {
         try {
             transactions = validateAndFilterTransactions(transactions);
             instance.addAll(transactions);
+            trimPendingTransactions();
         } finally {
             lock.unlock();
+        }
+    }
+
+    public int pendingSize() {
+        lock.lock();
+        try {
+            return instance.size();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void trimPendingTransactions() {
+        while (instance.size() > MAX_PENDING_TRANSACTIONS) {
+            instance.remove(0);
         }
     }
 

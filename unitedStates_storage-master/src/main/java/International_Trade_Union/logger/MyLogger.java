@@ -1,56 +1,34 @@
 package International_Trade_Union.logger;
 
-import International_Trade_Union.setings.Seting;
-import International_Trade_Union.utils.UtilsFileSaveRead;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.security.Provider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyLogger {
-    private static final Logger logger = LogManager.getLogger(MyLogger.class);
-    // Переменная для настройки максимального размера файла в килобайтах
-    public static int MAX_FILE_SIZE_KB = 100;
+    private static final Logger logger = LoggerFactory.getLogger(MyLogger.class);
 
     public static void saveLog(String log, Throwable throwable) {
-        String filePath = Seting.ERROR_FILE;
-        // Переменная для настройки максимального размера файла в килобайтах
-
-
-        try {
-            File file = new File(filePath);
-
-            // Проверяем размер файла
-            if (file.exists() && file.length() > MAX_FILE_SIZE_KB * 1024) {
-                UtilsFileSaveRead.deleteFile(filePath);
-            }
-
-            UtilsFileSaveRead.save(log + "\n" + throwable.toString() + "\n", filePath, true);
-        } catch (Exception e) {
-            System.err.println("Ошибка при сохранении лога с исключением: " + e.getMessage());
-            e.printStackTrace();
+        String safeLog = ServerLogSanitizer.safeMessage(log);
+        if (throwable == null) {
+            logger.error(safeLog);
+        } else {
+            logger.error(safeLog, throwable);
         }
     }
 
     public static void saveLog(String log) {
-        String filePath = Seting.ERROR_FILE;
+        logger.info(ServerLogSanitizer.safeMessage(log));
+    }
 
-        try {
-            logger.error(log);
+    public static void warnLog(String log) {
+        logger.warn(ServerLogSanitizer.safeMessage(log));
+    }
 
-            File file = new File(filePath);
-
-            // Проверяем размер файла
-            if (file.exists() && file.length() > MAX_FILE_SIZE_KB * 1024) {
-                UtilsFileSaveRead.deleteFile(filePath);
-            }
-
-            UtilsFileSaveRead.save(log + "\n", filePath, true);
-        } catch (Exception e) {
-            System.err.println("Ошибка при сохранении лога: " + e.getMessage());
-            e.printStackTrace();
+    public static void warnLog(String log, Throwable throwable) {
+        String safeLog = ServerLogSanitizer.safeMessage(log);
+        if (throwable == null) {
+            logger.warn(safeLog);
+        } else {
+            logger.warn(safeLog, throwable);
         }
     }
 }

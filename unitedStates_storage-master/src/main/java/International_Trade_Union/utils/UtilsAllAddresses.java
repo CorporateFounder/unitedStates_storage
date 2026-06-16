@@ -2,6 +2,7 @@ package International_Trade_Union.utils;
 
 import International_Trade_Union.controllers.BasisController;
 import International_Trade_Union.logger.MyLogger;
+import International_Trade_Union.model.PeerNetworkPolicy;
 import International_Trade_Union.setings.Seting;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,9 +84,14 @@ public class UtilsAllAddresses {
 
         allAddresses = allAddresses.stream()
                 .map(address -> address.replace("\"", ""))
+                .limit(isBlockedHostPath(filename) ? PeerNetworkPolicy.maxBlockedHostEntries() : Long.MAX_VALUE)
                 .collect(Collectors.toSet());
 
         return allAddresses;
+    }
+
+    static boolean isBlockedHostPath(String filename) {
+        return filename != null && filename.equals(Seting.ORIGINAL_POOL_URL_ADDRESS_BLOCKED_FILE);
     }
 
     public static void sendAddress(Set<String> nodes, MyHost myHost) throws IOException {

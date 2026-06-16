@@ -9,8 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UtilsResolvingMemoryGuardTest {
 
     @Test
-    void propagationHostCapTracksConfiguredRandomHosts() {
-        assertEquals(Math.max(1, Seting.RANDOM_HOSTS), UtilsResolving.MAX_PROPAGATION_HOSTS);
+    void propagationHostCapIsHardLimitedForPostPersistSafety() {
+        assertEquals(Math.max(1, Math.min(3, Seting.RANDOM_HOSTS)), UtilsResolving.MAX_PROPAGATION_HOSTS);
+        assertTrue(UtilsResolving.MAX_PROPAGATION_HOSTS <= 3);
     }
 
     @Test

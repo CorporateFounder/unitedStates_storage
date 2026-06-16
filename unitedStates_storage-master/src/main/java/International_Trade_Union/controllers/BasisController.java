@@ -7,8 +7,10 @@ import International_Trade_Union.entity.blockchain.DataShortBlockchainInformatio
 import International_Trade_Union.entity.entities.EntityAccount;
 import International_Trade_Union.entity.entities.EntityBlock;
 import International_Trade_Union.entity.services.BlockService;
+import International_Trade_Union.entity.services.PoolBlockService;
 import International_Trade_Union.logger.MyLogger;
 import International_Trade_Union.model.*;
+import International_Trade_Union.network.AllTransactions;
 import International_Trade_Union.protocol.v35.ChainTournamentScorer;
 import International_Trade_Union.vote.LawEligibleForParliamentaryApproval;
 import International_Trade_Union.vote.Laws;
@@ -36,6 +38,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
+import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
@@ -57,6 +60,8 @@ import static International_Trade_Union.utils.UtilsBalance.calculateBalance;
 
 @RestController
 public class BasisController {
+
+    private static final PeerErrorRateLimiter RESOLVE_CONFLICT_ERROR_LIMITER = new PeerErrorRateLimiter();
 
 
     @PostConstruct
@@ -152,8 +157,13 @@ public class BasisController {
     Tournament tournament;
     @Autowired
     UtilsResolving utilsResolving;
+    @Autowired(required = false)
+    AllTransactions allTransactions;
+    @Autowired(required = false)
+    PoolBlockService poolBlockService;
 
     private static volatile AtomicBoolean blockedNewSendBlock = new AtomicBoolean(true);
+    static final int MAX_TEMPORARY_SUBMITTED_BLOCKS = 128;
 
     public static AtomicBoolean getBlockedNewSendBlock() {
         return blockedNewSendBlock;
@@ -531,6 +541,18 @@ public class BasisController {
     private static volatile String lastAddedAt = "never";
     private static volatile String lastWalletSubmitEndpoint = "none";
     private static volatile String lastServerException = "none";
+    private static volatile String lastPrePersistPeerPropagationSkippedReason = "never";
+    private static volatile boolean lastPrePersistPeerPropagationAttempted = false;
+    private static volatile String lastPrePersistPeerPropagationSkippedAt = "never";
+    private static volatile long lastResolveConflictReceivedBlockIndex = -1;
+    private static volatile long lastResolveConflictQueuedBlockIndex = -1;
+    private static volatile long lastResolveConflictBeforeTournamentMemoryUsed = -1;
+    private static volatile long lastResolveConflictBeforeTournamentMemoryMax = -1;
+    private static volatile String lastLocalPersistenceStartedAt = "never";
+    private static volatile String lastLocalPersistenceFinishedAt = "never";
+    private static volatile String lastLocalPersistenceResult = "none";
+    private static volatile long selfPeerSkippedCount = 0;
+    private static volatile long prePersistOutboundTasksBlockedCount = 0;
     /**
      * целостность блокчейна, если блокчейн поврежден будет false, и папка ресурсы на кошельке
      * удаляется, а сервер автоматически выключается System.exit(0)
@@ -698,6 +720,21 @@ public class BasisController {
         lastAddedAt = "never";
         lastWalletSubmitEndpoint = "none";
         lastServerException = "none";
+        lastPrePersistPeerPropagationSkippedReason = "never";
+        lastPrePersistPeerPropagationAttempted = false;
+        lastPrePersistPeerPropagationSkippedAt = "never";
+        lastResolveConflictReceivedBlockIndex = -1;
+        lastResolveConflictQueuedBlockIndex = -1;
+        lastResolveConflictBeforeTournamentMemoryUsed = -1;
+        lastResolveConflictBeforeTournamentMemoryMax = -1;
+        lastLocalPersistenceStartedAt = "never";
+        lastLocalPersistenceFinishedAt = "never";
+        lastLocalPersistenceResult = "none";
+        selfPeerSkippedCount = 0;
+        prePersistOutboundTasksBlockedCount = 0;
+        BlockGrowthDiagnostics.clearForTests();
+        PeerPropagationMonitor.resetForTests();
+        UtilsResolving.resetResolveSyncDebugForTests();
     }
 
     static void recordReceivedBlockForTests(long index, String hash, String remoteAddress) {
@@ -716,16 +753,30 @@ public class BasisController {
         if (block == null) {
             return;
         }
+        DiagnosticLogRetention.cleanupIfDue(block.getIndex());
         lastAddedBlockIndex = block.getIndex();
         lastAddedBlockHash = String.valueOf(block.getHashBlock());
         lastAddedAt = new Date().toString();
         lastValidationResult = "persisted";
         lastRejectReason = "none";
+        lastLocalPersistenceFinishedAt = new Date().toString();
+        lastLocalPersistenceResult = "persisted";
+        BlockGrowthDiagnostics.localPersistenceFinished(block, blockcheinSize, "persisted");
+        PeerPropagationMonitor.recordPersistedBlock(block.getIndex(), String.valueOf(block.getHashBlock()));
         System.out.println("SERVER_BLOCK_ADD_SUCCESS");
         System.out.println("SERVER_BLOCK_ADD_MODE=persisted_by_tournament");
         System.out.println("SERVER_BLOCK_ADD_SIZE_AFTER=" + blockcheinSize);
         System.out.println("SERVER_BLOCK_ADD_PERSISTED_INDEX=" + block.getIndex());
         System.out.println("SERVER_BLOCK_ADD_PERSISTED_HASH=" + block.getHashBlock());
+    }
+
+    public static void recordLocalPersistenceStartedFromTournament(Block block) {
+        lastLocalPersistenceStartedAt = new Date().toString();
+        lastLocalPersistenceResult = "started";
+        BlockGrowthDiagnostics.localPersistenceStarted(block);
+        if (block != null) {
+            lastResolveConflictQueuedBlockIndex = block.getIndex();
+        }
     }
 
     static Map<String, Object> blockSubmitStatusSnapshotForTests() {
@@ -734,6 +785,7 @@ public class BasisController {
 
     private static void recordReceivedBlock(long index, String hash, String remoteAddress, String endpoint) {
         lastReceivedBlockIndex = index;
+        lastResolveConflictReceivedBlockIndex = index;
         lastReceivedBlockHash = String.valueOf(hash);
         lastReceivedAt = new Date().toString();
         lastSubmitRemoteAddress = String.valueOf(remoteAddress);
@@ -746,14 +798,45 @@ public class BasisController {
     private static void recordValidationResult(String result, String rejectReason) {
         lastValidationResult = result;
         lastRejectReason = rejectReason == null || rejectReason.isBlank() ? "none" : rejectReason;
+        BlockGrowthDiagnostics.submitValidationFinished(result, lastRejectReason);
     }
 
     private static void recordAddedBlock(long index, String hash) {
         lastAddedBlockIndex = index;
+        lastResolveConflictQueuedBlockIndex = index;
         lastAddedBlockHash = String.valueOf(hash);
         lastAddedAt = new Date().toString();
         lastValidationResult = "accepted/queued";
         lastRejectReason = "none";
+    }
+
+    static boolean isPrePersistPeerPropagationEnabled() {
+        return Boolean.getBoolean("citu.prePersistPeerPropagation.enabled");
+    }
+
+    private static void recordPrePersistPeerPropagationSkipped(String reason) {
+        Runtime runtime = Runtime.getRuntime();
+        lastPrePersistPeerPropagationAttempted = false;
+        lastPrePersistPeerPropagationSkippedReason = reason;
+        lastPrePersistPeerPropagationSkippedAt = new Date().toString();
+        lastResolveConflictBeforeTournamentMemoryUsed = runtime.totalMemory() - runtime.freeMemory();
+        lastResolveConflictBeforeTournamentMemoryMax = runtime.maxMemory();
+        prePersistOutboundTasksBlockedCount++;
+        System.out.println("PRE_PERSIST_PEER_PROPAGATION_SKIPPED reason=" + reason);
+    }
+
+    public static void recordSelfPeerSkipped() {
+        selfPeerSkippedCount++;
+    }
+
+    private void handlePrePersistPeerPropagation(List<Block> addlist) throws IOException, NoSuchAlgorithmException,
+            InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
+        if (!isPrePersistPeerPropagationEnabled()) {
+            recordPrePersistPeerPropagationSkipped("disabled_by_default");
+            return;
+        }
+        lastPrePersistPeerPropagationAttempted = true;
+        utilsResolving.sendAllBlocksToStorage(addlist);
     }
 
     private static Map<String, Object> blockSubmitStatusSnapshot() {
@@ -772,9 +855,25 @@ public class BasisController {
         status.put("lastWalletSubmitEndpoint", lastWalletSubmitEndpoint);
         status.put("lastServerException", lastServerException);
         status.put("temporaryBlockQueueSize", winnerList == null ? 0 : winnerList.size());
+        status.put("prePersistPeerPropagationEnabled", isPrePersistPeerPropagationEnabled());
+        status.put("lastPrePersistPeerPropagationSkippedReason", lastPrePersistPeerPropagationSkippedReason);
+        status.put("lastPrePersistPeerPropagationAttempted", lastPrePersistPeerPropagationAttempted);
+        status.put("lastPrePersistPeerPropagationSkippedAt", lastPrePersistPeerPropagationSkippedAt);
+        status.put("lastResolveConflictReceivedBlockIndex", lastResolveConflictReceivedBlockIndex);
+        status.put("lastResolveConflictQueuedBlockIndex", lastResolveConflictQueuedBlockIndex);
+        status.put("lastResolveConflictBeforeTournamentMemoryUsed", lastResolveConflictBeforeTournamentMemoryUsed);
+        status.put("lastResolveConflictBeforeTournamentMemoryMax", lastResolveConflictBeforeTournamentMemoryMax);
+        status.put("lastLocalPersistenceStartedAt", lastLocalPersistenceStartedAt);
+        status.put("lastLocalPersistenceFinishedAt", lastLocalPersistenceFinishedAt);
+        status.put("lastLocalPersistenceResult", lastLocalPersistenceResult);
+        status.put("selfPeerSkippedCount", selfPeerSkippedCount);
+        status.put("prePersistOutboundTasksBlockedCount", prePersistOutboundTasksBlockedCount);
         status.put("freeMemory", runtime.freeMemory());
         status.put("totalMemory", runtime.totalMemory());
         status.put("maxMemory", runtime.maxMemory());
+        BlockGrowthDiagnostics.submitStatus().forEach(status::putIfAbsent);
+        status.putAll(PeerPropagationMonitor.snapshot());
+        status.putAll(UtilsResolving.resolveSyncDebugSnapshot());
         return status;
     }
 
@@ -782,6 +881,137 @@ public class BasisController {
     @ResponseBody
     public Map<String, Object> blockSubmitStatus() {
         return blockSubmitStatusSnapshot();
+    }
+
+    @GetMapping("/debug/block-submit/traces")
+    @ResponseBody
+    public Map<String, Object> blockSubmitTraces() {
+        Map<String, Object> traces = new LinkedHashMap<>();
+        traces.put("lastSubmitTraces", BlockGrowthDiagnostics.submitTraces());
+        traces.put("lastAddBlock3Traces", BlockGrowthDiagnostics.addBlock3Traces());
+        traces.put("status", BlockGrowthDiagnostics.submitStatus());
+        return traces;
+    }
+
+    @GetMapping("/debug/tournament/traces")
+    @ResponseBody
+    public Map<String, Object> tournamentTraces() {
+        Map<String, Object> traces = new LinkedHashMap<>();
+        traces.put("lastTournamentTraces", BlockGrowthDiagnostics.tournamentTraces());
+        traces.put("status", BlockGrowthDiagnostics.submitStatus());
+        return traces;
+    }
+
+    @GetMapping("/debug/add-block/traces")
+    @ResponseBody
+    public Map<String, Object> addBlockTraces() {
+        Map<String, Object> traces = new LinkedHashMap<>();
+        traces.put("lastAddBlock3Traces", BlockGrowthDiagnostics.addBlock3Traces());
+        traces.put("status", BlockGrowthDiagnostics.submitStatus());
+        return traces;
+    }
+
+    @GetMapping("/debug/node/runtime")
+    @ResponseBody
+    public Map<String, Object> nodeRuntime() {
+        Runtime runtime = Runtime.getRuntime();
+        Map<String, Object> status = new LinkedHashMap<>();
+        status.put("nodeVersion", Optional.ofNullable(BasisController.class.getPackage().getImplementationVersion()).orElse("development"));
+        status.put("processId", ProcessHandle.current().pid());
+        status.put("startTime", new Date(ManagementFactory.getRuntimeMXBean().getStartTime()).toString());
+        status.put("uptimeMs", ManagementFactory.getRuntimeMXBean().getUptime());
+        status.put("uptimeSeconds", ManagementFactory.getRuntimeMXBean().getUptime() / 1000L);
+        status.put("javaVersion", System.getProperty("java.version"));
+        status.put("serverPort", System.getProperty("server.port", System.getenv().getOrDefault("SERVER_PORT", "82")));
+        status.put("serverAddress", System.getProperty("server.address", System.getenv().getOrDefault("SERVER_ADDRESS", "localhost")));
+        status.put("activeProfiles", System.getProperty("spring.profiles.active", "default"));
+        status.put("maxMemory", runtime.maxMemory());
+        status.put("usedMemory", runtime.totalMemory() - runtime.freeMemory());
+        status.put("prePersistPeerPropagationEnabled", isPrePersistPeerPropagationEnabled());
+        status.put("memoryForensicsEnabled", NodeMemoryProfiler.isEnabled());
+        status.put("h2DatabasePath", Seting.H2_DB + "db");
+        status.put("h2DatabaseOpen", "unknown");
+        status.put("h2LockStatus", "unknown");
+        status.put("currentChainSize", blockcheinSize);
+        status.put("latestBlockIndex", prevBlock == null ? -1 : prevBlock.getIndex());
+        status.put("v35ForkIndex", Seting.V35_RESCUE_FORK_INDEX);
+        status.put("burnAddressPlaceholder", "BURN_ADDRESS".equals(Seting.V35_BURN_ADDRESS));
+        return status;
+    }
+
+    @GetMapping("/debug/memory/status")
+    @ResponseBody
+    public Map<String, Object> memoryStatus() {
+        return memoryStatusSnapshot(allTransactions, poolBlockService);
+    }
+
+    @GetMapping("/debug/peer/health")
+    @ResponseBody
+    public Map<String, Object> peerHealth() {
+        return PeerHealthRegistry.snapshot();
+    }
+
+    @GetMapping("/debug/memory/forensics")
+    @ResponseBody
+    public Map<String, Object> memoryForensics() {
+        Map<String, Object> snapshot = new LinkedHashMap<>(NodeMemoryProfiler.snapshot());
+        snapshot.putAll(BlockGrowthDiagnostics.memoryForensicsFields());
+        return snapshot;
+    }
+
+    static Map<String, Object> memoryStatusSnapshotForTests() {
+        return memoryStatusSnapshot(null, null);
+    }
+
+    private static Map<String, Object> memoryStatusSnapshot(AllTransactions allTransactions, PoolBlockService poolBlockService) {
+        Runtime runtime = Runtime.getRuntime();
+        long totalMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+        long usedMemory = totalMemory - freeMemory;
+        Map<String, Object> status = new LinkedHashMap<>();
+        status.put("currentChainSize", blockcheinSize);
+        status.put("freeMemory", freeMemory);
+        status.put("totalMemory", totalMemory);
+        status.put("maxMemory", runtime.maxMemory());
+        status.put("usedMemory", usedMemory);
+        status.put("winnerListSize", winnerList == null ? 0 : winnerList.size());
+        status.put("temporaryBlocksSize", winnerList == null ? 0 : winnerList.size());
+        status.put("pendingSubmittedBlocksSize", winnerList == null ? 0 : winnerList.size());
+        status.put("temporarySubmittedBlocksCap", MAX_TEMPORARY_SUBMITTED_BLOCKS);
+        status.put("poolBlockMapSize", poolBlockService == null ? "unavailable" : poolBlockService.size());
+        status.put("pendingTxMapSize", allTransactions == null ? "unavailable" : allTransactions.pendingSize());
+        status.put("activePeerCount", getNodes().size());
+        status.put("unreachablePeerCount", getExcludedAddresses().size());
+        status.put("lastTournamentStartTime", TournamentService.getLastTournamentStartMillis());
+        status.put("lastTournamentEndTime", TournamentService.getLastTournamentEndMillis());
+        status.put("lastTournamentDuration", TournamentService.getLastTournamentDurationMillis());
+        status.put("lastResolve3StartTime", UtilsResolving.getLastResolve3StartMillis());
+        status.put("lastResolve3EndTime", UtilsResolving.getLastResolve3EndMillis());
+        status.put("lastResolve3Duration", UtilsResolving.getLastResolve3DurationMillis());
+        status.put("trackedTournamentPeerErrors", TournamentService.getTrackedPeerErrorCount());
+        status.put("trackedResolvePeerErrors", UtilsResolving.getTrackedPeerErrorCount());
+        status.put("lastOomRiskWarning", TournamentService.getLastOomRiskWarning());
+        status.putAll(NodeMemoryProfiler.memoryStatusFields());
+        status.putAll(PeerPropagationMonitor.snapshot());
+        status.putAll(PeerHealthRegistry.memoryStatusFields());
+        PeerHealthRegistry.maybeLogHealthSummary(
+                blockcheinSize,
+                prevBlock == null ? -1 : prevBlock.getIndex(),
+                TournamentService.getLastTournamentDurationMillis(),
+                String.valueOf(BlockGrowthDiagnostics.submitStatus().get("lastNoGrowthReason")),
+                longValue(BlockGrowthDiagnostics.submitStatus().get("lastAddedBlockIndex")));
+        return status;
+    }
+
+    private static long longValue(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        try {
+            return Long.parseLong(String.valueOf(value));
+        } catch (Exception ignored) {
+            return -1L;
+        }
     }
 
     public static HttpServletRequest getCurrentRequest() {
@@ -1220,6 +1450,18 @@ public class BasisController {
     @PostMapping("/nodes/resolve_from_to_block")
     public ResponseEntity<String> resolve_conflict(@RequestBody SendBlocksEndInfo sendBlocksEndInfo,
                                                    HttpServletRequest request) {
+        Long profilerBlockIndex = null;
+        int profilerBlockCount = 0;
+        if (sendBlocksEndInfo != null && sendBlocksEndInfo.getList() != null && !sendBlocksEndInfo.getList().isEmpty()) {
+            profilerBlockCount = sendBlocksEndInfo.getList().size();
+            profilerBlockIndex = sendBlocksEndInfo.getList().get(0).getIndex();
+        }
+        NodeMemoryProfiler.beginTrace("resolve_conflict start", profilerBlockIndex);
+        NodeMemoryProfiler.recordStage("resolve_conflict request received", NodeMemoryProfiler.metrics(
+                "candidateBlockListSize", profilerBlockCount,
+                "winnerListSize", winnerList == null ? 0 : winnerList.size(),
+                "remoteAddress", request == null ? "unknown" : request.getRemoteAddr()
+        ));
 
         try {
 
@@ -1247,12 +1489,25 @@ public class BasisController {
 
             List<Block> blocks = sendBlocksEndInfo.getList();
             Block receivedBlock = blocks == null || blocks.isEmpty() ? null : blocks.get(0);
+            NodeMemoryProfiler.recordStage("resolve_conflict after request body/block parsed", NodeMemoryProfiler.metrics(
+                    "candidateBlockListSize", blocks == null ? 0 : blocks.size(),
+                    "txCount", receivedBlock == null || receivedBlock.getDtoTransactions() == null ? 0 : receivedBlock.getDtoTransactions().size(),
+                    "blockIndex", receivedBlock == null ? null : receivedBlock.getIndex()
+            ));
             if (receivedBlock != null) {
                 recordReceivedBlock(
                         receivedBlock.getIndex(),
                         receivedBlock.getHashBlock(),
                         request == null ? "unknown" : request.getRemoteAddr(),
                         "/nodes/resolve_from_to_block");
+                String blockGrowthTraceId = BlockGrowthDiagnostics.startSubmit(
+                        "/nodes/resolve_from_to_block",
+                        request == null ? "unknown" : request.getRemoteAddr(),
+                        request == null ? -1L : request.getContentLengthLong(),
+                        receivedBlock,
+                        blockcheinSize,
+                        winnerList == null ? 0 : winnerList.size());
+                BlockGrowthDiagnostics.submitValidationStarted(blockGrowthTraceId);
                 System.out.println("SERVER_BLOCK_RECEIVED");
                 System.out.println("SERVER_BLOCK_RECEIVED_ENDPOINT=/nodes/resolve_from_to_block");
                 System.out.println("SERVER_BLOCK_RECEIVED_REMOTE=" + (request == null ? "unknown" : request.getRemoteAddr()));
@@ -1419,8 +1674,25 @@ public class BasisController {
                     System.out.println("before original: " + shortDataBlockchain);
                     System.out.println("before temp: " + temp);
 
+                    if (winnerList.size() + addlist.size() > MAX_TEMPORARY_SUBMITTED_BLOCKS) {
+                        String reason = "temporary submitted block queue cap reached: "
+                                + winnerList.size() + " + " + addlist.size()
+                                + " > " + MAX_TEMPORARY_SUBMITTED_BLOCKS;
+                        System.out.println("SERVER_BLOCK_ADD_REJECTED=" + reason);
+                        recordValidationResult("rejected", reason);
+                        return new ResponseEntity<>("FALSE", HttpStatus.TOO_MANY_REQUESTS);
+                    }
 
                     winnerList.addAll(addlist);
+                    BlockGrowthDiagnostics.submitQueued(
+                            BlockGrowthDiagnostics.submitStatus().get("lastSubmitTraceId").toString(),
+                            addlist.get(addlist.size() - 1),
+                            winnerList.size());
+                    NodeMemoryProfiler.recordStage("resolve_conflict after candidate queued", NodeMemoryProfiler.metrics(
+                            "addlistSize", addlist.size(),
+                            "winnerListSize", winnerList.size(),
+                            "queuedBlockIndex", addlist.get(addlist.size() - 1).getIndex()
+                    ));
                     recordAddedBlock(addlist.get(addlist.size() - 1).getIndex(), addlist.get(addlist.size() - 1).getHashBlock());
                     System.out.println("SERVER_BLOCK_ADD_SUCCESS");
                     System.out.println("SERVER_BLOCK_ADD_MODE=queued_for_tournament");
@@ -1429,12 +1701,17 @@ public class BasisController {
                     System.out.println("SERVER_BLOCK_ADD_QUEUED_HASH=" + addlist.get(addlist.size() - 1).getHashBlock());
                     System.out.println("SERVER_BLOCK_ADD_TEMPORARY_QUEUE_SIZE=" + winnerList.size());
 
-
-                    utilsResolving.sendAllBlocksToStorage(addlist);
-                    List<Block> blockList = UtilsJson.jsonToObject(winnerList());
-
-                    if (blockList.size() > 0)
-                        utilsResolving.sendAllBlocksToStorage(blockList);
+                    NodeMemoryProfiler.recordStage("resolve_conflict before tournament/local persistence", NodeMemoryProfiler.metrics(
+                            "addlistSize", addlist.size(),
+                            "winnerListSize", winnerList.size(),
+                            "prePersistPeerPropagationEnabled", isPrePersistPeerPropagationEnabled()
+                    ));
+                    handlePrePersistPeerPropagation(addlist);
+                    NodeMemoryProfiler.recordStage("resolve_conflict after tournament/local persistence handoff", NodeMemoryProfiler.metrics(
+                            "addlistSize", addlist.size(),
+                            "winnerListSize", winnerList.size(),
+                            "prePersistPeerPropagationEnabled", isPrePersistPeerPropagationEnabled()
+                    ));
 
 
                     //прибавить к общей сумме денег
@@ -1464,19 +1741,30 @@ public class BasisController {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             lastServerException = e.getClass().getName() + ": " + e.getMessage();
             recordValidationResult("error", lastServerException);
             System.out.println("SERVER_BLOCK_ADD_ERROR");
             System.out.println("SERVER_BLOCK_ADD_ERROR_CLASS=" + e.getClass().getName());
             System.out.println("SERVER_BLOCK_ADD_ERROR_MESSAGE=" + e.getMessage());
-            MyLogger.saveLog("resolve_conflict:  " + e.getMessage(), e);
+            logResolveConflictException(e, request);
 
             return new ResponseEntity<>("FALSE", HttpStatus.EXPECTATION_FAILED);
         } finally {
 
             System.out.println("finish resolve_from_to_block");
+            NodeMemoryProfiler.endTrace("resolve_conflict finish");
         }
+    }
+
+    private static void logResolveConflictException(Exception e, HttpServletRequest request) {
+        String peer = request == null ? "unknown" : request.getRemoteAddr();
+        String endpoint = "/nodes/resolve_from_to_block";
+        if (PeerErrorRateLimiter.isNetworkTimeoutLike(e)) {
+            RESOLVE_CONFLICT_ERROR_LIMITER.logPeerError(peer, endpoint, e);
+            return;
+        }
+        MyLogger.saveLog("resolve_conflict unexpected error class=" + e.getClass().getName()
+                + ", message=" + e.getMessage(), e);
     }
 
     private List<Block> v35CanonicalContextBefore(Block prevBlock) throws IOException {

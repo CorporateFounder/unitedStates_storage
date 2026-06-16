@@ -27,7 +27,7 @@ class UtilUrlMemoryGuardTest {
                 () -> UtilUrl.readAll(new StringReader("abcdef"), 3)
         );
 
-        assertTrue(exception.getMessage().contains("too large"));
+        assertTrue(exception.getMessage().contains(UtilUrl.TOO_LARGE_REASON));
     }
 
     @Test
@@ -36,5 +36,19 @@ class UtilUrlMemoryGuardTest {
         assertTrue(UtilUrl.DEFAULT_READ_TIMEOUT_MILLIS <= 6000);
         assertTrue(UtilUrl.SILENT_TIMEOUT_MILLIS <= 3000);
         assertTrue(UtilUrl.MAX_GET_RESPONSE_CHARS <= 1_000_000);
+        assertTrue(UtilUrl.MAX_WINNER_LIST_RESPONSE_CHARS <= 200_000);
+        assertTrue(UtilUrl.MAX_GET_NODES_RESPONSE_CHARS <= 100_000);
+        assertTrue(UtilUrl.MAX_GET_TRANSACTIONS_RESPONSE_CHARS <= 500_000);
+        assertTrue(UtilUrl.MAX_SUB_BLOCKS_RESPONSE_CHARS <= 750_000);
+        assertTrue(UtilUrl.MAX_DATASHORT_RESPONSE_CHARS <= 100_000);
+    }
+
+    @Test
+    void endpointSpecificResponseCapsAreSelectedBeforeParsing() {
+        assertEquals(UtilUrl.MAX_WINNER_LIST_RESPONSE_CHARS, UtilUrl.maxResponseCharsForUrl("http://peer/winnerList"));
+        assertEquals(UtilUrl.MAX_GET_TRANSACTIONS_RESPONSE_CHARS, UtilUrl.maxResponseCharsForUrl("http://peer/getTransactions"));
+        assertEquals(UtilUrl.MAX_SUB_BLOCKS_RESPONSE_CHARS, UtilUrl.maxResponseCharsForUrl("http://peer/sub-blocks"));
+        assertEquals(UtilUrl.MAX_DATASHORT_RESPONSE_CHARS, UtilUrl.maxResponseCharsForUrl("http://peer/datashort"));
+        assertEquals(UtilUrl.MAX_GET_RESPONSE_CHARS, UtilUrl.maxResponseCharsForUrl("http://peer/size"));
     }
 }

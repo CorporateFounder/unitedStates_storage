@@ -39,8 +39,15 @@ import static International_Trade_Union.utils.UtilsUse.bigRandomWinner;
 @Component
 @Scope("singleton")
 public class TournamentService {
-    static final int MAX_TOURNAMENT_HOSTS = 32;
-    static final int TOURNAMENT_HTTP_TIMEOUT_MILLIS = 3000;
+    static final int MAX_TOURNAMENT_HOSTS = PeerNetworkPolicy.maxPeersPerTournamentCycle();
+    static final int TOURNAMENT_HTTP_TIMEOUT_MILLIS = PeerNetworkPolicy.readTimeoutMs();
+    static final int MAX_PEER_WINNER_BLOCKS = 16;
+    private static final int MAX_TOURNAMENT_THREADS = 8;
+    private static final PeerErrorRateLimiter PEER_ERROR_RATE_LIMITER = new PeerErrorRateLimiter();
+    private static volatile long lastTournamentStartMillis = -1;
+    private static volatile long lastTournamentEndMillis = -1;
+    private static volatile long lastTournamentDurationMillis = -1;
+    private static volatile String lastOomRiskWarning = "none";
 
     @PostConstruct
     public void init() {
@@ -75,14 +82,19 @@ public class TournamentService {
     private List<Block> winner = new ArrayList<>();
 
     static List<HostEndDataShortB> boundedHostsForTournament(List<HostEndDataShortB> hosts) {
+        if (PeerWorkMemoryGuard.shouldSkipNonCriticalPeerWork("tournament")) {
+            return new ArrayList<>();
+        }
         if (hosts == null || hosts.isEmpty()) {
             return new ArrayList<>();
         }
-        return hosts.stream()
+        return PeerHealthRegistry.selectHosts(hosts.stream()
                 .filter(Objects::nonNull)
                 .filter(host -> host.getHost() != null && !host.getHost().isBlank())
-                .limit(MAX_TOURNAMENT_HOSTS)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                PeerNetworkPolicy.maxPeersPerTournamentCycle(),
+                "tournament",
+                -1);
     }
 
     static String memoryStatusForLog() {
@@ -90,6 +102,44 @@ public class TournamentService {
         return "freeMemory=" + runtime.freeMemory()
                 + ", totalMemory=" + runtime.totalMemory()
                 + ", maxMemory=" + runtime.maxMemory();
+    }
+
+    public static long getLastTournamentStartMillis() {
+        return lastTournamentStartMillis;
+    }
+
+    public static long getLastTournamentEndMillis() {
+        return lastTournamentEndMillis;
+    }
+
+    public static long getLastTournamentDurationMillis() {
+        return lastTournamentDurationMillis;
+    }
+
+    public static String getLastOomRiskWarning() {
+        return lastOomRiskWarning;
+    }
+
+    public static int getTrackedPeerErrorCount() {
+        return PEER_ERROR_RATE_LIMITER.trackedErrorCount();
+    }
+
+    static void resetDiagnosticsForTests() {
+        lastTournamentStartMillis = -1;
+        lastTournamentEndMillis = -1;
+        lastTournamentDurationMillis = -1;
+        lastOomRiskWarning = "none";
+        PEER_ERROR_RATE_LIMITER.resetForTests();
+    }
+
+    private static ExecutorService newTournamentExecutor(int taskCount) {
+        int threads = Math.max(1, Math.min(Math.min(taskCount, MAX_TOURNAMENT_THREADS), Runtime.getRuntime().availableProcessors()));
+        return Executors.newFixedThreadPool(threads);
+    }
+
+    private static void logPeerError(String peer, Exception error) {
+        PEER_ERROR_RATE_LIMITER.logPeerError(peer, error);
+        lastOomRiskWarning = PEER_ERROR_RATE_LIMITER.lastWarning();
     }
 
     public List<Block> getWinnerDiff() {
@@ -273,6 +323,9 @@ public class TournamentService {
     }
 
     public void getCheckSyncTime(List<HostEndDataShortB> hosts) {
+        if (PeerWorkMemoryGuard.shouldSkipNonCriticalPeerWork("getCheckSyncTime")) {
+            return;
+        }
         List<HostEndDataShortB> sortPriorityHost = null;
 
 
@@ -284,6 +337,8 @@ public class TournamentService {
             return;
         }
 
+        sortPriorityHost = boundedHostsForTournament(sortPriorityHost);
+        ExecutorService executor = newTournamentExecutor(sortPriorityHost.size());
         List<CompletableFuture<Void>> futures = sortPriorityHost.stream().map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
             String s = hostEndDataShortB.getHost();
             try {
@@ -311,26 +366,39 @@ public class TournamentService {
 
 
             } catch (IOException | JSONException e) {
-                MyLogger.saveLog("cannot connect to " + s);
-                MyLogger.saveLog(e.toString());
+                logPeerError(s, e);
             } catch (Exception e) {
-                MyLogger.saveLog("Unexpected error: " + s);
-                MyLogger.saveLog(e.toString());
+                logPeerError(s, e);
             }
-        })).collect(Collectors.toList());
+        }, executor)).collect(Collectors.toList());
 
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         try {
-            allOf.get();
+            allOf.get(PeerNetworkPolicy.tournamentPeerBudgetMs(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException e) {
             MyLogger.saveLog("getCheckSyncTime: ", e);
+        } catch (TimeoutException e) {
+            PeerHealthRegistry.recordPeerSync("TOURNAMENT_PEER_BUDGET_SKIPPED", PeerNetworkPolicy.tournamentPeerBudgetMs());
+            PEER_ERROR_RATE_LIMITER.logPeerError("getCheckSyncTime_batch", "/timentp", e);
+        } finally {
+            futures.clear();
+            sortPriorityHost.clear();
+            executor.shutdownNow();
         }
 
 
     }
 
     public void getAllWinner(List<HostEndDataShortB> hostEndDataShortBS) {
+        if (PeerWorkMemoryGuard.shouldSkipNonCriticalPeerWork("getAllWinner")) {
+            return;
+        }
         hostEndDataShortBS = boundedHostsForTournament(hostEndDataShortBS);
+        NodeMemoryProfiler.recordStage("getAllWinner / winnerList remote fetch start", NodeMemoryProfiler.metrics(
+                "hostsListSize", hostEndDataShortBS == null ? 0 : hostEndDataShortBS.size(),
+                "winnerListSize", BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size()
+        ));
+        ExecutorService executor = newTournamentExecutor(hostEndDataShortBS.size());
         // Временное потокобезопасное множество для хранения уникальных блоков
         Set<Block> tempWinnerSet = ConcurrentHashMap.newKeySet();
 
@@ -339,40 +407,41 @@ public class TournamentService {
                 .map(hostEndDataShortB -> CompletableFuture.runAsync(() -> {
                     String s = hostEndDataShortB.getHost();
                     try {
+                        if (UtilsResolving.isSelfPeer(s)) {
+                            BasisController.recordSelfPeerSkipped();
+                            MyLogger.warnLog("SELF_PEER_SKIPPED phase=getAllWinner peer=" + s);
+                            return;
+                        }
                         if (BasisController.getExcludedAddresses().contains(s)) {
                             MyLogger.saveLog(":its your address or excluded address: " + s);
                             return;
                         }
 
-                        CompletableFuture<String> winnerListFuture = CompletableFuture.supplyAsync(() -> {
-                            try {
-                                return UtilUrl.readJsonFromUrl(s + "/winnerList", TOURNAMENT_HTTP_TIMEOUT_MILLIS);
-                            } catch (IOException | JSONException e) {
-                                MyLogger.saveLog("Error reading winnerList from " + s + ": " + e.getMessage());
-                                return "";
-                            }
-                        });
-
-                        CompletableFuture<String> prevBlockFuture = CompletableFuture.supplyAsync(() -> {
-                            try {
-                                return UtilUrl.readJsonFromUrl(s + "/prevBlock", TOURNAMENT_HTTP_TIMEOUT_MILLIS);
-                            } catch (IOException | JSONException e) {
-                                MyLogger.saveLog("Error reading prevBlock from " + s + ": " + e.getMessage());
-                                return "";
-                            }
-                        });
-
-                        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(winnerListFuture, prevBlockFuture);
-                        combinedFuture.join();
-
-                        String winnerListJson = winnerListFuture.getNow("");
-                        String prevBlockJson = prevBlockFuture.getNow("");
+                        String winnerListJson = UtilUrl.readJsonFromUrl(
+                                s + "/winnerList",
+                                TOURNAMENT_HTTP_TIMEOUT_MILLIS,
+                                UtilUrl.MAX_WINNER_LIST_RESPONSE_CHARS);
+                        String prevBlockJson = UtilUrl.readJsonFromUrl(s + "/prevBlock", TOURNAMENT_HTTP_TIMEOUT_MILLIS);
+                        NodeMemoryProfiler.recordStage("getAllWinner / winnerList remote fetch finish", NodeMemoryProfiler.metrics(
+                                "peer", s,
+                                "winnerListJsonLength", winnerListJson == null ? 0 : winnerListJson.length(),
+                                "prevBlockJsonLength", prevBlockJson == null ? 0 : prevBlockJson.length()
+                        ));
 
                         if (winnerListJson.isEmpty() || prevBlockJson.isEmpty()) {
                             return;
                         }
 
                         List<Block> blocks = UtilsJson.jsonToObject(winnerListJson);
+                        NodeMemoryProfiler.recordStage("getAllWinner after winnerList parse", NodeMemoryProfiler.metrics(
+                                "peer", s,
+                                "parsedWinnerListSize", blocks == null ? 0 : blocks.size(),
+                                "jsonStringLength", winnerListJson.length()
+                        ));
+                        if (blocks.size() > MAX_PEER_WINNER_BLOCKS) {
+                            lastOomRiskWarning = "peer=" + s + " winnerList too large: " + blocks.size();
+                            blocks = blocks.stream().limit(MAX_PEER_WINNER_BLOCKS).collect(Collectors.toList());
+                        }
                         Block prevBlock = UtilsJson.jsonToBLock(prevBlockJson);
 
                         if (BasisController.getBlockchainSize() == prevBlock.getIndex()) {
@@ -384,9 +453,9 @@ public class TournamentService {
                             validateAndAddBlock(block, tempWinnerSet, s);
                         }
                     } catch (Exception e) {
-                        MyLogger.saveLog("Unexpected error for host: " + s + ": " + e.getMessage());
+                        logPeerError(s, e);
                     }
-                }))
+                }, executor))
                 .collect(Collectors.toList());
 
         // Ограничиваем общее время выполнения всех задач
@@ -398,6 +467,10 @@ public class TournamentService {
             allOf.join(); // Ждём завершения всех задач
         } catch (Exception e) {
             MyLogger.saveLog("Unexpected error in getAllWinner: " + e.getMessage());
+        } finally {
+            futures.clear();
+            hostEndDataShortBS.clear();
+            executor.shutdownNow();
         }
 
         // Перед выходом обновляем winnerList атомарно
@@ -407,6 +480,12 @@ public class TournamentService {
                 BasisController.getWinnerList().add(block);
             }
         }
+        NodeMemoryProfiler.recordStage("getAllWinner finish", NodeMemoryProfiler.metrics(
+                "tempWinnerSetSize", tempWinnerSet.size(),
+                "winnerListSize", BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size(),
+                "futuresCreatedCount", futures.size()
+        ));
+        tempWinnerSet.clear();
 
     }
 
@@ -446,11 +525,24 @@ public class TournamentService {
 
     public void tournament(List<HostEndDataShortB> hostEndDataShortBS) {
 
+        lastTournamentStartMillis = System.currentTimeMillis();
+        DiagnosticLogRetention.cleanupIfDue(BasisController.getBlockchainSize());
+        String tournamentTraceId = BlockGrowthDiagnostics.startTournament(
+                BasisController.getBlockchainSize(),
+                BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size());
+        NodeMemoryProfiler.beginTrace("tournament start", null);
+        NodeMemoryProfiler.recordStage("tournament start", NodeMemoryProfiler.metrics(
+                "hostsListSize", hostEndDataShortBS == null ? 0 : hostEndDataShortBS.size(),
+                "winnerListSize", BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size()
+        ));
         long timeBefore = UtilsTime.getUniversalTimestamp();
         System.out.println("SERVER_TOURNAMENT_MEMORY_BEFORE=" + memoryStatusForLog());
         System.out.println("SERVER_TOURNAMENT_WINNERLIST_SIZE_BEFORE=" + BasisController.getWinnerList().size());
         // Сначала вызываем getAllWinner
         getAllWinner(hostEndDataShortBS);
+        NodeMemoryProfiler.recordStage("tournament after winner selection", NodeMemoryProfiler.metrics(
+                "winnerListSize", BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size()
+        ));
         System.out.println("SERVER_TOURNAMENT_WINNERLIST_SIZE_AFTER_GET_ALL_WINNER=" + BasisController.getWinnerList().size());
         System.out.println("SERVER_TOURNAMENT_MEMORY_AFTER_GET_ALL_WINNER=" + memoryStatusForLog());
         long timeAfter = UtilsTime.getUniversalTimestamp();
@@ -468,6 +560,9 @@ public class TournamentService {
         try {
             timeBefore = UtilsTime.getUniversalTimestamp();
             List<Block> list = BasisController.getWinnerList();
+            NodeMemoryProfiler.recordStage("tournament before winner selection", NodeMemoryProfiler.metrics(
+                    "candidateWinnerListSize", list == null ? 0 : list.size()
+            ));
             timeAfter = UtilsTime.getUniversalTimestamp();
             MyLogger.saveLog("getWinnerList: millisecond: " + (timeAfter - timeBefore) + " second: " + ((timeAfter - timeBefore) / 1000));
 
@@ -476,6 +571,7 @@ public class TournamentService {
                     .filter(UtilsUse.distinctByKey(Block::getHashBlock))
                     .filter(t -> UtilsUse.getDuplicateTransactions(t).size() == 0)
                     .collect(Collectors.toList());
+            BlockGrowthDiagnostics.tournamentCandidates(tournamentTraceId, list == null ? 0 : list.size());
 
 
             if (list == null || list.isEmpty() || list.size() == 0) {
@@ -483,6 +579,7 @@ public class TournamentService {
                 System.out.println("-----------------------");
                 System.out.println("you can safely shut down the server.: " + list.size());
                 System.out.println("-----------------------");
+                BlockGrowthDiagnostics.tournamentSkip(tournamentTraceId, "NO_CANDIDATE_BLOCKS");
                 return;
             }
 
@@ -539,6 +636,15 @@ public class TournamentService {
 
 
             winnerList = sortWinner(finalBalances, list);
+            BlockGrowthDiagnostics.tournamentWinnerSelected(
+                    tournamentTraceId,
+                    winnerList == null || winnerList.isEmpty() ? null : winnerList.get(0),
+                    winnerList == null ? 0 : winnerList.size());
+            NodeMemoryProfiler.recordStage("tournament after sortWinner", NodeMemoryProfiler.metrics(
+                    "candidateListSize", list == null ? 0 : list.size(),
+                    "sortedWinnerListSize", winnerList == null ? 0 : winnerList.size(),
+                    "balancesSize", balances == null ? 0 : balances.size()
+            ));
 
 
             Block prevBlock = BasisController.prevBlock();
@@ -553,6 +659,7 @@ public class TournamentService {
 
                 System.out.println("error null: winner: " + winner);
                 System.out.println("--------------------------------------------");
+                BlockGrowthDiagnostics.tournamentSkip(tournamentTraceId, "WINNER_NULL_OR_INCOMPLETE");
                 return;
             }
 
@@ -570,6 +677,7 @@ public class TournamentService {
 
             if (temp == null || !temp.isValidation()) {
                 System.out.println("wrong validation short: " + temp);
+                BlockGrowthDiagnostics.tournamentSkip(tournamentTraceId, "WINNER_SHORT_VALIDATION_FAILED");
                 return;
             }
 
@@ -580,6 +688,7 @@ public class TournamentService {
 
 
             boolean save = false;
+            long tournamentSizeBeforeAdd = BasisController.getBlockchainSize();
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null) {
                 balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(winner, blockService));
@@ -587,7 +696,23 @@ public class TournamentService {
                 System.out.println("SERVER_TOURNAMENT_PERSIST_START");
                 System.out.println("SERVER_TOURNAMENT_PERSIST_WINNER_INDEX=" + (winner.isEmpty() ? "none" : winner.get(0).getIndex()));
                 System.out.println("SERVER_TOURNAMENT_MEMORY_BEFORE_ADD_BLOCK3=" + memoryStatusForLog());
+                BasisController.recordLocalPersistenceStartedFromTournament(winner.isEmpty() ? null : winner.get(0));
+                NodeMemoryProfiler.recordStage("tournament before addBlock3", NodeMemoryProfiler.metrics(
+                        "winnerSize", winner == null ? 0 : winner.size(),
+                        "balancesSize", balances == null ? 0 : balances.size(),
+                        "winnerBlockIndex", winner == null || winner.isEmpty() ? null : winner.get(0).getIndex()
+                ));
                 save = utilsResolving.addBlock3(winner, balances, Seting.ORIGINAL_BLOCKCHAIN_FILE, new ArrayList<>());
+                BlockGrowthDiagnostics.tournamentAddBlock3Result(
+                        tournamentTraceId,
+                        save,
+                        tournamentSizeBeforeAdd,
+                        BasisController.getBlockchainSize());
+                NodeMemoryProfiler.recordStage("tournament after addBlock3", NodeMemoryProfiler.metrics(
+                        "save", save,
+                        "winnerSize", winner == null ? 0 : winner.size(),
+                        "balancesSize", balances == null ? 0 : balances.size()
+                ));
                 System.out.println("SERVER_TOURNAMENT_PERSIST_RESULT=" + save);
                 System.out.println("SERVER_TOURNAMENT_MEMORY_AFTER_ADD_BLOCK3=" + memoryStatusForLog());
             }
@@ -615,6 +740,11 @@ public class TournamentService {
                 prevBlock = UtilsBlockToEntityBlock.entityBlockToBlock(entityBlock);
                 BasisController.setPrevBlock(prevBlock);
                 BasisController.recordPersistedBlockFromTournament(prevBlock);
+                BlockGrowthDiagnostics.tournamentAddBlock3Result(
+                        tournamentTraceId,
+                        true,
+                        tournamentSizeBeforeAdd,
+                        BasisController.getBlockchainSize());
                 if (prevBlock == null) {
                     System.out.println("----------");
                     System.out.println("prevBlock: " + prevBlock);
@@ -625,6 +755,7 @@ public class TournamentService {
             } else {
                 System.out.println("SERVER_BLOCK_ADD_REJECTED=Tournament addBlock3 returned false");
                 MyLogger.saveLog("Tournament addBlock3 has error: " + winner.get(0).getIndex());
+                BlockGrowthDiagnostics.tournamentSkip(tournamentTraceId, "ADD_BLOCK3_FAILED");
             }
             balances = UtilsAccountToEntityAccount.entityAccountsToMapAccounts(UtilsUse.accounts(list, blockService));
 
@@ -746,58 +877,137 @@ public class TournamentService {
 
             MyLogger.saveLog("TournamentService: pool error " + " message: " + e.getMessage() + " ", e);
         } finally {
+            NodeMemoryProfiler.recordStage("tournament finish", NodeMemoryProfiler.metrics(
+                    "winnerListSize", BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size()
+            ));
+            NodeMemoryProfiler.endTrace("tournament finish");
+            BlockGrowthDiagnostics.finishTournament(
+                    tournamentTraceId,
+                    BasisController.getBlockchainSize(),
+                    BasisController.getWinnerList() == null ? 0 : BasisController.getWinnerList().size());
+            clearTemporaryTournamentState();
+            lastTournamentEndMillis = System.currentTimeMillis();
+            lastTournamentDurationMillis = lastTournamentEndMillis - lastTournamentStartMillis;
             NodeController.setNotReady();
             BasisController.setIsSaveFile(true);
         }
 
     }
 
+    void clearTemporaryTournamentState() {
+        clearWinners();
+        BasisController.setAllWiners(new ArrayList<>());
+        BasisController.setCountTransactionsWiner(new ArrayList<>());
+        BasisController.setStakingWiners(new ArrayList<>());
+        BasisController.setBigRandomWiner(new ArrayList<>());
+        BasisController.setPowerWiners(new ArrayList<>());
+        if (poolBlockService != null) {
+            poolBlockService.clearPoolBlocks();
+        }
+    }
+
     public void sendAndPutHost(Set<String> nodes) {
         // Отправка собственного хоста
-        System.out.println("sending host --------------------------------------------");
         MyHost myHost = new MyHost(domainConfiguration.getPubllc_domain(), Seting.NAME_SERVER, Seting.PUBLIC_KEY);
-        System.out.println("tournament nodes: " + nodes);
-        System.out.println("my host: " + myHost);
+        MyLogger.saveLog("sendAndPutHost start nodesCount=" + (nodes == null ? 0 : nodes.size()) + " myHost=" + myHost.getHost());
+        NodeMemoryProfiler.recordStage("sendAndPutHost start", NodeMemoryProfiler.metrics(
+                "nodesCount", nodes == null ? 0 : nodes.size(),
+                "myHost", myHost.getHost()
+        ));
+        if (nodes == null || nodes.isEmpty()) {
+            PeerPropagationMonitor.recordSkipped("no_hosts_for_put", 0, 0);
+            NodeMemoryProfiler.recordStage("sendAndPutHost skip", NodeMemoryProfiler.metrics("skipReason", "no_hosts_for_put"));
+            return;
+        }
+        if (UtilsResolving.shouldSkipPeerPropagationForCurrentMemory()) {
+            PeerPropagationMonitor.recordSkipped("low_memory_before_put_host", 0, 0);
+            MyLogger.warnLog("PEER_PROPAGATION_SKIPPED_LOW_MEMORY phase=sendAndPutHost");
+            NodeMemoryProfiler.recordStage("sendAndPutHost skip", NodeMemoryProfiler.metrics("skipReason", "low_memory_before_put_host"));
+            return;
+        }
+        int selfSkipped = (int) nodes.stream().filter(UtilsResolving::isSelfPeer).count();
+        Set<String> boundedNodes = nodes.stream()
+                .filter(s -> s != null && !s.isBlank())
+                .map(s -> s.contains("\"") ? s.replace("\"", "") : s)
+                .filter(s -> !UtilsResolving.isSelfPeer(s))
+                .filter(s -> !BasisController.getExcludedAddresses().contains(s))
+                .distinct()
+                .limit(UtilsResolving.MAX_PROPAGATION_HOSTS)
+                .collect(Collectors.toCollection(HashSet::new));
+        if (boundedNodes.isEmpty()) {
+            PeerPropagationMonitor.recordSkipped("no_remote_put_hosts", 0, selfSkipped);
+            MyLogger.warnLog("PEER_PROPAGATION_SKIPPED_SELF phase=sendAndPutHost selfSkipped=" + selfSkipped);
+            NodeMemoryProfiler.recordStage("sendAndPutHost skip", NodeMemoryProfiler.metrics(
+                    "skipReason", "no_remote_put_hosts",
+                    "selfPeersSkippedCount", selfSkipped
+            ));
+            return;
+        }
+        nodes = boundedNodes;
+        NodeMemoryProfiler.recordStage("sendAndPutHost after host filtering", NodeMemoryProfiler.metrics(
+                "hostsListSize", nodes.size(),
+                "selfPeersSkippedCount", selfSkipped
+        ));
+        PeerPropagationMonitor.recordStarted(nodes.size(), selfSkipped);
         try {
             UtilsAllAddresses.sendAddress(nodes, myHost);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            PEER_ERROR_RATE_LIMITER.logPeerError("sendAddress_batch", "/putNode", e);
         }
-        System.out.println("finish sending host --------------------------------------------");
 
         // Скачивание всех хостов
-        System.out.println("download host --------------------------------------------");
 
         nodes.remove(myHost.getHost());
 
         // Параллельная обработка узлов
-        List<CompletableFuture<Void>> futures = nodes.stream()
+        ExecutorService getNodesExecutor = newTournamentExecutor(nodes.size());
+        List<CompletableFuture<Void>> futures = new ArrayList<>(nodes.stream()
                 .filter(s -> s != null && !s.isBlank()) // Удаляем пустые строки и null
                 .map(s -> CompletableFuture.runAsync(() -> {
                     try {
-                        System.out.println("updating: " + s);
-                        Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(s + "/getNodes"));
+                        Set<String> tempNode = UtilsJson.jsonToSetAddresses(UtilUrl.readJsonFromUrl(
+                                s + "/getNodes",
+                                TOURNAMENT_HTTP_TIMEOUT_MILLIS,
+                                UtilUrl.MAX_GET_NODES_RESPONSE_CHARS));
 
                         if (BasisController.getExcludedAddresses().contains(s) || s.equals(myHost.getHost())) {
-                            System.out.println(":its your address or excluded address: " + s);
+                            MyLogger.saveLog("sendAndPutHost skipped self/excluded host=" + s);
                             return;
                         }
 
                         tempNode.forEach(s1 -> {
-                            System.out.println("put host: s1: " + s1);
                             UtilsAllAddresses.putHost(s1);
                         });
+                        MyLogger.saveLog("sendAndPutHost updated host=" + s + " discoveredCount=" + tempNode.size());
                     } catch (Exception e) {
-                        System.err.println("updatingNodeEndBlocks: host not worked: " + s);
-                        e.printStackTrace();
+                        PEER_ERROR_RATE_LIMITER.logPeerError(s, e);
                     }
-                }))
-                .toList();
+                }, getNodesExecutor))
+                .toList());
+        NodeMemoryProfiler.recordStage("sendAndPutHost futures created", NodeMemoryProfiler.metrics(
+                "futuresCreatedCount", futures.size(),
+                "hostsListSize", nodes.size()
+        ));
 
         // Ожидание завершения всех задач
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        allFutures.join(); // Дождаться завершения всех задач
-        System.out.println("All hosts updated in parallel.");
+        try {
+            allFutures.orTimeout(12, TimeUnit.SECONDS).join(); // Дождаться завершения всех задач
+        } catch (Exception e) {
+            PEER_ERROR_RATE_LIMITER.logPeerError("sendAndPutHost_batch", "/getNodes", e);
+        } finally {
+            getNodesExecutor.shutdownNow();
+        }
+        long failures = futures.stream().filter(CompletableFuture::isCompletedExceptionally).count();
+        PeerPropagationMonitor.recordFinished(nodes.size(), nodes.size() - (int) failures, (int) failures, selfSkipped);
+        MyLogger.saveLog("sendAndPutHost finish nodesCount=" + nodes.size());
+        NodeMemoryProfiler.recordStage("sendAndPutHost finish", NodeMemoryProfiler.metrics(
+                "hostsListSize", nodes.size(),
+                "futuresCreatedCount", futures.size(),
+                "futuresCompletedCount", futures.size() - (int) failures,
+                "futuresFailedCount", failures
+        ));
+        futures.clear();
     }
 
     public void updatingNodeEndBlocks(List<HostEndDataShortB> hostEndDataShortBS) {
@@ -844,31 +1054,74 @@ public class TournamentService {
 
     public List<DtoTransaction> getInstance(List<HostEndDataShortB> hosts) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
         hosts = boundedHostsForTournament(hosts);
+        NodeMemoryProfiler.recordStage("getTransactions start", NodeMemoryProfiler.metrics(
+                "hostsListSize", hosts == null ? 0 : hosts.size()
+        ));
+        ExecutorService executor = newTournamentExecutor(hosts.size());
         // Асинхронная обработка для получения транзакций с каждого хоста
-        List<CompletableFuture<List<DtoTransaction>>> futures = hosts.stream()
+        List<CompletableFuture<List<DtoTransaction>>> futures = new ArrayList<>(hosts.stream()
                 .map(hostEndDataShortB -> CompletableFuture.supplyAsync(() -> {
                     String host = hostEndDataShortB.getHost();
                     try {
-                        System.out.println("Получение транзакций с сервера: " + host + ". Время ожидания 45 секунд.");
-                        String json = UtilUrl.readJsonFromUrl(host + "/getTransactions", TOURNAMENT_HTTP_TIMEOUT_MILLIS);
+                        if (UtilsResolving.isSelfPeer(host)) {
+                            BasisController.recordSelfPeerSkipped();
+                            MyLogger.warnLog("SELF_PEER_SKIPPED phase=getTransactions peer=" + host);
+                            return new ArrayList<DtoTransaction>();
+                        }
+                        long requestStart = System.currentTimeMillis();
+                        NodeMemoryProfiler.recordStage("getTransactions before remote GET", NodeMemoryProfiler.metrics("peer", host));
+                        String json = UtilUrl.readJsonFromUrl(
+                                host + "/getTransactions",
+                                TOURNAMENT_HTTP_TIMEOUT_MILLIS,
+                                UtilUrl.MAX_GET_TRANSACTIONS_RESPONSE_CHARS);
+                        MyLogger.saveLog("getTransactions host=" + host + " bytes=" + json.length() + " durationMs=" + (System.currentTimeMillis() - requestStart));
+                        NodeMemoryProfiler.recordStage("getTransactions after remote GET", NodeMemoryProfiler.metrics(
+                                "peer", host,
+                                "responseBytes", json == null ? 0 : json.length(),
+                                "jsonStringLength", json == null ? 0 : json.length(),
+                                "durationMs", System.currentTimeMillis() - requestStart
+                        ));
                         if (!json.isEmpty()) {
                             List<DtoTransaction> list = UtilsJson.jsonToDtoTransactionList(json);
+                            MyLogger.saveLog("getTransactions host=" + host + " txCount=" + list.size());
+                            NodeMemoryProfiler.recordStage("getTransactions after parse", NodeMemoryProfiler.metrics(
+                                    "peer", host,
+                                    "txCount", list == null ? 0 : list.size(),
+                                    "jsonStringLength", json.length()
+                            ));
                             return utilsTransactions.balanceTransaction(list, blockService);
                         }
                     } catch (IOException | JSONException e) {
-                        System.out.println("Ошибка при получении транзакций с сервера " + host + ": " + e.getMessage());
+                        PEER_ERROR_RATE_LIMITER.logPeerError(host, e);
                     }
                     return new ArrayList<DtoTransaction>();
-                }))
-                .toList();
+                }, executor))
+                .toList());
 
         // Сбор всех результатов
-        List<DtoTransaction> instance = futures.stream()
-                .map(CompletableFuture::join)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+        List<DtoTransaction> instance;
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .orTimeout(12, TimeUnit.SECONDS)
+                    .join();
+            instance = futures.stream()
+                    .map(future -> future.isCompletedExceptionally() ? new ArrayList<DtoTransaction>() : future.join())
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            PEER_ERROR_RATE_LIMITER.logPeerError("getTransactions_batch", "/getTransactions", e);
+            instance = new ArrayList<>();
+        } finally {
+            executor.shutdownNow();
+        }
 
         // Добавление транзакций из локального хранилища и удаление дубликатов
+        NodeMemoryProfiler.recordStage("getTransactions finish", NodeMemoryProfiler.metrics(
+                "hostsListSize", hosts == null ? 0 : hosts.size(),
+                "futuresCreatedCount", futures.size(),
+                "transactionListSize", instance == null ? 0 : instance.size()
+        ));
+        futures.clear();
         instance.addAll(UtilsTransaction.readLineObject(Seting.ORGINAL_ALL_TRANSACTION_FILE));
         return instance.stream().distinct().collect(Collectors.toList());
     }
