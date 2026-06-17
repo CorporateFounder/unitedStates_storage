@@ -700,6 +700,7 @@ public class TournamentService {
 
 
             boolean save = false;
+            LiteVersionWiner persistedTournamentWinner = null;
             long tournamentSizeBeforeAdd = BasisController.getBlockchainSize();
             //производит запись блока в файл и в базу данных, а также подсчитывает новый баланс.
             if (winner != null && balances != null) {
@@ -763,6 +764,10 @@ public class TournamentService {
                     System.out.println("----------");
                     System.exit(1);
                 }
+                List<LiteVersionWiner> persistedWinnerCandidates = blockToLiteVersion(Collections.singletonList(prevBlock), balances);
+                if (!persistedWinnerCandidates.isEmpty()) {
+                    persistedTournamentWinner = persistedWinnerCandidates.get(0);
+                }
 
             } else {
                 System.out.println("SERVER_BLOCK_ADD_REJECTED=Tournament addBlock3 returned false");
@@ -774,13 +779,25 @@ public class TournamentService {
             BasisController.setIsSaveFile(true);
 
             List<LiteVersionWiner> rankedTournamentCandidates = blockToLiteVersion(winnerList, balances);
-            BasisController.setAllWiners(rankedTournamentCandidates);
-            BasisController.publishTournamentSnapshot(
-                    rankedTournamentCandidates,
-                    lastTournamentStartMillis,
-                    System.currentTimeMillis(),
-                    "tournament after sortWinner",
-                    "ranked_by_tournament_sort");
+            if (save && persistedTournamentWinner != null) {
+                String selectionReason = rankedTournamentCandidates.isEmpty()
+                        ? "local_selected_winner_no_candidate_snapshot"
+                        : "ranked_by_tournament_sort";
+                BasisController.publishTournamentSnapshot(
+                        rankedTournamentCandidates,
+                        persistedTournamentWinner,
+                        lastTournamentStartMillis,
+                        System.currentTimeMillis(),
+                        "tournament after addBlock3",
+                        selectionReason);
+                MyLogger.saveLog("SERVER_TOURNAMENT_AFTER_ADD_BLOCK3 snapshotExists="
+                        + (BasisController.getLastTournamentSnapshot() != null));
+            } else {
+                BasisController.setAllWiners(rankedTournamentCandidates);
+                MyLogger.warnLog("SNAPSHOT_SKIPPED reason=winner_not_persisted save=" + save
+                        + " selectedWinnerDto=" + (persistedTournamentWinner != null)
+                        + " candidateCount=" + rankedTournamentCandidates.size());
+            }
             BasisController.getCountTransactionsWiner().clear();
             BasisController.getStakingWiners().clear();
             BasisController.getBigRandomWiner().clear();

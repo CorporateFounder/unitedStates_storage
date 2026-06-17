@@ -596,27 +596,48 @@ public class BasisController {
                                                               long tournamentEndTime,
                                                               String selectionStage,
                                                               String selectionReason) {
-        List<LiteVersionWiner> candidates = rankedCandidates == null
-                ? new ArrayList<>()
-                : rankedCandidates.stream().limit(MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE).collect(Collectors.toList());
-        if (rankedCandidates != null && rankedCandidates.size() > MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE) {
-            MyLogger.warnLog("CANDIDATE_LIMIT_REACHED collection=lastTournamentSnapshot originalCount="
-                    + rankedCandidates.size() + " retained=" + MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE);
-        }
+        publishTournamentSnapshot(rankedCandidates, null, tournamentStartTime, tournamentEndTime,
+                selectionStage, selectionReason);
+    }
+
+    public static synchronized void publishTournamentSnapshot(List<LiteVersionWiner> rankedCandidates,
+                                                              LiteVersionWiner selectedWinner,
+                                                              long tournamentStartTime,
+                                                              long tournamentEndTime,
+                                                              String selectionStage,
+                                                              String selectionReason) {
+        List<LiteVersionWiner> candidates = capLiteCandidatesWithSelectedWinner(rankedCandidates, selectedWinner);
         LiteVersionWiner selected = candidates.isEmpty() ? null : candidates.get(0);
+        if (selectedWinner != null) {
+            selected = selectedWinner;
+        }
+        String candidateSource = rankedCandidates == null || rankedCandidates.isEmpty()
+                ? "selected_winner_fallback"
+                : "ranked_candidates";
+        MyLogger.saveLog("SNAPSHOT_CREATE_ATTEMPT winnerBlockIndex=" + (selected == null ? "none" : selected.getIndex())
+                + " winnerHash=" + (selected == null ? "none" : selected.getHash())
+                + " candidateSource=" + candidateSource
+                + " candidateCount=" + candidates.size());
+        if (selected == null) {
+            MyLogger.warnLog("SNAPSHOT_SKIPPED reason=no_selected_winner candidateCount=" + candidates.size());
+            return;
+        }
+        if (candidates.isEmpty()) {
+            candidates.add(selected);
+        }
         TournamentSnapshot snapshot = new TournamentSnapshot();
-        snapshot.setBlockIndex(selected == null ? -1L : selected.getIndex());
+        snapshot.setBlockIndex(selected.getIndex());
         snapshot.setTournamentStartTime(tournamentStartTime);
         snapshot.setTournamentEndTime(tournamentEndTime);
         snapshot.setCandidateCount(candidates.size());
         snapshot.setCandidates(candidates);
         snapshot.setSelectedWinner(selected);
-        snapshot.setSelectedWinnerMinerAddress(selected == null ? null : selected.getAddress());
-        snapshot.setSelectedWinnerHash(selected == null ? null : selected.getHash());
-        snapshot.setSelectedWinnerBigRandom(selected == null ? 0 : selected.getBigRandom());
-        snapshot.setSelectedWinnerDifficulty(selected == null ? 0L : selected.getDiff());
-        snapshot.setSelectedWinnerTxCount(selected == null ? 0 : selected.getCountTransactions());
-        snapshot.setSelectedWinnerStakingScore(selected == null ? 0.0 : selected.getStaking());
+        snapshot.setSelectedWinnerMinerAddress(selected.getAddress());
+        snapshot.setSelectedWinnerHash(selected.getHash());
+        snapshot.setSelectedWinnerBigRandom(selected.getBigRandom());
+        snapshot.setSelectedWinnerDifficulty(selected.getDiff());
+        snapshot.setSelectedWinnerTxCount(selected.getCountTransactions());
+        snapshot.setSelectedWinnerStakingScore(selected.getStaking());
         snapshot.setSelectionStage(selectionStage == null ? "tournament after sortWinner" : selectionStage);
         snapshot.setSelectionReason(selectionReason == null ? "ranked_by_tournament_sort" : selectionReason);
         snapshot.setCreatedAt(new Date().toString());
@@ -626,6 +647,31 @@ public class BasisController {
             lastTournamentSnapshots.removeFirst();
         }
         allWiners = new ArrayList<>(candidates);
+        MyLogger.saveLog("SNAPSHOT_CREATED winnerBlockIndex=" + selected.getIndex()
+                + " candidateCount=" + candidates.size()
+                + " selectedMiner=" + selected.getAddress());
+    }
+
+    private static List<LiteVersionWiner> capLiteCandidatesWithSelectedWinner(List<LiteVersionWiner> rankedCandidates,
+                                                                              LiteVersionWiner selectedWinner) {
+        List<LiteVersionWiner> ordered = rankedCandidates == null ? new ArrayList<>() : new ArrayList<>(rankedCandidates);
+        if (selectedWinner != null) {
+            ordered.removeIf(candidate -> sameTournamentCandidate(candidate, selectedWinner));
+            ordered.add(0, selectedWinner);
+        }
+        return capLiteCandidates(ordered, "lastTournamentSnapshot");
+    }
+
+    private static boolean sameTournamentCandidate(LiteVersionWiner left, LiteVersionWiner right) {
+        if (left == null || right == null) {
+            return false;
+        }
+        if (left.getIndex() != right.getIndex()) {
+            return false;
+        }
+        String leftHash = left.getHash() == null ? left.getHashBlock() : left.getHash();
+        String rightHash = right.getHash() == null ? right.getHashBlock() : right.getHash();
+        return Objects.equals(leftHash, rightHash);
     }
 
     static void resetTournamentSnapshotsForTests() {
