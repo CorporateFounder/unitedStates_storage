@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
@@ -204,6 +205,26 @@ class LegacyApiContractTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("No current candidates right now")))
                 .andExpect(content().string(not(containsString("temporarily unavailable"))));
+    }
+
+    @Test
+    void headerLogoIsRenderedAndServedAsValidJpeg() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("src=\"/images/citu-v35-logo.jpg\"")))
+                .andExpect(content().string(containsString("alt=\"Official CITU logo\"")));
+
+        byte[] image = mockMvc.perform(get("/images/citu-v35-logo.jpg"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG))
+                .andReturn()
+                .getResponse()
+                .getContentAsByteArray();
+
+        assertTrue(image.length > 3);
+        assertTrue((image[0] & 0xff) == 255);
+        assertTrue((image[1] & 0xff) == 216);
+        assertTrue((image[2] & 0xff) == 255);
     }
 
     @Test

@@ -217,8 +217,15 @@ class V35PublicControllerTest {
     }
 
     @Test
-    void headerLogoAssetExistsInPackagedStaticResources() {
-        assertTrue(Files.exists(Path.of("src", "main", "resources", "static", "images", "citu-v35-logo.jpg")));
+    void headerLogoAssetExistsInPackagedStaticResources() throws IOException {
+        Path logo = Path.of("src", "main", "resources", "static", "images", "citu-v35-logo.jpg");
+        assertTrue(Files.exists(logo));
+
+        byte[] bytes = Files.readAllBytes(logo);
+        assertTrue(bytes.length > 3);
+        assertTrue((bytes[0] & 0xff) == 255);
+        assertTrue((bytes[1] & 0xff) == 216);
+        assertTrue((bytes[2] & 0xff) == 255);
     }
 
     @Test
@@ -236,7 +243,7 @@ class V35PublicControllerTest {
         assertTrue(content.contains("Never place private keys or passwords in production URLs"));
         assertTrue(content.contains("Node/server 1.0.17"));
         assertTrue(content.contains("wallet/miner 1.0.2"));
-        assertTrue(content.contains("Website/operator guide 1.0.8 contains the current Node 1.0.17 link update"));
+        assertTrue(content.contains("Website/operator guide 1.0.9 contains the current Node 1.0.17 link update"));
         assertTrue(content.contains("Recommended V35 node 1.0.17 / wallet 1.0.2 downloads"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_storage"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_final"));
@@ -278,7 +285,7 @@ class V35PublicControllerTest {
         assertTrue(releaseLinks.contains("Wallet GitHub Release"));
         assertTrue(releaseLinks.contains("Node SHA256"));
         assertTrue(releaseLinks.contains("Wallet SHA256"));
-        assertTrue(releaseLinks.contains("Website/operator guide <code>1.0.8</code> contains the current Node 1.0.17 link update"));
+        assertTrue(releaseLinks.contains("Website/operator guide <code>1.0.9</code> contains the current Node 1.0.17 link update"));
         assertTrue(releaseLinks.contains("persisted winner tournament snapshots"));
         assertTrue(releaseLinks.contains("bounded live diagnostics"));
         assertTrue(releaseLinks.contains("self-peer protection"));
@@ -347,7 +354,7 @@ class V35PublicControllerTest {
         assertTrue(content.contains("lang=\"ru\""));
         assertTrue(content.contains("lang=\"zh\""));
         assertTrue(content.contains("Recommended node 1.0.17 / wallet 1.0.2"));
-        assertTrue(content.contains("Website/operator guide 1.0.8"));
+        assertTrue(content.contains("Website/operator guide 1.0.9"));
     }
 
     @Test
