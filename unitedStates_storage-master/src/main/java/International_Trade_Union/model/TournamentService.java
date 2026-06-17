@@ -317,6 +317,8 @@ public class TournamentService {
                     bigRandomWinner(block, account),
                     block.getHashCompexity()
             );
+            liteVersionWiner.setPreviousHash(block.getPreviousHash());
+            liteVersionWiner.setTimestamp(block.getTimestamp() == null ? null : block.getTimestamp().toString());
             list1.add(liteVersionWiner);
         }
         return list1;
@@ -371,6 +373,7 @@ public class TournamentService {
                 logPeerError(s, e);
             }
         }, executor)).collect(Collectors.toList());
+        PeerConnectionDiagnostics.beginFutures("tournament_getCheckSyncTime", futures.size());
 
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         try {
@@ -381,6 +384,7 @@ public class TournamentService {
             PeerHealthRegistry.recordPeerSync("TOURNAMENT_PEER_BUDGET_SKIPPED", PeerNetworkPolicy.tournamentPeerBudgetMs());
             PEER_ERROR_RATE_LIMITER.logPeerError("getCheckSyncTime_batch", "/timentp", e);
         } finally {
+            PeerConnectionDiagnostics.endFutures("tournament_getCheckSyncTime", futures.size());
             futures.clear();
             sortPriorityHost.clear();
             executor.shutdownNow();
@@ -457,6 +461,7 @@ public class TournamentService {
                     }
                 }, executor))
                 .collect(Collectors.toList());
+        PeerConnectionDiagnostics.beginFutures("tournament_getAllWinner", futures.size());
 
         // Ограничиваем общее время выполнения всех задач
         CompletableFuture<Void> allOf = CompletableFuture
@@ -468,6 +473,7 @@ public class TournamentService {
         } catch (Exception e) {
             MyLogger.saveLog("Unexpected error in getAllWinner: " + e.getMessage());
         } finally {
+            PeerConnectionDiagnostics.endFutures("tournament_getAllWinner", futures.size());
             futures.clear();
             hostEndDataShortBS.clear();
             executor.shutdownNow();
@@ -476,6 +482,12 @@ public class TournamentService {
         // Перед выходом обновляем winnerList атомарно
 
         for (Block block : tempWinnerSet) {
+            if (BasisController.getWinnerList().size() >= BasisController.MAX_TEMPORARY_SUBMITTED_BLOCKS) {
+                MyLogger.warnLog("CANDIDATE_LIMIT_REACHED collection=winnerList originalCount="
+                        + (BasisController.getWinnerList().size() + tempWinnerSet.size())
+                        + " retained=" + BasisController.MAX_TEMPORARY_SUBMITTED_BLOCKS);
+                break;
+            }
             if (!BasisController.getWinnerList().contains(block)) {
                 BasisController.getWinnerList().add(block);
             }
@@ -971,6 +983,7 @@ public class TournamentService {
                     }
                 }, getNodesExecutor))
                 .toList());
+        PeerConnectionDiagnostics.beginFutures("tournament_sendAndPutHost", futures.size());
         NodeMemoryProfiler.recordStage("sendAndPutHost futures created", NodeMemoryProfiler.metrics(
                 "futuresCreatedCount", futures.size(),
                 "hostsListSize", nodes.size()
@@ -983,6 +996,7 @@ public class TournamentService {
         } catch (Exception e) {
             PEER_ERROR_RATE_LIMITER.logPeerError("sendAndPutHost_batch", "/getNodes", e);
         } finally {
+            PeerConnectionDiagnostics.endFutures("tournament_sendAndPutHost", futures.size());
             getNodesExecutor.shutdownNow();
         }
         long failures = futures.stream().filter(CompletableFuture::isCompletedExceptionally).count();
@@ -1084,6 +1098,7 @@ public class TournamentService {
                     return new ArrayList<DtoTransaction>();
                 }, executor))
                 .toList());
+        PeerConnectionDiagnostics.beginFutures("tournament_getTransactions", futures.size());
 
         // Сбор всех результатов
         List<DtoTransaction> instance;
@@ -1099,6 +1114,7 @@ public class TournamentService {
             PEER_ERROR_RATE_LIMITER.logPeerError("getTransactions_batch", "/getTransactions", e);
             instance = new ArrayList<>();
         } finally {
+            PeerConnectionDiagnostics.endFutures("tournament_getTransactions", futures.size());
             executor.shutdownNow();
         }
 

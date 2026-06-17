@@ -386,6 +386,7 @@ public class UtilsResolving {
                     }
                 }, executorService))
                 .collect(Collectors.toList());
+        PeerConnectionDiagnostics.beginFutures("fetchDataFromHosts", futures.size());
 
         // ÐžÐ¶Ð¸Ð´Ð°Ð½Ð¸Ðµ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ñ Ð²ÑÐµÑ… Ð·Ð°Ð´Ð°Ñ‡
         try {
@@ -395,6 +396,7 @@ public class UtilsResolving {
         } catch (CompletionException e) {
             PEER_ERROR_RATE_LIMITER.logPeerError("fetchDataFromHosts_batch", "/datashort", e);
         } finally {
+            PeerConnectionDiagnostics.endFutures("fetchDataFromHosts", futures.size());
             futures.clear();
             boundedHosts.clear();
             executorService.shutdownNow();
@@ -1678,6 +1680,7 @@ public class UtilsResolving {
                     return null;
                 }, executor).orTimeout(15, TimeUnit.SECONDS)) // Ð¢Ð°Ð¹Ð¼Ð°ÑƒÑ‚ Ð´Ð»Ñ ÐºÐ°Ð¶Ð´Ð¾Ð¹ Ð·Ð°Ð´Ð°Ñ‡Ð¸
                 .collect(Collectors.toList());
+        PeerConnectionDiagnostics.beginFutures("resolve_sortPriorityHost", futures.size());
 
         try {
             // ÐžÐ¶Ð¸Ð´Ð°Ð½Ð¸Ðµ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ñ Ð²ÑÐµÑ… Ð·Ð°Ð´Ð°Ñ‡
@@ -1695,6 +1698,7 @@ public class UtilsResolving {
                     .toList();
         } finally {
             // ÐšÐ¾Ñ€Ñ€ÐµÐºÑ‚Ð½Ð¾Ðµ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ðµ Ð¿ÑƒÐ»Ð° Ð¿Ð¾Ñ‚Ð¾ÐºÐ¾Ð²
+            PeerConnectionDiagnostics.endFutures("resolve_sortPriorityHost", futures.size());
             futures.clear();
             processedHosts.clear();
             selectedHosts.clear();
@@ -1854,6 +1858,7 @@ public class UtilsResolving {
         List<CompletableFuture<Void>> futures = uniqueHosts.stream()
                 .map(host -> processNodeAsync(host, blocks, blocksCurrentSize, executor))
                 .collect(Collectors.toList());
+        PeerConnectionDiagnostics.beginFutures("propagation_sendAllBlocksToStorage", futures.size());
 
         // Ð”Ð¾Ð¶Ð¸Ð´Ð°ÐµÐ¼ÑÑ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ñ Ð²ÑÐµÑ… Ð¾Ð¿ÐµÑ€Ð°Ñ†Ð¸Ð¹
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -1862,6 +1867,7 @@ public class UtilsResolving {
         } catch (CompletionException e) {
             PEER_ERROR_RATE_LIMITER.logPeerError("peer_propagation_batch", "/nodes/resolve_from_to_block", e);
         } finally {
+            PeerConnectionDiagnostics.endFutures("propagation_sendAllBlocksToStorage", futures.size());
             executor.shutdownNow();
         }
         long failures = futures.stream().filter(CompletableFuture::isCompletedExceptionally).count();

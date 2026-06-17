@@ -163,7 +163,8 @@ public class BasisController {
     PoolBlockService poolBlockService;
 
     private static volatile AtomicBoolean blockedNewSendBlock = new AtomicBoolean(true);
-    static final int MAX_TEMPORARY_SUBMITTED_BLOCKS = 128;
+    public static final int MAX_TEMPORARY_SUBMITTED_BLOCKS = 100;
+    static final int MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE = 100;
 
     public static AtomicBoolean getBlockedNewSendBlock() {
         return blockedNewSendBlock;
@@ -536,12 +537,46 @@ public class BasisController {
     }
 
     public static void setAllWiners(List<LiteVersionWiner> allWiners) {
-        BasisController.allWiners = allWiners;
+        BasisController.allWiners = capLiteCandidates(allWiners, "allWiners");
     }
 
     public static List<Block> currentCandidatesSnapshot() {
         CopyOnWriteArrayList<Block> current = winnerList;
-        return current == null ? new ArrayList<>() : new ArrayList<>(current);
+        if (current == null) {
+            return new ArrayList<>();
+        }
+        return current.stream().limit(MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE).collect(Collectors.toList());
+    }
+
+    private static CopyOnWriteArrayList<Block> capBlockCandidates(List<Block> candidates, String collectionName) {
+        CopyOnWriteArrayList<Block> capped = new CopyOnWriteArrayList<>();
+        if (candidates == null || candidates.isEmpty()) {
+            return capped;
+        }
+        int originalSize = candidates.size();
+        candidates.stream().limit(MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE).forEach(capped::add);
+        if (originalSize > MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE) {
+            MyLogger.warnLog("CANDIDATE_LIMIT_REACHED collection=" + collectionName
+                    + " originalCount=" + originalSize
+                    + " retained=" + MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE);
+        }
+        return capped;
+    }
+
+    private static List<LiteVersionWiner> capLiteCandidates(List<LiteVersionWiner> candidates, String collectionName) {
+        if (candidates == null || candidates.isEmpty()) {
+            return new ArrayList<>();
+        }
+        int originalSize = candidates.size();
+        List<LiteVersionWiner> capped = candidates.stream()
+                .limit(MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE)
+                .collect(Collectors.toList());
+        if (originalSize > MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE) {
+            MyLogger.warnLog("CANDIDATE_LIMIT_REACHED collection=" + collectionName
+                    + " originalCount=" + originalSize
+                    + " retained=" + MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE);
+        }
+        return capped;
     }
 
     public static List<LiteVersionWiner> lastTournamentCandidatesSnapshot() {
@@ -563,7 +598,11 @@ public class BasisController {
                                                               String selectionReason) {
         List<LiteVersionWiner> candidates = rankedCandidates == null
                 ? new ArrayList<>()
-                : new ArrayList<>(rankedCandidates);
+                : rankedCandidates.stream().limit(MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE).collect(Collectors.toList());
+        if (rankedCandidates != null && rankedCandidates.size() > MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE) {
+            MyLogger.warnLog("CANDIDATE_LIMIT_REACHED collection=lastTournamentSnapshot originalCount="
+                    + rankedCandidates.size() + " retained=" + MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE);
+        }
         LiteVersionWiner selected = candidates.isEmpty() ? null : candidates.get(0);
         TournamentSnapshot snapshot = new TournamentSnapshot();
         snapshot.setBlockIndex(selected == null ? -1L : selected.getIndex());
@@ -731,7 +770,7 @@ public class BasisController {
     }
 
     public static void setWinnerList(CopyOnWriteArrayList<Block> winnerList) {
-        BasisController.winnerList = winnerList;
+        BasisController.winnerList = capBlockCandidates(winnerList, "winnerList");
     }
 
     public static boolean utilsMethod() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, NoSuchProviderException, InvalidKeyException {
@@ -1062,10 +1101,28 @@ public class BasisController {
         return memoryStatusSnapshot(allTransactions, poolBlockService);
     }
 
+    @GetMapping("/debug/memory/live-state")
+    @ResponseBody
+    public Map<String, Object> memoryLiveState() {
+        return memoryLiveStateSnapshot(allTransactions, poolBlockService);
+    }
+
     @GetMapping("/debug/peer/health")
     @ResponseBody
     public Map<String, Object> peerHealth() {
         return PeerHealthRegistry.snapshot();
+    }
+
+    @GetMapping("/debug/peers/self")
+    @ResponseBody
+    public Map<String, Object> selfPeerDiagnostics() {
+        return PeerHealthRegistry.selfPeerSnapshot();
+    }
+
+    @GetMapping("/debug/peer/connections")
+    @ResponseBody
+    public Map<String, Object> peerConnectionDiagnostics() {
+        return PeerHealthRegistry.connectionSnapshot();
     }
 
     @GetMapping("/debug/memory/forensics")
@@ -1078,6 +1135,10 @@ public class BasisController {
 
     static Map<String, Object> memoryStatusSnapshotForTests() {
         return memoryStatusSnapshot(null, null);
+    }
+
+    static Map<String, Object> memoryLiveStateSnapshotForTests() {
+        return memoryLiveStateSnapshot(null, null);
     }
 
     private static Map<String, Object> memoryStatusSnapshot(AllTransactions allTransactions, PoolBlockService poolBlockService) {
@@ -1118,6 +1179,91 @@ public class BasisController {
                 String.valueOf(BlockGrowthDiagnostics.submitStatus().get("lastNoGrowthReason")),
                 longValue(BlockGrowthDiagnostics.submitStatus().get("lastAddedBlockIndex")));
         return status;
+    }
+
+    private static Map<String, Object> memoryLiveStateSnapshot(AllTransactions allTransactions, PoolBlockService poolBlockService) {
+        Runtime runtime = Runtime.getRuntime();
+        long totalMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+        long usedMemory = totalMemory - freeMemory;
+        TournamentSnapshot snapshot = lastTournamentSnapshot;
+        int snapshotCandidateCount = snapshot == null || snapshot.getCandidates() == null ? 0 : snapshot.getCandidates().size();
+        Map<String, Object> status = new LinkedHashMap<>();
+        status.put("currentBlockchainSize", blockcheinSize);
+        status.put("winnerListSize", winnerList == null ? 0 : winnerList.size());
+        status.put("allWinnersSize", allWiners == null ? 0 : allWiners.size());
+        status.put("currentCandidatesSize", winnerList == null ? 0 : Math.min(winnerList.size(), MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE));
+        status.put("lastTournamentSnapshotCandidateCount", snapshotCandidateCount);
+        synchronized (BasisController.class) {
+            status.put("lastTournamentSnapshotsCount", lastTournamentSnapshots.size());
+        }
+        status.put("addListSize", "not_retained_after_request");
+        status.put("transactionPoolSize", allTransactions == null ? "unavailable" : allTransactions.pendingSize());
+        status.put("pendingTransactionsCount", allTransactions == null ? "unavailable" : allTransactions.pendingSize());
+        status.put("cachedBalancesCount", balances == null ? 0 : balances.size());
+        status.put("blockedHostsCount", getExcludedAddresses().size());
+        status.put("knownHostsCount", getNodes().size());
+        status.put("poolBlockMapSize", poolBlockService == null ? "unavailable" : poolBlockService.size());
+        status.put("currentThreadCount", ManagementFactory.getThreadMXBean().getThreadCount());
+        status.put("usedMemory", usedMemory);
+        status.put("maxMemory", runtime.maxMemory());
+        status.put("lastMemoryProbeStage", NodeMemoryProfiler.lastStageName());
+        status.put("winnerList", collectionInfo("winnerList", winnerList == null ? 0 : winnerList.size(), MAX_TEMPORARY_SUBMITTED_BLOCKS, winnerListOldestAgeMillis(), winnerListNewestAgeMillis(), 512));
+        status.put("allWinners", collectionInfo("allWinners", allWiners == null ? 0 : allWiners.size(), MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE, -1, -1, 256));
+        status.put("currentCandidates", collectionInfo("currentCandidates", winnerList == null ? 0 : Math.min(winnerList.size(), MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE), MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE, winnerListOldestAgeMillis(), winnerListNewestAgeMillis(), 512));
+        status.put("lastTournamentSnapshotCandidates", collectionInfo("lastTournamentSnapshotCandidates", snapshotCandidateCount, MAX_TOURNAMENT_CANDIDATE_SNAPSHOT_SIZE, -1, -1, 256));
+        synchronized (BasisController.class) {
+            status.put("lastTournamentSnapshots", collectionInfo("lastTournamentSnapshots", lastTournamentSnapshots.size(), MAX_PUBLIC_TOURNAMENT_SNAPSHOTS, -1, -1, 1024));
+        }
+        status.putAll(PeerConnectionDiagnostics.snapshot());
+        status.putAll(PeerHealthRegistry.connectionSnapshot());
+        return status;
+    }
+
+    private static Map<String, Object> collectionInfo(String collectionName,
+                                                      int size,
+                                                      int maxSize,
+                                                      long oldestEntryAgeMillis,
+                                                      long newestEntryAgeMillis,
+                                                      int estimatedBytesPerEntry) {
+        Map<String, Object> info = new LinkedHashMap<>();
+        info.put("collectionName", collectionName);
+        info.put("size", Math.max(0, size));
+        info.put("maxSize", Math.max(0, maxSize));
+        info.put("estimatedBytes", Math.max(0L, (long) Math.max(0, size) * estimatedBytesPerEntry));
+        info.put("oldestEntryAgeMillis", oldestEntryAgeMillis);
+        info.put("newestEntryAgeMillis", newestEntryAgeMillis);
+        return info;
+    }
+
+    private static long winnerListOldestAgeMillis() {
+        CopyOnWriteArrayList<Block> current = winnerList;
+        if (current == null || current.isEmpty()) {
+            return -1L;
+        }
+        long now = System.currentTimeMillis();
+        return current.stream()
+                .filter(Objects::nonNull)
+                .map(Block::getTimestamp)
+                .filter(Objects::nonNull)
+                .mapToLong(timestamp -> Math.max(0L, now - timestamp.getTime()))
+                .max()
+                .orElse(-1L);
+    }
+
+    private static long winnerListNewestAgeMillis() {
+        CopyOnWriteArrayList<Block> current = winnerList;
+        if (current == null || current.isEmpty()) {
+            return -1L;
+        }
+        long now = System.currentTimeMillis();
+        return current.stream()
+                .filter(Objects::nonNull)
+                .map(Block::getTimestamp)
+                .filter(Objects::nonNull)
+                .mapToLong(timestamp -> Math.max(0L, now - timestamp.getTime()))
+                .min()
+                .orElse(-1L);
     }
 
     private static long longValue(Object value) {

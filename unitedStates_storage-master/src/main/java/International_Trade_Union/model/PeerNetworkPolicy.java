@@ -151,15 +151,50 @@ public final class PeerNetworkPolicy {
 
     public static boolean isKnownSelfPeer(String peer) {
         String normalized = normalizePeer(peer);
-        return normalized.equals("http://194.87.236.238:82")
-                || normalized.equals("https://194.87.236.238:82")
-                || normalized.equals("194.87.236.238:82")
-                || normalized.equals("http://localhost:82")
-                || normalized.equals("https://localhost:82")
-                || normalized.equals("localhost:82")
-                || normalized.equals("http://127.0.0.1:82")
-                || normalized.equals("https://127.0.0.1:82")
-                || normalized.equals("127.0.0.1:82");
+        return normalizedSelfAliases().contains(normalized);
+    }
+
+    public static java.util.List<String> normalizedSelfAliases() {
+        String port = System.getProperty("server.port", "82");
+        String publicHost = normalizeHost(System.getProperty("citu.publicHost", "194.87.236.238"));
+        java.util.LinkedHashSet<String> aliases = new java.util.LinkedHashSet<>();
+        addHostAliases(aliases, "194.87.236.238", port);
+        addHostAliases(aliases, publicHost, port);
+        addHostAliases(aliases, "localhost", port);
+        addHostAliases(aliases, "127.0.0.1", port);
+        addHostAliases(aliases, "0.0.0.0", port);
+        return new java.util.ArrayList<>(aliases);
+    }
+
+    public static String publicHost() {
+        return normalizeHost(System.getProperty("citu.publicHost", "194.87.236.238"));
+    }
+
+    private static void addHostAliases(java.util.LinkedHashSet<String> aliases, String host, String port) {
+        String normalizedHost = normalizeHost(host);
+        if (normalizedHost.isBlank()) {
+            return;
+        }
+        aliases.add(normalizePeer(normalizedHost + ":" + port));
+        aliases.add(normalizePeer("http://" + normalizedHost + ":" + port));
+        aliases.add(normalizePeer("https://" + normalizedHost + ":" + port));
+    }
+
+    private static String normalizeHost(String host) {
+        if (host == null) {
+            return "";
+        }
+        String normalized = host.trim().toLowerCase(Locale.ROOT);
+        normalized = normalized.replace("http://", "").replace("https://", "");
+        int slash = normalized.indexOf('/');
+        if (slash >= 0) {
+            normalized = normalized.substring(0, slash);
+        }
+        int colon = normalized.indexOf(':');
+        if (colon >= 0) {
+            normalized = normalized.substring(0, colon);
+        }
+        return normalized;
     }
 
     private static int positiveInt(String key, int defaultValue) {

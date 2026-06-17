@@ -2,6 +2,7 @@ package International_Trade_Union.utils;
 
 import International_Trade_Union.model.NodeMemoryProfiler;
 import International_Trade_Union.model.NodeState;
+import International_Trade_Union.model.PeerConnectionDiagnostics;
 import International_Trade_Union.model.PeerHealthRegistry;
 import International_Trade_Union.model.PeerNetworkPolicy;
 import org.json.JSONException;
@@ -51,6 +52,7 @@ public class UtilUrl {
         ));
         int boundedTimeout = boundedTimeout(timeoutMillis);
         URLConnection conn = openConnection(url, Math.min(PeerNetworkPolicy.connectTimeoutMs(), boundedTimeout), Math.min(PeerNetworkPolicy.readTimeoutMs(), boundedTimeout));
+        PeerConnectionDiagnostics.beginRequest(endpoint);
         try (InputStream is = conn.getInputStream();
              BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
             String response = readAll(rd, maxChars);
@@ -73,6 +75,7 @@ public class UtilUrl {
             ));
             throw e;
         } finally {
+            PeerConnectionDiagnostics.endRequest(endpoint);
             disconnect(conn);
         }
     }
@@ -133,6 +136,7 @@ public class UtilUrl {
                 PeerNetworkPolicy.connectTimeoutMs(),
                 PeerNetworkPolicy.readTimeoutMs()
         );
+        PeerConnectionDiagnostics.beginRequest(endpoint);
         try {
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
@@ -170,6 +174,7 @@ public class UtilUrl {
             ));
             throw e;
         } finally {
+            PeerConnectionDiagnostics.endRequest(endpoint);
             conn.disconnect();
         }
     }
@@ -196,6 +201,7 @@ public class UtilUrl {
                 Math.min(PeerNetworkPolicy.connectTimeoutMs(), boundedTimeout(timeoutMillis)),
                 Math.min(PeerNetworkPolicy.readTimeoutMs(), boundedTimeout(timeoutMillis))
         );
+        PeerConnectionDiagnostics.beginRequest(endpoint);
         try {
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
@@ -223,6 +229,7 @@ public class UtilUrl {
             ));
             throw e;
         } finally {
+            PeerConnectionDiagnostics.endRequest(endpoint);
             conn.disconnect();
         }
     }
@@ -236,6 +243,7 @@ public class UtilUrl {
         }
         int boundedTimeout = boundedTimeout(timeoutMillis);
         HttpURLConnection conn = openHttpConnection(requestStr, "POST", Math.min(PeerNetworkPolicy.connectTimeoutMs(), boundedTimeout), Math.min(PeerNetworkPolicy.readTimeoutMs(), boundedTimeout));
+        PeerConnectionDiagnostics.beginRequest(endpoint);
         try {
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
             conn.setRequestProperty("Accept", "application/json");
@@ -269,6 +277,7 @@ public class UtilUrl {
             ));
             throw e;
         } finally {
+            PeerConnectionDiagnostics.endRequest(endpoint);
             conn.disconnect();
         }
     }

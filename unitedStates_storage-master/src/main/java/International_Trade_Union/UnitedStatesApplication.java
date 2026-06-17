@@ -22,11 +22,19 @@ public class UnitedStatesApplication {
 	private static void installJvmDiagnostics() {
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
 			Runtime runtime = Runtime.getRuntime();
-			MyLogger.saveLog("UNCAUGHT_EXCEPTION class=" + throwable.getClass().getName()
+			String message = "UNCAUGHT_EXCEPTION class=" + throwable.getClass().getName()
 					+ " message=" + throwable.getMessage()
 					+ " thread=" + thread.getName()
 					+ " usedMemory=" + (runtime.totalMemory() - runtime.freeMemory())
-					+ " maxMemory=" + runtime.maxMemory(), throwable);
+					+ " maxMemory=" + runtime.maxMemory()
+					+ " currentChainSize=" + safeChainSize()
+					+ " winnerListSize=" + safeWinnerListSize()
+					+ " lastMemoryProbeStage=" + NodeMemoryProfiler.lastStageName();
+			if (throwable instanceof OutOfMemoryError) {
+				MyLogger.warnLog(message);
+			} else {
+				MyLogger.saveLog(message, throwable);
+			}
 		});
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			Runtime runtime = Runtime.getRuntime();
@@ -51,6 +59,14 @@ public class UnitedStatesApplication {
 			return BasisController.prevBlock() == null ? -1L : BasisController.prevBlock().getIndex();
 		} catch (Exception e) {
 			return -1L;
+		}
+	}
+
+	private static int safeWinnerListSize() {
+		try {
+			return BasisController.getWinnerList() == null ? -1 : BasisController.getWinnerList().size();
+		} catch (Exception e) {
+			return -1;
 		}
 	}
 }

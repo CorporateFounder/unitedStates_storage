@@ -25,6 +25,7 @@ public final class PeerHealthRegistry {
     private static final AtomicInteger REMOTE_CALLS_THIS_MINUTE = new AtomicInteger();
     private static final AtomicInteger PEER_TIMEOUTS_LAST_MINUTE = new AtomicInteger();
     private static final AtomicInteger PEER_SKIPS_LAST_MINUTE = new AtomicInteger();
+    private static final AtomicInteger SELF_SKIPS_LAST_MINUTE = new AtomicInteger();
     private static final AtomicInteger RESOLVE_BUDGET_EXHAUSTED_LAST_MINUTE = new AtomicInteger();
 
     private static volatile int selectedPeerCountLastCycle;
@@ -194,7 +195,8 @@ public final class PeerHealthRegistry {
     }
 
     public static void recordSelfSkipped(String peer, String phase) {
-        recordSkip("PEER_SKIPPED_SELF", peer, phase);
+        SELF_SKIPS_LAST_MINUTE.incrementAndGet();
+        recordSkip("SELF_PEER_SKIPPED", peer, phase);
     }
 
     public static void recordResolveBudgetExhausted(long durationMs) {
@@ -249,6 +251,31 @@ public final class PeerHealthRegistry {
         status.put("maxResolvePeersPerCycle", PeerNetworkPolicy.maxPeersPerResolveCycle());
         status.put("maxPropagationPeers", PeerNetworkPolicy.maxPeersPerPropagationCycle());
         status.putAll(PeerWorkMemoryGuard.snapshot());
+        return status;
+    }
+
+    public static Map<String, Object> selfPeerSnapshot() {
+        resetMinuteWindowIfNeeded();
+        Map<String, Object> status = new LinkedHashMap<>();
+        status.put("bindAddress", System.getProperty("server.address", "0.0.0.0"));
+        status.put("serverPort", System.getProperty("server.port", "82"));
+        status.put("publicHost", PeerNetworkPolicy.publicHost());
+        status.put("normalizedSelfAliases", PeerNetworkPolicy.normalizedSelfAliases());
+        status.put("knownHostsCount", PEERS.size());
+        status.put("skippedSelfCount", SELF_SKIPS_LAST_MINUTE.get());
+        status.put("selfSkipsThisMinute", SELF_SKIPS_LAST_MINUTE.get());
+        status.put("publicHostTreatedAsSelf", PeerNetworkPolicy.isKnownSelfPeer(PeerNetworkPolicy.publicHost() + ":" + System.getProperty("server.port", "82")));
+        return status;
+    }
+
+    public static Map<String, Object> connectionSnapshot() {
+        resetMinuteWindowIfNeeded();
+        Map<String, Object> status = new LinkedHashMap<>(PeerConnectionDiagnostics.snapshot());
+        status.put("remoteCallsThisMinute", REMOTE_CALLS_THIS_MINUTE.get());
+        status.put("timeoutsThisMinute", PEER_TIMEOUTS_LAST_MINUTE.get());
+        status.put("selfSkipsThisMinute", SELF_SKIPS_LAST_MINUTE.get());
+        status.put("quarantinedHostsCount", PEERS.values().stream().filter(peer -> peer.quarantineUntil > System.currentTimeMillis()).count());
+        status.put("knownHostsCount", PEERS.size());
         return status;
     }
 
@@ -316,6 +343,7 @@ public final class PeerHealthRegistry {
         REMOTE_CALLS_THIS_MINUTE.set(0);
         PEER_TIMEOUTS_LAST_MINUTE.set(0);
         PEER_SKIPS_LAST_MINUTE.set(0);
+        SELF_SKIPS_LAST_MINUTE.set(0);
         RESOLVE_BUDGET_EXHAUSTED_LAST_MINUTE.set(0);
         selectedPeerCountLastCycle = 0;
         lastPeerErrorSummary = "none";
@@ -404,6 +432,7 @@ public final class PeerHealthRegistry {
             REMOTE_CALLS_THIS_MINUTE.set(0);
             PEER_TIMEOUTS_LAST_MINUTE.set(0);
             PEER_SKIPS_LAST_MINUTE.set(0);
+            SELF_SKIPS_LAST_MINUTE.set(0);
             RESOLVE_BUDGET_EXHAUSTED_LAST_MINUTE.set(0);
         }
     }

@@ -2,11 +2,19 @@ package International_Trade_Union.controllers;
 
 import International_Trade_Union.setings.Seting;
 import International_Trade_Union.entity.blockchain.block.Block;
+import International_Trade_Union.model.LiteVersionWiner;
+import International_Trade_Union.model.PeerConnectionDiagnostics;
+import International_Trade_Union.model.PeerHealthRegistry;
+import International_Trade_Union.model.PeerNetworkPolicy;
+import International_Trade_Union.model.TournamentSnapshot;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -163,9 +171,81 @@ class BlockSubmitDebugStatusTest {
         assertTrue(status.containsKey("lastPeerPropagationFailureCount"));
         assertTrue(status.containsKey("lastMemoryGuardFreeMemory"));
         assertTrue(status.containsKey("lastMemoryGuardMaxMemory"));
-        assertEquals(128, status.get("temporarySubmittedBlocksCap"));
+        assertEquals(100, status.get("temporarySubmittedBlocksCap"));
         assertEquals(514291L, Seting.V35_RESCUE_FORK_INDEX);
         assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+    }
+
+    @Test
+    void liveStateSnapshotContainsCountsAndNoFullBlockOrTransactionPayload() {
+        BasisController.resetBlockSubmitDebugForTests();
+        CopyOnWriteArrayList<Block> blocks = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < 120; i++) {
+            blocks.add(testBlock(i));
+        }
+        BasisController.setWinnerList(blocks);
+
+        Map<String, Object> status = BasisController.memoryLiveStateSnapshotForTests();
+        String serialized = String.valueOf(status);
+
+        assertEquals(100, status.get("winnerListSize"));
+        assertEquals(100, status.get("currentCandidatesSize"));
+        assertTrue(status.containsKey("activeRequestsByEndpoint"));
+        assertTrue(status.containsKey("activeFuturesByPhase"));
+        assertTrue(status.containsKey("currentThreadCount"));
+        assertFalse(serialized.contains("dtoTransactions"));
+        assertFalse(serialized.contains("previousHash='"));
+        assertFalse(serialized.contains("minerAddress='"));
+        assertEquals(514291L, Seting.V35_RESCUE_FORK_INDEX);
+        assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+    }
+
+    @Test
+    void publicTournamentSnapshotsStayBoundedAndStoreLiteDtosOnly() {
+        BasisController.resetTournamentSnapshotsForTests();
+        List<LiteVersionWiner> candidates = new ArrayList<>();
+        for (int i = 0; i < 120; i++) {
+            LiteVersionWiner candidate = new LiteVersionWiner(i, "miner-" + i, "hash-" + i, i, i, i, i);
+            candidate.setPreviousHash("previous-" + i);
+            candidate.setTimestamp("2026-06-17T00:00:00Z");
+            candidates.add(candidate);
+        }
+
+        BasisController.publishTournamentSnapshot(candidates, 1L, 2L, "test-stage", "test-reason");
+        TournamentSnapshot snapshot = BasisController.getLastTournamentSnapshot();
+
+        assertEquals(100, snapshot.getCandidates().size());
+        assertEquals(100, BasisController.lastTournamentCandidatesSnapshot().size());
+        assertEquals(LiteVersionWiner.class, snapshot.getCandidates().get(0).getClass());
+        assertEquals("hash-0", snapshot.getCandidates().get(0).getHashBlock());
+        assertEquals("miner-0", snapshot.getCandidates().get(0).getMinerAddress());
+        assertEquals(514291L, Seting.V35_RESCUE_FORK_INDEX);
+        assertEquals("BURN_ADDRESS", Seting.V35_BURN_ADDRESS);
+    }
+
+    @Test
+    void selfPeerAndConnectionDiagnosticsExposeCountsOnly() {
+        PeerConnectionDiagnostics.resetForTests();
+        PeerHealthRegistry.resetForTests();
+
+        PeerConnectionDiagnostics.beginRequest("/winnerList");
+        PeerConnectionDiagnostics.beginFutures("tournament_getTransactions", 3);
+        PeerHealthRegistry.recordSelfSkipped("http://127.0.0.1:82", "test");
+
+        Map<String, Object> connection = PeerHealthRegistry.connectionSnapshot();
+        Map<String, Object> self = PeerHealthRegistry.selfPeerSnapshot();
+
+        assertTrue(PeerNetworkPolicy.isKnownSelfPeer("http://0.0.0.0:82"));
+        assertTrue(PeerNetworkPolicy.isKnownSelfPeer("http://127.0.0.1:82"));
+        assertTrue(PeerNetworkPolicy.isKnownSelfPeer("http://localhost:82"));
+        assertTrue(PeerNetworkPolicy.isKnownSelfPeer("http://194.87.236.238:82"));
+        assertEquals(1, connection.get("activePeerTasksCount"));
+        assertEquals(3, connection.get("activeTournamentFuturesCount"));
+        assertTrue(((Number) self.get("skippedSelfCount")).intValue() >= 1);
+        assertEquals(true, self.get("publicHostTreatedAsSelf"));
+
+        PeerConnectionDiagnostics.endRequest("/winnerList");
+        PeerConnectionDiagnostics.endFutures("tournament_getTransactions", 3);
     }
 
     @Test
@@ -177,6 +257,18 @@ class BlockSubmitDebugStatusTest {
         assertRoute("currentCandidates", "/currentCandidates");
         assertRoute("lastTournament", "/lastTournament");
         assertRoute("lastTournamentWinner", "/lastTournamentWinner");
+        assertRoute("memoryLiveState", "/debug/memory/live-state");
+        assertRoute("selfPeerDiagnostics", "/debug/peers/self");
+        assertRoute("peerConnectionDiagnostics", "/debug/peer/connections");
+    }
+
+    private static Block testBlock(long index) {
+        Block block = new Block();
+        block.setIndex(index);
+        block.setHashBlock("block-hash-" + index);
+        block.setPreviousHash("previous-hash-" + index);
+        block.setMinerAddress("miner-" + index);
+        return block;
     }
 
     private static void assertRoute(String methodName, String expectedPath) throws NoSuchMethodException {
