@@ -34,8 +34,8 @@
     <section class="alert alert-info">
         <h2>Read-only public pages</h2>
         <p>These pages explain V35 policy only. They do not activate V35, do not create a burn transaction, and do not mutate balances.</p>
-        <p>Fork height <strong th:text="${candidateForkIndex}">514291</strong> is configured in the reviewed release build. Recommended Node/server 1.0.15 Stable and wallet/miner 1.0.2 GitHub Releases and SHA256 checksums are published. Website/operator guide 1.0.7 contains the current Node 1.0.15 Stable link update.</p>
-        <p>The public chain height is increasing again after node 1.0.15 Stable / wallet 1.0.2 deployment. Before block 514291, <code>v35Active=false</code> is expected and normal.</p>
+        <p>Fork height <strong th:text="${candidateForkIndex}">514291</strong> is configured in the reviewed release build. Recommended Node/server 1.0.17 and wallet/miner 1.0.2 GitHub Releases and SHA256 checksums are published. Website/operator guide 1.0.8 contains the current Node 1.0.17 link update.</p>
+        <p>The public chain height is increasing again after node 1.0.17 / wallet 1.0.2 deployment. Before block 514291, <code>v35Active=false</code> is expected and normal.</p>
         <p>
             <a href="/v35/tokenomics">Tokenomics</a> |
             <a href="/v35/burn">Burn policy</a> |
@@ -51,7 +51,7 @@
     </section>
 
     <section class="citu-panel p-4 mb-4">
-        <h2>Recommended V35 node 1.0.15 Stable / wallet 1.0.2 package</h2>
+        <h2>Recommended V35 node 1.0.17 / wallet 1.0.2 package</h2>
         <p>Download ready node and wallet JARs only from the official GitHub Releases. Verify SHA256 before running.</p>
         <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
         <p><a href="/wallet_and_node_url#official-v35-release-downloads">Open the download and launch guide</a></p>

@@ -349,6 +349,8 @@ body.v35-public h4 {
     color: #f4f8f9;
     border: 0;
     gap: .75rem;
+    min-width: 0;
+    text-decoration: none;
 }
 .v35-brand:hover {
     color: #ffffff;
@@ -359,12 +361,18 @@ body.v35-public h4 {
     color: #9fb5bd;
     display: block;
     font-size: .72rem;
+    line-height: 1.2;
+    white-space: normal;
 }
 .v35-brand-logo {
     border-radius: 50%;
-    height: 2.5rem;
+    display: block;
+    flex: 0 0 auto;
+    height: 2.75rem;
+    max-height: 2.75rem;
+    max-width: 2.75rem;
     object-fit: cover;
-    width: 2.5rem;
+    width: 2.75rem;
 }
 .v35-site-nav {
     display: flex;

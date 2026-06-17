@@ -12,12 +12,12 @@
     <h1>Run a CITU node</h1>
     <section class="citu-panel p-4 mb-4">
         <h2>Download and verify</h2>
-        <p>Use the official V35 Node/server 1.0.15 Stable JAR and verify SHA256 before running. This is a stable memory-hardened pre-activation update, not a consensus change.</p>
+        <p>Use the official V35 Node/server 1.0.17 JAR and verify SHA256 before running. It includes the persisted winner tournament snapshot fix, bounded live diagnostics, and self-peer protection. This is not a consensus change.</p>
         <div th:replace="blocks/v35-release-links :: releaseLinks"></div>
     </section>
     <section class="citu-panel p-4 mb-4">
         <h2>Windows / local node</h2>
-        <pre class="v35-code"><code>java -Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+ExitOnOutOfMemoryError -Dlogging.file.path=C:\server\logs -Dlogging.level.root=INFO -Dserver.tomcat.threads.max=80 -Dserver.tomcat.accept-count=100 -Dserver.tomcat.max-connections=1024 -Dserver.port=82 -Dserver.address=194.87.236.238 -Dcitu.prePersistPeerPropagation.enabled=false -Dcitu.memoryForensics.enabled=false -Dcitu.memoryForensics.file.enabled=false -Dcitu.memoryForensics.verbose=false -Dcitu.diagnostic.traces.enabled=false -Dcitu.diagnostic.file.enabled=false -Dcitu.peer.maxPeersPerCycle=3 -Dcitu.peer.maxPeersPerTournamentCycle=3 -Dcitu.peer.maxPeersPerResolveCycle=3 -Dcitu.peer.maxPeersPerPropagationCycle=3 -Dcitu.peer.maxRemoteCallsPerCycle=6 -Dcitu.peer.maxRemoteCallsPerMinute=60 -Dcitu.peer.connectTimeoutMs=2000 -Dcitu.peer.readTimeoutMs=3000 -Dcitu.resolve.maxDurationMs=5000 -jar C:\citu-node-v35-activation-514291-1.0.15.jar</code></pre>
+        <pre class="v35-code"><code>java -Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:+ExitOnOutOfMemoryError -Dlogging.file.path=C:\server\logs -Dlogging.level.root=INFO -Dserver.tomcat.threads.max=80 -Dserver.tomcat.accept-count=100 -Dserver.tomcat.max-connections=1024 -Dserver.port=82 -Dserver.address=194.87.236.238 -Dcitu.prePersistPeerPropagation.enabled=false -Dcitu.memoryForensics.enabled=false -Dcitu.memoryForensics.file.enabled=false -Dcitu.memoryForensics.verbose=false -Dcitu.diagnostic.traces.enabled=false -Dcitu.diagnostic.file.enabled=false -Dcitu.peer.maxPeersPerCycle=3 -Dcitu.peer.maxPeersPerTournamentCycle=3 -Dcitu.peer.maxPeersPerResolveCycle=3 -Dcitu.peer.maxPeersPerPropagationCycle=3 -Dcitu.peer.maxRemoteCallsPerCycle=6 -Dcitu.peer.maxRemoteCallsPerMinute=60 -Dcitu.peer.connectTimeoutMs=2000 -Dcitu.peer.readTimeoutMs=3000 -Dcitu.resolve.maxDurationMs=5000 -jar C:\citu-node-v35-activation-514291-1.0.17.jar</code></pre>
         <p>Check local node: <a href="http://127.0.0.1:8083/size">http://127.0.0.1:8083/size</a></p>
     </section>
     <section class="citu-panel p-4 mb-4">

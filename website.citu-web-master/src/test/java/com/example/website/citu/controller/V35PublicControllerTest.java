@@ -195,8 +195,11 @@ class V35PublicControllerTest {
     void headerLinksToPublicV35Pages() throws IOException {
         String header = Files.readString(template("blocks/header.html"));
 
+        assertTrue(header.contains("src=\"/images/citu-v35-logo.jpg\""));
         assertTrue(header.contains("@{/images/citu-v35-logo.jpg}"));
         assertTrue(header.contains("alt=\"Official CITU logo\""));
+        assertTrue(header.contains("width=\"44\""));
+        assertTrue(header.contains("height=\"44\""));
         assertTrue(header.contains("href=\"/conductor\""));
         assertTrue(header.contains("href=\"/wallet_and_node_url\""));
         assertTrue(header.contains("href=\"/white_papper\""));
@@ -214,6 +217,11 @@ class V35PublicControllerTest {
     }
 
     @Test
+    void headerLogoAssetExistsInPackagedStaticResources() {
+        assertTrue(Files.exists(Path.of("src", "main", "resources", "static", "images", "citu-v35-logo.jpg")));
+    }
+
+    @Test
     void apiDocumentationKeepsExchangeIntegrationSafe() throws IOException {
         String content = Files.readString(template("wallet_and_node_url.html"));
 
@@ -226,25 +234,27 @@ class V35PublicControllerTest {
         assertTrue(content.contains("GET /v35/jackpot/status"));
         assertTrue(content.contains("legacy local-only"));
         assertTrue(content.contains("Never place private keys or passwords in production URLs"));
-        assertTrue(content.contains("Node/server 1.0.15 Stable"));
+        assertTrue(content.contains("Node/server 1.0.17"));
         assertTrue(content.contains("wallet/miner 1.0.2"));
-        assertTrue(content.contains("Website/operator guide 1.0.7 contains the current Node 1.0.15 Stable link update"));
-        assertTrue(content.contains("Recommended V35 node 1.0.15 Stable / wallet 1.0.2 downloads"));
+        assertTrue(content.contains("Website/operator guide 1.0.8 contains the current Node 1.0.17 link update"));
+        assertTrue(content.contains("Recommended V35 node 1.0.17 / wallet 1.0.2 downloads"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_storage"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_final"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_storage/releases"));
         assertTrue(content.contains("https://github.com/CorporateFounder/unitedStates_final/releases"));
-        assertTrue(content.contains("citu-node-v35-activation-514291-1.0.15.jar"));
+        assertTrue(content.contains("citu-node-v35-activation-514291-1.0.17.jar"));
         assertTrue(content.contains("citu-wallet-v35-activation-514291-1.0.2.jar"));
-        assertTrue(content.contains("fe1955a34c03f819149713a792d36155483db86bccd57f1506a1e3a7e57e5444"));
+        assertTrue(content.contains("787a5cb8f71a25cac03aab1f6dd95f8fafb62e2527eaf59572df7e88db154ca5"));
         assertTrue(content.contains("b2ea4d41925326a8b44115177db17a06ee25e6bfab0e832d7da2153313196179"));
         assertTrue(content.contains("-Dserver.port=82"));
         assertTrue(content.contains("-Dserver.port=8082"));
-        assertTrue(content.contains("releases/tag/v35-node-activation-514291-1.0.15"));
+        assertTrue(content.contains("releases/tag/v35-node-activation-514291-1.0.17"));
         assertTrue(content.contains("releases/tag/v35-wallet-activation-514291-1.0.2"));
-        assertTrue(content.contains("releases/download/v35-node-activation-514291-1.0.15"));
+        assertTrue(content.contains("releases/download/v35-node-activation-514291-1.0.17"));
         assertTrue(content.contains("releases/download/v35-wallet-activation-514291-1.0.2"));
-        assertTrue(content.contains("stable memory-hardened pre-activation update"));
+        assertTrue(content.contains("persisted winner tournament snapshot fix"));
+        assertTrue(content.contains("bounded live diagnostics"));
+        assertTrue(content.contains("self-peer protection"));
         assertFalse(content.contains("will work after final GitHub Release is published"));
         assertTrue(content.contains("Important API request and response examples"));
         assertTrue(content.contains("SAFE READ-ONLY"));
@@ -268,16 +278,16 @@ class V35PublicControllerTest {
         assertTrue(releaseLinks.contains("Wallet GitHub Release"));
         assertTrue(releaseLinks.contains("Node SHA256"));
         assertTrue(releaseLinks.contains("Wallet SHA256"));
-        assertTrue(releaseLinks.contains("Website/operator guide <code>1.0.7</code> contains the current Node 1.0.15 Stable link update"));
-        assertTrue(releaseLinks.contains("emergency stability fix after Node 1.0.12 OOM"));
-        assertTrue(releaseLinks.contains("bounds peer diagnostic state"));
-        assertTrue(releaseLinks.contains("bounds temporary peer work"));
-        assertTrue(releaseLinks.contains("memory guard for non-critical peer work"));
+        assertTrue(releaseLinks.contains("Website/operator guide <code>1.0.8</code> contains the current Node 1.0.17 link update"));
+        assertTrue(releaseLinks.contains("persisted winner tournament snapshots"));
+        assertTrue(releaseLinks.contains("bounded live diagnostics"));
+        assertTrue(releaseLinks.contains("self-peer protection"));
+        assertTrue(releaseLinks.contains("bounded temporary tournament state"));
+        assertTrue(releaseLinks.contains("does not change consensus, rewards, PoW, staking, V35 constants, or block validation"));
         assertTrue(releaseLinks.contains("peer/network limits"));
-        assertTrue(releaseLinks.contains("hard node log cap targeting under 10MB"));
-        assertTrue(releaseLinks.contains("Diagnostics and heavy forensics are disabled by default"));
+        assertTrue(releaseLinks.contains("hard node log cap"));
         assertTrue(releaseLinks.contains("Founder burn is deferred until after the network fully transitions to V35 and remains stable."));
-        assertTrue(releaseLinks.contains("https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291-1.0.15/citu-node-v35-activation-514291-1.0.15.jar"));
+        assertTrue(releaseLinks.contains("https://github.com/CorporateFounder/unitedStates_storage/releases/download/v35-node-activation-514291-1.0.17/citu-node-v35-activation-514291-1.0.17.jar"));
         assertTrue(releaseLinks.contains("https://github.com/CorporateFounder/unitedStates_final/releases/download/v35-wallet-activation-514291-1.0.2/citu-wallet-v35-activation-514291-1.0.2.jar"));
     }
 
@@ -321,7 +331,7 @@ class V35PublicControllerTest {
                 + Files.readString(template("v35-burn-warning.html"));
 
         assertTrue(content.contains("V35 activation is scheduled"));
-        assertTrue(content.contains("node 1.0.15 Stable / wallet 1.0.2"));
+        assertTrue(content.contains("node 1.0.17 / wallet 1.0.2"));
         assertTrue(content.contains("No user action is required yet"));
         assertFalse(content.contains("pending upload"));
         assertFalse(content.contains("GitHub Release upload"));
@@ -336,8 +346,8 @@ class V35PublicControllerTest {
         assertTrue(content.contains("lang=\"en\""));
         assertTrue(content.contains("lang=\"ru\""));
         assertTrue(content.contains("lang=\"zh\""));
-        assertTrue(content.contains("Recommended node 1.0.15 Stable / wallet 1.0.2"));
-        assertTrue(content.contains("Website/operator guide 1.0.7"));
+        assertTrue(content.contains("Recommended node 1.0.17 / wallet 1.0.2"));
+        assertTrue(content.contains("Website/operator guide 1.0.8"));
     }
 
     @Test
@@ -362,7 +372,7 @@ class V35PublicControllerTest {
         assertFalse(paper.contains("difficulty * 15"));
         assertFalse(paper.contains("0</code> to <code>170"));
         assertTrue(guide.contains("Legacy / pre-V35 mining guide"));
-        assertTrue(guide.contains("citu-node-v35-activation-514291-1.0.15.jar"));
+        assertTrue(guide.contains("citu-node-v35-activation-514291-1.0.17.jar"));
         assertTrue(guide.contains("http://127.0.0.1:8082"));
         assertTrue(charter.contains("Legacy / pre-V35 protocol note"));
     }
@@ -375,7 +385,7 @@ class V35PublicControllerTest {
                 + Files.readString(template("how_to_transaction.html"))
                 + Files.readString(template("how_mining_pool.html"));
 
-        assertTrue(content.contains("citu-node-v35-activation-514291-1.0.15.jar"));
+        assertTrue(content.contains("citu-node-v35-activation-514291-1.0.17.jar"));
         assertTrue(content.contains("citu-wallet-v35-activation-514291-1.0.2.jar"));
         assertTrue(content.contains("http://194.87.236.238:82"));
         assertTrue(content.contains("http://127.0.0.1:8083"));
