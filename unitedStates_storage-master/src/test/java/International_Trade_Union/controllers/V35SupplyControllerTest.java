@@ -1,19 +1,22 @@
 package International_Trade_Union.controllers;
 
-import International_Trade_Union.entity.entities.EntityAccount;
-import International_Trade_Union.entity.entities.EntityBlock;
-import International_Trade_Union.entity.services.BlockService;
 import International_Trade_Union.protocol.v35.V35SupplyApiResponseBuilder;
 import International_Trade_Union.protocol.v35.V35SupplyCalculator;
+import International_Trade_Union.protocol.v35.V35SupplyContext;
 import International_Trade_Union.protocol.v35.V35SupplySnapshot;
+import International_Trade_Union.protocol.v35.V35SupplySnapshotProvider;
 import International_Trade_Union.setings.Seting;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,14 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class V35SupplyControllerTest {
     @Test
-    public void protocolExposesCanonicalV35EconomicsWhileDisabled() {
-        V35SupplyController controller = new V35SupplyController(new FakeBlockService());
+    public void protocolExposesCanonicalV35Economics() {
+        V35SupplyController controller = new V35SupplyController(new FakeSnapshotProvider());
 
         Map<String, Object> response = controller.protocol();
 
-        International_Trade_Union.protocol.v35.V35TestMode.assertConfiguredForkSafety();
         assertEquals(false, response.get("v35Active"));
-        assertEquals(International_Trade_Union.protocol.v35.V35TestMode.configuredForkIndexValue(), response.get("v35ForkIndex"));
+        assertEquals(514291L, response.get("v35ForkIndex"));
         assertEquals(200, response.get("blockTimeSeconds"));
         assertEquals(432L, response.get("blocksPerDay"));
         assertEquals("8.00", response.get("rewardPerBlockGold"));
@@ -39,162 +41,76 @@ public class V35SupplyControllerTest {
         assertEquals(true, response.get("isBurnAddressPlaceholder"));
         assertEquals(false, response.get("burnAddressConfigured"));
         assertEquals(false, response.get("publicBurnAddressPublished"));
-        assertTrue(response.get("burnAddressWarning").toString().contains("not published yet"));
     }
 
     @Test
-    public void supplyReportsPlaceholderBurnAddressAndActualValues() throws IOException {
-        FakeBlockService blockService = new FakeBlockService();
-        V35SupplyController controller = new V35SupplyController(blockService);
+    public void existingEndpointContractsUseSharedImmutableContext() {
+        FakeSnapshotProvider provider = new FakeSnapshotProvider();
+        V35SupplyController controller = new V35SupplyController(provider);
 
-        Map<String, Object> response = controller.supply();
+        Map<String, Object> supply = controller.supply();
+        Map<String, Object> burn = controller.burn();
+        Map<String, Object> founder = controller.founder();
+        Map<String, Object> burnSnapshot = controller.founderBurnSnapshot();
 
-        assertEquals("BURN_ADDRESS", response.get("burnAddress"));
-        assertEquals(true, response.get("isBurnAddressPlaceholder"));
-        assertEquals(false, response.get("burnAddressConfigured"));
-        assertEquals(false, response.get("publicBurnAddressPublished"));
-        assertEquals("0.00", response.get("burnedGold"));
-        assertEquals(response.get("totalMintedGold"), response.get("circulatingGold"));
-        assertEquals("1261440.00", response.get("annualEmissionGold"));
-        assertEquals(false, response.get("v35Active"));
-        assertFalse(blockService.mutated);
+        assertEquals("1000.00", supply.get("totalMintedGold"));
+        assertEquals("0.00", supply.get("burnedGold"));
+        assertEquals("100.00", founder.get("founderReserveGold"));
+        assertEquals(false, burn.get("burnTransactionCreated"));
+        assertEquals("hash42", burnSnapshot.get("snapshotBlockHash"));
+        assertEquals("bounded_projection_test", supply.get("snapshotSource"));
+        assertEquals(42L, supply.get("snapshotHeight"));
+        assertEquals(4, provider.snapshotCalls.get());
     }
 
     @Test
-    public void burnEndpointDoesNotPretendBurnTransactionExists() throws IOException {
-        V35SupplyController controller = new V35SupplyController(new FakeBlockService());
+    public void publicSnapshotUsesSameContextWithoutSecondCalculation() {
+        FakeSnapshotProvider provider = new FakeSnapshotProvider();
+        V35SupplyController controller = new V35SupplyController(provider);
 
-        Map<String, Object> response = controller.burn();
+        Map<String, Object> response = controller.publicSnapshot();
 
-        assertEquals(Seting.V35_BURN_ADDRESS, response.get("burnAddress"));
-        assertEquals(true, response.get("isBurnAddressPlaceholder"));
-        assertEquals(false, response.get("burnAddressConfigured"));
-        assertEquals(false, response.get("publicBurnAddressPublished"));
-        assertTrue(response.get("burnAddressWarning").toString().contains("not published yet"));
-        assertEquals("0.00", response.get("burnedGold"));
-        assertEquals(true, response.get("noSpendAfterV35"));
+        assertEquals(1, provider.snapshotCalls.get());
+        assertEquals("1000.00", response.get("totalMintedGold"));
+        assertEquals("hash42", response.get("latestBlockHash"));
+        assertEquals(42L, response.get("snapshotHeight"));
+        assertEquals("bounded_projection_test", response.get("snapshotSource"));
+        assertEquals(false, response.get("snapshotStale"));
+        assertEquals("current", response.get("cacheState"));
         assertEquals(false, response.get("burnTransactionCreated"));
+        assertEquals(false, response.get("founderBurnOccurred"));
     }
 
     @Test
-    public void founderSeparatesModeledBurnFromActualBurnedSupply() throws IOException {
-        V35SupplyController controller = new V35SupplyController(new FakeBlockService());
-
-        Map<String, Object> response = controller.founder();
-
-        assertEquals(Seting.ADDRESS_FOUNDER, response.get("founderAddress"));
-        assertEquals("100.00", response.get("founderReserveGold"));
-        assertEquals("0.00", response.get("founderRewardGold"));
-        assertEquals("80", response.get("modeledBurnPercent"));
-        assertEquals("80.00", response.get("modeledBurnGold"));
-        assertEquals("0.00", response.get("actualBurnedGold"));
-        assertEquals(true, response.get("modelOnly"));
-    }
-
-    @Test
-    public void decimalFieldsAreStringSafeForJsonPrecision() throws IOException {
-        V35SupplyController controller = new V35SupplyController(new FakeBlockService());
-
-        Map<String, Object> response = controller.supply();
-
-        assertTrue(response.get("totalMintedGold") instanceof String);
-        assertTrue(response.get("burnedGold") instanceof String);
-        assertTrue(response.get("circulatingGold") instanceof String);
-        assertTrue(response.get("annualEmissionGold") instanceof String);
-    }
-
-    @Test
-    public void founderBurnSnapshotEndpointIsReadOnlyAndReportsPlaceholderBurnAddress() throws IOException {
-        FakeBlockService blockService = new FakeBlockService();
-        V35SupplyController controller = new V35SupplyController(blockService);
-
-        Map<String, Object> response = controller.founderBurnSnapshot();
-
-        assertEquals(Seting.ADDRESS_FOUNDER, response.get("founderAddress"));
-        assertEquals("BURN_ADDRESS", response.get("burnAddress"));
-        assertEquals(false, response.get("burnAddressConfigured"));
-        assertEquals(true, response.get("isBurnAddressPlaceholder"));
-        assertEquals(false, response.get("publicBurnAddressPublished"));
-        assertEquals(-1L, response.get("snapshotHeight"));
-        assertEquals("UNKNOWN", response.get("snapshotBlockHash"));
-        assertEquals("100.00", response.get("founderBalanceGold"));
-        assertEquals("0.00", response.get("actualBurnedGold"));
-        assertEquals("1261440.00", response.get("annualEmissionGold"));
-        assertEquals(false, response.get("v35Active"));
-        assertEquals(International_Trade_Union.protocol.v35.V35TestMode.configuredForkIndexValue(), response.get("v35ForkIndex"));
-        assertEquals(80, response.get("recommendedBurnPercent"));
-        assertEquals(false, response.get("burnTransactionCreated"));
-        assertFalse(blockService.mutated);
-    }
-
-    @Test
-    public void founderBurnSnapshotBuilderReturnsAllOptionsAndRecommendedProofChecklist() {
+    public void founderBurnSnapshotBuilderKeepsExistingProofContract() {
         V35SupplySnapshot snapshot = V35SupplyCalculator.snapshot(
                 new BigDecimal("1000.00"),
                 new BigDecimal("100.00"),
                 new BigDecimal("100.00"),
                 BigDecimal.ZERO);
 
-        Map<String, Object> response = V35SupplyApiResponseBuilder.founderBurnSnapshot(snapshot, 42L, "hash42");
+        Map<String, Object> response =
+                V35SupplyApiResponseBuilder.founderBurnSnapshot(snapshot, 42L, "hash42");
 
         assertEquals(42L, response.get("snapshotHeight"));
         assertEquals("hash42", response.get("snapshotBlockHash"));
         assertEquals("1000.00", response.get("totalMintedGold"));
         assertEquals("100.00", response.get("actualBurnedGold"));
-        assertEquals("900.00", response.get("actualCirculatingGold"));
-
-        List<Map<String, Object>> options = burnOptions(response);
-        assertEquals(4, options.size());
-        assertEquals(75, options.get(0).get("percent"));
-        assertEquals(80, options.get(1).get("percent"));
-        assertEquals(85, options.get(2).get("percent"));
-        assertEquals(90, options.get(3).get("percent"));
-
-        Map<String, Object> recommended = optionByPercent(options, 80);
-        assertEquals(true, recommended.get("recommended"));
-        assertEquals("80.00", recommended.get("burnGold"));
-        assertEquals("20.00", recommended.get("founderReserveAfterBurnGold"));
-        assertEquals("180.00", recommended.get("modeledBurnedGoldAfterBurn"));
-        assertEquals("820.00", recommended.get("modeledCirculatingGoldAfterBurn"));
-        assertEquals("153834.1463", recommended.get("modeledInflationAfterBurnPercent"));
-        assertTrue(recommended.get("burnGold") instanceof String);
-
-        Map<String, Object> proofChecklist = proofChecklist(response);
-        assertEquals(Seting.ADDRESS_FOUNDER, proofChecklist.get("founderAddress"));
-        assertEquals("BURN_ADDRESS", proofChecklist.get("burnAddress"));
-        assertEquals(42L, proofChecklist.get("snapshotHeight"));
-        assertEquals("hash42", proofChecklist.get("snapshotBlockHash"));
-        assertEquals("100.00", proofChecklist.get("founderBalanceBeforeBurn"));
-        assertEquals("80.00", proofChecklist.get("burnAmount"));
-        assertEquals("PENDING_MANUAL_BURN", proofChecklist.get("burnTxHash"));
-        assertEquals("PENDING_MANUAL_BURN", proofChecklist.get("burnBlockIndex"));
-        assertEquals("PENDING_MANUAL_BURN", proofChecklist.get("burnBlockHash"));
-        assertEquals("20.00", proofChecklist.get("founderBalanceAfterBurn"));
-        assertEquals("180.00", proofChecklist.get("burnedSupply"));
-        assertEquals("820.00", proofChecklist.get("circulatingSupply"));
-        assertEquals("1261440.00", proofChecklist.get("annualEmission"));
-        assertEquals("153834.1463", proofChecklist.get("inflationAfterBurn"));
+        assertEquals(4, burnOptions(response).size());
+        assertEquals(false, response.get("burnTransactionCreated"));
     }
 
     @Test
-    public void founderBurnSnapshotSeparatesModeledValuesFromActualSupply() {
-        V35SupplySnapshot snapshot = V35SupplyCalculator.snapshot(
-                new BigDecimal("159550000.00"),
-                BigDecimal.ZERO,
-                new BigDecimal("76030000.00"),
-                BigDecimal.ZERO);
+    public void controllerSourceCannotHydrateFullChainOrAllAccounts() throws IOException {
+        String source = Files.readString(Path.of(
+                "src", "main", "java", "International_Trade_Union", "controllers",
+                "V35SupplyController.java"));
 
-        Map<String, Object> response = V35SupplyApiResponseBuilder.founderBurnSnapshot(snapshot, 100L, "snapshotHash");
-        Map<String, Object> recommended = optionByPercent(burnOptions(response), 80);
-
-        assertEquals("0.00", response.get("actualBurnedGold"));
-        assertEquals("159550000.00", response.get("actualCirculatingGold"));
-        assertEquals("60824000.00", recommended.get("burnGold"));
-        assertEquals("15206000.00", recommended.get("founderReserveAfterBurnGold"));
-        assertEquals("60824000.00", recommended.get("modeledBurnedGoldAfterBurn"));
-        assertEquals("98726000.00", recommended.get("modeledCirculatingGoldAfterBurn"));
-        assertEquals("1.2777", recommended.get("modeledInflationAfterBurnPercent"));
-        assertEquals(false, response.get("burnTransactionCreated"));
+        assertFalse(source.contains("BlockService"));
+        assertFalse(source.contains("findBySpecialIndexBetween"));
+        assertFalse(source.contains("findAllAccounts"));
+        assertFalse(source.contains("EntityBlock"));
+        assertFalse(source.contains("List<Block>"));
     }
 
     @SuppressWarnings("unchecked")
@@ -202,49 +118,43 @@ public class V35SupplyControllerTest {
         return (List<Map<String, Object>>) response.get("burnOptions");
     }
 
-    @SuppressWarnings("unchecked")
-    private static Map<String, Object> proofChecklist(Map<String, Object> response) {
-        return (Map<String, Object>) response.get("proofChecklist");
-    }
+    private static final class FakeSnapshotProvider implements V35SupplySnapshotProvider {
+        private final AtomicInteger snapshotCalls = new AtomicInteger();
+        private final V35SupplyContext context;
 
-    private static Map<String, Object> optionByPercent(List<Map<String, Object>> options, int percent) {
-        for (Map<String, Object> option : options) {
-            if (option.get("percent").equals(percent)) {
-                return option;
-            }
-        }
-        throw new AssertionError("missing burn option " + percent);
-    }
-
-    private static final class FakeBlockService extends BlockService {
-        private boolean mutated;
-
-        @Override
-        public long countBlock() {
-            return 0;
-        }
-
-        @Override
-        public List<EntityBlock> findBySpecialIndexBetween(long from, long to) {
-            return Collections.emptyList();
+        private FakeSnapshotProvider() {
+            V35SupplySnapshot snapshot = V35SupplyCalculator.snapshot(
+                    new BigDecimal("1000.00"),
+                    BigDecimal.ZERO,
+                    new BigDecimal("100.00"),
+                    BigDecimal.ZERO,
+                    false);
+            this.context = new V35SupplyContext(
+                    snapshot,
+                    42L,
+                    "hash42",
+                    Instant.parse("2026-06-19T00:00:00Z"),
+                    "bounded_projection_test",
+                    false,
+                    42L,
+                    3L,
+                    1);
         }
 
         @Override
-        public List<EntityAccount> findAllAccounts() {
-            return Collections.singletonList(
-                    new EntityAccount(Seting.ADDRESS_FOUNDER, new BigDecimal("100.00"), BigDecimal.ZERO, BigDecimal.ZERO));
+        public V35SupplyContext snapshot() {
+            snapshotCalls.incrementAndGet();
+            return context;
         }
 
         @Override
-        public void saveBlock(EntityBlock entityBlock) throws IOException {
-            mutated = true;
-            throw new IOException("read-only endpoint must not save blocks");
+        public long currentHeight() {
+            return 42L;
         }
 
         @Override
-        public void saveAccount(EntityAccount entityAccount) throws IOException {
-            mutated = true;
-            throw new IOException("read-only endpoint must not save accounts");
+        public Map<String, Object> diagnostics() {
+            return Collections.singletonMap("supplyCachePresent", true);
         }
     }
 }

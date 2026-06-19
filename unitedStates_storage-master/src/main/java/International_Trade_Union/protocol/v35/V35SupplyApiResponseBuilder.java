@@ -32,7 +32,7 @@ public final class V35SupplyApiResponseBuilder {
         response.put("annualEmissionGold", gold(snapshot.getAnnualEmissionGold()));
         response.put("valid", snapshot.isValid());
         response.put("invalidReason", safe(snapshot.getInvalidReason()));
-        response.put("snapshotSource", "canonical_chain_and_account_map");
+        response.put("snapshotSource", "bounded_projection_read_model");
         return response;
     }
 
